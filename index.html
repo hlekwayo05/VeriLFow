@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>VeriFlow — Become a Tutor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="frontend/css/main.css?v=2"/>
+  <link rel="stylesheet" href="frontend/css/landing.css?v=10"/>
+  <style>
+    /* ─── DESKTOP HOME ─── */
+    .vf-desktop-home .navbar {
+      display: none;
+    }
+    .vf-desktop-home .page {
+      padding-top: 0;
+    }
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 0;
+    }
+    .hero-left {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--brand-bg);
+    }
+    .hero-brand-fill {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      padding: 48px;
+    }
+    .hero-left-overlay {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 80px 60px 80px 80px;
+      pointer-events: none;
+    }
+    .hero-left-overlay > * {
+      pointer-events: auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      background: transparent;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      border: 1.5px solid rgba(255, 255, 255, 0.85);
+      align-self: center;
+    }
+    .hero-left-overlay .live-dot--open {
+      background: var(--green);
+    }
+    .hero-left-overlay .live-dot--closed {
+      background: var(--red);
+    }
+    .hero-eyebrow--closed {
+      border-color: rgba(220, 90, 90, 0.85);
+      color: #ffc9c9;
+    }
+    .hero-left-overlay .btn-ink {
+      background: #fff;
+      color: var(--ink);
+    }
+    .hero-left-overlay .btn-ink:hover {
+      background: var(--paper-3);
+      color: var(--ink);
+    }
+    .hero-left-overlay .btn-ghost {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.85);
+    }
+    .hero-left-overlay .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-self: center;
+    }
+    .hero-right {
+      background: var(--paper);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 60px 60px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-right-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 32px;
+    }
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .step-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      padding-bottom: 32px;
+      position: relative;
+    }
+    .step-item:last-child { padding-bottom: 0; }
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px; top: 40px;
+      width: 2px;
+      height: calc(100% - 14px);
+      background: var(--paper-4);
+    }
+    .step-num-big {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--paper-3);
+      border: 1.5px solid var(--paper-4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 14px; font-weight: 800;
+      color: var(--ink-3);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .step-info-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 5px;
+      margin-top: 8px;
+    }
+    .step-info-desc {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.55;
+    }
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp .6s var(--ease) forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .2s; }
+    .delay-3 { animation-delay: .3s; }
+    .delay-4 { animation-delay: .45s; }
+
+    @media (max-width: 900px) {
+      .vf-desktop-home .hero { grid-template-columns: 1fr; }
+      .vf-desktop-home .hero-left-overlay { padding: 60px 28px; }
+      .vf-desktop-home .hero-right { min-height: 500px; padding: 48px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile landing (phones / ≤900px) -->
+  <div class="vf-mobile-home landing-page">
+    <header class="landing-hero" aria-label="VeriFlow">
+      <span class="landing-badge" id="landing-applications-badge">
+        <span class="live-dot live-dot--open"></span> Applications open
+      </span>
+      <img
+        src="frontend/images/veriflo-brand.png"
+        alt="VeriFlow — Accurate. Timely. Transparent."
+        class="landing-logo-img"
+        width="320"
+        height="120"
+        decoding="async"
+      />
+      <svg class="landing-wave" viewBox="0 0 430 90" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#ffffff" d="M0,48 C70,14 160,6 250,32 C320,52 380,18 430,26 L430,90 L0,90 Z"/>
+      </svg>
+    </header>
+
+    <section class="landing-light" aria-label="Welcome">
+      <h2 class="landing-welcome" data-type-welcome>Welcome</h2>
+      <p class="landing-subtitle" data-type-words>The verified pathway from student to becoming a tutor.</p>
+      <div class="landing-actions">
+        <p id="applications-closed-msg" style="display:none;margin:0 0 12px;color:var(--ink-3);">Applications are currently closed.</p>
+        <a href="frontend/pages/apply-step1.html" class="landing-btn landing-btn-primary" id="apply-now-mobile">Apply now</a>
+        <a href="frontend/pages/login.html" class="landing-btn landing-btn-secondary">Log in</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- Desktop marketing home (>900px) -->
+  <div class="vf-desktop-home">
+    <nav class="navbar" id="navbar"></nav>
+
+    <main class="page">
+      <section class="hero">
+        <div class="hero-left">
+          <img
+            src="frontend/images/veriflo-brand.png"
+            alt="veriflo — Accurate. Timely. Transparent."
+            class="hero-brand-fill"
+            decoding="async"
+          />
+          <div class="hero-left-overlay">
+            <div class="hero-eyebrow fade-up" id="hero-applications-badge">
+              <span class="live-dot live-dot--open"></span>
+              Applications open
+            </div>
+            <div class="hero-actions fade-up delay-1">
+              <p id="applications-closed-msg-desktop" style="display:none;margin:0 0 12px;color:#fff;opacity:.9;">Applications are currently closed.</p>
+              <a href="frontend/pages/apply-step1.html" id="apply-now-desktop">
+                <button class="btn btn-ink btn-lg" id="apply-now-desktop-btn">
+                  Apply now <i class="ti ti-arrow-right"></i>
+                </button>
+              </a>
+              <a href="frontend/pages/login.html">
+                <button class="btn btn-ghost btn-lg">Log in</button>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-right-label fade-up">How it works</div>
+          <div class="steps-list">
+            <div class="step-item fade-up delay-1">
+              <div class="step-num-big">1</div>
+              <div>
+                <div class="step-info-title">Apply in 3 steps</div>
+                <div class="step-info-desc">Fill in your personal info, academic details, upload your CV and academic record.</div>
+              </div>
+            </div>
+            <div class="step-item fade-up delay-2">
+              <div class="step-num-big">2</div>
+              <div>
+                <div class="step-info-title">Instant eligibility check</div>
+                <div class="step-info-desc">Your GPA and module pass status are verified the moment you submit. No waiting.</div>
+              </div>
+            </div>
+            <div class="step-item fade-up delay-3">
+              <div class="step-num-big">3</div>
+              <div>
+                <div class="step-info-title">Track your status live</div>
+                <div class="step-info-desc">Log back in at any time to follow your application from submitted through to approved.</div>
+              </div>
+            </div>
+            <div class="step-item fade-up delay-4">
+              <div class="step-num-big">4</div>
+              <div>
+                <div class="step-info-title">Complete onboarding</div>
+                <div class="step-info-desc">Once approved, submit your banking and personal details — then your tutor space unlocks.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="frontend/js/app.js?v=11"></script>
+  <script>
+    (function prepareWelcomeType() {
+      const el = document.querySelector('[data-type-welcome]');
+      if (!el) return;
+      const text = el.textContent.trim();
+      el.setAttribute('aria-label', text);
+      el.textContent = '';
+      [...text].forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.className = 'landing-welcome-letter';
+        span.textContent = ch;
+        span.style.setProperty('--i', String(i));
+        el.appendChild(span);
+      });
+    })();
+
+    (function prepareSubtitleWords() {
+      const el = document.querySelector('[data-type-words]');
+      if (!el) return;
+      const text = el.textContent.trim();
+      el.setAttribute('aria-label', text);
+      const words = text.split(/\s+/).filter(Boolean);
+      el.textContent = '';
+      words.forEach((word, i) => {
+        const span = document.createElement('span');
+        span.className = 'landing-subtitle-word';
+        span.textContent = word;
+        span.style.setProperty('--i', String(i));
+        el.appendChild(span);
+        if (i < words.length - 1) {
+          el.appendChild(document.createTextNode(' '));
+        }
+      });
+    })();
+
+    const mobileHome = document.querySelector('.vf-mobile-home.landing-page');
+    if (mobileHome) {
+      requestAnimationFrame(() => {
+        mobileHome.classList.add('is-ready');
+      });
+    }
+
+    VF.pageIn();
+    VF.renderNavbar();
+
+    function setApplicationsClosedUi() {
+      const msg = document.getElementById('applications-closed-msg');
+      const msgDesktop = document.getElementById('applications-closed-msg-desktop');
+      const applyMobile = document.getElementById('apply-now-mobile');
+      const applyDesktop = document.getElementById('apply-now-desktop');
+      const badgeMobile = document.getElementById('landing-applications-badge');
+      const badgeDesktop = document.getElementById('hero-applications-badge');
+      if (msg) msg.style.display = '';
+      if (msgDesktop) msgDesktop.style.display = '';
+      if (applyMobile) applyMobile.style.display = 'none';
+      if (applyDesktop) applyDesktop.style.display = 'none';
+      if (badgeMobile) {
+        badgeMobile.classList.add('landing-badge--closed');
+        badgeMobile.innerHTML = '<span class="live-dot live-dot--closed"></span> Applications closed';
+      }
+      if (badgeDesktop) {
+        badgeDesktop.classList.add('hero-eyebrow--closed');
+        badgeDesktop.innerHTML = '<span class="live-dot live-dot--closed"></span> Applications closed';
+      }
+    }
+
+    (async function gateLandingApplications() {
+      try {
+        const settings = await VF.apiFetch('/public/settings');
+        if (!settings.applications_open) {
+          setApplicationsClosedUi();
+        }
+      } catch (e) {
+        setApplicationsClosedUi();
+      }
+    })();
+
+    if (VF.isAuthenticated() && VF.roleFromToken() === 'tutor') {
+      VF.routeTutor(VF.resolveTutorRoute());
+      VF.fetchTutorRouteState().catch(() => {});
+    }
+  </script>
+</body>
+</html>

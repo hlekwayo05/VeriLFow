@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>VeriFlow — Log In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <style>
+    .login-flow .page {
+      padding-top: 0;
+      min-height: 100vh;
+    }
+
+    .auth-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .auth-left {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--brand-bg);
+    }
+
+    .auth-badge {
+      display: none;
+    }
+
+    .auth-wave {
+      display: none;
+    }
+
+    .auth-brand-fill {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      padding: 48px;
+    }
+
+    .auth-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px;
+      background: var(--paper-2);
+    }
+
+    .auth-form-wrap {
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .auth-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+
+    .auth-sub {
+      font-size: 14px;
+      color: var(--ink-3);
+      margin-bottom: 36px;
+      line-height: 1.65;
+    }
+
+    .auth-footer {
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--ink-4);
+      text-align: center;
+    }
+
+    .auth-footer a {
+      color: var(--ink);
+      font-weight: 500;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Focus glow on inputs (same idea as apply fields) */
+    @property --login-field-glow {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes loginFieldGlowSpin {
+      to { --login-field-glow: 360deg; }
+    }
+
+    .login-flow .form-group input:focus {
+      border: 2px solid transparent;
+      box-shadow: none;
+      outline: none;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--login-field-glow),
+          var(--border-2) 0%,
+          var(--border-2) 58%,
+          rgba(159, 212, 200, 0.45) 72%,
+          #ffffff 86%,
+          #9fd4c8 93%,
+          var(--border-2) 100%
+        );
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: loginFieldGlowSpin 2.2s linear infinite;
+    }
+
+    .login-flow .form-group.error input:focus {
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--login-field-glow),
+          #e8b4b4 0%,
+          #e8b4b4 58%,
+          rgba(255, 255, 255, 0.85) 78%,
+          var(--err) 90%,
+          #e8b4b4 100%
+        );
+    }
+
+    /* Log in button — traveling glow only */
+    .auth-login-btn {
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      overflow: hidden;
+      border: none;
+      margin-top: 8px;
+    }
+
+    .auth-login-btn::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 250deg,
+        rgba(255, 255, 255, 0.12) 280deg,
+        rgba(255, 255, 255, 0.95) 320deg,
+        #9fd4c8 340deg,
+        transparent 360deg
+      );
+      z-index: -2;
+      animation: authBtnGlowSpin 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .auth-login-btn::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: calc(var(--r-lg) - 1px);
+      background: var(--ink);
+      z-index: -1;
+      pointer-events: none;
+      transition: background 0.18s ease;
+    }
+
+    .auth-login-btn:hover::after {
+      background: var(--ink-2);
+    }
+
+    @keyframes authBtnGlowSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 900px) {
+      .auth-page {
+        grid-template-columns: 1fr;
+        grid-template-rows: min(46vh, 380px) 1fr;
+      }
+
+      .auth-left {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 28px 3.5rem;
+      }
+
+      .auth-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        position: absolute;
+        top: max(1.5rem, calc(env(safe-area-inset-top, 0px) + 1rem));
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        color: #fff;
+        background: transparent;
+        border: 1.5px solid rgba(255, 255, 255, 0.85);
+        border-radius: 999px;
+        padding: 7px 18px;
+        white-space: nowrap;
+      }
+
+      .auth-brand-fill {
+        position: relative;
+        inset: auto;
+        z-index: 1;
+        width: 100%;
+        max-width: min(280px, 78vw);
+        height: auto;
+        padding: 0;
+      }
+
+      .auth-wave {
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        width: 100%;
+        height: clamp(56px, 14vw, 78px);
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .auth-right {
+        padding: 28px 28px calc(40px + env(safe-area-inset-bottom, 0px));
+        background: #fff;
+      }
+
+      .auth-title {
+        font-size: 24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .login-flow .form-group input:focus {
+        animation: none;
+        border-color: var(--ink);
+        background-image: none;
+        box-shadow: 0 0 0 3px rgba(61, 107, 115, 0.12);
+      }
+
+      .auth-login-btn::before {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="login-flow">
+
+<main class="page">
+  <div class="auth-page">
+    <div class="auth-left">
+      <span class="auth-badge">Student portal</span>
+      <img
+        src="../images/veriflo-brand.png"
+        alt="veriflo — Accurate. Timely. Transparent."
+        class="auth-brand-fill"
+        decoding="async"
+      />
+      <svg class="auth-wave" viewBox="0 0 430 90" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#ffffff" d="M0,48 C70,14 160,6 250,32 C320,52 380,18 430,26 L430,90 L0,90 Z"/>
+      </svg>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-form-wrap">
+        <div class="auth-title">Welcome back</div>
+        <p class="auth-sub">Log in to check your application status or continue where you left off.</p>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+          <div class="form-group" id="grp-email">
+            <label for="email">Email address</label>
+            <input type="email" id="email" placeholder="230383025@ump.ac.za" autocomplete="email"/>
+            <div class="form-error">Please enter a valid email address.</div>
+          </div>
+          <div class="form-group" id="grp-password">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
+            <div class="form-error">Please enter your password.</div>
+          </div>
+          <button type="submit" class="btn btn-ink btn-full auth-login-btn" id="loginBtn">
+            Log in <i class="ti ti-arrow-right"></i>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="apply-step1.html">Apply now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/app.js?v=7"></script>
+<script>
+  VF.pageIn();
+
+  // Already logged in — send tutors to the right place without showing the form again
+  if (VF.isAuthenticated()) {
+    const token = VF.getToken();
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (payload.tempFlag && (payload.role === 'lecturer' || payload.role === 'tutor')) {
+        VF.navigate('change-password.html');
+      } else if (payload.role === 'tutor') {
+        VF.routeTutor(VF.resolveTutorRoute());
+        VF.fetchTutorRouteState().catch(() => {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const valid = VF.validateForm([
+      { id: 'email',    check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), msg: 'Please enter a valid email address.' },
+      { id: 'password', check: v => v.length >= 1,                         msg: 'Please enter your password.' },
+    ]);
+    if (!valid) return;
+
+    const btn = document.getElementById('loginBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Logging in…';
+    btn.classList.add('btn-disabled');
+
+    try {
+      const data = await VF.apiFetch('/auth/login', {
+        method: 'POST',
+        body: {
+          email:    document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+        },
+      });
+
+      // Store the JWT — this is what keeps the user logged in
+      VF.setToken(data.token);
+
+      const tutorRoute = {
+        applicationStatus: data.applicationStatus ?? null,
+        onboardingComplete: !!data.onboardingComplete,
+      };
+
+      // Keep user + routing state for navbar and later page loads
+      VF.setState({
+        user: {
+          email:      document.getElementById('email').value.trim(),
+          firstNames: data.firstName || '',
+          surname:    data.surname   || '',
+          initials:   VF.initials(data.firstName || '', data.surname || ''),
+          title:      '',
+          cell:       '',
+        },
+        applicationStatus: tutorRoute.applicationStatus,
+        onboarding: {
+          step1: tutorRoute.onboardingComplete,
+          step2: tutorRoute.onboardingComplete,
+        },
+      });
+
+      // ── Route based on real API response ──
+      if (data.tempFlag && (data.role === 'lecturer' || data.role === 'tutor')) {
+        VF.navigate('change-password.html');
+      } else if (data.role === 'admin') {
+        VF.navigate('admin-dashboard.html');
+      } else if (data.role === 'lecturer') {
+        VF.navigate('lecturer-dashboard.html');
+      } else {
+        // Tutor — route immediately from login response (do not wait on a second API call)
+        VF.routeTutor(tutorRoute);
+        VF.fetchTutorRouteState().catch(() => {});
+      }
+
+    } catch (err) {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('btn-disabled');
+      VF.toast(err.errors ? err.errors[0] : 'Login failed. Please try again.', 'err');
+    }
+  }
+</script>
+</body>
+</html>

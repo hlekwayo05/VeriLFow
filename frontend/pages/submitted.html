@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriFlow — Application Submitted</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
+  <style>
+    /* Navbar follows the same 50/50 split as the page */
+    body.result-split .navbar {
+      background: linear-gradient(to right, var(--brand-bg) 50%, var(--paper-2) 50%);
+      border-bottom: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 0;
+      gap: 0;
+    }
+    body.result-split .navbar-logo {
+      flex: 1 1 50%;
+      height: 100%;
+      padding: 0 64px;
+      box-sizing: border-box;
+    }
+    body.result-split .navbar-spacer { display: none; }
+    body.result-split .navbar-user {
+      flex: 1 1 50%;
+      height: 100%;
+      padding: 0 64px;
+      box-sizing: border-box;
+      justify-content: flex-end;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-page {
+      min-height: calc(100vh - var(--nav-h));
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .result-left {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-left::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.04);
+      top: -120px; right: -180px;
+      pointer-events: none;
+    }
+    .result-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 28px;
+    }
+    .result-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -2px;
+      line-height: .95;
+      margin-bottom: 16px;
+    }
+    .result-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,.75);
+      line-height: 1.65;
+      max-width: 360px;
+    }
+    .result-right {
+      padding: 80px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--paper-2);
+    }
+    .result-right-inner { max-width: 440px; }
+    .result-right .section-heading { color: var(--ink-3); }
+    #appCard .app-module-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    #appCard .app-module-meta {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    #appCard .tag-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    @media (max-width: 860px) {
+      body.result-split .navbar {
+        background: var(--brand-bg);
+        padding: 0 20px;
+      }
+      body.result-split .navbar-logo {
+        flex: 0 0 auto;
+        padding: 0;
+      }
+      body.result-split .navbar-user {
+        flex: 1 1 auto;
+        padding: 0;
+        border-bottom: none;
+      }
+      body.result-split .nav-username,
+      body.result-split .nav-logout { color: rgba(255,255,255,.85); }
+      body.result-split .nav-logout:hover { background: rgba(255,255,255,.12); color: #fff; }
+      body.result-split .nav-avatar {
+        background: rgba(255,255,255,.18);
+        color: #fff;
+      }
+      .result-page { grid-template-columns: 1fr; }
+      .result-left { padding: 60px 32px; min-height: 40vh; }
+      .result-right { padding: 48px 32px; }
+      .result-title { font-size: 32px; }
+    }
+  </style>
+</head>
+<body class="result-split">
+<nav class="navbar" id="navbar"></nav>
+<main class="page">
+  <div class="result-page">
+    <div class="result-left">
+      <div class="result-icon"><i class="ti ti-send"></i></div>
+      <div class="result-title">You're in<br>the pool<em style="color:rgba(255,255,255,.22)">.</em></div>
+      <p class="result-sub">Your application has been submitted successfully.</p>
+    </div>
+    <div class="result-right">
+      <div class="result-right-inner">
+        <div class="section-heading">Your application</div>
+        <div class="card card-sm" style="margin-bottom:16px" id="appCard">
+          <div class="card-label">Module</div>
+          <div class="app-module-name" id="appModuleName">Loading your application…</div>
+          <div class="app-module-meta" id="appModuleMeta">—</div>
+          <div class="tag-row">
+            <span class="tag tag-ok"><i class="ti ti-check" style="font-size:10px"></i> Eligible</span>
+            <span class="tag tag-ok"><i class="ti ti-check" style="font-size:10px"></i> Submitted</span>
+            <span class="tag tag-active">In pool</span>
+          </div>
+        </div>
+        <div class="card card-sm" style="margin-bottom:16px">
+          <div class="card-label">What happens next</div>
+          <p style="font-size:13.5px;color:var(--ink-3);line-height:1.65">
+            The lecturer will open the review period and begin evaluating applications. Your status will update automatically — log back in any time to check.
+          </p>
+        </div>
+        <div class="card card-sm" style="margin-bottom:28px">
+          <div class="card-label">Documents received</div>
+          <p style="font-size:13.5px;color:var(--ink-3);line-height:1.65">
+            Your CV and academic record have been received and will be reviewed as part of your application.
+          </p>
+        </div>
+        <a href="tracker.html">
+          <button class="btn btn-ink btn-full">
+            Go to my tracker <i class="ti ti-arrow-right"></i>
+          </button>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="../js/app.js?v=10"></script>
+<script>
+  VF.pageIn();
+  if (!VF.requireAuth('login.html')) return;
+  if (!VF.requireRole('tutor', 'login.html')) return;
+  VF.renderNavbar();
+
+  function renderAppCard(app) {
+    const titleEl = document.getElementById('appModuleName');
+    const metaEl = document.getElementById('appModuleMeta');
+    if (!titleEl || !metaEl) return;
+    titleEl.textContent = app.module_name || 'Unknown module';
+    const course = app.course || 'Unknown course';
+    const faculty = app.faculty || '';
+    metaEl.textContent = faculty ? `${course} · ${faculty}` : course;
+  }
+
+  (async function renderSubmitted() {
+    try {
+      const app = await VF.apiFetch('/applications/me');
+      VF.syncApplicationState(app);
+
+      if (app.status === 'incomplete') {
+        VF.navigate('apply-step2.html');
+        return;
+      }
+      if (app.status === 'rejected') {
+        VF.navigate('rejected.html');
+        return;
+      }
+
+      renderAppCard(app);
+    } catch (err) {
+      const s = VF.getState();
+      renderAppCard({
+        module_name: s.academic?.module || 'Unknown module',
+        course: s.academic?.course || 'Unknown course',
+        faculty: s.academic?.faculty || '',
+      });
+      VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
+    }
+  })();
+</script>
+</body>
+</html>

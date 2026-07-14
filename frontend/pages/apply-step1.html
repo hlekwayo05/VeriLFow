@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>VeriFlow — Apply · Step 1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=2"/>
+  <link rel="stylesheet" href="../css/apply.css?v=8"/>
+</head>
+<body class="apply-flow">
+<main class="page">
+  <div class="apply-layout">
+    <div class="apply-main">
+      <div id="applicationsOpenBadge" class="apply-window-badge apply-window-badge--open" style="display:none">
+        <span class="live-dot live-dot--open"></span> Applications open
+      </div>
+
+      <div id="applicationsClosed" class="apply-window-closed" style="display:none">
+        <div class="apply-window-badge apply-window-badge--closed">
+          <span class="live-dot live-dot--closed"></span> Applications closed
+        </div>
+        <p class="form-subtitle">Tutor applications are not open at the moment. Please check back later or log in to track an existing application.</p>
+        <div class="apply-window-closed-actions">
+          <a href="../../index.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
+          <a href="login.html"><button type="button" class="btn btn-ink">Log in</button></a>
+        </div>
+      </div>
+
+      <div id="applyStepContent" style="display:none">
+      <div id="applyProgress"></div>
+      <div class="form-header">
+        <div class="form-eyebrow">Application · Step 1 of 3</div>
+        <div class="form-title">Personal<br>information</div>
+        <p class="form-subtitle">Tell us who you are. Your account will be created when you move to step 2 — you can return and continue any time.</p>
+      </div>
+
+      <form id="step1Form" onsubmit="handleNext(event)" novalidate style="display:none">
+        <div class="row-2">
+          <div class="form-group" id="grp-surname">
+            <label for="surname">Surname</label>
+            <input type="text" id="surname" placeholder="e.g. Dlamini" autocomplete="family-name"/>
+            <div class="form-error">Surname is required.</div>
+          </div>
+          <div class="form-group" id="grp-title">
+            <label for="title">Title</label>
+            <select id="title">
+              <option value="">Select…</option>
+              <option>Mr</option><option>Ms</option><option>Mrs</option>
+              <option>Miss</option><option>Dr</option><option>Prof</option>
+            </select>
+            <div class="form-error">Please select a title.</div>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group" id="grp-initials">
+            <label for="initials">Initials</label>
+            <input type="text" id="initials" placeholder="e.g. T K" maxlength="6"/>
+            <div class="form-error">Initials are required.</div>
+          </div>
+          <div class="form-group" id="grp-firstNames">
+            <label for="firstNames">First names</label>
+            <input type="text" id="firstNames" placeholder="e.g. Thabo Kgosi" autocomplete="given-name"/>
+            <div class="form-error">First name(s) are required.</div>
+          </div>
+        </div>
+        <div class="form-group" id="grp-email">
+          <label for="email">Email address</label>
+          <input type="text" id="email" inputmode="email" placeholder="230383025@ump.ac.za" autocomplete="email" spellcheck="false"/>
+          <div class="form-hint">Use your student email (e.g. 230383025@ump.ac.za). You must be on the eligible student list.</div>
+          <div class="form-error">Please enter a valid @ump.ac.za student email.</div>
+        </div>
+        <div class="row-2">
+          <div class="form-group" id="grp-cell">
+            <label for="cell">Cellular phone</label>
+            <input type="tel" id="cell" placeholder="e.g. 082 456 7890" autocomplete="tel"/>
+            <div class="form-error">Please enter a valid cell number.</div>
+          </div>
+          <div class="form-group" id="grp-studentNumber">
+            <label for="studentNumber">Student number</label>
+            <input type="text" id="studentNumber" placeholder="e.g. 220012345"/>
+            <div class="form-error">Student number is required.</div>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group" id="grp-password">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Create a password" autocomplete="new-password"/>
+            <div class="form-hint">At least 8 characters.</div>
+            <div class="form-error">Password must be at least 8 characters.</div>
+          </div>
+          <div class="form-group" id="grp-confirm">
+            <label for="confirm">Confirm password</label>
+            <input type="password" id="confirm" placeholder="Repeat password" autocomplete="new-password"/>
+            <div class="form-error">Passwords do not match.</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-ink btn-glow" style="flex:1" id="nextBtn">
+            <span class="btn-next-copy">Next — Academic information</span>
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
+          </button>
+          <a href="../../index.html">
+            <button type="button" class="btn btn-ghost">Cancel</button>
+          </a>
+        </div>
+      </form>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="apply-sidebar" id="applySidebar">
+      <div class="progress-sidebar">
+        <div class="progress-sidebar-label">Your progress</div>
+        <div class="ps-step active"><div class="ps-dot"></div><div class="ps-name">Personal information</div></div>
+        <div class="ps-step"><div class="ps-dot"></div><div class="ps-name">Academic information</div></div>
+        <div class="ps-step"><div class="ps-dot"></div><div class="ps-name">Documents &amp; declaration</div></div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Why we need this</div>
+        <div class="info-row"><i class="ti ti-user-check"></i>We use your name and student details to verify your identity against university records.</div>
+        <div class="info-row"><i class="ti ti-mail"></i>Your email address is used to notify you when your application status changes.</div>
+        <div class="info-row"><i class="ti ti-lock"></i>Your password lets you log back in and continue your application or check your status.</div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Save &amp; continue later</div>
+        <div class="info-row"><i class="ti ti-device-floppy"></i>Once you complete step 1, your account is created. You can close the browser and log back in to pick up from step 2.</div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="../js/app.js?v=10"></script>
+<script>
+  VF.pageIn();
+
+  (function syncNextBtnLabel() {
+    const mq = window.matchMedia('(max-width: 900px)');
+    const label = document.querySelector('#nextBtn .btn-next-copy');
+    if (!label) return;
+    const set = () => {
+      label.textContent = mq.matches ? 'Next' : 'Next — Academic information';
+    };
+    set();
+    mq.addEventListener('change', set);
+  })();
+
+  // Pre-fill if returning (e.g. browser back button after already saving)
+  const s = VF.getState();
+  if (s.user) {
+    document.getElementById('surname').value    = s.user.surname    || '';
+    document.getElementById('title').value      = s.user.title      || '';
+    document.getElementById('initials').value   = s.user.initials   || '';
+    document.getElementById('firstNames').value = s.user.firstNames || '';
+    document.getElementById('email').value      = s.user.email      || '';
+    document.getElementById('cell').value       = s.user.cell       || '';
+  }
+
+  (async function initApplyStep1() {
+    const open = await VF.gateApplicationWindow(async () => {
+      VF.mountApplyProgress(1);
+      if (VF.isAuthenticated()) {
+        VF.resumeTutorApplication();
+      } else {
+        document.getElementById('step1Form').style.display = '';
+      }
+    });
+
+    if (!open && VF.isAuthenticated()) {
+      VF.resumeTutorApplication();
+    }
+  })();
+
+  async function handleNext(e) {
+    e.preventDefault();
+    const pwd = document.getElementById('password').value;
+    const cfm = document.getElementById('confirm').value;
+
+    const valid = VF.validateForm([
+      { id: 'surname',       check: v => v.length > 0,                          msg: 'Surname is required.' },
+      { id: 'title',         check: v => v.length > 0,                          msg: 'Please select a title.' },
+      { id: 'initials',      check: v => v.length > 0,                          msg: 'Initials are required.' },
+      { id: 'firstNames',    check: v => v.length > 0,                          msg: 'First name(s) are required.' },
+      { id: 'email',         check: v => /^[a-zA-Z0-9._%+-]+@ump\.ac\.za$/i.test(v), msg: 'Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).' },
+      { id: 'cell',          check: v => v.length >= 9,                         msg: 'Please enter a valid cell number.' },
+      { id: 'studentNumber', check: v => v.length >= 5,                         msg: 'Student number is required.' },
+      { id: 'password',      check: v => v.length >= 8,                         msg: 'Password must be at least 8 characters.' },
+      { id: 'confirm',       check: v => v === pwd,                             msg: 'Passwords do not match.' },
+    ]);
+    if (!valid) return;
+
+    const btn = document.getElementById('nextBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Saving…';
+    btn.classList.add('btn-disabled');
+
+    const formValues = {
+      surname:       document.getElementById('surname').value.trim(),
+      title:         document.getElementById('title').value,
+      initials:      document.getElementById('initials').value.trim(),
+      firstNames:    document.getElementById('firstNames').value.trim(),
+      email:         document.getElementById('email').value.trim(),
+      cell:          document.getElementById('cell').value.trim(),
+      studentNumber: document.getElementById('studentNumber').value.trim(),
+      password:      pwd,
+      confirm:       cfm,
+    };
+
+    try {
+      const data = await VF.apiFetch('/auth/register', {
+        method: 'POST',
+        body: formValues,
+      });
+
+      // Account created — store the JWT so step 2 is authenticated
+      VF.setToken(data.token);
+
+      // Keep a lightweight local copy for pre-filling and navbar display
+      VF.setState({
+        user: {
+          surname:    formValues.surname,
+          title:      formValues.title,
+          initials:   formValues.initials,
+          firstNames: formValues.firstNames,
+          email:      formValues.email,
+          cell:       formValues.cell,
+        },
+        step: 2,
+      });
+
+      VF.navigate('apply-step2.html');
+
+    } catch (err) {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('btn-disabled');
+
+      if (err.status === 403) {
+        const msg = err.errors ? err.errors[0] : 'Applications are currently closed.';
+        VF.toast(msg, 'err');
+        if (/student list|eligible student|@ump\.ac\.za/i.test(msg)) {
+          const emailGroup = document.getElementById('grp-email');
+          const emailErr = emailGroup?.querySelector('.form-error');
+          emailGroup?.classList.add('error');
+          if (emailErr) emailErr.textContent = msg;
+        }
+        return;
+      }
+
+      // Show the specific duplicate-email error inline if that's the cause
+      if (err.status === 409) {
+        VF.toast(err.errors ? err.errors[0] : 'An account with this email already exists. Try logging in instead.', 'err');
+      } else {
+        VF.toast(err.errors ? err.errors[0] : 'Could not create account. Please try again.', 'err');
+        if (err.status === 400 && err.errors?.[0]) {
+          const msg = err.errors[0];
+          if (/email|student number|student list/i.test(msg)) {
+            const emailGroup = document.getElementById('grp-email');
+            const emailErr = emailGroup?.querySelector('.form-error');
+            if (/email|@ump/i.test(msg)) {
+              emailGroup?.classList.add('error');
+              if (emailErr) emailErr.textContent = msg;
+            }
+            if (/student number/i.test(msg)) {
+              const snGroup = document.getElementById('grp-studentNumber');
+              const snErr = snGroup?.querySelector('.form-error');
+              snGroup?.classList.add('error');
+              if (snErr) snErr.textContent = msg;
+            }
+          }
+        }
+      }
+    }
+  }
+</script>
+</body>
+</html>

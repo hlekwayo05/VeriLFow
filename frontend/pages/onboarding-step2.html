@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriFlow — Banking Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <style>
+    body.ob-page .page { padding-top: 0; }
+    .ob-layout { min-height:100vh; display:grid; grid-template-columns:1fr 420px; align-items:start; }
+    .ob-main { padding:60px 60px 80px 80px; max-width:640px; }
+    .ob-sidebar { position:sticky; top:40px; padding:40px 40px 40px 0; }
+    .ob-hero { background:var(--ink); border-radius:var(--r-xl); padding:28px; margin-bottom:20px; }
+    .ob-hero-label { font-family:'Bebas Neue', sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,.50); margin-bottom:12px; }
+    .ob-hero-title { font-family:'Bebas Neue', sans-serif; font-size:20px; font-weight:800; color:#fff; letter-spacing:-.5px; margin-bottom:6px; }
+    .ob-hero-sub { font-size:13px; color:rgba(255,255,255,.75); line-height:1.55; }
+    .ob-progress { display:flex; gap:6px; margin-top:18px; }
+    .ob-seg { flex:1; height:3px; border-radius:2px; background:rgba(255,255,255,.35); }
+    .ob-seg.done { background:rgba(255,255,255,.75); }
+    .ob-seg.active { background:#fff; }
+    .form-eyebrow { font-family:'Bebas Neue', sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-4); margin-bottom:10px; }
+    .form-title { font-family:'Bebas Neue', sans-serif; font-size:34px; font-weight:800; color:var(--ink); letter-spacing:-1.5px; line-height:1; margin-bottom:10px; }
+    .form-subtitle { font-size:14.5px; color:var(--ink-3); line-height:1.6; margin-bottom:36px; }
+    .form-actions { display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--border); }
+    .info-sidebar-card { background:var(--paper); border-radius:var(--r-xl); border:1.5px solid var(--border); padding:22px; margin-bottom:14px; }
+    .info-sidebar-title { font-family:'Bebas Neue', sans-serif; font-size:13px; font-weight:700; color:var(--ink); margin-bottom:12px; }
+    .info-row { display:flex; gap:10px; align-items:flex-start; margin-bottom:10px; font-size:13px; color:var(--ink-3); line-height:1.5; }
+    .info-row:last-child { margin-bottom:0; }
+    .info-row i { font-size:16px; color:var(--ink-4); flex-shrink:0; margin-top:1px; }
+
+    /* Focus glow on inputs */
+    @property --ob-field-glow {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes obFieldGlowSpin {
+      to { --ob-field-glow: 360deg; }
+    }
+
+    body.ob-page .form-group input:focus,
+    body.ob-page .form-group select:focus,
+    body.ob-page .form-group textarea:focus {
+      border: 2px solid transparent;
+      box-shadow: none;
+      outline: none;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          var(--border-2) 0%,
+          var(--border-2) 58%,
+          rgba(159, 212, 200, 0.45) 72%,
+          #ffffff 86%,
+          #9fd4c8 93%,
+          var(--border-2) 100%
+        );
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: obFieldGlowSpin 2.2s linear infinite;
+    }
+
+    body.ob-page .form-group select:focus {
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          var(--border-2) 0%,
+          var(--border-2) 58%,
+          rgba(159, 212, 200, 0.45) 72%,
+          #ffffff 86%,
+          #9fd4c8 93%,
+          var(--border-2) 100%
+        );
+      background-size: 12px 8px, auto, auto;
+      background-position: right 16px center, center, center;
+      background-repeat: no-repeat, no-repeat, no-repeat;
+      background-origin: padding-box, border-box, border-box;
+      background-clip: padding-box, padding-box, border-box;
+    }
+
+    body.ob-page .form-group.error input:focus,
+    body.ob-page .form-group.error select:focus {
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          #e8b4b4 0%,
+          #e8b4b4 58%,
+          rgba(255, 255, 255, 0.85) 78%,
+          var(--err) 90%,
+          #e8b4b4 100%
+        );
+    }
+
+    .ob-next-btn {
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      overflow: hidden;
+      border: none;
+      flex: 1;
+    }
+
+    .ob-next-btn::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 250deg,
+        rgba(255, 255, 255, 0.12) 280deg,
+        rgba(255, 255, 255, 0.95) 320deg,
+        #9fd4c8 340deg,
+        transparent 360deg
+      );
+      z-index: -2;
+      animation: obBtnGlowSpin 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .ob-next-btn::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: calc(var(--r-lg) - 1px);
+      background: var(--ink);
+      z-index: -1;
+      pointer-events: none;
+      transition: background 0.18s ease;
+    }
+
+    .ob-next-btn:hover::after {
+      background: var(--ink-2);
+    }
+
+    @keyframes obBtnGlowSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width:900px) {
+      .ob-layout { grid-template-columns:1fr; }
+      .ob-sidebar { display:none; }
+      .ob-main { padding:40px 28px; max-width:100%; }
+      .form-title,
+      .form-subtitle { display: none !important; }
+      .form-eyebrow { margin-bottom: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.ob-page .form-group input:focus,
+      body.ob-page .form-group select:focus,
+      body.ob-page .form-group textarea:focus {
+        animation: none;
+        border-color: var(--ink);
+        background-image: none;
+        box-shadow: 0 0 0 3px rgba(61, 107, 115, 0.12);
+      }
+
+      .ob-next-btn::before {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="ob-page">
+<main class="page">
+  <div class="ob-layout">
+    <div class="ob-main">
+      <div class="form-eyebrow">Onboarding · Step 2 of 2</div>
+      <div class="form-title">Banking &amp;<br>tax details</div>
+      <p class="form-subtitle">Your tutor stipend will be paid directly to this account. Please ensure all details are correct.</p>
+
+      <form id="bankForm" onsubmit="handleSubmit(event)" novalidate>
+        <div class="form-group" id="grp-bank">
+          <label for="bank">Bank name</label>
+          <select id="bank">
+            <option value="">Select your bank…</option>
+            <option>ABSA</option>
+            <option>FNB — First National Bank</option>
+            <option>Standard Bank</option>
+            <option>Nedbank</option>
+            <option>Capitec Bank</option>
+            <option>TymeBank</option>
+            <option>Discovery Bank</option>
+            <option>African Bank</option>
+            <option>Investec</option>
+            <option>Other</option>
+          </select>
+          <div class="form-error">Please select your bank.</div>
+        </div>
+
+        <div class="row-2">
+          <div class="form-group" id="grp-branch">
+            <label for="branch">Branch code</label>
+            <input type="text" id="branch" placeholder="e.g. 632005" maxlength="6"/>
+            <div class="form-hint">6-digit universal branch code.</div>
+            <div class="form-error">Please enter a valid branch code.</div>
+          </div>
+          <div class="form-group" id="grp-acctype">
+            <label for="acctype">Account type</label>
+            <select id="acctype">
+              <option value="">Select…</option>
+              <option>Cheque / Current</option>
+              <option>Savings</option>
+              <option>Transmission</option>
+            </select>
+            <div class="form-error">Please select account type.</div>
+          </div>
+        </div>
+
+        <div class="form-group" id="grp-accnum">
+          <label for="accnum">Account number</label>
+          <input type="text" id="accnum" placeholder="e.g. 1234567890" maxlength="16"/>
+          <div class="form-error">Please enter your account number.</div>
+        </div>
+
+        <div class="form-group" id="grp-accholder">
+          <label for="accholder">Account holder name</label>
+          <input type="text" id="accholder" placeholder="Exactly as it appears on your bank statement"/>
+          <div class="form-error">Account holder name is required.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-group" id="grp-taxnum">
+          <label for="taxnum">Income tax number</label>
+          <input type="text" id="taxnum" placeholder="e.g. 123 456 789" maxlength="10"/>
+          <div class="form-hint">Your SARS-issued income tax reference number.</div>
+          <div class="form-error">Please enter your tax number.</div>
+        </div>
+
+        <div class="sub-section" style="font-family:'Bebas Neue', sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin:22px 0 14px;">Supporting documents (optional)</div>
+        <div class="upload-box" id="idBox" onclick="document.getElementById('idFile').click()">
+          <input type="file" class="file-input-hidden" id="idFile" accept=".pdf,.jpg,.jpeg,.png" onchange="markFileSelected(this,'idBox','idIcon','idName','idSub','Identity document')"/>
+          <i class="ti ti-id upload-icon" id="idIcon"></i>
+          <div class="upload-title" id="idName">Identity document copy</div>
+          <div class="upload-sub" id="idSub">PDF or image · Max 5MB</div>
+        </div>
+        <div class="upload-box" id="taxBox" onclick="document.getElementById('taxFile').click()">
+          <input type="file" class="file-input-hidden" id="taxFile" accept=".pdf,.jpg,.jpeg,.png" onchange="markFileSelected(this,'taxBox','taxIcon','taxName','taxSub','Tax number proof')"/>
+          <i class="ti ti-receipt-tax upload-icon" id="taxIcon"></i>
+          <div class="upload-title" id="taxName">Proof of income tax number</div>
+          <div class="upload-sub" id="taxSub">PDF or image · Max 5MB</div>
+        </div>
+        <div class="upload-box" id="bankProofBox" onclick="document.getElementById('bankProofFile').click()">
+          <input type="file" class="file-input-hidden" id="bankProofFile" accept=".pdf,.jpg,.jpeg,.png" onchange="markFileSelected(this,'bankProofBox','bankProofIcon','bankProofName','bankProofSub','Bank account proof')"/>
+          <i class="ti ti-building-bank upload-icon" id="bankProofIcon"></i>
+          <div class="upload-title" id="bankProofName">Proof of bank account</div>
+          <div class="upload-sub" id="bankProofSub">Bank statement or letter · PDF or image · Max 5MB</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="VF.navigate('onboarding-step1.html')">
+            <i class="ti ti-arrow-left"></i> Back
+          </button>
+          <button type="submit" class="btn btn-ink ob-next-btn" id="submitBtn">
+            Submit profile <i class="ti ti-check"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="ob-sidebar">
+      <div class="ob-hero">
+        <div class="ob-hero-label">Almost done</div>
+        <div class="ob-hero-title">One more step</div>
+        <div class="ob-hero-sub">Banking and tax details complete your appointment profile.</div>
+        <div class="ob-progress">
+          <div class="ob-seg done"></div>
+          <div class="ob-seg active"></div>
+        </div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Why we need this</div>
+        <div class="info-row"><i class="ti ti-building-bank"></i>Your banking details are used exclusively to pay your monthly tutoring stipend.</div>
+        <div class="info-row"><i class="ti ti-receipt-tax"></i>Your income tax number is required for SARS compliance and your IRP5 at year end.</div>
+        <div class="info-row"><i class="ti ti-lock"></i>All financial information is stored securely and only accessible to authorised payroll staff.</div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">What happens after submission</div>
+        <div class="info-row"><i class="ti ti-bell"></i>The lecturer is notified that you have completed your profile and are ready to begin tutoring.</div>
+        <div class="info-row"><i class="ti ti-layout-dashboard"></i>Your tutor dashboard unlocks immediately after submission.</div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="../js/app.js?v=7"></script>
+<script>
+  VF.pageIn();
+  VF.requireAuth('login.html');
+
+  (async function guardStep2() {
+    try {
+      const app = await VF.apiFetch('/applications/me');
+      if (VF.onboardingCompleteFromApp(app)) {
+        VF.navigate('dashboard.html');
+        return;
+      }
+      if (app.status !== 'approved') {
+        VF.routeTutor({ applicationStatus: app.status, onboardingComplete: false });
+        return;
+      }
+      const profile = await VF.apiFetch('/users/me/tutor-profile');
+      if (!profile.step1_complete) {
+        VF.navigate('onboarding-step1.html');
+        return;
+      }
+      if (profile.bank_name) document.getElementById('bank').value = profile.bank_name;
+      if (profile.branch_code) document.getElementById('branch').value = profile.branch_code;
+      if (profile.account_type) document.getElementById('acctype').value = profile.account_type;
+      if (profile.account_number) document.getElementById('accnum').value = profile.account_number;
+      if (profile.account_holder) document.getElementById('accholder').value = profile.account_holder;
+      if (profile.tax_number) document.getElementById('taxnum').value = profile.tax_number;
+    } catch (err) {
+      VF.toast(err.errors ? err.errors[0] : 'Could not load your profile.', 'err');
+    }
+  })();
+
+  function markFileSelected(input, boxId, iconId, nameId, subId, label) {
+    const file = input.files[0];
+    if (!file) return;
+    document.getElementById(boxId).classList.add('uploaded');
+    document.getElementById(iconId).className = 'ti ti-file upload-icon';
+    document.getElementById(nameId).textContent = label;
+    document.getElementById(subId).textContent = file.name + ' · ' + (file.size / 1024).toFixed(0) + ' KB';
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const valid = VF.validateForm([
+      { id:'bank',      check: v => v.length > 0,           msg:'Please select your bank.' },
+      { id:'branch',    check: v => /^\d{6}$/.test(v),      msg:'Enter a 6-digit branch code.' },
+      { id:'acctype',   check: v => v.length > 0,           msg:'Please select account type.' },
+      { id:'accnum',    check: v => v.length >= 8,          msg:'Enter a valid account number.' },
+      { id:'accholder', check: v => v.length > 2,           msg:'Account holder name is required.' },
+      { id:'taxnum',    check: v => v.replace(/\s/g,'').length >= 9, msg:'Enter a valid tax number.' },
+    ]);
+    if (!valid) return;
+
+    const btn = document.getElementById('submitBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Submitting…';
+    btn.classList.add('btn-disabled');
+
+    try {
+      const formData = new FormData();
+      formData.append('bank', document.getElementById('bank').value);
+      formData.append('branch', document.getElementById('branch').value);
+      formData.append('acctype', document.getElementById('acctype').value);
+      formData.append('accnum', document.getElementById('accnum').value);
+      formData.append('accholder', document.getElementById('accholder').value);
+      formData.append('taxnum', document.getElementById('taxnum').value);
+
+      const idFile = document.getElementById('idFile')?.files[0];
+      const taxFile = document.getElementById('taxFile')?.files[0];
+      const bankFile = document.getElementById('bankProofFile')?.files[0];
+      if (idFile) formData.append('id_document', idFile);
+      if (taxFile) formData.append('tax_proof', taxFile);
+      if (bankFile) formData.append('bank_proof', bankFile);
+
+      const data = await VF.apiFetch('/users/me/onboarding/step2', {
+        method: 'PATCH',
+        body: formData,
+        isFormData: true,
+      });
+
+      if (data.token) VF.setToken(data.token);
+      VF.setState({
+        applicationStatus: 'approved',
+        onboarding: { step1: true, step2: true },
+      });
+      VF.navigate('dashboard.html');
+    } catch (err) {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('btn-disabled');
+      VF.toast(err.errors ? err.errors[0] : 'Could not save your profile. Please try again.', 'err');
+    }
+  }
+</script>
+</body>
+</html>

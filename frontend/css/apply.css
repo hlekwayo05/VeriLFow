@@ -1,0 +1,453 @@
+/* VeriFlow — application flow (steps 1–3) */
+
+.apply-flow .page {
+  padding-top: 0;
+  min-height: 100vh;
+}
+
+.apply-flow .apply-layout {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  align-items: start;
+  gap: 0;
+}
+
+.apply-flow .apply-main {
+  padding: 60px 60px 60px 80px;
+  max-width: 640px;
+}
+
+.apply-flow .apply-sidebar {
+  position: sticky;
+  top: 40px;
+  padding: 40px 40px 40px 0;
+}
+
+.apply-flow .form-header {
+  margin-bottom: 40px;
+}
+
+.apply-window-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.apply-window-badge--open {
+  color: var(--green);
+}
+
+.apply-window-badge--closed {
+  color: var(--red);
+  margin-bottom: 16px;
+}
+
+.apply-window-closed {
+  padding: 12px 0 40px;
+  max-width: 480px;
+}
+
+.apply-window-closed .form-title {
+  margin-bottom: 12px;
+}
+
+.apply-window-closed > .form-subtitle {
+  margin-bottom: 24px;
+}
+
+.apply-window-closed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.apply-flow .form-eyebrow {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin-bottom: 10px;
+}
+
+.apply-flow .form-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -1.5px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.apply-flow .form-subtitle {
+  font-size: 14.5px;
+  color: var(--ink-3);
+  line-height: 1.6;
+}
+
+.apply-flow .form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Mobile step progress (replaces top navbar on small screens) */
+.apply-mobile-progress {
+  display: none;
+}
+
+.apply-progress-track {
+  height: 3px;
+  background: var(--paper-4);
+  border-radius: var(--r-pill);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.apply-progress-fill {
+  height: 100%;
+  background: var(--ink);
+  border-radius: var(--r-pill);
+  transition: width 0.35s var(--ease);
+}
+
+.apply-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.apply-progress-steps span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  flex: 1;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.apply-progress-steps span.active {
+  color: var(--ink);
+}
+
+.apply-progress-steps span.done {
+  color: var(--ink-3);
+}
+
+/* Sidebar shared */
+.apply-flow .progress-sidebar {
+  background: var(--brand-bg);
+  border-radius: var(--r-xl);
+  padding: 24px;
+  color: #fff;
+}
+
+.apply-flow .progress-sidebar-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.50);
+  margin-bottom: 16px;
+}
+
+.apply-flow .ps-step {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.apply-flow .ps-step:last-child {
+  margin-bottom: 0;
+}
+
+.apply-flow .ps-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.apply-flow .ps-step.active .ps-dot {
+  background: #fff;
+}
+
+.apply-flow .ps-step.done .ps-dot {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.apply-flow .ps-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.apply-flow .ps-step.active .ps-name {
+  color: #fff;
+}
+
+.apply-flow .ps-step.done .ps-name {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.apply-flow .info-sidebar-card {
+  background: var(--paper);
+  border-radius: var(--r-xl);
+  border: 1.5px solid var(--border);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.apply-flow .info-sidebar-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.apply-flow .info-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.apply-flow .info-row:last-child {
+  margin-bottom: 0;
+}
+
+.apply-flow .info-row i {
+  font-size: 16px;
+  color: var(--ink-4);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Traveling glow on focused apply fields (same idea as Apply button) */
+@property --apply-field-glow {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes applyFieldGlowSpin {
+  to {
+    --apply-field-glow: 360deg;
+  }
+}
+
+.apply-flow .form-group input:focus,
+.apply-flow .form-group select:focus,
+.apply-flow .form-group textarea:focus {
+  border: 2px solid transparent;
+  box-shadow: none;
+  outline: none;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--paper), var(--paper)),
+    conic-gradient(
+      from var(--apply-field-glow),
+      var(--border-2) 0%,
+      var(--border-2) 58%,
+      rgba(159, 212, 200, 0.45) 72%,
+      #ffffff 86%,
+      #9fd4c8 93%,
+      var(--border-2) 100%
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: applyFieldGlowSpin 2.2s linear infinite;
+}
+
+.apply-flow .form-group select:focus {
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+    linear-gradient(var(--paper), var(--paper)),
+    conic-gradient(
+      from var(--apply-field-glow),
+      var(--border-2) 0%,
+      var(--border-2) 58%,
+      rgba(159, 212, 200, 0.45) 72%,
+      #ffffff 86%,
+      #9fd4c8 93%,
+      var(--border-2) 100%
+    );
+  background-size: 12px 8px, auto, auto;
+  background-position: right 16px center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-origin: padding-box, border-box, border-box;
+  background-clip: padding-box, padding-box, border-box;
+}
+
+.apply-flow .form-group.error input:focus,
+.apply-flow .form-group.error select:focus,
+.apply-flow .form-group.error textarea:focus {
+  background-image:
+    linear-gradient(var(--paper), var(--paper)),
+    conic-gradient(
+      from var(--apply-field-glow),
+      #e8b4b4 0%,
+      #e8b4b4 58%,
+      rgba(255, 255, 255, 0.85) 78%,
+      var(--err) 90%,
+      #e8b4b4 100%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apply-flow .form-group input:focus,
+  .apply-flow .form-group select:focus,
+  .apply-flow .form-group textarea:focus {
+    animation: none;
+    border-color: var(--ink);
+    background-image: none;
+    box-shadow: 0 0 0 3px rgba(61, 107, 115, 0.12);
+  }
+}
+
+/* Primary apply CTA glow (Next / Submit) — same motion as landing Apply */
+.apply-flow .btn-glow {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  border: none;
+}
+
+.apply-flow .btn-glow::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 250deg,
+    rgba(255, 255, 255, 0.12) 280deg,
+    rgba(255, 255, 255, 0.95) 320deg,
+    #9fd4c8 340deg,
+    transparent 360deg
+  );
+  z-index: -2;
+  animation: applyBtnGlowSpin 2.2s linear infinite;
+  pointer-events: none;
+}
+
+.apply-flow .btn-glow::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: calc(var(--r-lg) - 1px);
+  background: var(--ink);
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.18s ease;
+}
+
+.apply-flow .btn-glow:hover::after {
+  background: var(--ink-2);
+}
+
+.apply-flow .btn-glow.btn-disabled::before {
+  animation: none;
+  opacity: 0;
+}
+
+.apply-flow .btn-glow.btn-disabled::after {
+  background: var(--paper-4);
+}
+
+@keyframes applyBtnGlowSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apply-flow .btn-glow::before {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .apply-flow .apply-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .apply-flow .apply-sidebar {
+    display: none !important;
+  }
+
+  .apply-flow .apply-main {
+    padding: max(32px, env(safe-area-inset-top, 0px)) 28px 40px;
+    max-width: 100%;
+  }
+
+  .apply-flow .form-title {
+    font-size: 26px;
+  }
+
+  /* Mobile apply: form only — hide instructional chrome */
+  .apply-mobile-progress {
+    display: none !important;
+  }
+
+  .apply-flow #applicationsOpenBadge,
+  .apply-flow .apply-window-badge--open {
+    display: none !important;
+  }
+
+  .apply-flow .form-header .form-title,
+  .apply-flow .form-header .form-subtitle {
+    display: none !important;
+  }
+
+  .apply-flow .form-header {
+    margin-bottom: 20px;
+  }
+
+  .apply-flow .form-hint {
+    display: none !important;
+  }
+
+  .apply-flow .form-actions {
+    flex-wrap: wrap;
+  }
+
+  .apply-flow .form-actions .btn-ink[style*='flex:1'],
+  .apply-flow .form-actions .btn[style*='flex:1'] {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+}
+
+@media (max-width: 480px) {
+  .apply-progress-steps span {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+}

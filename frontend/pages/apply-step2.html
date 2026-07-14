@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>VeriFlow — Apply · Step 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=2"/>
+  <link rel="stylesheet" href="../css/apply.css?v=8"/>
+  <style>
+    .module-hint {
+      background: var(--paper-3);
+      border-radius: var(--r);
+      padding: 13px 16px;
+      font-size: 12.5px;
+      color: var(--ink-3);
+      line-height: 1.55;
+      margin-top: 6px;
+      border: 1px solid var(--border-2);
+      display: none;
+    }
+    .module-hint.visible { display: block; }
+    .module-hint strong { color: var(--err); }
+    .ql-warning {
+      background: #fff8ed;
+      border: 1px solid #f5c842;
+      border-radius: var(--r);
+      padding: 11px 14px;
+      font-size: 12.5px;
+      color: #7a5500;
+      line-height: 1.55;
+      margin-top: 6px;
+      display: none;
+    }
+    .ql-warning.visible { display: flex; gap: 8px; align-items: flex-start; }
+    .ql-warning i { flex-shrink: 0; margin-top: 1px; font-size: 14px; color: #c98a00; }
+  </style>
+</head>
+<body class="apply-flow">
+<main class="page">
+  <div class="apply-layout">
+    <div class="apply-main">
+      <div id="applicationsOpenBadge" class="apply-window-badge apply-window-badge--open" style="display:none">
+        <span class="live-dot live-dot--open"></span> Applications open
+      </div>
+
+      <div id="applicationsClosed" class="apply-window-closed" style="display:none">
+        <div class="apply-window-badge apply-window-badge--closed">
+          <span class="live-dot live-dot--closed"></span> Applications closed
+        </div>
+        <p class="form-subtitle">Tutor applications are not open at the moment. Please check back later or log in to track an existing application.</p>
+        <div class="apply-window-closed-actions">
+          <a href="../../index.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
+          <a href="login.html"><button type="button" class="btn btn-ink">Log in</button></a>
+        </div>
+      </div>
+
+      <div id="applyStepContent" style="display:none">
+      <div id="applyProgress"></div>
+      <div class="form-header">
+        <div class="form-eyebrow">Application · Step 2 of 3</div>
+        <div class="form-title">Academic<br>information</div>
+        <p class="form-subtitle">Your faculty, course, qualification level and module selection link your application to the correct posting and determine your eligibility.</p>
+      </div>
+
+      <form id="step2Form" onsubmit="handleNext(event)" novalidate style="display:none">
+        <div class="form-group" id="grp-faculty">
+          <label for="faculty">Faculty</label>
+          <select id="faculty" onchange="populateCourses()">
+            <option value="">Select a faculty…</option>
+            <option>Information &amp; Communication Technology</option>
+          </select>
+          <div class="form-error">Please select your faculty.</div>
+        </div>
+
+        <div class="form-group" id="grp-course">
+          <label for="course">Course / programme</label>
+          <select id="course" onchange="populateYears()">
+            <option value="">Select faculty first…</option>
+          </select>
+          <div class="form-error">Please select your course.</div>
+        </div>
+
+        <div class="form-group" id="grp-qualificationLevel">
+          <label for="qualificationLevel">Current qualification level</label>
+          <select id="qualificationLevel" onchange="checkQualificationEligibility()">
+            <option value="">Select your qualification level…</option>
+            <option>3rd year student</option>
+            <option>4th year or Honours student</option>
+            <option>Masters student</option>
+            <option>Masters Holder</option>
+            <option>PhD Candidate or Holder</option>
+          </select>
+          <div class="form-error">Please select your current qualification level.</div>
+          <div class="ql-warning" id="qlWarning">
+            <i class="ti ti-alert-triangle"></i>
+            <span>Only final year and postgraduate students are eligible to apply. You will not be able to proceed if you do not meet this requirement.</span>
+          </div>
+        </div>
+
+        <div class="form-group" id="grp-year">
+          <label for="year">Year &amp; semester</label>
+          <select id="year" onchange="populateModules()">
+            <option value="">Select course first…</option>
+          </select>
+          <div class="form-error">Please select the year and semester.</div>
+        </div>
+
+        <div class="form-group" id="grp-module">
+          <label for="module">Module to tutor</label>
+          <select id="module" onchange="onModuleSelected()">
+            <option value="">Select year &amp; semester first…</option>
+          </select>
+          <input type="hidden" id="input-module-code" value="" />
+          <div class="form-error">Please select a module.</div>
+          <div class="module-hint" id="moduleHint"></div>
+        </div>
+
+        <div class="form-group" id="grp-gpa">
+          <label for="gpa">Current GPA / average (%)</label>
+          <input type="number" id="gpa" placeholder="e.g. 72" min="0" max="100"/>
+          <div class="form-hint">Enter your cumulative academic average as a percentage.</div>
+          <div class="form-error">Please enter your GPA (0–100).</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="VF.navigate('apply-step1.html')">
+            <i class="ti ti-arrow-left"></i> Back
+          </button>
+          <button type="submit" class="btn btn-ink btn-glow" style="flex:1" id="nextBtn">
+            Next — Documents <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="apply-sidebar" id="applySidebar">
+      <div class="progress-sidebar">
+        <div class="progress-sidebar-label">Your progress</div>
+        <div class="ps-step done"><div class="ps-dot"></div><div class="ps-name">Personal information</div></div>
+        <div class="ps-step active"><div class="ps-dot"></div><div class="ps-name">Academic information</div></div>
+        <div class="ps-step"><div class="ps-dot"></div><div class="ps-name">Documents &amp; declaration</div></div>
+      </div>
+      <div style="height:16px"></div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Why this matters</div>
+        <div class="info-row"><i class="ti ti-link"></i>Your faculty, course and module selection binds this application to the correct open tutor posting.</div>
+        <div class="info-row"><i class="ti ti-chart-bar"></i>Your GPA is checked against the minimum requirement for the role you're applying for.</div>
+        <div class="info-row"><i class="ti ti-book"></i>The module you select must appear on your academic record as passed with the required mark.</div>
+        <div class="info-row"><i class="ti ti-medal"></i>Your qualification level determines your eligibility and your pay rate if you are appointed as a tutor.</div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Eligibility check</div>
+        <div class="info-row"><i class="ti ti-bolt"></i>The eligibility check runs instantly when you submit step 3. If you don't qualify, you'll be told exactly why.</div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="../js/app.js?v=10"></script>
+<script src="../js/curriculum.js?v=2"></script>
+<script>
+  VF.pageIn();
+  if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
+
+  (async function initStep2() {
+    const open = await VF.gateApplicationWindow(async () => {
+      VF.mountApplyProgress(2);
+      try {
+        const app = await VF.apiFetch('/applications/me');
+        VF.syncApplicationState(app);
+
+        if (app.status !== 'incomplete') {
+          VF.routeTutor({
+            applicationStatus: app.status,
+            onboardingComplete: VF.onboardingCompleteFromApp(app),
+          });
+          return;
+        }
+      } catch (err) {
+        VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
+        return;
+      }
+
+      document.getElementById('step2Form').style.display = '';
+      populateFromState();
+    });
+  })();
+
+  /* ─── DATA ─── */
+  const COURSES = {
+    'Information & Communication Technology': [
+      'BICT — Bachelor of ICT',
+      'DICT — Diploma in ICT',
+    ],
+  };
+
+  const QUALIFICATION_CODE_MAP = {
+    '3rd year student':                 '3rd_year',
+    '4th year or Honours student':      '4th_year_honours',
+    'Masters student':                  'masters',
+    'Masters Holder':                   'masters_holder',
+    'PhD Candidate or Holder':          'phd',
+  };
+
+  const INELIGIBLE_LEVELS = new Set([]);
+
+  function checkQualificationEligibility() {
+    const val     = document.getElementById('qualificationLevel').value;
+    const warning = document.getElementById('qlWarning');
+    if (val && INELIGIBLE_LEVELS.has(val)) {
+      warning.classList.add('visible');
+    } else {
+      warning.classList.remove('visible');
+    }
+  }
+
+  function populateCourses() {
+    const faculty = document.getElementById('faculty').value;
+    const csel = document.getElementById('course');
+    csel.innerHTML = '<option value="">Select a course…</option>';
+    document.getElementById('year').innerHTML = '<option value="">Select course first…</option>';
+    document.getElementById('module').innerHTML = '<option value="">Select year &amp; semester first…</option>';
+    document.getElementById('input-module-code').value = '';
+    (COURSES[faculty] || []).forEach(c => {
+      csel.innerHTML += `<option>${c}</option>`;
+    });
+  }
+
+  function populateYears() {
+    const course = document.getElementById('course').value;
+    const ysel = document.getElementById('year');
+    ysel.innerHTML = '<option value="">Select year &amp; semester…</option>';
+    document.getElementById('module').innerHTML = '<option value="">Select year &amp; semester first…</option>';
+    document.getElementById('input-module-code').value = '';
+    curriculumYearSemesters(course).forEach(y => {
+      ysel.innerHTML += `<option>${y}</option>`;
+    });
+    document.getElementById('moduleHint').classList.remove('visible');
+  }
+
+  function populateModules() {
+    const course = document.getElementById('course').value;
+    const year   = document.getElementById('year').value;
+    const msel   = document.getElementById('module');
+    msel.innerHTML = '<option value="">Select a module…</option>';
+    document.getElementById('input-module-code').value = '';
+    curriculumModulesForYear(course, year).forEach(m => {
+      msel.innerHTML += moduleSelectOptionHtml(m);
+    });
+    document.getElementById('moduleHint').classList.remove('visible');
+  }
+
+  function onModuleSelected() {
+    const msel = document.getElementById('module');
+    document.getElementById('input-module-code').value = readModuleCodeFromSelect(msel);
+    document.getElementById('moduleHint').classList.remove('visible');
+  }
+
+  function populateFromState() {
+    const s = VF.getState();
+    if (!s.academic) return;
+
+    document.getElementById('faculty').value = s.academic.faculty || '';
+    if (s.academic.faculty) {
+      populateCourses();
+      document.getElementById('course').value = s.academic.course || '';
+      if (s.academic.course) {
+        populateYears();
+        const yearOptions = curriculumYearSemesters(s.academic.course);
+        if (yearOptions.includes(s.academic.year)) {
+          document.getElementById('year').value = s.academic.year;
+          populateModules();
+          const moduleOptions = curriculumModulesForYear(s.academic.course, s.academic.year);
+          const savedModule = moduleOptions.find(m => m.name === s.academic.module);
+          if (savedModule) {
+            document.getElementById('module').value = savedModule.name;
+            onModuleSelected();
+          }
+          if (s.academic.moduleCode) {
+            document.getElementById('input-module-code').value = s.academic.moduleCode;
+          }
+        }
+      }
+    }
+    document.getElementById('qualificationLevel').value = s.academic.qualificationLevel || '';
+    checkQualificationEligibility();
+    document.getElementById('gpa').value = s.academic.gpa || '';
+  }
+
+  async function handleNext(e) {
+    e.preventDefault();
+    const valid = VF.validateForm([
+      { id: 'faculty',            check: v => v.length > 0,                        msg: 'Please select your faculty.' },
+      { id: 'course',             check: v => v.length > 0,                        msg: 'Please select your course.' },
+      { id: 'qualificationLevel', check: v => v.length > 0,                        msg: 'Please select your current qualification level.' },
+      { id: 'year',               check: v => v.length > 0,                        msg: 'Please select the year and semester.' },
+      { id: 'module',             check: v => v.length > 0,                        msg: 'Please select a module.' },
+      { id: 'input-module-code',  check: v => v.length > 0,                        msg: 'Module code is required.' },
+      { id: 'gpa',                check: v => v.length > 0 && v >= 0 && v <= 100, msg: 'Please enter your GPA (0–100).' },
+    ]);
+    if (!valid) return;
+
+    const faculty            = document.getElementById('faculty').value;
+    const course             = document.getElementById('course').value;
+    const qualificationLabel = document.getElementById('qualificationLevel').value;
+    const year               = document.getElementById('year').value;
+    const module             = document.getElementById('module').value;
+    const moduleCode         = document.getElementById('input-module-code').value.trim();
+    const gpa                = parseFloat(document.getElementById('gpa').value);
+    const qualificationLevel = QUALIFICATION_CODE_MAP[qualificationLabel] || '';
+
+    const btn = document.getElementById('nextBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Saving…';
+    btn.classList.add('btn-disabled');
+
+    try {
+      await VF.apiFetch('/applications/me/academic', {
+        method: 'PATCH',
+        body: {
+          faculty,
+          course,
+          qualificationLevel,
+          moduleYearLevel: year,
+          moduleName:      module,
+          moduleCode,
+          gpa,
+        },
+      });
+
+      // Verify a posting exists and the student meets its minimums
+      const programme = course.startsWith('BICT') ? 'BICT' : 'DICT';
+      let posting;
+      try {
+        posting = await VF.apiFetch(
+          `/postings/open?programme=${encodeURIComponent(programme)}&moduleName=${encodeURIComponent(module)}`
+        );
+      } catch (postErr) {
+        VF.toast(postErr.errors ? postErr.errors[0] : 'No posting for this module.', 'err');
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-disabled');
+        return;
+      }
+
+      const QUAL_RANK = {
+        '3rd_year': 1, '4th_year_honours': 2, 'masters': 3, 'masters_holder': 4, 'phd': 5,
+      };
+      if ((QUAL_RANK[qualificationLevel] || 0) < (QUAL_RANK[posting.min_qualification_level] || 0)) {
+        VF.toast('Your qualification level does not meet the minimum required for this posting.', 'err');
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-disabled');
+        return;
+      }
+      if (gpa < parseFloat(posting.min_average)) {
+        VF.toast(`This posting requires a minimum average of ${posting.min_average}%.`, 'err');
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-disabled');
+        return;
+      }
+
+      VF.setState({
+        academic: {
+          faculty,
+          course,
+          qualificationLevel: qualificationLabel,
+          year,
+          module,
+          moduleCode,
+          gpa,
+        },
+        step: 3,
+      });
+
+      VF.navigate('apply-step3.html');
+
+    } catch (err) {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('btn-disabled');
+      VF.toast(err.errors ? err.errors[0] : 'Could not save academic information. Please try again.', 'err');
+    }
+  }
+</script>
+</body>
+</html>

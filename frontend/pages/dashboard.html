@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>VeriFlow — Tutor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=32"/>
+</head>
+<body class="tutor-dash td-on-hub">
+<div class="app">
+
+<div class="td-sidebar-backdrop" id="tdSidebarBackdrop" onclick="closeTutorSidebar()" hidden></div>
+
+<!-- ═══════ SIDEBAR ═══════ -->
+<aside class="sidebar" id="tutorSidebar">
+  <div class="logo">
+    <img src="../images/veriflo-brand.png" alt="VeriFlow" class="lec-logo-img" width="140" height="40"/>
+  </div>
+  <div class="sidebar-module-chip">
+    <strong id="sidebar-mod-code">—</strong>
+    <span id="sidebar-mod-name">Loading…</span>
+  </div>
+  <div class="nav-group">
+    <div class="nav-section-label">Tutor</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" id="nav-sessions" onclick="showPage('sessions',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Sessions
+    </div>
+    <div class="nav-item" id="nav-messages" onclick="showPage('messages',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" id="nav-hourlog" onclick="showPage('hourlog',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Hour Log
+    </div>
+    <div class="nav-item" id="nav-calendar" onclick="showPage('calendar',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </div>
+    <div class="nav-item" id="nav-claims" onclick="showPage('claims',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Claims
+      <span class="nav-badge">1</span>
+    </div>
+    <div class="nav-item" id="nav-support" onclick="showPage('support',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      Support
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="nav-item" id="nav-profile" onclick="showPage('profile',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profile
+    </div>
+    <div class="nav-item" onclick="VF.logout()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Log out
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+
+  <!-- ═══════ DASHBOARD ═══════ -->
+  <div id="page-dashboard" class="page active">
+
+    <!-- Mobile home hub (light glass · VeriFlow colors) -->
+    <div class="td-mobile-hub" id="td-mobile-hub">
+      <header class="td-hub-top">
+        <h1 class="td-hub-name" id="td-hub-name">Loading…</h1>
+        <p class="td-hub-module" id="td-hub-module">Loading module…</p>
+      </header>
+      <div class="td-hub-modules" id="td-hub-modules" aria-label="Switch module"></div>
+
+      <button type="button" class="td-hub-hero" id="td-hub-hero" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+        <div class="td-hub-hero-main">
+          <div class="td-hub-hero-label">Next session</div>
+          <div class="td-hub-hero-title" id="td-hub-next-title">Loading…</div>
+          <div class="td-hub-hero-meta" id="td-hub-next-meta">—</div>
+        </div>
+        <div class="td-hub-hero-stats">
+          <div class="td-hub-hero-stat">
+            <span class="td-hub-hero-stat-lbl">Used</span>
+            <span class="td-hub-hero-stat-val" id="td-hub-hrs-used">—</span>
+          </div>
+          <div class="td-hub-hero-stat">
+            <span class="td-hub-hero-stat-lbl">Left</span>
+            <span class="td-hub-hero-stat-val" id="td-hub-hrs-left">—</span>
+          </div>
+          <div class="td-hub-hero-stat">
+            <span class="td-hub-hero-stat-lbl">Month</span>
+            <span class="td-hub-hero-stat-val" id="td-hub-sess-month">—</span>
+          </div>
+        </div>
+      </button>
+
+      <div class="td-hub-grid" role="navigation" aria-label="Tutor sections">
+        <button type="button" class="td-hub-tile" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </span>
+          <span class="td-hub-tile-title">Sessions</span>
+          <span class="td-hub-tile-sub" id="hub-sessions-sub">Upcoming &amp; registers</span>
+        </button>
+        <button type="button" class="td-hub-tile" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </span>
+          <span class="td-hub-tile-badge" id="hub-msg-badge" hidden>0</span>
+          <span class="td-hub-tile-title">Messages</span>
+          <span class="td-hub-tile-sub" id="hub-messages-sub">Inbox</span>
+        </button>
+        <button type="button" class="td-hub-tile" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </span>
+          <span class="td-hub-tile-title">Hour log</span>
+          <span class="td-hub-tile-sub" id="hub-hourlog-sub">Semester hours</span>
+        </button>
+        <button type="button" class="td-hub-tile" onclick="showPage('calendar',document.getElementById('nav-calendar'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span>
+          <span class="td-hub-tile-title">Calendar</span>
+          <span class="td-hub-tile-sub">Session dates</span>
+        </button>
+        <button type="button" class="td-hub-tile" onclick="showPage('claims',document.getElementById('nav-claims'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </span>
+          <span class="td-hub-tile-badge" id="hub-claims-badge" hidden>0</span>
+          <span class="td-hub-tile-title">Claims</span>
+          <span class="td-hub-tile-sub" id="hub-claims-sub">Timesheet</span>
+        </button>
+        <button type="button" class="td-hub-tile" onclick="showPage('support',document.getElementById('nav-support'))">
+          <span class="td-hub-tile-icon" aria-hidden="true">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          <span class="td-hub-tile-title">Support</span>
+          <span class="td-hub-tile-sub">Help &amp; tickets</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="left-col">
+      <div class="hero">
+        <h1 id="tutor-hero-name">Loading…</h1>
+        <p id="hero-module-text">Loading module…</p>
+      </div>
+      <div class="module-tabs" id="module-tabs">
+        <span style="font-size:12px;color:var(--muted);padding:8px 4px">Loading modules…</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
+          <div class="stat-label">Hours Used</div>
+          <div class="stat-value" id="stat-hours-used">—</div>
+          <div class="stat-sub">of 160 this semester</div>
+        </div>
+        <div class="stat-card" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
+          <div class="stat-label">Hours Remaining</div>
+          <div class="stat-value hi" id="stat-hours-left">—</div>
+          <div class="stat-sub">estimated from sessions</div>
+        </div>
+        <div class="stat-card" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+          <div class="stat-label">Sessions This Month</div>
+          <div class="stat-value" id="stat-sessions-month">—</div>
+          <div class="stat-sub" id="stat-sessions-sub">—</div>
+        </div>
+        <div class="stat-card" onclick="showPage('claims',document.getElementById('nav-claims'))">
+          <div class="stat-label">Pending Claim</div>
+          <div class="stat-value" style="font-size:26px;padding-top:4px;" id="stat-pending-claim">—</div>
+          <div class="stat-sub" id="stat-pending-claim-sub">for this module</div>
+        </div>
+      </div>
+      <div class="semester-section">
+        <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="semester-hours-label">—</span></div>
+        <div class="sem-track"><div class="sem-fill" style="width:0%"></div></div>
+      </div>
+      <div class="section-header">
+        <span class="section-title">Upcoming sessions</span>
+        <span class="section-sub" id="dash-upcoming-label">—</span>
+      </div>
+      <div class="table-scroll">
+        <table class="dash-table">
+          <thead><tr><th>Module</th><th>Date</th><th>Time</th><th>Type</th><th>Status</th></tr></thead>
+          <tbody id="dash-upcoming-body">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="right-col">
+        <div class="panel">
+          <div class="panel-header"><h3>Pending Claims</h3></div>
+          <div id="dash-claims-pending"><div style="font-size:12px;color:var(--muted);padding:8px 0">Loading…</div></div>
+          <button onclick="showPage('claims',document.getElementById('nav-claims'))" style="margin-top:14px;width:100%;padding:8px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--border-hi)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">+ Submit claim</button>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Claim history</h3></div>
+          <div id="dash-claims-history"><div style="font-size:12px;color:var(--muted);padding:8px 0">Loading…</div></div>
+        </div>
+      <div class="panel">
+        <div class="panel-header"><div><h3>Sessions this month</h3><div style="font-size:11px;color:var(--muted);margin-top:2px" id="dash-month-sessions-sub">Loading…</div></div></div>
+        <div class="sessions-stat"><span>Monthly progress</span><span class="sessions-pct" id="dash-month-progress-pct">—</span></div>
+        <div class="bar-track"><div class="bar-fill" id="dash-month-progress-bar" style="width:0%"></div></div>
+        <div class="chart-area" id="dash-month-chart"></div>
+        <div class="chart-labels" id="dash-month-chart-labels"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ SESSIONS ═══════ -->
+  <div id="page-sessions" class="page">
+    <div class="full-page tm-sess-page">
+      <div class="page-hero tm-sess-hero">
+        <h1>Sessions — <em id="sessions-page-title">—</em></h1>
+        <p>Confirm availability for upcoming sessions · View register for completed sessions</p>
+      </div>
+      <div class="tm-sess-summary" id="tm-sess-summary">
+        <div class="tm-sess-summary-top">
+          <div class="tm-sess-summary-label">Sessions</div>
+          <span class="tm-sess-summary-chip" id="tm-sess-summary-chip" hidden></span>
+        </div>
+        <div class="tm-sess-summary-title" id="tm-sess-summary-title">Loading…</div>
+        <div class="tm-sess-summary-sub" id="tm-sess-summary-sub">—</div>
+        <div class="tm-sess-summary-stats" id="tm-sess-summary-stats"></div>
+      </div>
+      <div class="tm-sess-cards" id="sessions-cards" aria-label="Sessions"></div>
+      <div class="table-scroll tm-sess-table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Venue</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="sessions-table-body">
+            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MESSAGES ═══════ -->
+  <div id="page-messages" class="page">
+    <div class="msg-layout">
+      <div class="inbox-sidebar" id="msg-inbox-pane">
+        <div class="inbox-top">
+          <div class="tm-msg-title-row">
+            <h2>Messages</h2>
+          </div>
+          <div class="tm-msg-people" id="tm-msg-people" aria-label="Contacts"></div>
+          <div class="inbox-search">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)"/>
+          </div>
+        </div>
+        <div class="inbox-filters">
+          <button class="inbox-filter active" onclick="setInboxFilter('all',this)">All</button>
+          <button class="inbox-filter" onclick="setInboxFilter('lecturer',this)">Lecturer</button>
+          <button class="inbox-filter" onclick="setInboxFilter('admin',this)">Admin</button>
+          <button class="inbox-filter" onclick="setInboxFilter('unread',this)">Unread</button>
+        </div>
+        <div class="tm-msg-recent-label">Recent</div>
+        <div class="inbox-list" id="inbox-list">
+          <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
+        </div>
+      </div>
+      <div class="msg-thread" id="msg-thread">
+        <div class="thread-empty" id="thread-empty">
+          <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <p>Select a conversation to read and reply</p>
+        </div>
+        <div id="thread-content" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+          <div class="thread-header">
+            <button type="button" class="tm-msg-back" id="tm-msg-back" aria-label="Back to messages" onclick="closeMobileMessageChat()">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="thread-av" id="t-av">TM</div>
+            <div class="thread-info">
+              <div class="thread-name" id="t-name">—</div>
+              <div class="thread-meta" id="t-meta">—</div>
+            </div>
+            <button class="thread-reply-btn" onclick="focusCompose()">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+              Reply
+            </button>
+          </div>
+          <div class="thread-messages" id="thread-messages"></div>
+          <div class="thread-compose">
+            <div class="compose-box">
+              <textarea class="compose-textarea" id="compose-input" placeholder="Aa" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea>
+              <button class="compose-send" onclick="sendReply()" aria-label="Send">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ HOUR LOG ═══════ -->
+  <div id="page-hourlog" class="page">
+    <div class="full-page">
+      <div class="page-hero">
+        <h1>Hour <em>Log</em></h1>
+        <p id="hourlog-hero-sub">Loading…</p>
+      </div>
+      <div class="hourlog-grid">
+        <div class="hl-card"><div class="hl-label">Hours Used</div><div class="hl-value" id="hl-hours-used">—</div><div class="hl-sub">of 160 allocated this semester</div></div>
+        <div class="hl-card"><div class="hl-label">Hours Remaining</div><div class="hl-value hi" id="hl-hours-left">—</div><div class="hl-sub">estimated from completed sessions</div></div>
+        <div class="hl-card"><div class="hl-label">Sessions on module</div><div class="hl-value amber" id="hl-sessions-month">—</div><div class="hl-sub" id="hl-sessions-sub">—</div></div>
+      </div>
+      <div class="hl-pulse-wrap">
+        <div class="semester-section" style="animation:tdFadeUp .4s ease .18s both">
+          <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="hourlog-semester-label">—</span></div>
+          <div class="hl-pulse-metric" aria-hidden="false">
+            <div class="hl-pulse-label">Hours</div>
+            <div class="hl-pulse-figures">
+              <div class="hl-pulse-nums">
+                <span class="hl-pulse-used" id="hl-pulse-used">—</span>
+                <span class="hl-pulse-cap" id="hl-pulse-cap"> / —</span>
+              </div>
+              <span class="hl-pulse-pct" id="hl-pulse-pct">—</span>
+            </div>
+          </div>
+          <div class="sem-track"><div class="sem-fill" style="width:0%"></div></div>
+          <div class="hl-pulse-aside" aria-label="Hour log summary">
+            <div class="hl-pulse-chip">
+              <span class="hl-pulse-chip-val" id="hl-pulse-left">—</span>
+              <span class="hl-pulse-chip-lbl">hrs remaining</span>
+            </div>
+            <div class="hl-pulse-chip">
+              <span class="hl-pulse-chip-val" id="hl-pulse-sess">—</span>
+              <span class="hl-pulse-chip-lbl" id="hl-pulse-sess-lbl">sessions</span>
+            </div>
+          </div>
+        </div>
+        <div class="hl-breakdown">
+          <div class="hl-breakdown-title">Monthly breakdown</div>
+          <div class="hl-breakdown-sub" id="hourlog-month-summary">Hours logged per month</div>
+          <div class="chart-area" id="hourlog-month-chart"></div>
+          <div class="chart-labels" id="hourlog-month-chart-labels"></div>
+        </div>
+      </div>
+      <div class="table-scroll hourlog-table-wrap">
+        <table class="data-table" style="animation:tdFadeUp .4s ease .25s both">
+          <thead><tr><th>Date</th><th>Topic</th><th>Type</th><th>Duration</th><th>Status</th></tr></thead>
+          <tbody id="hourlog-table-body">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CALENDAR ═══════ -->
+  <div id="page-calendar" class="page">
+    <div class="full-page tm-cal-page">
+      <div class="page-hero tm-cal-hero">
+        <h1>Calendar — <em id="calendar-page-title">—</em></h1>
+        <p id="calendar-hero-sub">Loading…</p>
+      </div>
+      <div class="cal-page-layout">
+        <div class="cal-wrap">
+          <div class="cal-header">
+            <button class="cal-nav-btn" onclick="calChangeMonth(-1)" aria-label="Previous month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="cal-title" id="cal-title">—</span>
+            <button class="cal-nav-btn" onclick="calChangeMonth(1)" aria-label="Next month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+          <div class="cal-days-header">
+            <div class="cal-day-name"><span class="cal-day-full">Sun</span><span class="cal-day-short">S</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Mon</span><span class="cal-day-short">M</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Tue</span><span class="cal-day-short">T</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Wed</span><span class="cal-day-short">W</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Thu</span><span class="cal-day-short">T</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Fri</span><span class="cal-day-short">F</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Sat</span><span class="cal-day-short">S</span></div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+          <div class="cal-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div>Upcoming</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Confirmed</div>
+            <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Flagged</div>
+          </div>
+        </div>
+        <div class="cal-detail" id="cal-detail">
+          <div class="cal-detail-empty" id="cal-detail-empty">
+            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <p>Select a highlighted date<br>to view session details</p>
+          </div>
+          <div id="cal-detail-content" style="display:none">
+            <h4 id="cal-detail-title">Session Details</h4>
+            <div class="cal-detail-row"><span class="cal-detail-label">Date</span><span class="cal-detail-val" id="cd-date"></span></div>
+            <div class="cal-detail-row"><span class="cal-detail-label">Time</span><span class="cal-detail-val" id="cd-time"></span></div>
+            <div class="cal-detail-row"><span class="cal-detail-label">Topic</span><span class="cal-detail-val" id="cd-topic"></span></div>
+            <div class="cal-detail-row"><span class="cal-detail-label">Venue</span><span class="cal-detail-val" id="cd-venue"></span></div>
+            <div class="cal-detail-row"><span class="cal-detail-label">Type</span><span class="cal-detail-val" id="cd-type"></span></div>
+            <div class="cal-detail-row"><span class="cal-detail-label">Status</span><span class="cal-detail-val" id="cd-status"></span></div>
+            <div class="cal-detail-row" id="cd-att-row"><span class="cal-detail-label">Attendance</span><span class="cal-detail-val" id="cd-att"></span></div>
+            <div id="cd-sessions-list" style="display:none;"></div>
+            <div class="cal-detail-actions" id="cd-actions" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ CLAIMS ═══════ -->
+  <div id="page-claims" class="page">
+    <div class="full-page">
+      <div class="page-hero">
+        <h1>Claims — <em>Timesheet</em></h1>
+        <p id="claims-hero-sub">Loading…</p>
+      </div>
+      <div id="claims-list-wrap">
+        <div style="padding:24px;text-align:center;color:var(--muted)">Loading claims…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ SUPPORT ═══════ -->
+  <div id="page-support" class="page">
+    <div class="full-page">
+      <div class="page-hero">
+        <h1>Support</h1>
+        <p>Raise a ticket if you need help from the Student Employment Office</p>
+      </div>
+      <div class="st-help-card">
+        <div class="st-help-top">
+          <div class="st-help-label">Support</div>
+          <span class="st-help-chip" id="st-help-chip" hidden>0 open</span>
+        </div>
+        <div class="st-help-title">Student Employment Office</div>
+        <div class="st-help-sub">Typical reply within 1–2 business days</div>
+      </div>
+      <button type="button" class="st-new-btn" onclick="openNewTicketModal()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Ticket
+      </button>
+      <div class="st-tickets-head">
+        <span class="st-tickets-title">Your tickets</span>
+        <span class="st-tickets-count" id="st-tickets-count"></span>
+      </div>
+      <div id="tutor-tickets-list" class="st-tickets-list">
+        <div class="st-tickets-loading">Loading tickets…</div>
+      </div>
+    </div>
+    <div class="st-sticky-bar">
+      <button type="button" class="st-sticky-btn" onclick="openNewTicketModal()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Ticket
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════ PROFILE ═══════ -->
+  <div id="page-profile" class="page">
+    <div class="full-page">
+      <div class="page-hero" id="profile-hero">
+        <h1>My <em>Profile</em></h1>
+        <p id="profile-hero-sub">Your submitted application and onboarding details</p>
+      </div>
+      <div class="tm-profile-hero" id="tm-profile-hero" aria-hidden="true">
+        <div class="tm-profile-hero-label">Profile</div>
+        <div class="tm-profile-hero-name" id="tm-profile-hero-name">—</div>
+        <div class="tm-profile-hero-meta" id="tm-profile-hero-meta">—</div>
+      </div>
+      <div class="profile-grid" id="profile-content"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════ MESSAGE LECTURER MODAL ═══════ -->
+<div class="modal-overlay" id="tutor-message-overlay" onclick="closeTutorLecturerMessage(event)">
+  <div class="modal um-modal small" id="tutor-message-modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-to">Your lecturer</div>
+        <div class="modal-name">New Message</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeTutorLecturerMessage()" aria-label="Close">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="um-section um-grid one">
+      <div class="um-field">
+        <div class="um-label">Subject <span style="color:var(--muted);font-weight:400">(optional)</span></div>
+        <input id="tutor-message-subject" class="um-input" type="text" placeholder="e.g. Question about next session"/>
+      </div>
+      <div class="um-field">
+        <div class="um-label">Message</div>
+        <textarea id="tutor-message-body" class="um-textarea" placeholder="Write your message to your lecturer…"></textarea>
+      </div>
+    </div>
+    <div class="um-actions">
+      <button type="button" class="btn-sm" onclick="closeTutorLecturerMessage()">Cancel</button>
+      <button type="button" class="btn-primary" id="tutor-message-send-btn" onclick="sendTutorLecturerMessage()">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ NEW SUPPORT TICKET MODAL ═══════ -->
+<div class="modal-overlay" id="new-ticket-overlay" onclick="closeNewTicketModal(event)">
+  <div class="modal st-modal" id="new-ticket-modal">
+    <div class="modal-header">
+      <div class="st-modal-intro">
+        <div class="st-modal-icon" aria-hidden="true">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div>
+          <div class="modal-to">Student Employment Office</div>
+          <div class="modal-name">Raise a Support Ticket</div>
+          <p class="st-modal-hint">Tell us what went wrong — a coordinator will review and reply here.</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeNewTicketModal()" aria-label="Close">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="st-modal-body">
+      <div class="ns-field">
+        <label class="ns-label" for="ticket-subject">Subject</label>
+        <input id="ticket-subject" class="ns-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
+      </div>
+      <div class="ns-field">
+        <label class="ns-label" for="ticket-priority">Priority</label>
+        <div class="ns-select-wrap">
+          <select id="ticket-priority" class="ns-select">
+            <option value="low">Low — general question</option>
+            <option value="medium" selected>Medium — needs attention</option>
+            <option value="high">High — blocking my work</option>
+          </select>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="ns-field">
+        <label class="ns-label" for="ticket-details">Details</label>
+        <textarea id="ticket-details" class="ns-textarea st-textarea" rows="5" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
+      </div>
+    </div>
+    <div class="ns-divider"></div>
+    <div class="ns-footer st-modal-footer">
+      <span class="st-modal-footnote">Typical response within 1–2 business days</span>
+      <div class="st-modal-actions">
+        <button type="button" class="ns-cancel" onclick="closeNewTicketModal()">Cancel</button>
+        <button type="button" class="ns-create" onclick="submitNewTicket()">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          Submit Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ QR MODAL ═══════ -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal qr-modal">
+    <h3>Attendance Register</h3>
+    <p id="qrDesc">Loading session…</p>
+    <div class="qr-box">
+      <img id="qr-image" alt="Attendance QR code" width="220" height="220" style="display:block;border-radius:8px;"/>
+    </div>
+    <div class="qr-countdown-wrap" id="qr-countdown-wrap">
+      <div class="qr-countdown-label">Code changes in</div>
+      <div class="qr-countdown-seconds" id="qr-countdown-seconds">30</div>
+      <div class="qr-countdown-sub" id="qr-countdown">seconds — scan now</div>
+      <div class="qr-countdown-track"><div class="qr-countdown-fill" id="qr-countdown-fill"></div></div>
+    </div>
+    <p class="qr-hint-desktop">Students scan this QR on the same Wi‑Fi as this computer. The link uses your network IP, not localhost.</p>
+    <p class="qr-hint-mobile">Students scan this QR on the same Wi‑Fi network.</p>
+    <p id="qr-network-hint" class="qr-network-hint" style="display:none;"></p>
+    <button type="button" class="view-reg-btn qr-view-signins" onclick="viewCurrentQrRegister()">View who has signed in</button>
+    <button class="modal-close" onclick="closeQR()">Close Register</button>
+  </div>
+</div>
+
+<!-- ═══════ STUDENT REGISTER MODAL ═══════ -->
+<div class="reg-overlay" id="regModal" onclick="regCloseOutside(event)">
+  <div class="reg-modal">
+    <div class="reg-modal-header">
+      <div>
+        <div class="reg-modal-eyebrow" id="reg-eyebrow">IS211 · Information Systems 211</div>
+        <div class="reg-modal-title" id="reg-title">Attendance Register</div>
+      </div>
+      <button class="reg-modal-close" onclick="closeRegister()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="reg-modal-meta" id="reg-meta">—</div>
+    <div class="reg-summary-strip">
+      <div class="reg-stat"><div class="reg-stat-lbl">Enrolled</div><div class="reg-stat-val" id="reg-enrolled">26</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Present</div><div class="reg-stat-val green" id="reg-present">—</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Absent</div><div class="reg-stat-val red" id="reg-absent">—</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Rate</div><div class="reg-stat-val amber" id="reg-pct">—</div></div>
+    </div>
+    <div class="reg-table-wrap">
+      <table class="reg-table">
+        <thead><tr><th class="reg-th-idx">#</th><th>Student</th><th class="reg-th-status">Status</th></tr></thead>
+        <tbody id="reg-tbody"></tbody>
+      </table>
+    </div>
+    <div class="reg-modal-footer">
+      <span class="reg-footer-note">Read-only · Locked after session end<br>Linked to your timesheet claim</span>
+      <button class="reg-dl-btn" onclick="downloadRegister()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Register
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Mobile floating bottom nav -->
+<nav class="td-bottom-nav" id="td-bottom-nav" aria-label="Primary">
+  <div class="td-bnav-pill">
+    <button type="button" class="td-bnav-item active" data-bnav="dashboard" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button type="button" class="td-bnav-item" data-bnav="messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span>Messages</span>
+      <span class="td-bnav-badge" id="bnav-msg-badge" hidden>0</span>
+    </button>
+    <button type="button" class="td-bnav-item" data-bnav="profile" onclick="showPage('profile',document.getElementById('nav-profile'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+  </div>
+  <button type="button" class="td-bnav-logout" aria-label="Log out" title="Log out" onclick="VF.logout()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  </button>
+</nav>
+
+<script src="../js/app.js?v=10"></script>
+<script src="../js/messaging.js?v=5"></script>
+<script src="../js/tutor-dashboard.js?v=60"></script>
+<script>
+/* toast, QR register, attendance register: tutor-dashboard.js */
+
+/* ── CHART BARS ── */
+document.querySelectorAll('.chart-bar').forEach(bar => {
+  bar.addEventListener('click', () => { document.querySelectorAll('.chart-bar').forEach(b=>b.classList.remove('active')); bar.classList.add('active'); });
+});
+
+/* ── DOWNLOAD TIMESHEET: tutor-dashboard.js ── */
+</script>
+<script>
+  updateUnreadBadge();
+  if (typeof startTutorDashboard === 'function') startTutorDashboard();
+  else if (typeof initTutorDashboard === 'function') initTutorDashboard().catch(function () { setupTutorModules([]); });
+</script>
+</body>
+</html>

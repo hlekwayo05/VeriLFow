@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriFlow — Complete Your Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css"/>
+  <style>
+    body.ob-page .page { padding-top: 0; }
+    .ob-layout { min-height:100vh; display:grid; grid-template-columns:1fr 420px; align-items:start; }
+    .ob-main { padding:60px 60px 80px 80px; max-width:640px; }
+    .ob-sidebar { position:sticky; top:40px; padding:40px 40px 40px 0; }
+    .ob-hero { background:var(--ink); border-radius:var(--r-xl); padding:28px; margin-bottom:20px; position:relative; overflow:hidden; }
+    .ob-hero::before { content:''; position:absolute; width:200px; height:200px; border-radius:50%; border:1px solid rgba(255,255,255,.05); top:-60px; right:-60px; }
+    .ob-hero-label { font-family:'Bebas Neue', sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,.50); margin-bottom:12px; }
+    .ob-hero-title { font-family:'Bebas Neue', sans-serif; font-size:20px; font-weight:800; color:#fff; letter-spacing:-.5px; margin-bottom:6px; }
+    .ob-hero-sub { font-size:13px; color:rgba(255,255,255,.75); line-height:1.55; }
+    .ob-progress { display:flex; gap:6px; margin-top:18px; }
+    .ob-seg { flex:1; height:3px; border-radius:2px; background:rgba(255,255,255,.35); }
+    .ob-seg.active { background:#fff; }
+    .ob-seg.done { background:rgba(255,255,255,.75); }
+    .form-eyebrow { font-family:'Bebas Neue', sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-4); margin-bottom:10px; }
+    .form-title { font-family:'Bebas Neue', sans-serif; font-size:34px; font-weight:800; color:var(--ink); letter-spacing:-1.5px; line-height:1; margin-bottom:10px; }
+    .form-subtitle { font-size:14.5px; color:var(--ink-3); line-height:1.6; margin-bottom:36px; }
+    .sub-section { font-family:'Bebas Neue', sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink-4); margin:22px 0 14px; }
+    .form-actions { display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--border); }
+    .info-sidebar-card { background:var(--paper); border-radius:var(--r-xl); border:1.5px solid var(--border); padding:22px; margin-bottom:14px; }
+    .info-sidebar-title { font-family:'Bebas Neue', sans-serif; font-size:13px; font-weight:700; color:var(--ink); margin-bottom:12px; }
+    .info-row { display:flex; gap:10px; align-items:flex-start; margin-bottom:10px; font-size:13px; color:var(--ink-3); line-height:1.5; }
+    .info-row:last-child { margin-bottom:0; }
+    .info-row i { font-size:16px; color:var(--ink-4); flex-shrink:0; margin-top:1px; }
+
+    /* Focus glow on inputs */
+    @property --ob-field-glow {
+      syntax: "<angle>";
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes obFieldGlowSpin {
+      to { --ob-field-glow: 360deg; }
+    }
+
+    body.ob-page .form-group input:focus,
+    body.ob-page .form-group select:focus,
+    body.ob-page .form-group textarea:focus {
+      border: 2px solid transparent;
+      box-shadow: none;
+      outline: none;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          var(--border-2) 0%,
+          var(--border-2) 58%,
+          rgba(159, 212, 200, 0.45) 72%,
+          #ffffff 86%,
+          #9fd4c8 93%,
+          var(--border-2) 100%
+        );
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: obFieldGlowSpin 2.2s linear infinite;
+    }
+
+    body.ob-page .form-group select:focus {
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          var(--border-2) 0%,
+          var(--border-2) 58%,
+          rgba(159, 212, 200, 0.45) 72%,
+          #ffffff 86%,
+          #9fd4c8 93%,
+          var(--border-2) 100%
+        );
+      background-size: 12px 8px, auto, auto;
+      background-position: right 16px center, center, center;
+      background-repeat: no-repeat, no-repeat, no-repeat;
+      background-origin: padding-box, border-box, border-box;
+      background-clip: padding-box, padding-box, border-box;
+    }
+
+    body.ob-page .form-group.error input:focus,
+    body.ob-page .form-group.error select:focus {
+      background-image:
+        linear-gradient(var(--paper), var(--paper)),
+        conic-gradient(
+          from var(--ob-field-glow),
+          #e8b4b4 0%,
+          #e8b4b4 58%,
+          rgba(255, 255, 255, 0.85) 78%,
+          var(--err) 90%,
+          #e8b4b4 100%
+        );
+    }
+
+    .ob-next-btn {
+      position: relative;
+      z-index: 0;
+      isolation: isolate;
+      overflow: hidden;
+      border: none;
+      flex: 1;
+    }
+
+    .ob-next-btn::before {
+      content: "";
+      position: absolute;
+      inset: -45%;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        transparent 250deg,
+        rgba(255, 255, 255, 0.12) 280deg,
+        rgba(255, 255, 255, 0.95) 320deg,
+        #9fd4c8 340deg,
+        transparent 360deg
+      );
+      z-index: -2;
+      animation: obBtnGlowSpin 2.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .ob-next-btn::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: calc(var(--r-lg) - 1px);
+      background: var(--ink);
+      z-index: -1;
+      pointer-events: none;
+      transition: background 0.18s ease;
+    }
+
+    .ob-next-btn:hover::after {
+      background: var(--ink-2);
+    }
+
+    @keyframes obBtnGlowSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width:900px) {
+      .ob-layout { grid-template-columns:1fr; }
+      .ob-sidebar { display:none; }
+      .ob-main { padding:40px 28px; max-width:100%; }
+      .form-title,
+      .form-subtitle { display: none !important; }
+      .form-eyebrow { margin-bottom: 20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.ob-page .form-group input:focus,
+      body.ob-page .form-group select:focus,
+      body.ob-page .form-group textarea:focus {
+        animation: none;
+        border-color: var(--ink);
+        background-image: none;
+        box-shadow: 0 0 0 3px rgba(61, 107, 115, 0.12);
+      }
+
+      .ob-next-btn::before {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="ob-page">
+<main class="page">
+  <div class="ob-layout">
+    <div class="ob-main">
+      <div class="form-eyebrow">Onboarding · Step 1 of 2</div>
+      <div class="form-title">Personal &amp;<br>address details</div>
+      <p class="form-subtitle">Required for your formal appointment. This step cannot be skipped or completed later.</p>
+
+      <form id="obForm" onsubmit="handleNext(event)" novalidate>
+        <div class="form-group" id="grp-idnum">
+          <label for="idnum">South African identity number</label>
+          <input type="text" id="idnum" placeholder="000000 0000 000" maxlength="13"/>
+          <div class="form-hint">13-digit South African ID number, no spaces.</div>
+          <div class="form-error">Please enter a valid 13-digit ID number.</div>
+        </div>
+
+        <div class="sub-section">Postal address</div>
+        <div class="form-group" id="grp-postalStreet">
+          <label for="postalStreet">Street address</label>
+          <input type="text" id="postalStreet" placeholder="123 Main Street, Suburb"/>
+          <div class="form-error">Street address is required.</div>
+        </div>
+        <div class="row-2">
+          <div class="form-group" id="grp-postalCity">
+            <label for="postalCity">City</label>
+            <input type="text" id="postalCity" placeholder="e.g. Pretoria"/>
+            <div class="form-error">City is required.</div>
+          </div>
+          <div class="form-group" id="grp-postalCode">
+            <label for="postalCode">Postal code</label>
+            <input type="text" id="postalCode" placeholder="0001" maxlength="4"/>
+            <div class="form-error">Valid postal code required.</div>
+          </div>
+        </div>
+
+        <div class="sub-section">Residential address</div>
+        <div class="form-group">
+          <div class="check-wrap" style="margin-bottom:14px">
+            <input type="checkbox" id="sameAsPostal" onchange="toggleResidential(this)"/>
+            <label class="check-label" for="sameAsPostal">Same as postal address</label>
+          </div>
+        </div>
+        <div id="residentialFields">
+          <div class="form-group" id="grp-resStreet">
+            <label for="resStreet">Street address</label>
+            <input type="text" id="resStreet" placeholder="123 Main Street, Suburb"/>
+            <div class="form-error">Street address is required.</div>
+          </div>
+          <div class="row-2">
+            <div class="form-group" id="grp-resCity">
+              <label for="resCity">City</label>
+              <input type="text" id="resCity" placeholder="e.g. Pretoria"/>
+              <div class="form-error">City is required.</div>
+            </div>
+            <div class="form-group" id="grp-resCode">
+              <label for="resCode">Postal code</label>
+              <input type="text" id="resCode" placeholder="0001" maxlength="4"/>
+              <div class="form-error">Valid postal code required.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-ink ob-next-btn" id="nextBtn">
+            Next — Banking details <i class="ti ti-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="ob-sidebar">
+      <div class="ob-hero">
+        <div class="ob-hero-label">Approved tutor</div>
+        <div class="ob-hero-title" id="obName">Congratulations!</div>
+        <div class="ob-hero-sub" id="obMod">You've been approved. Complete your profile to access your tutor space.</div>
+        <div class="ob-progress">
+          <div class="ob-seg active"></div>
+          <div class="ob-seg"></div>
+        </div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">Why we need this</div>
+        <div class="info-row"><i class="ti ti-id"></i>Your ID number is required for your formal letter of appointment.</div>
+        <div class="info-row"><i class="ti ti-map-pin"></i>Address details are used for your employment records.</div>
+        <div class="info-row"><i class="ti ti-file-certificate"></i>Document uploads are verified by the department before your tutor access is activated.</div>
+      </div>
+      <div class="info-sidebar-card">
+        <div class="info-sidebar-title">This step is mandatory</div>
+        <div class="info-row"><i class="ti ti-alert-circle"></i>You cannot access your tutor dashboard until both onboarding steps are complete.</div>
+      </div>
+    </aside>
+  </div>
+</main>
+<script src="../js/app.js?v=7"></script>
+<script>
+  VF.pageIn();
+  VF.requireAuth('login.html');
+
+  (async function guardOnboarding() {
+    try {
+      const app = await VF.apiFetch('/applications/me');
+      VF.syncApplicationState(app);
+      if (VF.onboardingCompleteFromApp(app)) {
+        VF.navigate('dashboard.html');
+        return;
+      }
+      if (app.status !== 'approved') {
+        VF.routeTutor({
+          applicationStatus: app.status,
+          onboardingComplete: false,
+        });
+        return;
+      }
+
+      const profile = await VF.apiFetch('/users/me/tutor-profile');
+      if (profile.step2_complete) {
+        VF.navigate('dashboard.html');
+        return;
+      }
+      if (profile.step1_complete) {
+        VF.navigate('onboarding-step2.html');
+        return;
+      }
+
+      if (profile.id_number) document.getElementById('idnum').value = profile.id_number;
+      if (profile.street_address) document.getElementById('postalStreet').value = profile.street_address;
+      if (profile.city) document.getElementById('postalCity').value = profile.city;
+      if (profile.postal_code) document.getElementById('postalCode').value = profile.postal_code;
+      if (profile.residential_same_as_postal) {
+        document.getElementById('sameAsPostal').checked = true;
+        toggleResidential(document.getElementById('sameAsPostal'));
+      } else if (profile.residential_street) {
+        document.getElementById('resStreet').value = profile.residential_street;
+        document.getElementById('resCity').value = profile.residential_city || '';
+        document.getElementById('resCode').value = profile.residential_postal_code || '';
+      }
+    } catch (err) {
+      const tokenState = VF.tutorStateFromToken();
+      if (tokenState?.applicationStatus === 'approved') {
+        return;
+      }
+      VF.routeTutor(tokenState || {});
+      return;
+    }
+
+    const s = VF.getState();
+    if (s.user) {
+      document.getElementById('obName').textContent = 'Congratulations, ' + (s.user.firstNames?.split(' ')[0] || '') + '!';
+      document.getElementById('obMod').textContent = 'Approved for: ' + (s.academic?.module || 'your module');
+    }
+  })();
+
+  function toggleResidential(chk) {
+    document.getElementById('residentialFields').style.display = chk.checked ? 'none' : 'block';
+  }
+
+  async function handleNext(e) {
+    e.preventDefault();
+    const sameAddr = document.getElementById('sameAsPostal').checked;
+    const checks = [
+      { id:'idnum',        check: v => /^\d{13}$/.test(v.replace(/\s/g,'')), msg:'Please enter a valid 13-digit ID number.' },
+      { id:'postalStreet', check: v => v.length > 2,  msg:'Street address required.' },
+      { id:'postalCity',   check: v => v.length > 1,  msg:'City required.' },
+      { id:'postalCode',   check: v => /^\d{4}$/.test(v), msg:'Enter a 4-digit postal code.' },
+    ];
+    if (!sameAddr) {
+      checks.push(
+        { id:'resStreet', check: v => v.length > 2,  msg:'Street address required.' },
+        { id:'resCity',   check: v => v.length > 1,  msg:'City required.' },
+        { id:'resCode',   check: v => /^\d{4}$/.test(v), msg:'Enter a 4-digit postal code.' },
+      );
+    }
+    if (!VF.validateForm(checks)) return;
+
+    const btn = document.getElementById('nextBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Saving…';
+    btn.classList.add('btn-disabled');
+
+    const postal = {
+      street: document.getElementById('postalStreet').value.trim(),
+      city: document.getElementById('postalCity').value.trim(),
+      code: document.getElementById('postalCode').value.trim(),
+    };
+
+    const body = {
+      idNumber: document.getElementById('idnum').value.replace(/\s/g, ''),
+      postal,
+    };
+
+    if (sameAddr) {
+      body.residentialSameAsPostal = true;
+    } else {
+      body.residentialSameAsPostal = false;
+      body.residentialStreet = document.getElementById('resStreet').value.trim();
+      body.residentialCity = document.getElementById('resCity').value.trim();
+      body.residentialPostalCode = document.getElementById('resCode').value.trim();
+    }
+
+    try {
+      await VF.apiFetch('/users/me/onboarding/step1', {
+        method: 'PATCH',
+        body,
+      });
+      VF.setState({
+        onboarding: { ...VF.getState().onboarding, step1: true },
+      });
+      VF.navigate('onboarding-step2.html');
+    } catch (err) {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove('btn-disabled');
+      VF.toast(err.errors ? err.errors[0] : 'Could not save your details. Please try again.', 'err');
+    }
+  }
+</script>
+</body>
+</html>

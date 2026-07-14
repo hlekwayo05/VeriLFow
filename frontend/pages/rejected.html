@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriFlow — Not Eligible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
+  <style>
+    body.result-split .navbar {
+      background: linear-gradient(to right, var(--brand-bg) 50%, var(--paper-2) 50%);
+      border-bottom: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      padding: 0;
+      gap: 0;
+    }
+    body.result-split .navbar-logo {
+      flex: 1 1 50%;
+      height: 100%;
+      padding: 0 64px;
+      box-sizing: border-box;
+    }
+    body.result-split .navbar-spacer { display: none; }
+    body.result-split .navbar-user {
+      flex: 1 1 50%;
+      height: 100%;
+      padding: 0 64px;
+      box-sizing: border-box;
+      justify-content: flex-end;
+      border-bottom: 1px solid var(--border);
+    }
+    .rej-page { min-height:calc(100vh - var(--nav-h)); display:grid; grid-template-columns:1fr 1fr; }
+    .rej-left { background:var(--ink); display:flex; flex-direction:column; justify-content:center; padding:80px 64px; }
+    .rej-icon { width:72px; height:72px; border-radius:50%; border:2px solid rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; font-size:32px; color:#fff; margin-bottom:28px; }
+    .rej-title { font-family:'Bebas Neue', sans-serif; font-size:42px; font-weight:800; color:#fff; letter-spacing:-2px; line-height:.95; margin-bottom:16px; }
+    .rej-sub { font-size:15px; color:rgba(255,255,255,.75); line-height:1.65; max-width:360px; }
+    .rej-right { padding:80px 64px; display:flex; flex-direction:column; justify-content:center; background:var(--paper-2); }
+    .rej-right-inner { max-width:440px; }
+    @media (max-width:860px) {
+      body.result-split .navbar {
+        background: var(--brand-bg);
+        padding: 0 20px;
+      }
+      body.result-split .navbar-logo { flex: 0 0 auto; padding: 0; }
+      body.result-split .navbar-user { flex: 1 1 auto; padding: 0; border-bottom: none; }
+      body.result-split .nav-username,
+      body.result-split .nav-logout { color: rgba(255,255,255,.85); }
+      body.result-split .nav-logout:hover { background: rgba(255,255,255,.12); color: #fff; }
+      body.result-split .nav-avatar { background: rgba(255,255,255,.18); color: #fff; }
+      .rej-page { grid-template-columns:1fr; }
+      .rej-left { padding:60px 32px; min-height:40vh; }
+      .rej-right { padding:48px 32px; }
+      .rej-title { font-size:32px; }
+    }
+  </style>
+</head>
+<body class="result-split">
+<nav class="navbar" id="navbar"></nav>
+<main class="page">
+  <div class="rej-page">
+    <div class="rej-left">
+      <div class="rej-icon"><i class="ti ti-circle-x"></i></div>
+      <div class="rej-title">Not<br>eligible<em style="color:rgba(255,255,255,.2)">.</em></div>
+      <p class="rej-sub">Your application could not proceed. Please read the reason below carefully.</p>
+    </div>
+    <div class="rej-right">
+      <div class="rej-right-inner">
+        <div class="section-heading">Ineligibility notice</div>
+        <div class="card card-sm" style="margin-bottom:14px;border-color:rgba(192,57,43,.2);background:var(--err-light)">
+          <div class="card-label" style="color:var(--err)">Reason</div>
+          <p style="font-size:14px;color:var(--err);line-height:1.65;font-weight:500" id="rejReason">Loading…</p>
+        </div>
+        <div class="card card-sm" style="margin-bottom:14px">
+          <div class="card-label">Detail</div>
+          <p style="font-size:13.5px;color:var(--ink-3);line-height:1.65" id="rejDetail">Loading…</p>
+        </div>
+        <div class="card card-sm" style="margin-bottom:28px">
+          <div class="card-label">What this means</div>
+          <p style="font-size:13.5px;color:var(--ink-3);line-height:1.65">
+            This application is now closed. You cannot reapply for this specific posting while the current cycle is active. You may apply to other open tutor postings where you meet the eligibility criteria.
+          </p>
+        </div>
+        <a href="../../index.html" class="btn btn-ghost btn-full">
+          <i class="ti ti-home"></i> Return to home
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="../js/app.js?v=11"></script>
+<script>
+(async function initRejectedPage() {
+  VF.pageIn();
+  if (!VF.requireAuth('login.html')) return;
+  if (!VF.requireRole('tutor', 'login.html')) return;
+  VF.renderNavbar();
+
+  try {
+    const app = await VF.apiFetch('/applications/me');
+    VF.syncApplicationState(app);
+
+    if (app.status !== 'rejected') {
+      VF.routeTutor({
+        applicationStatus: app.status,
+        onboardingComplete: VF.onboardingCompleteFromApp(app),
+      });
+      return;
+    }
+
+    document.getElementById('rejReason').textContent =
+      app.rejection_reason || 'Eligibility check failed.';
+    document.getElementById('rejDetail').textContent =
+      VF.rejectionDetailFromApp(app) || 'Please contact the department for more information.';
+  } catch (err) {
+    const s = VF.getState();
+    document.getElementById('rejReason').textContent = s.rejectionReason || 'Eligibility check failed.';
+    document.getElementById('rejDetail').textContent = s.rejectionDetail || 'Please contact the department for more information.';
+    VF.toast(err.errors ? err.errors[0] : 'Could not load rejection details.', 'err');
+  }
+})();
+</script>
+</body>
+</html>

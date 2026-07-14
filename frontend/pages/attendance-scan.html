@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>VeriFlow — Confirm Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F7F9F8; --surface: #ffffff; --card: #ffffff;
+  --border: rgba(43,82,89,0.09); --border-hi: rgba(43,82,89,0.16);
+  --text: #2B5259; --muted: #6B8289; --faint: #EDF2F0;
+  --accent: #3D6B73; --green: #7BAF6E; --green-light: rgba(123,175,110,0.08);
+  --green-border: rgba(123,175,110,0.2); --red: #c45c5c; --radius: 14px;
+}
+html, body { min-height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text); -webkit-font-smoothing: antialiased; }
+body { display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; }
+.top-bar { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 10; }
+.top-bar img { height: 30px; width: auto; display: block; }
+.wrapper { width: 100%; max-width: 480px; padding: 32px 20px 0; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px 32px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06); animation: fadeUp .35s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.session-bar { background: var(--faint); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 13px 15px; margin-bottom: 26px; }
+.session-module { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.session-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.8; }
+.form-label { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.form-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+.student-input { width: 100%; border: 2px solid var(--border-hi); border-radius: 10px; padding: 14px 16px; font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); letter-spacing: 3px; outline: none; background: var(--surface); transition: border-color .2s, box-shadow .2s; margin-bottom: 6px; -webkit-appearance: none; }
+.student-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.07); }
+.student-input::placeholder { color: #ccc; letter-spacing: 1px; font-weight: 400; font-size: 16px; }
+.input-hint { font-size: 11px; color: var(--muted); margin-bottom: 22px; font-family: 'DM Mono', monospace; }
+.error-msg { font-size: 12px; color: var(--red); background: rgba(192,57,43,0.07); border: 1px solid rgba(192,57,43,0.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: none; line-height: 1.5; }
+.error-msg.show { display: block; }
+.confirm-btn { width: 100%; background: var(--accent); color: #ffffff; border: none; border-radius: 10px; padding: 15px; font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity .2s, transform .15s; }
+.confirm-btn:hover { opacity: .85; }
+.confirm-btn:active { transform: scale(.99); }
+.confirm-btn:disabled { opacity: .35; cursor: not-allowed; }
+.spinner { width: 15px; height: 15px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#state-confirm, #state-error, #state-loading { display: none; animation: fadeUp .4s ease both; }
+#state-loading { text-align: center; padding: 40px 0; color: var(--muted); font-size: 14px; }
+.tick-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
+.tick-circle { width: 64px; height: 64px; background: var(--green-light); border-radius: 50%; border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--green); text-align: center; margin-bottom: 4px; }
+.success-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
+.detail-card { background: var(--faint); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 22px; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-size: 12px; color: var(--muted); }
+.detail-value { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+.detail-value.accent { color: var(--accent); }
+.close-note { font-size: 12px; color: #bbb; text-align: center; font-family: 'DM Mono', monospace; line-height: 1.6; }
+.page-footer { margin-top: 28px; text-align: center; font-size: 11px; color: #ccc; font-family: 'DM Mono', monospace; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <img src="../images/veriflo-brand.png" alt="VeriFlow"/>
+</div>
+
+<div class="wrapper">
+  <div class="card">
+
+    <div id="state-loading">Loading session…</div>
+
+    <div id="state-error">
+      <div class="session-bar" style="border-left-color:var(--red);">
+        <div class="session-module">Unable to join session</div>
+        <div class="session-meta" id="error-text">Please scan the QR code shown by your tutor.</div>
+      </div>
+    </div>
+
+    <div id="state-form">
+      <div class="session-bar">
+        <div class="session-module" id="sess-module">—</div>
+        <div class="session-meta" id="sess-meta">—</div>
+      </div>
+      <div class="form-label">Enter your student number</div>
+      <div class="form-sub">Your number must appear on the class list for this module</div>
+      <input class="student-input" id="student-input" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="e.g. 220401234" autocomplete="off" oninput="onInputChange(this)" onkeydown="onKeyDown(event)"/>
+      <div class="input-hint">Numbers only</div>
+      <div class="error-msg" id="error-msg"></div>
+      <button class="confirm-btn" id="confirm-btn" onclick="submitAttendance()">Confirm Attendance</button>
+    </div>
+
+    <div id="state-confirm">
+      <div class="tick-wrap"><div class="tick-circle"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><polyline points="4,14 11,21 24,8" stroke="#1a7a52" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="success-title">Attendance Recorded</div>
+      <div class="success-sub">You have been signed in successfully</div>
+      <div class="detail-card">
+        <div class="detail-row"><span class="detail-label">Student</span><span class="detail-value" id="ok-name">—</span></div>
+        <div class="detail-row"><span class="detail-label">Student No.</span><span class="detail-value" id="ok-number">—</span></div>
+        <div class="detail-row"><span class="detail-label">Module</span><span class="detail-value" id="ok-module">—</span></div>
+        <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value" id="ok-date">—</span></div>
+        <div class="detail-row"><span class="detail-label">Signed in</span><span class="detail-value accent" id="signed-in-time">—</span></div>
+      </div>
+      <div class="close-note">You may now close this page</div>
+    </div>
+
+  </div>
+  <div class="page-footer">VeriFlow · Student Employment Office</div>
+</div>
+
+<script>
+const API_BASE = (() => {
+  const host = window.location.hostname;
+  const isDev = host === 'localhost' ||
+    host === '127.0.0.1' ||
+    /^192\.168\./.test(host) ||
+    /^10\./.test(host);
+  const port = isDev ? ':3000' : '';
+  return `${window.location.protocol}//${host}${port}/api`;
+})();
+const PASS_KEY = 'vf_attendance_pass';
+
+let passToken = null;
+let sessionInfo = null;
+
+function showState(name) {
+  ['loading', 'error', 'form', 'confirm'].forEach(s => {
+    const el = document.getElementById('state-' + s);
+    if (el) el.style.display = s === name ? 'block' : 'none';
+  });
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatTime(t) {
+  if (!t) return '';
+  return String(t).slice(0, 5);
+}
+
+function renderSession(session) {
+  sessionInfo = session;
+  const typeLabel = { tutorial:'Tutorial', practical:'Practical', online:'Online', revision:'Revision', lecture:'Lecture' }[session.sessionType] || session.sessionType || '';
+  document.getElementById('sess-module').textContent = `${session.moduleCode}${session.topic ? ' — ' + session.topic : ''}`;
+  document.getElementById('sess-meta').innerHTML =
+    `${formatDate(session.sessionDate)}${session.startTime ? ' &nbsp;|&nbsp; ' + formatTime(session.startTime) : ''}` +
+    (session.venue ? `<br>${session.venue}` : '') +
+    (typeLabel ? `<br>${typeLabel}` : '');
+  showState('form');
+}
+
+function showError(msg) {
+  document.getElementById('error-text').textContent = msg;
+  showState('error');
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data.errors && data.errors[0]) || data.error || 'Request failed');
+  return data;
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data.errors && data.errors[0]) || data.error || 'Request failed');
+  return data;
+}
+
+async function initPage() {
+  showState('loading');
+  const params = new URLSearchParams(window.location.search);
+  const qrToken = params.get('t');
+
+  try {
+    const stored = sessionStorage.getItem(PASS_KEY);
+    if (stored) {
+      const data = await apiGet(`/attendance/pass/${encodeURIComponent(stored)}`);
+      passToken = stored;
+      renderSession(data.session);
+      return;
+    }
+
+    if (!qrToken) {
+      showError('Scan the QR code displayed by your tutor to open this session.');
+      return;
+    }
+
+    const data = await apiPost('/attendance/enter', { qrToken });
+    passToken = data.passToken;
+    sessionStorage.setItem(PASS_KEY, passToken);
+    renderSession(data.session);
+
+    if (window.history.replaceState) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  } catch (err) {
+    showError(err.message || 'Could not join this session.');
+  }
+}
+
+function onInputChange(input) {
+  input.value = input.value.replace(/\D/g, '');
+  document.getElementById('error-msg').classList.remove('show');
+}
+
+function onKeyDown(e) {
+  if (e.key === 'Enter') submitAttendance();
+}
+
+async function submitAttendance() {
+  const input = document.getElementById('student-input');
+  const val = input.value.trim();
+
+  if (val.length < 6) {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = 'Please enter a valid student number.';
+    errEl.classList.add('show');
+    input.focus();
+    return;
+  }
+
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Confirming…';
+
+  try {
+    const result = await apiPost('/attendance', { passToken, studentNumber: val });
+
+    document.getElementById('ok-name').textContent = result.fullName || '—';
+    document.getElementById('ok-number').textContent = result.studentNumber;
+    document.getElementById('ok-module').textContent = result.module;
+    document.getElementById('ok-date').textContent = formatDate(result.sessionDate);
+
+    const recorded = result.recordedAt ? new Date(result.recordedAt) : new Date();
+    document.getElementById('signed-in-time').textContent = recorded.toLocaleTimeString('en-ZA', { hour: 'numeric', minute: '2-digit' });
+
+    showState('confirm');
+  } catch (err) {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = err.message || 'Could not record attendance.';
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Confirm Attendance';
+  }
+}
+
+initPage();
+</script>
+</body>
+</html>

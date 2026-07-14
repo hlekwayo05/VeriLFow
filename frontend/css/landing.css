@@ -1,0 +1,488 @@
+/* VeriFlow — mobile landing only (≤900px) — monochrome */
+
+.vf-desktop-home {
+  display: block;
+}
+
+.vf-mobile-home,
+.vf-mobile-home.landing-page {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .vf-desktop-home {
+    display: none !important;
+  }
+
+  .vf-mobile-home.landing-page {
+    display: flex !important;
+    flex-direction: column;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+.vf-mobile-home,
+.vf-mobile-home *,
+.vf-mobile-home *::before,
+.vf-mobile-home *::after {
+  box-sizing: border-box;
+}
+
+.vf-mobile-home.landing-page {
+  --brand-bg: #2B5259;
+  --brand-teal: #3D6B73;
+  --brand-teal-hover: #345E67;
+  --white: #ffffff;
+  --ink: #2B5259;
+  --gray: #4A6570;
+  --gray-light: #6B8289;
+  background: var(--white);
+}
+
+/* ─── Logo hero on black (~58%) ─── */
+.landing-hero {
+  position: relative;
+  flex: 0 0 58%;
+  min-height: 0;
+  width: 100%;
+  background: var(--brand-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 28px 5.5rem;
+  overflow: hidden;
+}
+
+.landing-hero .landing-logo-img {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: clamp(72px, 18vw, 90px);
+  display: block;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.landing-badge {
+  position: absolute;
+  top: max(2rem, calc(env(safe-area-inset-top, 0px) + 1.25rem));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white);
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  padding: 7px 18px;
+  white-space: nowrap;
+}
+
+.landing-badge--closed {
+  border-color: rgba(220, 90, 90, 0.85);
+  color: #ffc9c9;
+}
+
+.landing-logo-img {
+  display: block;
+  width: 100%;
+  max-width: min(300px, 88vw);
+  height: auto;
+  object-fit: contain;
+}
+
+/* ─── White bottom panel ─── */
+.landing-light {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: var(--white);
+  padding: 28px 32px calc(44px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-welcome {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--brand-bg);
+  letter-spacing: -1px;
+  line-height: 1.08;
+  margin: 0 0 14px;
+  position: relative;
+  display: inline-block;
+}
+
+.landing-welcome-letter {
+  position: relative;
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.12em);
+}
+
+/* Short line under the active letter — moves along, then gone */
+.landing-welcome-letter::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -5px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--brand-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.landing-subtitle {
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--gray);
+  line-height: 1.65;
+  max-width: 320px;
+  margin: 0;
+}
+
+.landing-subtitle-word {
+  position: relative;
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.35em);
+}
+
+.landing-subtitle-word::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -3px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--brand-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.landing-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 28px;
+  width: 100%;
+}
+
+.landing-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 14px;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  border: none;
+}
+
+.landing-btn-primary {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--brand-teal);
+  color: var(--white);
+}
+
+/* Traveling glow around Apply */
+.landing-btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 250deg,
+    rgba(255, 255, 255, 0.12) 280deg,
+    rgba(255, 255, 255, 0.95) 320deg,
+    #9fd4c8 340deg,
+    transparent 360deg
+  );
+  z-index: -2;
+  animation: landingApplyGlowSpin 2.2s linear infinite;
+  pointer-events: none;
+}
+
+/* Solid face so only the border ring shows the glow */
+.landing-btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  background: var(--brand-teal);
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.18s ease;
+}
+
+.landing-btn-primary:hover {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.landing-btn-primary:hover::after {
+  background: var(--ink);
+}
+
+.landing-btn-secondary {
+  background: var(--white);
+  color: var(--brand-bg);
+  border: 2px solid var(--brand-teal);
+}
+
+.landing-btn-secondary:hover {
+  background: var(--brand-teal);
+  color: var(--white);
+  border-color: var(--brand-teal);
+}
+
+.landing-btn:focus-visible {
+  outline: 2px solid var(--brand-teal);
+  outline-offset: 3px;
+}
+
+@media (max-width: 380px) {
+  .landing-welcome {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 360px) {
+  .vf-mobile-home .landing-actions {
+    flex-direction: column;
+  }
+}
+
+/* ─── Mobile welcome entrance (≤900px) ─── */
+@media (max-width: 900px) {
+  .vf-mobile-home.landing-page.is-ready .landing-badge {
+    animation: landingBadgeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+  }
+
+  .vf-mobile-home.landing-page.is-ready .landing-logo-img {
+    animation: landingLogoIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+
+  .vf-mobile-home.landing-page.is-ready .landing-wave {
+    animation: landingWaveIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
+  }
+
+  /* W…E…L…C…O…M…E — one letter at a time */
+  .vf-mobile-home.landing-page.is-ready .landing-welcome-letter {
+    animation: landingLetterIn 0.18s ease forwards;
+    animation-delay: calc(0.3s + (var(--i) * 0.18s));
+  }
+
+  /* Line sits under the current letter, then moves to the next */
+  .vf-mobile-home.landing-page.is-ready .landing-welcome-letter::after {
+    animation: landingLetterLine 0.18s linear both;
+    animation-delay: calc(0.3s + (var(--i) * 0.18s));
+  }
+
+  /* Final letter: hold the line briefly, then fade it away for good */
+  .vf-mobile-home.landing-page.is-ready .landing-welcome-letter:last-child::after {
+    animation-name: landingLetterLineEnd;
+    animation-duration: 0.32s;
+  }
+
+  /* Subtitle — word by word, after Welcome finishes */
+  .vf-mobile-home.landing-page.is-ready .landing-subtitle-word {
+    animation: landingWordIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: calc(1.55s + (var(--i) * 0.16s));
+  }
+
+  /* Line under the active word, then moves to the next */
+  .vf-mobile-home.landing-page.is-ready .landing-subtitle-word::after {
+    animation: landingLetterLine 0.16s linear both;
+    animation-delay: calc(1.55s + (var(--i) * 0.16s));
+  }
+
+  .vf-mobile-home.landing-page.is-ready .landing-subtitle-word:last-child::after {
+    animation-name: landingLetterLineEnd;
+    animation-duration: 0.32s;
+  }
+
+  /* Buttons wait until the last subtitle word has appeared */
+  .vf-mobile-home.landing-page.is-ready .landing-btn-primary {
+    animation: landingBtnPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) 3s both;
+  }
+
+  .vf-mobile-home.landing-page.is-ready .landing-btn-secondary {
+    animation: landingBtnPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) 3.1s both;
+  }
+}
+
+@keyframes landingBadgeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes landingLogoIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes landingWaveIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingLetterIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.18em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingLetterLine {
+  0% { opacity: 0; transform: scaleX(0.4); }
+  12% { opacity: 1; transform: scaleX(1); }
+  88% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(0.85); }
+}
+
+@keyframes landingLetterLineEnd {
+  0% { opacity: 0; transform: scaleX(0.4); }
+  15% { opacity: 1; transform: scaleX(1); }
+  55% { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(0.6); }
+}
+
+@keyframes landingWordIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingBtnPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes landingApplyGlowSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hide animated pieces until ready (avoids flash before CSS loads) */
+@media (max-width: 900px) {
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-badge,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-logo-img,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-wave,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-welcome-letter,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-subtitle-word,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-btn-primary,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-btn-secondary {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vf-mobile-home.landing-page .landing-badge,
+  .vf-mobile-home.landing-page .landing-logo-img,
+  .vf-mobile-home.landing-page .landing-wave,
+  .vf-mobile-home.landing-page .landing-welcome-letter,
+  .vf-mobile-home.landing-page .landing-subtitle-word,
+  .vf-mobile-home.landing-page .landing-btn-primary,
+  .vf-mobile-home.landing-page .landing-btn-secondary {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .vf-mobile-home.landing-page .landing-welcome-letter::after,
+  .vf-mobile-home.landing-page .landing-subtitle-word::after {
+    display: none !important;
+  }
+
+  .vf-mobile-home.landing-page .landing-btn-primary::before {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-badge,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-logo-img,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-wave,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-welcome-letter,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-subtitle-word,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-btn-primary,
+  .vf-mobile-home.landing-page:not(.is-ready) .landing-btn-secondary {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,455 @@
+'use strict';
+
+const router  = require('express').Router();
+const bcrypt  = require('bcrypt');
+const jwt     = require('jsonwebtoken');
+const pool    = require('../db');
+const { isApplicationsOpenFromDb } = require('./public');
+
+const BCRYPT_COST = 12;
+
+function signAuthToken({
+  userId,
+  role,
+  email,
+  first_names,
+  surname,
+  applicationStatus = null,
+  onboardingComplete = false,
+  tempFlag = false,
+}) {
+  return jwt.sign(
+    {
+      userId,
+      role,
+      email:              email || null,
+      first_names:        first_names || null,
+      surname:            surname || null,
+      applicationStatus,
+      onboardingComplete: !!onboardingComplete,
+      tempFlag:           !!tempFlag,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+  );
+}
+
+// =============================================================
+//  POST /api/auth/register
+//  Called when tutor clicks "Next" on apply-step1.html
+//  Creates the user account and a blank application record.
+//  Returns a JWT so the tutor is immediately logged in for step 2.
+// =============================================================
+
+router.post('/register', async (req, res) => {
+  const {
+    surname, title, initials, firstNames,
+    email, cell, studentNumber, password, confirm,
+  } = req.body;
+
+  // ── Server-side validation ───────────────────────────────
+  const errors = [];
+
+  if (!surname       || surname.trim().length === 0)       errors.push('Surname is required.');
+  if (!title         || title.trim().length === 0)         errors.push('Title is required.');
+  if (!initials      || initials.trim().length === 0)      errors.push('Initials are required.');
+  if (!firstNames    || firstNames.trim().length === 0)    errors.push('First name(s) are required.');
+  if (!email         || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+    errors.push('Please enter a valid email.');
+  } else if (!/@ump\.ac\.za$/i.test(String(email).trim())) {
+    errors.push('Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).');
+  }
+  if (!cell          || cell.trim().length < 9)            errors.push('Valid cell number is required.');
+  if (!studentNumber || studentNumber.trim().length < 5)   errors.push('Student number is required.');
+  if (!password      || password.length < 8)               errors.push('Password must be at least 8 characters.');
+  if (password !== confirm)                                errors.push('Passwords do not match.');
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
+  }
+
+  if (!(await isApplicationsOpenFromDb())) {
+    return res.status(403).json({ errors: ['Applications are currently closed.'] });
+  }
+
+  try {
+    const emailNorm   = email.toLowerCase().trim();
+    const studentNorm = studentNumber.trim();
+
+    // ── Must appear on the admin-uploaded student list ──
+    const onStudentList = await pool.query(
+      `SELECT id, student_number
+       FROM students
+       WHERE LOWER(email) = $1
+       LIMIT 1`,
+      [emailNorm]
+    );
+
+    if (onStudentList.rows.length === 0) {
+      return res.status(403).json({
+        errors: [
+          'This email is not on the eligible student list. Use the institutional email from the list uploaded by the FYE office, or contact them if you believe this is an error.',
+        ],
+      });
+    }
+
+    const listedStudentNo = (onStudentList.rows[0].student_number || '').trim();
+    if (listedStudentNo && listedStudentNo !== studentNorm) {
+      return res.status(400).json({
+        errors: [
+          'Your student number does not match the record for this email on the student list.',
+        ],
+      });
+    }
+
+    // ── Existing account with same email ─────────────────
+    const existingEmail = await pool.query(
+      `SELECT u.id, u.role, u.student_number,
+              a.status AS app_status
+       FROM users u
+       LEFT JOIN applications a ON a.user_id = u.id
+       WHERE u.email = $1`,
+      [emailNorm]
+    );
+
+    if (existingEmail.rows.length > 0) {
+      const existing = existingEmail.rows[0];
+
+      // Allow re-submitting step 1 if they never finished the application
+      if (existing.role === 'tutor' && existing.app_status === 'incomplete') {
+        const studentConflict = await pool.query(
+          'SELECT id FROM users WHERE student_number = $1 AND id != $2',
+          [studentNorm, existing.id]
+        );
+        if (studentConflict.rows.length > 0) {
+          return res.status(409).json({
+            errors: ['This student number is already linked to another account.'],
+          });
+        }
+
+        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+        await pool.query(
+          `UPDATE users
+           SET surname = $1, title = $2, initials = $3, first_names = $4,
+               cell = $5, student_number = $6, password_hash = $7
+           WHERE id = $8`,
+          [
+            surname.trim(),
+            title.trim(),
+            initials.trim(),
+            firstNames.trim(),
+            cell.trim(),
+            studentNorm,
+            passwordHash,
+            existing.id,
+          ]
+        );
+
+        const token = signAuthToken({
+          userId: existing.id,
+          role: 'tutor',
+          email: emailNorm,
+          first_names: firstNames.trim(),
+          surname: surname.trim(),
+          applicationStatus: 'incomplete',
+          onboardingComplete: false,
+          tempFlag: false,
+        });
+
+        return res.status(200).json({
+          message: 'Registration resumed — continue your application.',
+          token,
+          userId: existing.id,
+          role: 'tutor',
+          resumed: true,
+        });
+      }
+
+      return res.status(409).json({
+        errors: ['An account with this email address already exists. Please log in to continue your application.'],
+      });
+    }
+
+    // ── Student number already taken by another account ──
+    const existingStudent = await pool.query(
+      `SELECT u.id, u.email, a.status AS app_status
+       FROM users u
+       LEFT JOIN applications a ON a.user_id = u.id
+       WHERE u.student_number = $1`,
+      [studentNorm]
+    );
+    if (existingStudent.rows.length > 0) {
+      return res.status(409).json({
+        errors: ['This student number is already registered. Try logging in with the email you used previously.'],
+      });
+    }
+
+    // ── Hash password ────────────────────────────────────
+    const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+
+    // ── Insert user + blank application in one transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const userResult = await client.query(
+        `INSERT INTO users
+           (surname, title, initials, first_names, email, cell,
+            student_number, password_hash, role)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'tutor')
+         RETURNING id`,
+        [
+          surname.trim(),
+          title.trim(),
+          initials.trim(),
+          firstNames.trim(),
+          email.toLowerCase().trim(),
+          cell.trim(),
+          studentNumber.trim(),
+          passwordHash,
+        ]
+      );
+
+      const userId = userResult.rows[0].id;
+
+      // Create a blank application record (status = incomplete)
+      await client.query(
+        `INSERT INTO applications (user_id, status)
+         VALUES ($1, 'incomplete')`,
+        [userId]
+      );
+
+      await client.query('COMMIT');
+
+      // ── Issue JWT ────────────────────────────────────
+      const token = signAuthToken({
+        userId,
+        role: 'tutor',
+        email: email.toLowerCase().trim(),
+        first_names: firstNames.trim(),
+        surname: surname.trim(),
+        applicationStatus: 'incomplete',
+        onboardingComplete: false,
+        tempFlag: false,
+      });
+
+      return res.status(201).json({
+        message: 'Account created successfully.',
+        token,
+        userId,
+        role: 'tutor',
+      });
+
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      throw txErr;
+    } finally {
+      client.release();
+    }
+
+  } catch (err) {
+    console.error('Register error:', err.message);
+    return res.status(500).json({ errors: ['Server error. Please try again.'] });
+  }
+});
+
+
+// =============================================================
+//  POST /api/auth/login
+//  Called from login.html handleLogin()
+//  Returns JWT + enough info for the frontend to route correctly.
+// =============================================================
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ errors: ['Email and password are required.'] });
+  }
+
+  try {
+    // ── Find user ────────────────────────────────────────
+    const userResult = await pool.query(
+      `SELECT
+         u.id,
+         u.email,
+         u.first_names,
+         u.surname,
+         u.password_hash,
+         u.role,
+         u.temp_password_flag,
+         a.status AS application_status,
+         COALESCE(tp.step1_complete, FALSE) AS step1_complete,
+         COALESCE(tp.step2_complete, FALSE) AS step2_complete
+       FROM users u
+       LEFT JOIN applications a ON a.user_id = u.id
+       LEFT JOIN tutor_profiles tp ON tp.user_id = u.id
+       WHERE u.email = $1`,
+      [email.toLowerCase().trim()]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ errors: ['Invalid email or password.'] });
+    }
+
+    const user = userResult.rows[0];
+
+    // ── Verify password ──────────────────────────────────
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) {
+      return res.status(401).json({ errors: ['Invalid email or password.'] });
+    }
+
+    // ── Get application state (tutors only) ──────────────
+    let applicationStatus = null;
+    let onboardingComplete = false;
+
+    if (user.role === 'tutor') {
+      applicationStatus = user.application_status ?? null;
+      onboardingComplete = !!(user.step1_complete && user.step2_complete);
+
+      if (applicationStatus === 'approved') {
+        await pool.query(
+          `INSERT INTO tutor_profiles (user_id, step1_complete, step2_complete)
+           VALUES ($1, FALSE, FALSE)
+           ON CONFLICT (user_id) DO NOTHING`,
+          [user.id]
+        );
+      }
+    }
+
+    // ── Sign JWT ─────────────────────────────────────────
+    const token = signAuthToken({
+      userId:            user.id,
+      role:              user.role,
+      email:             user.email,
+      first_names:       user.first_names,
+      surname:           user.surname,
+      applicationStatus,
+      onboardingComplete,
+      tempFlag:          user.temp_password_flag,
+    });
+
+    return res.status(200).json({
+      token,
+      role:              user.role,
+      applicationStatus,
+      onboardingComplete,
+      tempFlag:          user.temp_password_flag,
+      firstName:         user.first_names,
+      surname:           user.surname,
+    });
+
+  } catch (err) {
+    console.error('Login error:', err.message);
+    return res.status(500).json({ errors: ['Server error. Please try again.'] });
+  }
+});
+
+
+// =============================================================
+//  PATCH /api/auth/change-password
+//  Called on first login when temp_password_flag = true (lecturers).
+//  Requires a valid JWT.
+// =============================================================
+
+const authenticate = require('../middleware/authenticate');
+
+router.patch('/change-password', authenticate, async (req, res) => {
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const userId = req.user.userId;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ errors: ['All fields are required.'] });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ errors: ['New password must be at least 8 characters.'] });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ errors: ['Passwords do not match.'] });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ errors: ['User not found.'] });
+    }
+
+    const match = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+    if (!match) {
+      return res.status(401).json({ errors: ['Current password is incorrect.'] });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, BCRYPT_COST);
+
+    const userResult = await pool.query(
+      `SELECT
+         u.id,
+         u.role,
+         u.email,
+         u.first_names,
+         u.surname,
+         a.status AS application_status,
+         COALESCE(tp.step1_complete, FALSE) AS step1_complete,
+         COALESCE(tp.step2_complete, FALSE) AS step2_complete
+       FROM users u
+       LEFT JOIN applications a ON a.user_id = u.id
+       LEFT JOIN tutor_profiles tp ON tp.user_id = u.id
+       WHERE u.id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ errors: ['User not found.'] });
+    }
+
+    const user = userResult.rows[0];
+
+    await pool.query(
+      `UPDATE users
+       SET password_hash = $1, temp_password_flag = FALSE
+       WHERE id = $2`,
+      [newHash, userId]
+    );
+
+    let applicationStatus = null;
+    let onboardingComplete = false;
+
+    if (user.role === 'tutor') {
+      applicationStatus = user.application_status ?? null;
+      onboardingComplete = !!(user.step1_complete && user.step2_complete);
+    }
+
+    const token = signAuthToken({
+      userId:            user.id,
+      role:              user.role,
+      email:             user.email,
+      first_names:       user.first_names,
+      surname:           user.surname,
+      applicationStatus,
+      onboardingComplete,
+      tempFlag:          false,
+    });
+
+    return res.status(200).json({
+      message:           'Password updated successfully.',
+      token,
+      role:              user.role,
+      applicationStatus,
+      onboardingComplete,
+      tempFlag:          false,
+      firstName:         user.first_names,
+      surname:           user.surname,
+    });
+
+  } catch (err) {
+    console.error('Change password error:', err.message);
+    return res.status(500).json({ errors: ['Server error. Please try again.'] });
+  }
+});
+
+
+module.exports = router;

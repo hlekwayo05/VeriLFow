@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VeriFlow — Application Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=3"/>
+  <style>
+    body.tracker-page .page {
+      padding-top: 0;
+    }
+    .tracker-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 52px 40px 80px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 32px;
+      align-items: start;
+    }
+    .tracker-header { margin-bottom: 32px; }
+    .tracker-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+    .tracker-sub { font-size: 14px; color: var(--ink-3); }
+    .app-meta-card {
+      background: var(--brand-bg);
+      border-radius: var(--r-xl);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .app-meta-card::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.025);
+      top: -100px; right: -80px;
+      pointer-events: none;
+    }
+    .app-mod { font-family:'Bebas Neue', sans-serif; font-size:18px; font-weight:800; color:#fff; letter-spacing:-.4px; margin-bottom:5px; }
+    .app-course { font-size:13px; color:rgba(255,255,255,.75); margin-bottom:16px; }
+    .tracker-combo-user {
+      display: none;
+    }
+    .pipeline-card { background:var(--paper); border-radius:var(--r-xl); border:1.5px solid var(--border); padding:28px; margin-bottom:20px; }
+    .sidebar-top { position:sticky; top:32px; }
+    .user-card {
+      background: var(--paper);
+      border-radius: var(--r-xl);
+      border: 1.5px solid var(--border);
+      padding: 22px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .user-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .user-name { font-family:'Bebas Neue', sans-serif; font-size:15px; font-weight:800; color:var(--ink); margin-bottom:2px; }
+    .user-email { font-size:12px; color:var(--ink-4); }
+
+    /* Complete onboarding CTA glow (mobile) */
+    @media (max-width: 900px) {
+      .tracker-onboard-btn {
+        position: relative;
+        z-index: 0;
+        isolation: isolate;
+        overflow: hidden;
+        border: none;
+        width: 100%;
+      }
+
+      .tracker-onboard-btn::before {
+        content: "";
+        position: absolute;
+        inset: -45%;
+        border-radius: 50%;
+        background: conic-gradient(
+          from 0deg,
+          transparent 0deg,
+          transparent 250deg,
+          rgba(255, 255, 255, 0.12) 280deg,
+          rgba(255, 255, 255, 0.95) 320deg,
+          #9fd4c8 340deg,
+          transparent 360deg
+        );
+        z-index: -2;
+        animation: trackerBtnGlowSpin 2.2s linear infinite;
+        pointer-events: none;
+      }
+
+      .tracker-onboard-btn::after {
+        content: "";
+        position: absolute;
+        inset: 2px;
+        border-radius: calc(var(--r-lg) - 1px);
+        background: var(--ink);
+        z-index: -1;
+        pointer-events: none;
+        transition: background 0.18s ease;
+      }
+
+      .tracker-onboard-btn:hover::after {
+        background: var(--ink-2);
+      }
+    }
+
+    @keyframes trackerBtnGlowSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tracker-onboard-btn::before {
+        animation: none !important;
+        opacity: 0 !important;
+      }
+    }
+
+    @media (max-width:900px) {
+      .tracker-layout { grid-template-columns:1fr; padding:32px 20px; }
+      .sidebar-top .user-card { display: none; }
+      .tracker-combo-user {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255,255,255,.14);
+      }
+      .tracker-combo-user .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: rgba(255,255,255,.12);
+        border: 1.5px solid rgba(255,255,255,.28);
+        font-size: 15px;
+      }
+      .tracker-combo-user .user-name {
+        color: #fff;
+        margin-bottom: 3px;
+      }
+      .tracker-combo-user .user-email {
+        color: rgba(255,255,255,.7);
+        word-break: break-all;
+      }
+      .app-meta-card {
+        padding: 22px 20px;
+      }
+    }
+  </style>
+</head>
+<body class="tracker-page">
+<main class="page">
+  <div class="tracker-layout">
+    <div>
+      <div class="tracker-header">
+        <div class="tracker-title">Application tracker</div>
+        <p class="tracker-sub">Your application status updates automatically as the FYE office reviews it.</p>
+      </div>
+
+      <div class="app-meta-card" id="metaCard"><!-- filled by JS --></div>
+
+      <div class="pipeline-card">
+        <div class="section-heading" style="margin-bottom:24px">Status pipeline</div>
+        <div class="pipeline" id="pipeline"><!-- filled by JS --></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar-top">
+      <div class="user-card" id="userCard"><!-- filled by JS --></div>
+      <div class="card card-sm">
+        <div class="card-label">Need help?</div>
+        <p style="font-size:13px;color:var(--ink-3);line-height:1.55">Contact the departmental administrator if you believe your status has not updated correctly.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+<script src="../js/app.js?v=6"></script>
+<script>
+  VF.pageIn();
+  if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
+  if (!VF.requireRole('tutor', 'login.html')) { /* stop */ }
+
+  const STAGES = [
+    { key:'submitted',    label:'Submitted',          icon:'ti-send',         desc:'Application received and CV scored.' },
+    { key:'under_review', label:'Under review',       icon:'ti-eye',          desc:'The FYE office is reviewing your application.' },
+    { key:'shortlisted',  label:'Shortlisted',        icon:'ti-star',         desc:'You have been shortlisted — your application is being seriously considered.' },
+    { key:'decision',     label:'Final decision',     icon:'ti-gavel',        desc:'The FYE office has made a final decision on your application.' },
+  ];
+  const ORDER = ['submitted','under_review','shortlisted'];
+
+  async function render() {
+    let app;
+    try {
+      app = await VF.apiFetch('/applications/me');
+    } catch (err) {
+      VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
+      return;
+    }
+
+    const status = app.status || 'submitted';
+
+    // Keep a lightweight local copy so the navbar and other pages
+    // can show the right name without an extra fetch.
+    VF.setState({
+      user: {
+        firstNames: app.first_names || '',
+        surname:    app.surname     || '',
+        email:      app.email       || '',
+      },
+      applicationStatus: status,
+    });
+
+    const initials = VF.initials(app.first_names, app.surname);
+    const fullName = `${app.first_names || ''} ${app.surname || ''}`.trim();
+    const email = app.email || '';
+
+    // User card (desktop sidebar)
+    document.getElementById('userCard').innerHTML = `
+      <div class="user-avatar">${initials}</div>
+      <div>
+        <div class="user-name">${fullName}</div>
+        <div class="user-email">${email}</div>
+      </div>
+    `;
+
+    // Meta card — on mobile this also includes the user block
+    document.getElementById('metaCard').innerHTML = `
+      <div class="tracker-combo-user">
+        <div class="user-avatar">${initials}</div>
+        <div>
+          <div class="user-name">${fullName}</div>
+          <div class="user-email">${email}</div>
+        </div>
+      </div>
+      <div class="app-mod">${app.module_name || 'Unknown module'}</div>
+      <div class="app-course">${app.course || ''} · ${app.module_year_level || ''}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${statusTag(status)}
+      </div>
+    `;
+
+    // Pipeline
+    const isApproved = status === 'approved';
+    const isRejected  = status === 'rejected';
+    const currentIdx  = ORDER.indexOf(status);
+
+    let html = '';
+    STAGES.forEach((stage, i) => {
+      let stepClass = 'pending';
+      let nodeIcon  = (i + 1).toString();
+      let extraDesc = stage.desc;
+
+      if (stage.key === 'decision') {
+        if (isApproved) {
+          stepClass = 'approved';
+          nodeIcon  = '<i class="ti ti-circle-check" style="font-size:14px"></i>';
+          extraDesc = 'You have been approved as a tutor. Congratulations!';
+        } else if (isRejected) {
+          stepClass = 'rejected';
+          nodeIcon  = '<i class="ti ti-circle-x" style="font-size:14px"></i>';
+          extraDesc = 'Your application was not successful this time.';
+        }
+      } else {
+        const stageIdx = ORDER.indexOf(stage.key);
+        if (stageIdx < currentIdx)       { stepClass = 'done'; nodeIcon = '<i class="ti ti-check" style="font-size:14px"></i>'; }
+        else if (stageIdx === currentIdx) { stepClass = 'current'; nodeIcon = '<i class="ti ' + stage.icon + '" style="font-size:14px"></i>'; }
+      }
+
+      const liveBadge = stepClass === 'current' ? `<span class="tag tag-active" style="font-size:9px;padding:2px 8px"><span class="live-dot" style="width:5px;height:5px;margin-right:3px"></span>Live</span>` : '';
+
+      html += `
+        <div class="pipe-step ${stepClass}">
+          <div class="pipe-node">${nodeIcon}</div>
+          <div class="pipe-info">
+            <div class="pipe-name">${stage.label} ${liveBadge}</div>
+            <div class="pipe-desc">${extraDesc}</div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('pipeline').innerHTML = html;
+
+    // Redirect prompt if approved
+    if (isApproved) {
+      setTimeout(() => {
+        const goBtn = document.createElement('div');
+        goBtn.style.cssText = 'margin-top:20px;padding-top:20px;border-top:1px solid var(--border)';
+        goBtn.innerHTML = `
+          <div class="alert alert-ok" style="margin-bottom:12px">
+            <i class="ti ti-confetti"></i>
+            <span>You've been approved! Complete your onboarding to access your tutor space.</span>
+          </div>
+          <a href="onboarding-step1.html">
+            <button type="button" class="btn btn-ink btn-full tracker-onboard-btn">Complete onboarding <i class="ti ti-arrow-right"></i></button>
+          </a>
+        `;
+        document.querySelector('.pipeline-card').appendChild(goBtn);
+      }, 100);
+    }
+  }
+
+  function statusTag(status) {
+    const map = {
+      submitted:    '<span class="tag tag-default">Submitted</span>',
+      under_review: '<span class="tag tag-active"><span class="live-dot" style="margin-right:5px"></span>Under review</span>',
+      shortlisted:  '<span class="tag tag-warn">Shortlisted</span>',
+      approved:     '<span class="tag tag-ok">Approved</span>',
+      rejected:     '<span class="tag tag-err">Not successful</span>',
+    };
+    return map[status] || '<span class="tag tag-default">Submitted</span>';
+  }
+
+  render();
+</script>
+</body>
+</html>
