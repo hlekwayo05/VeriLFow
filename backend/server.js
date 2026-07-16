@@ -17,6 +17,7 @@ const express  = require('express');
 const cors     = require('cors');
 const helmet   = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = rateLimit;
 
 const app = express();
 
@@ -99,7 +100,7 @@ const attendanceLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     const studentNum = req.body?.studentNumber || '';
-    return `${req.ip}_${studentNum}`;
+    return `${ipKeyGenerator(req.ip)}_${studentNum}`;
   },
 });
 
