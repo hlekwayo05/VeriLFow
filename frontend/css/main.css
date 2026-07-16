@@ -1,7 +1,7 @@
 /* ============================================================
    VERIFLOW — MAIN STYLESHEET
+   Fonts are loaded via <link> in each page (avoid CSS @import).
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500');
 
 /* ─── TOKENS ─── */
 :root {

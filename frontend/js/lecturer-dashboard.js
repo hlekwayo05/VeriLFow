@@ -152,12 +152,11 @@ function switchModule(btn) {
 async function refreshModuleData() {
   if (!currentModuleCode) return;
   applyModuleUi();
+  // Sessions + tutors + claims for hub; class list loads when that page opens.
   await Promise.all([
     loadSessions(),
     loadMyTutors(),
-    loadTutorsForModal(),
     loadClaims(),
-    loadClassList(),
   ]);
   renderModuleReport(Object.values(SESSIONS), moduleTutorPool);
   if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
@@ -1040,6 +1039,7 @@ function openNewSession(prefillDate) {
     nsPrefilledDate = null;
   }
   document.getElementById('ns-overlay').classList.add('open');
+  loadTutorsForModal();
   setTimeout(() => {
     const focusEl = prefillDate
       ? document.querySelector('[data-hidden-id="ns-time-start"] .ns-time-trigger')
@@ -1148,18 +1148,16 @@ function toggleSelectAllTutors() {
 }
 
 /* ── LOAD TUTORS INTO NEW SESSION MODAL ── */
-async function loadTutorsForModal() {
-  try {
-    const tutors = await VF.apiFetch(`/users/tutors${moduleQuerySuffix()}`);
-    const wrap = document.getElementById('ns-tutor-list');
-    if (!wrap) return;
-    if (!tutors.length) {
-      wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No approved tutors on this module yet.</div>';
-      return;
-    }
-    wrap.innerHTML = tutors.map(t => {
-      const initials = VF.initials(t.first_names, t.surname);
-      return `<div class="ns-tutor-row" data-tutor="${t.id}" onclick="toggleTutor(this)">
+function renderNsTutorList(tutors) {
+  const wrap = document.getElementById('ns-tutor-list');
+  if (!wrap) return;
+  if (!tutors.length) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No approved tutors on this module yet.</div>';
+    return;
+  }
+  wrap.innerHTML = tutors.map(t => {
+    const initials = VF.initials(t.first_names, t.surname);
+    return `<div class="ns-tutor-row" data-tutor="${t.id}" onclick="toggleTutor(this)">
         <div class="ns-tutor-av" style="color:var(--green);border-color:rgba(92,200,138,.3)">${initials}</div>
         <div class="ns-tutor-info">
           <div class="ns-tutor-name">${t.first_names} ${t.surname}</div>
@@ -1167,7 +1165,17 @@ async function loadTutorsForModal() {
         </div>
         <div class="ns-tutor-check"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       </div>`;
-    }).join('');
+  }).join('');
+}
+
+async function loadTutorsForModal() {
+  try {
+    if (Array.isArray(moduleTutorPool) && moduleTutorPool.length) {
+      renderNsTutorList(moduleTutorPool);
+      return;
+    }
+    const tutors = await VF.apiFetch(`/users/tutors${moduleQuerySuffix()}`);
+    renderNsTutorList(tutors);
   } catch (err) {
     /* optional */
   }
@@ -2531,6 +2539,7 @@ async function loadMyTutors() {
       : 'Your team');
 
     renderSidebarTutors(tutors);
+    renderNsTutorList(tutors);
 
     if (Object.keys(SESSIONS).length) {
       renderSessionRows(Object.values(SESSIONS));

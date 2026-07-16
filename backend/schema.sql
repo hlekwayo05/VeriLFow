@@ -1,8 +1,12 @@
 /*
  * VERIFLOW DATABASE INIT SEQUENCE
  * ================================
- * For a fresh database, run this file only:
- *   psql -U postgres -d veriflow -f backend/schema.sql
+ * For a fresh database (local or Supabase), run:
+ *   npm run db:schema
+ * (from backend/, with DATABASE_URL set in backend/.env)
+ *
+ * Or manually:
+ *   psql "$DATABASE_URL" -f backend/schema.sql
  *
  * This file creates all tables, enums, indexes, and
  * triggers in the correct order.
@@ -376,6 +380,63 @@ CREATE TABLE modules (
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- DICT — Diploma in ICT (keep in sync with frontend/js/curriculum.js)
+INSERT INTO modules (code, name, course, year_semester) VALUES
+  ('COM100',  'Professional Communication 100', 'DICT', '1st Year — Semester 1'),
+  ('DICT121', 'Computing Theory 121', 'DICT', '1st Year — Semester 1'),
+  ('DICT131', 'Multimedia Fundamentals 131', 'DICT', '1st Year — Semester 1'),
+  ('DICT151', 'Programming Fundamentals 151', 'DICT', '1st Year — Semester 1'),
+  ('DICT111', 'Information Systems 111', 'DICT', '1st Year — Semester 1'),
+  ('DICT112', 'Communication Network Fundamentals 112', 'DICT', '1st Year — Semester 2'),
+  ('DICT122', 'Programming Fundamentals 122', 'DICT', '1st Year — Semester 2'),
+  ('DICT132', 'Multimedia Fundamentals 132', 'DICT', '1st Year — Semester 2'),
+  ('DICT142', 'Business Practice 142', 'DICT', '1st Year — Semester 2'),
+  ('STAT101', 'Basic Statistics 101', 'DICT', '1st Year — Semester 2'),
+  ('DICT211', 'Application Development 211', 'DICT', '2nd Year — Semester 1'),
+  ('DICT221', 'Software Development 221', 'DICT', '2nd Year — Semester 1'),
+  ('DICT231', 'IT Service Management 231', 'DICT', '2nd Year — Semester 1'),
+  ('DICT241', 'Information Systems 241', 'DICT', '2nd Year — Semester 1'),
+  ('DICT222', 'Application Development 222', 'DICT', '2nd Year — Semester 2'),
+  ('DICT232', 'Communication Network 232', 'DICT', '2nd Year — Semester 2'),
+  ('DICT242', 'Multimedia Applications 242', 'DICT', '2nd Year — Semester 2'),
+  ('DICT252', 'IT Project Management 252', 'DICT', '2nd Year — Semester 2'),
+  ('DICT311', 'Application Development 311', 'DICT', '3rd Year — Semester 1'),
+  ('DICT321', 'Information Systems 321', 'DICT', '3rd Year — Semester 1'),
+  ('DICT312', 'Application Development 312', 'DICT', '3rd Year — Semester 2'),
+  ('DICT322', 'Information Systems 322', 'DICT', '3rd Year — Semester 2'),
+  ('DICT300', 'Project 300', 'DICT', 'Year Block')
+ON CONFLICT (code) DO NOTHING;
+
+-- BICT — Bachelor of ICT
+INSERT INTO modules (code, name, course, year_semester) VALUES
+  ('ALP101',  'Academic Literacy and Professional Development for ICT 101', 'BICT', '1st Year — Semester 1'),
+  ('DBF101',  'Introduction to Databases 101', 'BICT', '1st Year — Semester 1'),
+  ('MFC101',  'Mathematics for Computing 101', 'BICT', '1st Year — Semester 1'),
+  ('PRT101',  'Introduction to Programming Techniques 101', 'BICT', '1st Year — Semester 1'),
+  ('CNT101',  'Introduction Communication Networking 101', 'BICT', '1st Year — Semester 1'),
+  ('CPP102',  'Computing Professional Practice 102', 'BICT', '1st Year — Semester 2'),
+  ('MFC102',  'Mathematics for Computing 102', 'BICT', '1st Year — Semester 2'),
+  ('OSF102',  'Introduction to Operating Systems 102', 'BICT', '1st Year — Semester 2'),
+  ('PRT102',  'Programming Techniques 102', 'BICT', '1st Year — Semester 2'),
+  ('CNT102',  'Communication Networking 102', 'BICT', '1st Year — Semester 2'),
+  ('PRT201',  'Programming Techniques 201', 'BICT', '2nd Year — Semester 1'),
+  ('WDV201',  'Introduction to Web Development 201', 'BICT', '2nd Year — Semester 1'),
+  ('PSE201',  'Principles of Software Engineering 201', 'BICT', '2nd Year — Semester 1'),
+  ('DBS201',  'Database Systems 201', 'BICT', '2nd Year — Semester 1'),
+  ('STF201',  'Statistics for Information Communication Technology 201', 'BICT', '2nd Year — Semester 1'),
+  ('CYB202',  'Cybersecurity 202', 'BICT', '2nd Year — Semester 2'),
+  ('MDT202',  'Mobile Application Development Techniques 202', 'BICT', '2nd Year — Semester 2'),
+  ('IOT202',  'Introduction to the Internet of Things 202', 'BICT', '2nd Year — Semester 2'),
+  ('DSA202',  'Data Structures and Algorithms 202', 'BICT', '2nd Year — Semester 2'),
+  ('DSA202B', 'Data Scalability and Analytics 202', 'BICT', '2nd Year — Semester 2'),
+  ('PRJ300',  'Project 300', 'BICT', '3rd Year — Semester 1'),
+  ('IPM301',  'Information Technology Project Management 301', 'BICT', '3rd Year — Semester 1'),
+  ('DAN301',  'Data Analytics 301', 'BICT', '3rd Year — Semester 1'),
+  ('CYB302',  'Cybersecurity 302', 'BICT', '3rd Year — Semester 2'),
+  ('PRG301',  'Programming Techniques 301', 'BICT', '3rd Year — Semester 2'),
+  ('CNT302',  'Communication Networks 302', 'BICT', '3rd Year — Semester 2')
+ON CONFLICT (code) DO NOTHING;
+
 -- =============================================================
 --  TUTOR PROFILES
 --  Onboarding data collected after approval.
@@ -401,6 +462,8 @@ CREATE TABLE tutor_profiles (
   account_number        VARCHAR(30),
   account_type          VARCHAR(20),                   -- cheque, savings
   branch_code           VARCHAR(10),
+  account_holder        VARCHAR(200),
+  tax_number            VARCHAR(20),
 
   -- Completion flags (mirrors frontend onboarding.step1 / step2)
   step1_complete        BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -473,6 +536,8 @@ CREATE TABLE IF NOT EXISTS session_tutors (
   declined_at           TIMESTAMPTZ,
   PRIMARY KEY (session_id, tutor_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_session_tutors_tutor_id ON session_tutors (tutor_id);
 
 -- =============================================================
 --  ATTENDANCE LOGS
@@ -571,6 +636,8 @@ CREATE TABLE claims (
 CREATE INDEX idx_claims_tutor    ON claims (tutor_id);
 CREATE INDEX idx_claims_lecturer ON claims (lecturer_id);
 CREATE INDEX idx_claims_status   ON claims (status);
+CREATE INDEX IF NOT EXISTS idx_claims_tutor_module_period
+  ON claims (tutor_id, module_code, period_year DESC, period_month DESC);
 
 -- =============================================================
 --  CLAIM SESSIONS

@@ -5,9 +5,10 @@ let msgThreads = {};
 let msgActiveThreadId = null;
 let msgActiveThreadKind = 'peer';
 let msgActiveThread = null;
-let msgPendingStart = null; // { type: 'lecturer'|'admin', name, initials }
+let msgPendingStart = null; // { type, id?, name, initials, label }
 let msgInboxFilter = 'all';
 let msgCurrentUserId = null;
+let msgPeers = [];
 
 function msgInitials(first, surname) {
   const a = String(first || '').trim().charAt(0);
@@ -49,37 +50,114 @@ function closeMobileMessageChat() {
   if (empty) empty.style.display = '';
   if (content) content.style.display = 'none';
   document.querySelectorAll('.inbox-item').forEach((item) => item.classList.remove('active'));
-  renderTutorMessagePeople();
+  renderMessagePeople();
 }
 
-function getTutorMessageContacts() {
-  const app = (typeof tutorApplication !== 'undefined' && tutorApplication) || window.tutorApplication || null;
-  const lecFirst = app?.lecturer_first_names || '';
-  const lecSurname = app?.lecturer_surname || '';
-  const lecName = msgTitleCase(`${lecFirst} ${lecSurname}`.trim()) || 'Lecturer';
-  const lecInitials = msgInitials(lecFirst, lecSurname) || 'L';
-  return [
-    { type: 'admin', label: 'Admin', name: 'Admin', initials: 'AD' },
-    { type: 'lecturer', label: lecName.split(/\s+/)[0] || 'Lecturer', name: lecName, initials: lecInitials },
-  ];
+function msgContactKey(c) {
+  if (!c) return '';
+  return c.id ? `${c.type}:${c.id}` : c.type;
 }
 
-function renderTutorMessagePeople() {
+function normalizePeerContact(raw) {
+  const type = raw.type || 'lecturer';
+  const first = raw.firstNames || raw.first_names || '';
+  const surname = raw.surname || '';
+  const full = msgTitleCase(raw.name || `${first} ${surname}`.trim()) ||
+    (type === 'admin' ? 'Admin' : type === 'tutor' ? 'Tutor' : 'Lecturer');
+  const initials = raw.initials || msgInitials(first, surname) ||
+    (type === 'admin' ? 'AD' : type === 'tutor' ? 'T' : 'L');
+  const label = type === 'admin'
+    ? 'Admin'
+    : (full.split(/\s+/)[0] || (type === 'tutor' ? 'Tutor' : 'Lecturer'));
+  return {
+    type,
+    id: raw.id || null,
+    name: full,
+    initials,
+    label,
+  };
+}
+
+function findThreadForContact(contact) {
+  if (!contact) return null;
+  if (contact.type === 'admin') return findThreadByPeerRole('admin');
+  if (contact.id) {
+    return Object.values(msgThreads).find((t) => Number(t.peerId) === Number(contact.id)) || null;
+  }
+  return findThreadByPeerRole(contact.type);
+}
+
+async function loadMessagePeers() {
+  const role = window.MESSAGING_ROLE;
+  if (role !== 'tutor' && role !== 'lecturer') {
+    msgPeers = [];
+    return msgPeers;
+  }
+  if (!currentModuleCode) {
+    msgPeers = [{ type: 'admin', id: null, name: 'Admin', initials: 'AD', label: 'Admin' }];
+    return msgPeers;
+  }
+  try {
+    const data = await VF.apiFetch(`/messages/peers${msgModuleQuery()}`);
+    const list = Array.isArray(data?.peers) ? data.peers : (Array.isArray(data) ? data : []);
+    msgPeers = list.map(normalizePeerContact);
+  } catch (err) {
+    console.error('loadMessagePeers:', err);
+    msgPeers = [{ type: 'admin', id: null, name: 'Admin', initials: 'AD', label: 'Admin' }];
+  }
+  return msgPeers;
+}
+
+function peerRoleLabel(type) {
+  if (type === 'admin') return 'Admin';
+  if (type === 'lecturer') return 'Lecturer';
+  if (type === 'tutor') return 'Tutor';
+  return 'Contact';
+}
+
+function renderMessagePeople() {
   const wrap = document.getElementById('tm-msg-people');
-  if (!wrap || window.MESSAGING_ROLE !== 'tutor') {
-    if (wrap && window.MESSAGING_ROLE !== 'tutor') wrap.innerHTML = '';
+  if (!wrap) return;
+  const role = window.MESSAGING_ROLE;
+  if (role !== 'tutor' && role !== 'lecturer') {
+    wrap.innerHTML = '';
     return;
   }
 
-  const contacts = getTutorMessageContacts();
-  wrap.innerHTML = contacts.map((c) => {
-    const existing = findThreadByPeerRole(c.type);
-    const unread = existing?.unread ? '<span class="tm-person-dot"></span>' : '';
-    return `<button type="button" class="tm-person" data-contact="${c.type}" onclick="openTutorMessageContact('${c.type}')">
-      <span class="tm-person-av ${c.type}">${c.initials}${unread}</span>
-      <span class="tm-person-name">${c.label.replace(/</g, '&lt;')}</span>
-    </button>`;
-  }).join('');
+  if (!msgPeers.length) {
+    wrap.innerHTML = `<div class="tm-people-empty">
+      <strong>No contacts yet</strong>
+      <span>Your ${role === 'lecturer' ? 'tutors' : 'lecturer'} will appear here once linked to this module.</span>
+    </div>`;
+    return;
+  }
+
+  const heading = role === 'lecturer' ? 'Message your tutors' : 'Message your lecturer';
+  wrap.innerHTML = `
+    <div class="tm-people-head">
+      <span class="tm-people-head-title">${heading}</span>
+      <span class="tm-people-head-sub">Tap to start</span>
+    </div>
+    <div class="tm-people-row">
+      ${msgPeers.map((c) => {
+        const key = msgContactKey(c);
+        const existing = findThreadForContact(c);
+        const unread = existing?.unread ? '<span class="tm-person-dot" aria-hidden="true"></span>' : '';
+        const active = existing && existing.id === msgActiveThreadId ? ' is-active' : '';
+        return `<button type="button" class="tm-person${active}" data-contact="${key}" onclick="openMessageContact('${key}')">
+          <span class="tm-person-ring ${c.type}">
+            <span class="tm-person-av ${c.type}">${c.initials}${unread}</span>
+          </span>
+          <span class="tm-person-name">${c.label.replace(/</g, '&lt;')}</span>
+          <span class="tm-person-role">${peerRoleLabel(c.type)}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+/** @deprecated use renderMessagePeople */
+function renderTutorMessagePeople() {
+  return renderMessagePeople();
 }
 
 function showPendingChat(contact) {
@@ -95,27 +173,43 @@ function showPendingChat(contact) {
   av.textContent = contact.initials;
   av.className = msgAvatarClass(contact.type, 'thread-av');
   document.getElementById('t-name').textContent = contact.name;
+  const moduleLabel = typeof currentModuleCode !== 'undefined' && currentModuleCode ? currentModuleCode : '';
   document.getElementById('t-meta').textContent =
-    contact.type === 'admin' ? 'Student Employment Office' : (typeof currentModuleCode !== 'undefined' && currentModuleCode ? currentModuleCode : 'Lecturer');
-  document.getElementById('thread-messages').innerHTML =
-    `<div class="tm-chat-empty">No messages yet.<br>Say hello to start the conversation.</div>`;
+    contact.type === 'admin'
+      ? 'Student Employment Office'
+      : (moduleLabel || (contact.type === 'tutor' ? 'Tutor' : 'Lecturer'));
+  document.getElementById('thread-messages').innerHTML = `
+    <div class="tm-chat-empty">
+      <div class="tm-chat-empty-icon" aria-hidden="true">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <p class="tm-chat-empty-title">No messages yet</p>
+      <p class="tm-chat-empty-sub">Say hello to start the conversation.</p>
+    </div>`;
 
   setMobileChatOpen(true);
   setTimeout(() => document.getElementById('compose-input')?.focus(), 120);
 }
 
-async function openTutorMessageContact(type) {
-  const contacts = getTutorMessageContacts();
-  const contact = contacts.find((c) => c.type === type);
+async function openMessageContact(key) {
+  const contact = msgPeers.find((c) => msgContactKey(c) === key);
   if (!contact) return;
 
-  const existing = findThreadByPeerRole(type);
+  const existing = findThreadForContact(contact);
   if (existing) {
     msgPendingStart = null;
-    await openThread(existing.threadKind || (type === 'admin' ? 'coordinator' : 'peer'), existing.id);
+    await openThread(
+      existing.threadKind || (contact.type === 'admin' ? 'coordinator' : 'peer'),
+      existing.id
+    );
     return;
   }
   showPendingChat(contact);
+}
+
+/** @deprecated use openMessageContact */
+async function openTutorMessageContact(type) {
+  return openMessageContact(type);
 }
 
 async function sendTutorAdminMessage(subject, body) {
@@ -130,7 +224,9 @@ async function sendTutorAdminMessage(subject, body) {
       },
     });
     await loadMessageThreads(result.threadId, result.threadKind || 'coordinator');
-    if (typeof showPage === 'function') {
+    if (typeof goView === 'function' && window.MESSAGING_ROLE === 'lecturer') {
+      goView('messages', document.getElementById('nav-messages'));
+    } else if (typeof showPage === 'function') {
       showPage('messages', document.getElementById('nav-messages'));
     }
     return result;
@@ -208,7 +304,7 @@ async function msgEnsureCurrentUser() {
 
 function updateUnreadBadge(count) {
   const badges = document.querySelectorAll(
-    '#nav-messages .nav-badge, #nav-messages-admin .nav-badge, #hub-msg-badge, #bnav-msg-badge'
+    '#nav-messages .nav-badge, #nav-messages-badge, #nav-messages-admin .nav-badge, #hub-msg-badge, #bnav-msg-badge'
   );
   const n = Number(count) || 0;
   badges.forEach((badge) => {
@@ -241,16 +337,20 @@ function renderInboxList() {
   const list = document.getElementById('inbox-list');
   if (!list) return;
 
-  renderTutorMessagePeople();
+  renderMessagePeople();
 
   const items = Object.values(msgThreads);
   if (!items.length) {
+    const role = window.MESSAGING_ROLE;
+    const emptySub = role === 'lecturer'
+      ? 'Choose a tutor above to start chatting.'
+      : 'Choose Admin or your lecturer above to start chatting.';
     list.innerHTML = `<div class="tm-recent-empty">
       <div class="tm-recent-empty-icon" aria-hidden="true">
         <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       </div>
-      <p class="tm-recent-empty-title">No recent messages</p>
-      <p class="tm-recent-empty-sub">Tap Admin or your lecturer above to start a conversation.</p>
+      <p class="tm-recent-empty-title">Your inbox is empty</p>
+      <p class="tm-recent-empty-sub">${emptySub}</p>
     </div>`;
     return;
   }
@@ -292,7 +392,10 @@ async function loadMessageThreads(selectThreadId, selectThreadKind) {
   await msgEnsureCurrentUser();
 
   try {
-    const threads = await VF.apiFetch(`/messages/threads${msgModuleQuery()}`);
+    const [threads] = await Promise.all([
+      VF.apiFetch(`/messages/threads${msgModuleQuery()}`),
+      loadMessagePeers(),
+    ]);
     msgThreads = {};
     threads.forEach((t) => {
       const key = msgThreadKey(t.id, t.threadKind);
@@ -400,7 +503,7 @@ async function openThread(kind, id) {
     };
     renderThreadMessages(thread.messages);
     await refreshUnreadBadge();
-    renderTutorMessagePeople();
+    renderMessagePeople();
   } catch (err) {
     document.getElementById('thread-messages').innerHTML =
       '<div style="padding:16px;color:var(--red);font-size:12px">Could not load conversation.</div>';
@@ -436,6 +539,10 @@ async function sendReply() {
     let result = null;
     if (pending.type === 'admin') {
       result = await sendTutorAdminMessage(null, text);
+    } else if (pending.type === 'tutor' && pending.id) {
+      result = await sendDirectMessage(pending.id, null, text);
+    } else if (pending.type === 'lecturer' && pending.id) {
+      result = await sendDirectMessage(pending.id, null, text);
     } else {
       result = await sendTutorMessage(null, text);
     }
@@ -600,5 +707,8 @@ window.sendTutorAdminMessage = sendTutorAdminMessage;
 window.sendBroadcastMessage = sendBroadcastMessage;
 window.refreshUnreadBadge = refreshUnreadBadge;
 window.openTutorMessageContact = openTutorMessageContact;
+window.openMessageContact = openMessageContact;
 window.closeMobileMessageChat = closeMobileMessageChat;
 window.renderTutorMessagePeople = renderTutorMessagePeople;
+window.renderMessagePeople = renderMessagePeople;
+window.loadMessagePeers = loadMessagePeers;

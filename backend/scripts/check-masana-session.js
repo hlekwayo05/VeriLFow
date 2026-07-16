@@ -1,8 +1,6 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
-const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = require('../db');
 
 async function main() {
   const u = await pool.query(`SELECT id FROM users WHERE email = 'masana@ump.ac.za'`);

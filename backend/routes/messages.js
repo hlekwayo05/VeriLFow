@@ -64,6 +64,91 @@ async function getTutorAssignedLecturer(tutorId, moduleCode) {
   return r.rows[0] || null;
 }
 
+async function listLecturerModuleTutors(lecturerId, moduleCode) {
+  const r = await pool.query(
+    `SELECT u.id, u.first_names, u.surname, u.role
+     FROM users u
+     JOIN applications a ON a.user_id = u.id
+     WHERE u.role = 'tutor'
+       AND a.status = 'approved'
+       AND a.assigned_lecturer_id = $1
+       AND EXISTS (
+         SELECT 1 FROM lecturer_modules lm
+         WHERE lm.lecturer_id = $1
+           AND lm.module_code = $2
+           AND (
+             lm.module_name = a.module_name
+             OR (a.module_code IS NOT NULL AND lm.module_code = a.module_code)
+           )
+       )
+     ORDER BY u.surname ASC, u.first_names ASC`,
+    [lecturerId, moduleCode]
+  );
+  return r.rows;
+}
+
+function mapPeerContact(row, type) {
+  return {
+    type,
+    id: row?.id || null,
+    firstNames: row?.first_names || null,
+    surname: row?.surname || null,
+    name: row ? `${row.first_names || ''} ${row.surname || ''}`.trim() : null,
+    initials: row ? initials(row.first_names, row.surname) : null,
+  };
+}
+
+// GET /api/messages/peers — people the current user can start chats with
+router.get(
+  '/peers',
+  authenticate,
+  requireRole('tutor', 'lecturer'),
+  async (req, res) => {
+    const { userId, role } = req.user;
+    const moduleCode = req.query.moduleCode
+      ? String(req.query.moduleCode).trim().toUpperCase()
+      : null;
+
+    try {
+      const peers = [
+        {
+          type: 'admin',
+          id: null,
+          firstNames: null,
+          surname: null,
+          name: 'Admin',
+          initials: 'AD',
+        },
+      ];
+
+      if (role === 'tutor') {
+        if (!moduleCode) {
+          return res.status(400).json({ errors: ['Module code is required.'] });
+        }
+        const lecturer = await getTutorAssignedLecturer(userId, moduleCode);
+        if (lecturer) {
+          peers.push(mapPeerContact(lecturer, 'lecturer'));
+        }
+        return res.status(200).json({ peers });
+      }
+
+      // lecturer → their tutors on this module
+      if (!moduleCode) {
+        return res.status(400).json({ errors: ['Module code is required.'] });
+      }
+      if (!(await lecturerOwnsModule(userId, moduleCode))) {
+        return res.status(403).json({ errors: ['You do not teach this module.'] });
+      }
+      const tutors = await listLecturerModuleTutors(userId, moduleCode);
+      tutors.forEach((t) => peers.push(mapPeerContact(t, 'tutor')));
+      return res.status(200).json({ peers });
+    } catch (err) {
+      console.error('Get message peers error:', err.message);
+      return res.status(500).json({ error: 'Server error.' });
+    }
+  }
+);
+
 const COORDINATOR_PEER_NAME = 'Student Employment Office';
 
 function parseThreadKind(req) {
@@ -596,9 +681,9 @@ router.post(
         });
       }
 
-      // Tutor → admin (Student Employment Office)
+      // Tutor or lecturer → admin (Student Employment Office)
       if (
-        role === 'tutor' &&
+        (role === 'tutor' || role === 'lecturer') &&
         (req.body.threadKind === 'coordinator' || req.body.toAdmin === true)
       ) {
         const coordThreadId = await getOrCreateCoordinatorThread(userId);
@@ -767,31 +852,14 @@ router.post(
         return res.status(403).json({ errors: ['You do not teach this module.'] });
       }
 
-      const tutors = await pool.query(
-        `SELECT u.id
-         FROM users u
-         JOIN applications a ON a.user_id = u.id
-         WHERE u.role = 'tutor'
-           AND a.status = 'approved'
-           AND a.assigned_lecturer_id = $1
-           AND EXISTS (
-             SELECT 1 FROM lecturer_modules lm
-             WHERE lm.lecturer_id = $1
-               AND lm.module_code = $2
-               AND (
-                 lm.module_name = a.module_name
-                 OR (a.module_code IS NOT NULL AND lm.module_code = a.module_code)
-               )
-           )`,
-        [userId, moduleCode]
-      );
+      const tutors = await listLecturerModuleTutors(userId, moduleCode);
 
-      if (!tutors.rows.length) {
+      if (!tutors.length) {
         return res.status(400).json({ errors: ['No tutors on this module to message.'] });
       }
 
       let sent = 0;
-      for (const row of tutors.rows) {
+      for (const row of tutors) {
         const threadId = await getOrCreateThread(userId, row.id, moduleCode);
         await pool.query(
           `INSERT INTO messages (thread_id, sender_id, subject, body)

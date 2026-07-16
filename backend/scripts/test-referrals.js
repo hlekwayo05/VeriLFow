@@ -1,11 +1,9 @@
 'use strict';
 
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const jwt  = require('jsonwebtoken');
 const http = require('http');
-const { Pool } = require('pg');
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = require('../db');
 
 function apiRequest(method, path, token, body) {
   return new Promise((resolve, reject) => {
@@ -45,8 +43,14 @@ async function main() {
      LIMIT 1`
   );
   const adminRes = await pool.query(
-    `SELECT id FROM users WHERE email = 'fye@ump.ac.za'`
+    `SELECT id FROM users WHERE email = 'veriflow@ump.ac.za'`
   );
+  if (!adminRes.rows[0]) {
+    throw new Error('Admin veriflow@ump.ac.za not found — run node seed.js');
+  }
+  if (!lecRes.rows[0]) {
+    throw new Error('No lecturer with IS211 found — create one in User Management');
+  }
 
   const lecToken = jwt.sign(
     { userId: lecRes.rows[0].id, role: 'lecturer', tempFlag: false },
@@ -62,7 +66,7 @@ async function main() {
   const create = await apiRequest('POST', '/referrals', lecToken, {
     firstName: 'Test',
     surname: 'Referral',
-    email: 'test.referral@students.wsu.ac.za',
+    email: '230383025@ump.ac.za',
     course: 'DICT',
     moduleCode: 'IS211',
     qualificationLevel: '3rd year student',

@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const os     = require('os');
 const pool   = require('../db');
 
-const QR_TOKEN_TTL_SECONDS = 30;
+const QR_TOKEN_TTL_SECONDS = 10;
 
 function generateToken() {
   return crypto.randomBytes(16).toString('hex');

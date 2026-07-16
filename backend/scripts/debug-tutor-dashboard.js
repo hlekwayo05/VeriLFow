@@ -1,9 +1,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
-const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = require('../db');
 const API = 'http://127.0.0.1:3000/api';
 
 async function login(email) {

@@ -736,7 +736,21 @@ async function loadDashboardOverview() {
     renderDashboardReports(sessions, claims, tutors, flagged);
 
     updateNavBadges();
-    if (typeof loadReferralsStat === 'function') loadReferralsStat();
+
+    // Use referrals already fetched above — avoid a second /referrals round-trip.
+    const pendingRefCount = pendingReferrals.length;
+    const refStat = document.getElementById('stat-referrals-pending');
+    if (refStat) refStat.textContent = String(pendingRefCount);
+    const refBadge = document.getElementById('nav-referrals-badge')
+      || document.querySelector('[onclick*="referrals"] .nav-badge');
+    if (refBadge) {
+      refBadge.textContent = pendingRefCount ? String(pendingRefCount) : '—';
+      if (refBadge.id === 'nav-referrals-badge') {
+        refBadge.style.display = pendingRefCount ? '' : 'none';
+      }
+    }
+    const hubRefs = document.getElementById('ad-hub-refs-sub');
+    if (hubRefs) hubRefs.textContent = pendingRefCount ? `${pendingRefCount} pending` : 'Approvals';
   } catch (err) {
     console.error('loadDashboardOverview:', err);
     showToast(err.errors ? err.errors[0] : 'Could not refresh dashboard');
@@ -2007,23 +2021,8 @@ async function initAdminApiDashboard() {
   window.currentModuleCode = null;
 
   try {
-    await hydrateAdminHero();
-    const loaders = [
-      loadDashboardOverview(),
-      typeof loadApplications === 'function' ? loadApplications() : Promise.resolve(),
-      typeof loadReferrals === 'function' ? loadReferrals() : Promise.resolve(),
-      loadClaims(),
-      loadFlaggedSessions(),
-      loadSupportTickets(),
-    ];
-    const results = await Promise.allSettled(loaders);
-    const failed = results.filter((r) => r.status === 'rejected');
-    if (failed.length) {
-      console.error('Admin dashboard load errors:', failed);
-      if (typeof showToast === 'function') {
-        showToast('Some dashboard data could not be loaded — check you are logged in as admin.');
-      }
-    }
+    // Hub-only bootstrap. Other pages fetch on first open via showPage().
+    await Promise.all([hydrateAdminHero(), loadDashboardOverview()]);
     if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
   } catch (err) {
     console.error(err);
