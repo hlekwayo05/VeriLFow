@@ -268,7 +268,7 @@
     </aside>
   </div>
 </main>
-<script src="../js/app.js?v=7"></script>
+<script src="../js/app.js?v=13"></script>
 <script>
   VF.pageIn();
   VF.requireAuth('login.html');
@@ -278,7 +278,7 @@
       const app = await VF.apiFetch('/applications/me');
       VF.syncApplicationState(app);
       if (VF.onboardingCompleteFromApp(app)) {
-        VF.navigate('dashboard.html');
+        VF.routeTutor({ applicationStatus: 'approved', onboardingComplete: true });
         return;
       }
       if (app.status !== 'approved') {

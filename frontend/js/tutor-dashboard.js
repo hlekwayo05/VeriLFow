@@ -177,7 +177,8 @@ function switchModule(btn) {
 async function refreshModuleData() {
   if (!currentModuleCode) return;
   applyModuleUi();
-  await Promise.all([loadSessions(), loadClaims()]);
+  // Hub only needs sessions + claims list; timesheet is loaded when Claims is opened.
+  await Promise.all([loadSessions(), loadClaimsList()]);
   if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
 }
 
@@ -221,7 +222,7 @@ function isScheduled(status) {
 /* ── QR ATTENDANCE REGISTER ── */
 let qrCountdownTimer = null;
 let qrCurrentSessionId = null;
-let qrRotationSeconds = 30;
+let qrRotationSeconds = 10;
 
 function formatQrDesc(data) {
   const date = data.sessionDate
@@ -236,7 +237,7 @@ function updateQrCountdown(seconds, total) {
   const subEl  = document.getElementById('qr-countdown');
   const fillEl = document.getElementById('qr-countdown-fill');
   const wrapEl = document.getElementById('qr-countdown-wrap');
-  const max = total || qrRotationSeconds || 30;
+  const max = total || qrRotationSeconds || 10;
 
   if (secsEl) secsEl.textContent = String(Math.max(0, seconds));
   if (subEl) {
@@ -255,7 +256,7 @@ async function refreshQrCode() {
   const descEl = document.getElementById('qrDesc');
   try {
     const data = await VF.apiFetch(`/sessions/${qrCurrentSessionId}/qr`);
-    qrRotationSeconds = data.rotationSeconds || 30;
+    qrRotationSeconds = data.rotationSeconds || 10;
     if (descEl) descEl.textContent = formatQrDesc(data);
 
     const img = document.getElementById('qr-image');
@@ -1553,7 +1554,7 @@ function renderClaimsPanels(claims) {
   const historyPanel = document.getElementById('dash-claims-history');
   const pendingAmt = document.getElementById('stat-pending-claim');
   const pendingSub = document.getElementById('stat-pending-claim-sub');
-  const claimsBadge = document.querySelector('#nav-claims .nav-badge');
+  const claimsBadge = document.getElementById('nav-claims-badge');
 
   const pending = claims.filter(c => ['pending_lecturer', 'pending_coordinator'].includes(c.status));
   if (pendingAmt) {
@@ -1577,8 +1578,15 @@ function renderClaimsPanels(claims) {
     }
   }
   if (claimsBadge) {
-    claimsBadge.textContent = pending.length ? String(pending.length) : '';
-    claimsBadge.style.display = pending.length ? '' : 'none';
+    if (pending.length) {
+      claimsBadge.textContent = String(pending.length);
+      claimsBadge.hidden = false;
+      claimsBadge.style.display = '';
+    } else {
+      claimsBadge.textContent = '';
+      claimsBadge.hidden = true;
+      claimsBadge.style.display = 'none';
+    }
   }
 
   const hubClaimsBadge = document.getElementById('hub-claims-badge');
@@ -1665,28 +1673,37 @@ function initTutorEmptyInbox() {
   /* replaced by messaging.js loadMessageThreads */
 }
 
-async function loadClaims() {
+async function loadClaimsList() {
+  try {
+    const claimsRaw = await VF.apiFetch(`/claims${moduleQuerySuffix()}`);
+    CLAIMS = Array.isArray(claimsRaw) ? claimsRaw : [];
+    renderClaimsPanels(CLAIMS);
+  } catch (err) {
+    console.error('loadClaimsList error:', err);
+    CLAIMS = [];
+    renderClaimsPanels([]);
+    showToast(err.errors ? err.errors[0] : 'Could not load claims');
+  }
+}
+
+async function loadTimesheet() {
   try {
     const qs = new URLSearchParams({
       periodMonth: String(claimsPeriodMonth),
       periodYear: String(claimsPeriodYear),
     });
     if (currentModuleCode) qs.set('moduleCode', currentModuleCode);
-
-    const [claimsRaw, timesheet] = await Promise.all([
-      VF.apiFetch(`/claims${moduleQuerySuffix()}`),
-      VF.apiFetch(`/claims/timesheet?${qs.toString()}`),
-    ]);
-
-    CLAIMS = Array.isArray(claimsRaw) ? claimsRaw : [];
-    renderClaimsPanels(CLAIMS);
+    const timesheet = await VF.apiFetch(`/claims/timesheet?${qs.toString()}`);
     renderTimesheetView(timesheet);
   } catch (err) {
-    console.error('loadClaims error:', err);
-    renderClaimsPanels([]);
+    console.error('loadTimesheet error:', err);
     renderTimesheetView(null);
-    showToast(err.errors ? err.errors[0] : 'Could not load claims');
+    showToast(err.errors ? err.errors[0] : 'Could not load timesheet');
   }
+}
+
+async function loadClaims() {
+  await Promise.all([loadClaimsList(), loadTimesheet()]);
 }
 
 /* ── CALENDAR ── */
@@ -1893,6 +1910,7 @@ function buildCalGrid() {
     if (isPast) cls += ' past';
     if (dayEvents) {
       cls += ' has-event';
+      cls += ` ev-${dayEvents.type}`;
       if (dayEvents.type === 'today' || isToday) cls += ' today';
       cell.onclick = () => showCalDetail(d, dayEvents);
     } else if (isToday) {
@@ -2015,8 +2033,7 @@ function renderProfile() {
       return '<span style="color:var(--muted)">Not uploaded</span>';
     }
     const safe = String(filename).replace(/</g, '&lt;');
-    const url = VF.uploadsUrl(filename);
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;">${safe}</a>`;
+    return `<a href="#" onclick="event.preventDefault(); VF.openUploadDocument(${JSON.stringify(filename)})" style="color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;">${safe}</a>`;
   }
 
   const idDoc = user?.id_document_filename || profile?.id_document_filename;
@@ -2512,13 +2529,6 @@ async function hydrateHeroFromApi() {
     if (!tutorDisplayName) setHubDisplayName('tutor');
   }
 
-  try {
-    tutorOnboardingProfile = await VF.apiFetch('/users/me/tutor-profile');
-    window.tutorOnboardingProfile = tutorOnboardingProfile;
-  } catch (e) {
-    tutorOnboardingProfile = null;
-  }
-
   if (!tutorDisplayName && tutorApplication) {
     tutorDisplayName = `${tutorApplication.first_names || ''} ${tutorApplication.surname || ''}`.trim().toLowerCase();
     setHubDisplayName(tutorDisplayName || 'tutor');
@@ -2572,10 +2582,16 @@ async function initTutorDashboard() {
     window.tutorApplication = tutorApplication;
     VF.syncApplicationState(tutorApplication);
 
-    if (!isApprovedAndOnboarded(tutorApplication, tokenState)) {
+    const onboarded = isApprovedAndOnboarded(tutorApplication, tokenState);
+    if (!onboarded) {
+      // Prefer fresh JWT flag after step-2 submit so a stale /applications/me
+      // response cannot bounce the tutor back into onboarding.
+      const complete =
+        VF.onboardingCompleteFromApp(tutorApplication) ||
+        !!tokenState.onboardingComplete;
       VF.routeTutor({
-        applicationStatus: tutorApplication.status,
-        onboardingComplete: VF.onboardingCompleteFromApp(tutorApplication),
+        applicationStatus: tutorApplication.status || tokenState.applicationStatus,
+        onboardingComplete: complete,
       });
       return;
     }
@@ -2592,13 +2608,12 @@ async function initTutorDashboard() {
     showToast('Some profile data could not be refreshed');
   }
 
-  await loadSemesterHours();
-  await hydrateHeroFromApi();
-  await loadTutorModules();
-
-  try {
-    if (typeof renderProfile === 'function') renderProfile();
-  } catch (_) { /* profile panel is optional on first paint */ }
+  // Parallelize remaining first-paint work (remote DB makes serial RTTs feel slow).
+  await Promise.all([
+    loadSemesterHours(),
+    hydrateHeroFromApi(),
+    loadTutorModules(),
+  ]);
 }
 
 let tutorDashboardStarted = false;

@@ -16,6 +16,7 @@ const {
   sendPasswordResetEmail,
   referralLoginLink,
 } = require('../services/mailer');
+const { uploadFile } = require('../services/storage');
 
 async function purgeTutorAccount(client, tutorId) {
   const userResult = await client.query(
@@ -161,17 +162,27 @@ async function applyOnboardingDocumentUploads(userId, files) {
   const values = [];
   let idx = 1;
 
-  if (files.id_document?.[0]) {
-    updates.push(`id_document_filename = $${idx++}`);
-    values.push(files.id_document[0].filename);
-  }
-  if (files.tax_proof?.[0]) {
-    updates.push(`tax_proof_filename = $${idx++}`);
-    values.push(files.tax_proof[0].filename);
-  }
-  if (files.bank_proof?.[0]) {
-    updates.push(`bank_proof_filename = $${idx++}`);
-    values.push(files.bank_proof[0].filename);
+  const docs = [
+    { field: 'id_document', column: 'id_document_filename' },
+    { field: 'tax_proof', column: 'tax_proof_filename' },
+    { field: 'bank_proof', column: 'bank_proof_filename' },
+  ];
+
+  for (const { field, column } of docs) {
+    const file = files[field]?.[0];
+    if (!file) continue;
+
+    const storagePath = 'onboarding/' + file.filename;
+    try {
+      await uploadFile(file.path, storagePath, file.mimetype || 'application/octet-stream');
+      console.log(`${field} uploaded to Supabase Storage:`, storagePath);
+    } catch (storageErr) {
+      console.error('Storage upload failed:', storageErr.message);
+      // Continue anyway — local file still saved as fallback
+    }
+
+    updates.push(`${column} = $${idx++}`);
+    values.push(storagePath);
   }
 
   if (!updates.length) return null;
@@ -387,7 +398,13 @@ router.patch(
         ]
       );
 
-      const documents = await applyOnboardingDocumentUploads(userId, req.files);
+      let documents = null;
+      try {
+        documents = await applyOnboardingDocumentUploads(userId, req.files);
+      } catch (docErr) {
+        // Profile is already complete — don't block unlock if optional docs fail
+        console.error('Onboarding step2 document upload error:', docErr.message);
+      }
 
       const userRow = await pool.query(
         'SELECT email, first_names, surname FROM users WHERE id = $1',
@@ -755,7 +772,7 @@ router.post(
           lecturerId,
           email:      lecturerEmail,
           emailSent,
-          ...(emailSent ? {} : { tempPassword }),
+          tempPassword,
         });
 
       } catch (txErr) {
@@ -1034,7 +1051,7 @@ router.patch(
         message: 'Password reset successfully.',
         email:   user.email,
         emailSent,
-        ...(emailSent ? {} : { tempPassword }),
+        tempPassword,
       });
 
     } catch (err) {

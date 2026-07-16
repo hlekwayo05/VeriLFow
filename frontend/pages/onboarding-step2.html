@@ -296,7 +296,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=7"></script>
+<script src="../js/app.js?v=13"></script>
 <script>
   VF.pageIn();
   VF.requireAuth('login.html');
@@ -304,8 +304,9 @@
   (async function guardStep2() {
     try {
       const app = await VF.apiFetch('/applications/me');
+      VF.syncApplicationState(app);
       if (VF.onboardingCompleteFromApp(app)) {
-        VF.navigate('dashboard.html');
+        VF.routeTutor({ applicationStatus: 'approved', onboardingComplete: true });
         return;
       }
       if (app.status !== 'approved') {
@@ -313,6 +314,10 @@
         return;
       }
       const profile = await VF.apiFetch('/users/me/tutor-profile');
+      if (profile.step1_complete && profile.step2_complete) {
+        VF.routeTutor({ applicationStatus: 'approved', onboardingComplete: true });
+        return;
+      }
       if (!profile.step1_complete) {
         VF.navigate('onboarding-step1.html');
         return;
@@ -381,7 +386,11 @@
         applicationStatus: 'approved',
         onboarding: { step1: true, step2: true },
       });
-      VF.navigate('dashboard.html');
+      VF.toast(data.message || 'Profile complete. Opening your dashboard…', 'ok');
+      VF.routeTutor({
+        applicationStatus: data.applicationStatus || 'approved',
+        onboardingComplete: true,
+      });
     } catch (err) {
       btn.innerHTML = originalHTML;
       btn.classList.remove('btn-disabled');

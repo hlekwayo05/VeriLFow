@@ -120,6 +120,9 @@ const PASS_KEY = 'vf_attendance_pass';
 
 let passToken = null;
 let sessionInfo = null;
+let failedAttempts = 0;
+let cooldownUntil = 0;
+let lockedOut = false;
 
 function showState(name) {
   ['loading', 'error', 'form', 'confirm'].forEach(s => {
@@ -214,6 +217,16 @@ function onKeyDown(e) {
 }
 
 async function submitAttendance() {
+  if (lockedOut) return;
+
+  const now = Date.now();
+  if (now < cooldownUntil) {
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = 'Please wait a moment before trying again.';
+    errEl.classList.add('show');
+    return;
+  }
+
   const input = document.getElementById('student-input');
   const val = input.value.trim();
 
@@ -232,6 +245,9 @@ async function submitAttendance() {
   try {
     const result = await apiPost('/attendance', { passToken, studentNumber: val });
 
+    failedAttempts = 0;
+    cooldownUntil = 0;
+
     document.getElementById('ok-name').textContent = result.fullName || '—';
     document.getElementById('ok-number').textContent = result.studentNumber;
     document.getElementById('ok-module').textContent = result.module;
@@ -242,11 +258,21 @@ async function submitAttendance() {
 
     showState('confirm');
   } catch (err) {
+    failedAttempts += 1;
+
     const errEl = document.getElementById('error-msg');
-    errEl.textContent = err.message || 'Could not record attendance.';
+    if (failedAttempts >= 3) {
+      lockedOut = true;
+      errEl.textContent = 'Too many attempts. Please ask your tutor for assistance.';
+      btn.disabled = true;
+      btn.textContent = 'Try again later';
+    } else {
+      errEl.textContent = err.message || 'Could not record attendance.';
+      cooldownUntil = Date.now() + 3000;
+      btn.disabled = false;
+      btn.textContent = 'Confirm Attendance';
+    }
     errEl.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = 'Confirm Attendance';
   }
 }
 

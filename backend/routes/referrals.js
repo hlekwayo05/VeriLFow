@@ -467,7 +467,9 @@ router.patch(
         applicationApproved,
         accountCreated: isNewAccount,
         emailSent,
-        ...(isNewAccount && plainTempPassword && !emailSent ? { tempPassword: plainTempPassword } : {}),
+        // tempPassword intentionally omitted from response
+        // Admin credential modal handles display on creation
+        // Email failure does not expose credentials via API
       });
 
     } catch (err) {

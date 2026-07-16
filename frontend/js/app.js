@@ -17,11 +17,29 @@ const VF = (() => {
   const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
   const TOKEN_KEY  = 'vf_token';
 
+  function fileRequestName(storedPath) {
+    if (!storedPath) return '';
+    const s = String(storedPath).replace(/\\/g, '/');
+    const i = s.lastIndexOf('/');
+    return i >= 0 ? s.slice(i + 1) : s;
+  }
+
   function uploadsUrl(filename) {
     if (!filename) return '';
-    const token = getToken();
-    const base = `${API_BASE}/files/${encodeURIComponent(filename)}`;
-    return token ? `${base}?token=${encodeURIComponent(token)}` : base;
+    return `${API_BASE}/files/${encodeURIComponent(fileRequestName(filename))}`;
+  }
+
+  /** Returns a signed URL (or local API URL) safe for iframes/links. */
+  async function fetchUploadDownloadUrl(filename) {
+    if (!filename) throw new Error('No filename');
+    const name = fileRequestName(filename);
+    const data = await apiFetch(`/files/${encodeURIComponent(name)}/token`);
+    if (!data.url) throw new Error('Could not get document URL.');
+    // Relative local fallback — resolve against API origin host
+    if (data.url.startsWith('/')) {
+      return `${API_ORIGIN}${data.url}`;
+    }
+    return data.url;
   }
 
   /** Fetch an upload with Bearer auth and return a blob: URL for iframe/preview. */
@@ -29,8 +47,10 @@ const VF = (() => {
     if (!filename) throw new Error('No filename');
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
-    const res = await fetch(`${API_BASE}/files/${encodeURIComponent(filename)}`, {
+    const name = fileRequestName(filename);
+    const res = await fetch(`${API_BASE}/files/${encodeURIComponent(name)}`, {
       headers: { Authorization: `Bearer ${token}` },
+      redirect: 'follow',
     });
     if (!res.ok) {
       let msg = 'Could not load document.';
@@ -44,6 +64,15 @@ const VF = (() => {
     }
     const blob = await res.blob();
     return URL.createObjectURL(blob);
+  }
+
+  async function openUploadDocument(filename) {
+    try {
+      const url = await fetchUploadDownloadUrl(filename);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast(err.message || 'Could not open document.', 'err');
+    }
   }
 
   /* ─── TOKEN (session-based auth) ─── */
@@ -401,6 +430,10 @@ const VF = (() => {
     if (!app) return onboardingFromToken();
     if (app.onboarding_complete != null) return !!app.onboarding_complete;
     if (app.onboardingComplete != null) return !!app.onboardingComplete;
+    // Fall back to explicit step flags from /applications/me or /users/me/tutor-profile
+    if (app.step1_complete != null || app.step2_complete != null) {
+      return !!(app.step1_complete && app.step2_complete);
+    }
     return onboardingFromToken();
   }
 
@@ -564,7 +597,7 @@ const VF = (() => {
     getState, setState, clearState, navigate,
     getToken, setToken, clearToken, isAuthenticated, apiFetch,
     roleFromToken, requireRole, fetchCurrentUser,
-    API_BASE, uploadsUrl, fetchUploadObjectUrl,
+    API_BASE, uploadsUrl, fetchUploadObjectUrl, fetchUploadDownloadUrl, openUploadDocument,
     logoSrc, logoHtml,
     requireAuth, renderNavbar, renderApplyProgress, mountApplyProgress,
     bindResponsiveBtnLabel, toast,

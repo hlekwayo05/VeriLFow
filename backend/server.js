@@ -3,6 +3,16 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
+const pool = require('./db');
+pool.connect((err, client, release) => {
+  if (err) {
+    console.error('Database connection failed:', err.message);
+  } else {
+    console.log('Database connected successfully');
+    release();
+  }
+});
+
 const express  = require('express');
 const cors     = require('cors');
 const helmet   = require('helmet');
@@ -77,8 +87,25 @@ const generalLimiter = rateLimit({
   skip: () => process.env.RATE_LIMIT_DISABLED === '1',
 });
 
+const attendanceLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  message: {
+    errors: [
+      'Too many attendance attempts. Please wait before trying again.',
+    ],
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const studentNum = req.body?.studentNumber || '';
+    return `${req.ip}_${studentNum}`;
+  },
+});
+
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
+app.use('/api/attendance', attendanceLimiter);
 app.use('/api', generalLimiter);
 
 // Uploads are NOT publicly served — use GET /api/files/:filename (authenticated)

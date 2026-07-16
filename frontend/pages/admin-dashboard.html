@@ -988,10 +988,10 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/app.js?v=12"></script>
-<script src="../js/curriculum.js?v=1"></script>
-<script src="../js/messaging.js?v=4"></script>
-<script src="../js/admin-dashboard-api.js?v=23"></script>
+<script src="../js/app.js?v=13"></script>
+<script src="../js/curriculum.js?v=2"></script>
+<script src="../js/messaging.js?v=10"></script>
+<script src="../js/admin-dashboard-api.js?v=24"></script>
 <script>
   if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
   if (!VF.requireRole('admin', 'login.html')) { /* stop — requireRole already redirected */ }
@@ -1028,7 +1028,6 @@
     syncAdBottomNav(id);
     if (id === 'dashboard') {
       loadDashboardOverview();
-      loadReferralsStat();
     }
     if (id === 'applications') loadApplications();
     if (id === 'referrals') loadReferrals();
@@ -1992,8 +1991,7 @@ async function openDocPanel(label, filename) {
   document.getElementById('app-modal-main').style.width = 'min(680px, 100%)';
 
   try {
-    const url = await VF.fetchUploadObjectUrl(filename);
-    frame.dataset.blobUrl = url;
+    const url = await VF.fetchUploadDownloadUrl(filename);
     frame.src = url;
     link.href = url;
   } catch (err) {

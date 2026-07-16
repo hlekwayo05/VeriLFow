@@ -27,6 +27,10 @@ const {
   sessionPublicView,
 } = require('../services/qrTokens');
 
+function isValidStudentNumber(value) {
+  return /^[A-Za-z0-9]{6,15}$/.test(String(value || '').trim());
+}
+
 function formatSessionType(type) {
   const map = {
     tutorial: 'Tutorial', practical: 'Practical', online: 'Online',
@@ -44,7 +48,7 @@ function formatSessionType(type) {
 router.post('/enter', async (req, res) => {
   const qrToken = String(req.body.qrToken || req.body.token || '').trim();
 
-  if (!qrToken) {
+  if (!qrToken || typeof qrToken !== 'string') {
     return res.status(400).json({ errors: ['QR token is required.'] });
   }
 
@@ -133,6 +137,11 @@ router.post('/', async (req, res) => {
     if (!studentNumber) {
       return res.status(400).json({ errors: ['Student number is required.'] });
     }
+    if (!isValidStudentNumber(studentNumber)) {
+      return res.status(400).json({
+        errors: ['Student number must be 6–15 alphanumeric characters.'],
+      });
+    }
 
     try {
       const pass = await findValidPass(passToken);
@@ -207,6 +216,9 @@ router.post('/', async (req, res) => {
   const errors = [];
   if (!studentNumber) errors.push('Student number is required.');
   if (!sessionCode)   errors.push('Session code is required.');
+  if (studentNumber && !isValidStudentNumber(studentNumber)) {
+    errors.push('Student number must be 6–15 alphanumeric characters.');
+  }
   if (errors.length) return res.status(400).json({ errors });
 
   try {

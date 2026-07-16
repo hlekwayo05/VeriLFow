@@ -19,6 +19,7 @@ const {
 } = require('../services/mailer');
 const { screenApplication } = require('../services/documentScanner');
 const { getSettings } = require('../services/settings');
+const { uploadFile } = require('../services/storage');
 
 // =============================================================
 //  MULTER — file upload config
@@ -302,10 +303,29 @@ router.post(
         }
       }
 
-      const cvFilename         = req.files['cvFile'][0].filename;
-      const transcriptFilename = req.files['transcriptFile'][0].filename;
-      const newStatus          = eligibilityPass ? 'submitted' : 'rejected';
-      const screeningPayload   = screening
+      const cvBasename         = req.files['cvFile'][0].filename;
+      const transcriptBasename = req.files['transcriptFile'][0].filename;
+      const cvStoragePath         = 'applications/' + cvBasename;
+      const transcriptStoragePath = 'applications/' + transcriptBasename;
+
+      try {
+        await uploadFile(cvPath, cvStoragePath, 'application/pdf');
+        console.log('CV uploaded to Supabase Storage:', cvStoragePath);
+      } catch (storageErr) {
+        console.error('Storage upload failed:', storageErr.message);
+        // Continue anyway — local file still saved as fallback
+      }
+
+      try {
+        await uploadFile(transcriptPath, transcriptStoragePath, 'application/pdf');
+        console.log('Transcript uploaded to Supabase Storage:', transcriptStoragePath);
+      } catch (storageErr) {
+        console.error('Storage upload failed:', storageErr.message);
+        // Continue anyway — local file still saved as fallback
+      }
+
+      const newStatus        = eligibilityPass ? 'submitted' : 'rejected';
+      const screeningPayload = screening
         ? { ...screening, rejectionDetail: rejectionDetail || null }
         : null;
 
@@ -321,8 +341,8 @@ router.post(
              submitted_at        = NOW()
          WHERE user_id = $7`,
         [
-          cvFilename,
-          transcriptFilename,
+          cvStoragePath,
+          transcriptStoragePath,
           newStatus,
           rejectionReason,
           cvKeywordScore,

@@ -27,6 +27,49 @@ function generateSessionCode() {
   return code;
 }
 
+async function assertSessionAccess(req, res, sessionId) {
+  const sessionResult = await pool.query(
+    'SELECT * FROM sessions WHERE id = $1',
+    [sessionId]
+  );
+
+  if (sessionResult.rows.length === 0) {
+    res.status(404).json({ errors: ['Session not found.'] });
+    return null;
+  }
+
+  const s = sessionResult.rows[0];
+  const { userId, role } = req.user;
+
+  if (role === 'admin') {
+    return s;
+  }
+
+  if (role === 'lecturer') {
+    if (s.lecturer_id !== userId) {
+      res.status(403).json({ errors: ['You do not have access to this session.'] });
+      return null;
+    }
+    return s;
+  }
+
+  if (role === 'tutor') {
+    const assigned = await pool.query(
+      `SELECT 1 FROM session_tutors
+       WHERE session_id = $1 AND tutor_id = $2`,
+      [sessionId, userId]
+    );
+    if (assigned.rows.length === 0) {
+      res.status(403).json({ errors: ['You are not assigned to this session.'] });
+      return null;
+    }
+    return s;
+  }
+
+  res.status(403).json({ errors: ['Forbidden'] });
+  return null;
+}
+
 function computeEndTime(startTime, sessionType, endTime) {
   if (endTime) return endTime;
   if (!startTime) return null;
@@ -358,22 +401,9 @@ router.get(
         });
       }
 
-      if (role === 'lecturer') {
-        const owned = await pool.query(
-          'SELECT id FROM sessions WHERE id = $1 AND lecturer_id = $2',
-          [sessionId, userId]
-        );
-        if (!owned.rows.length) {
-          return res.status(403).json({ errors: ['You do not have access to this session.'] });
-        }
-      } else if (role === 'tutor') {
-        const assigned = await pool.query(
-          'SELECT session_id FROM session_tutors WHERE session_id = $1 AND tutor_id = $2',
-          [sessionId, userId]
-        );
-        if (!assigned.rows.length) {
-          return res.status(403).json({ errors: ['You are not assigned to this session.'] });
-        }
+      if (role === 'lecturer' || role === 'tutor') {
+        const allowed = await assertSessionAccess(req, res, sessionId);
+        if (!allowed) return;
       }
 
       const qr = await rotateQrToken(sessionId);
@@ -425,11 +455,14 @@ router.get(
 router.get(
   '/:id',
   authenticate,
-  requireRole('admin', 'lecturer'),
+  requireRole('admin', 'lecturer', 'tutor'),
   async (req, res) => {
     const sessionId = parseInt(req.params.id);
 
     try {
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
+
       const sessionResult = await pool.query(
         `SELECT
            s.*,
@@ -440,10 +473,6 @@ router.get(
          WHERE s.id = $1`,
         [sessionId]
       );
-
-      if (sessionResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Session not found.' });
-      }
 
       // Assigned tutors
       const tutorsResult = await pool.query(
@@ -499,19 +528,10 @@ router.patch(
     }
 
     try {
-      const check = await pool.query(
-        `SELECT st.session_id, s.status
-         FROM session_tutors st
-         JOIN sessions s ON s.id = st.session_id
-         WHERE st.session_id = $1 AND st.tutor_id = $2`,
-        [sessionId, tutorId]
-      );
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
 
-      if (check.rows.length === 0) {
-        return res.status(404).json({ errors: ['Session not found or you are not assigned.'] });
-      }
-
-      if (check.rows[0].status === 'completed') {
+      if (s.status === 'completed') {
         return res.status(409).json({ errors: ['Session is already completed.'] });
       }
 
@@ -559,16 +579,10 @@ router.patch(
     const lecturerId = req.user.userId;
 
     try {
-      // Confirm this session belongs to this lecturer
-      const check = await pool.query(
-        'SELECT id, status FROM sessions WHERE id = $1 AND lecturer_id = $2',
-        [sessionId, lecturerId]
-      );
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
 
-      if (check.rows.length === 0) {
-        return res.status(404).json({ errors: ['Session not found.'] });
-      }
-      if (check.rows[0].status === 'completed') {
+      if (s.status === 'completed') {
         return res.status(409).json({ errors: ['Session is already completed.'] });
       }
 
@@ -626,15 +640,10 @@ router.patch(
     const lecturerId = req.user.userId;
 
     try {
-      const check = await pool.query(
-        'SELECT id, status FROM sessions WHERE id = $1 AND lecturer_id = $2',
-        [sessionId, lecturerId]
-      );
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
 
-      if (check.rows.length === 0) {
-        return res.status(404).json({ errors: ['Session not found.'] });
-      }
-      if (check.rows[0].status === 'completed') {
+      if (s.status === 'completed') {
         return res.status(409).json({ errors: ['Session is already completed.'] });
       }
 

@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <link rel="stylesheet" href="../css/main.css"/>
-<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=26"/>
+<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=30"/>
 </head>
 <body class="lec-dash">
 <div class="app">
@@ -254,7 +254,10 @@
       <div class="msg-layout">
         <div class="inbox-sidebar">
           <div class="inbox-top">
-            <h2>Messages</h2>
+            <div class="tm-msg-title-row">
+              <h2>Messages</h2>
+            </div>
+            <div class="tm-msg-people" id="tm-msg-people" aria-label="Contacts"></div>
             <div class="inbox-search">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)" />
@@ -266,6 +269,7 @@
             <button class="inbox-filter" onclick="setInboxFilter('admin',this)">Admin</button>
             <button class="inbox-filter" onclick="setInboxFilter('unread',this)">Unread</button>
           </div>
+          <div class="tm-msg-recent-label">Recent</div>
           <div class="inbox-list" id="inbox-list">
             <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
           </div>
@@ -273,7 +277,7 @@
         <div class="msg-thread" id="msg-thread">
           <div class="thread-empty" id="thread-empty">
             <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            <p>Select a conversation to read and reply</p>
+            <p>Select a contact above or a conversation to read and reply</p>
           </div>
           <div id="thread-content" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
             <div class="thread-header">
@@ -697,7 +701,7 @@
       <div class="ns-field"><label class="ns-label">Surname</label><input class="ns-input" id="rt-surname" type="text" placeholder="e.g. Dlamini" /></div>
     </div>
     <div class="ns-section-label" style="margin-top:14px;">Contact</div>
-    <div class="ns-field"><label class="ns-label">Email Address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. t.dlamini@students.wsu.ac.za" /></div>
+    <div class="ns-field"><label class="ns-label">Email Address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
     <div class="ns-section-label" style="margin-top:14px;">Academic Details</div>
     <div class="ns-row">
       <div class="ns-field">
@@ -795,7 +799,7 @@
   </div>
 </div>
 
-<script src="../js/app.js?v=10"></script>
+<script src="../js/app.js?v=13"></script>
 <script>
   if (!VF.requireRole('lecturer', 'login.html')) { throw new Error('Not authenticated'); }
   (function guardTempPassword() {
@@ -812,8 +816,8 @@
     }
   })();
 </script>
-<script src="../js/messaging.js?v=4"></script>
-<script src="../js/lecturer-dashboard.js?v=36"></script>
+<script src="../js/messaging.js?v=10"></script>
+<script src="../js/lecturer-dashboard.js?v=37"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';
