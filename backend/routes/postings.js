@@ -4,6 +4,7 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { adminActionLimiter } = require('../middleware/rateLimiter');
 const {
   COURSE_SHORT_MAP,
   courseToProgramme,
@@ -124,6 +125,7 @@ router.get(
 
 router.post(
   '/',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -218,6 +220,7 @@ router.post(
 
 router.patch(
   '/:id',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -307,6 +310,7 @@ router.patch(
 
 router.delete(
   '/:id',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {

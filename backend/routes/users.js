@@ -8,6 +8,10 @@ const path         = require('path');
 const multer       = require('multer');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const {
+  adminActionLimiter,
+  passwordResetLimiter,
+} = require('../middleware/rateLimiter');
 
 const BCRYPT_COST = 12;
 const { generateTempPassword } = require('../utils/tempPassword');
@@ -17,6 +21,16 @@ const {
   referralLoginLink,
 } = require('../services/mailer');
 const { uploadFile } = require('../services/storage');
+const {
+  validateOnboardingStep1,
+  validateOnboardingStep2,
+  validateOnboardingDocuments,
+  validateProfileUpdate,
+  validateCreateLecturer,
+  validateAddLecturerModule,
+  validateResetPassword,
+} = require('../validators/userValidator');
+const { validateUploadedFile } = require('../utils/fileValidation');
 
 async function purgeTutorAccount(client, tutorId) {
   const userResult = await client.query(
@@ -246,6 +260,7 @@ router.patch(
   '/me/onboarding/step1',
   authenticate,
   requireRole('tutor'),
+  validateOnboardingStep1,
   async (req, res) => {
     const userId = req.user.userId;
     const {
@@ -256,14 +271,8 @@ router.patch(
       residentialCity,
       residentialPostalCode,
     } = req.body;
-    const errors = [];
 
     const id = String(idNumber || '').replace(/\s/g, '');
-    if (!/^\d{13}$/.test(id)) errors.push('Valid 13-digit ID number is required.');
-    if (!postal?.street?.trim()) errors.push('Postal street address is required.');
-    if (!postal?.city?.trim()) errors.push('Postal city is required.');
-    if (!/^\d{4}$/.test(String(postal?.code || '').trim())) errors.push('Valid postal code is required.');
-
     const sameAsPostal = residentialSameAsPostal === true
       || residentialSameAsPostal === 'true';
 
@@ -279,12 +288,7 @@ router.patch(
       resStreet = String(residentialStreet || '').trim();
       resCity = String(residentialCity || '').trim();
       resCode = String(residentialPostalCode || '').trim();
-      if (!resStreet) errors.push('Residential street address is required.');
-      if (!resCity) errors.push('Residential city is required.');
-      if (!/^\d{4}$/.test(resCode)) errors.push('Valid residential postal code is required.');
     }
-
-    if (errors.length) return res.status(400).json({ errors });
 
     try {
       const appCheck = await pool.query(
@@ -343,19 +347,10 @@ router.patch(
   authenticate,
   requireRole('tutor'),
   maybeMultipartOnboarding,
+  validateOnboardingStep2,
   async (req, res) => {
     const userId = req.user.userId;
     const { bank, branch, acctype, accnum, accholder, taxnum } = req.body;
-    const errors = [];
-
-    if (!bank?.trim()) errors.push('Bank name is required.');
-    if (!/^\d{6}$/.test(String(branch || '').trim())) errors.push('Valid 6-digit branch code is required.');
-    if (!acctype?.trim()) errors.push('Account type is required.');
-    if (String(accnum || '').trim().length < 8) errors.push('Valid account number is required.');
-    if (!accholder?.trim()) errors.push('Account holder name is required.');
-    if (String(taxnum || '').replace(/\s/g, '').length < 9) errors.push('Valid tax number is required.');
-
-    if (errors.length) return res.status(400).json({ errors });
 
     try {
       const appCheck = await pool.query(
@@ -448,10 +443,24 @@ router.post(
     { name: 'tax_proof', maxCount: 1 },
     { name: 'bank_proof', maxCount: 1 },
   ]),
+  validateOnboardingDocuments,
   async (req, res) => {
     const userId = req.user.userId;
 
     try {
+      const files = req.files || {};
+      const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+      const fileFields = ['id_document', 'tax_proof', 'bank_proof'];
+
+      for (const field of fileFields) {
+        const file = files[field]?.[0];
+        if (!file) continue;
+        const validation = await validateUploadedFile(file, allowedMimeTypes);
+        if (!validation.valid) {
+          return res.status(400).json({ error: 'Invalid file type.' });
+        }
+      }
+
       const documents = await applyOnboardingDocumentUploads(userId, req.files);
       if (!documents) {
         return res.status(400).json({ errors: ['No files uploaded.'] });
@@ -604,25 +613,10 @@ router.patch(
   '/me/profile',
   authenticate,
   requireRole('tutor'),
+  validateProfileUpdate,
   async (req, res) => {
     const { studentNumber, cellPhone } = req.body;
     const userId = req.user.userId;
-    const errors = [];
-
-    if (studentNumber !== undefined && studentNumber !== null) {
-      const sn = String(studentNumber).trim();
-      if (sn.length > 0 && sn.length < 5) {
-        errors.push('Student number must be at least 5 characters.');
-      }
-    }
-    if (cellPhone !== undefined && cellPhone !== null) {
-      const cell = String(cellPhone).trim();
-      if (cell.length > 0 && cell.length < 9) {
-        errors.push('Cell phone number must be at least 9 digits.');
-      }
-    }
-
-    if (errors.length > 0) return res.status(400).json({ errors });
 
     try {
       const updates = [];
@@ -681,23 +675,13 @@ router.patch(
 
 router.post(
   '/lecturer',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
+  validateCreateLecturer,
   async (req, res) => {
     const { firstName, surname, email, cell, modules } = req.body;
     // modules: array of { code, name } e.g. [{ code: 'IS211', name: 'Information Systems 211' }]
-
-    // ── Validation ───────────────────────────────────────────
-    const errors = [];
-
-    if (!firstName || firstName.trim().length === 0) errors.push('First name is required.');
-    if (!surname   || surname.trim().length === 0)   errors.push('Surname is required.');
-    if (!email     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Valid email is required.');
-    if (!modules   || !Array.isArray(modules) || modules.length === 0) {
-      errors.push('At least one module must be assigned.');
-    }
-
-    if (errors.length > 0) return res.status(400).json({ errors });
 
     try {
       // ── Check for duplicate email ────────────────────────
@@ -919,6 +903,7 @@ router.get(
 
 router.delete(
   '/lecturer/:id',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -960,6 +945,7 @@ router.delete(
 
 router.delete(
   '/tutor/:id',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -1002,15 +988,13 @@ router.delete(
 
 router.patch(
   '/:role/:id/reset-password',
+  passwordResetLimiter,
   authenticate,
   requireRole('admin'),
+  validateResetPassword,
   async (req, res) => {
     const { role, id } = req.params;
     const userId = parseInt(id);
-
-    if (!['lecturer', 'tutor'].includes(role)) {
-      return res.status(400).json({ errors: ['Role must be lecturer or tutor.'] });
-    }
 
     try {
       const tempPassword = generateTempPassword();
@@ -1071,15 +1055,13 @@ router.patch(
 
 router.post(
   '/lecturer/:id/modules',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
+  validateAddLecturerModule,
   async (req, res) => {
     const lecturerId = parseInt(req.params.id);
     const { code, name, course } = req.body;
-
-    if (!code || !name || !course) {
-      return res.status(400).json({ errors: ['Module code, name, and course are required.'] });
-    }
 
     try {
       const lecturerCheck = await pool.query(
@@ -1115,6 +1097,7 @@ router.post(
 
 router.delete(
   '/lecturer/:id/modules/:moduleCode',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {

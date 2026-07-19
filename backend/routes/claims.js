@@ -7,6 +7,13 @@ const requireRole  = require('../middleware/requireRole');
 const { getRateEntry, getClaimHours } = require('../constants');
 const { buildTimesheetPdf } = require('../services/timesheetPdf');
 const { sendClaimEmail } = require('../services/mailer');
+const {
+  validateTimesheetQuery,
+  validateCreateClaim,
+  validateSessionIds,
+  validateClaimNote,
+  validateClaimIdParam,
+} = require('../validators/claimValidator');
 
 function claimTutorName(claim) {
   return `${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim() || 'Tutor';
@@ -215,6 +222,7 @@ router.get(
   '/timesheet',
   authenticate,
   requireRole('tutor'),
+  validateTimesheetQuery,
   async (req, res) => {
     const tutorId = req.user.userId;
     const periodMonth = parseInt(req.query.periodMonth, 10) || (new Date().getMonth() + 1);
@@ -222,13 +230,6 @@ router.get(
     const moduleCode  = req.query.moduleCode
       ? String(req.query.moduleCode).trim().toUpperCase()
       : null;
-
-    if (periodMonth < 1 || periodMonth > 12) {
-      return res.status(400).json({ errors: ['Valid period month (1-12) is required.'] });
-    }
-    if (!moduleCode) {
-      return res.status(400).json({ errors: ['moduleCode is required.'] });
-    }
 
     try {
       const app = await loadTutorApplication(tutorId);
@@ -344,6 +345,7 @@ router.get(
   '/timesheet/pdf',
   authenticate,
   requireRole('tutor'),
+  validateTimesheetQuery,
   async (req, res) => {
     const tutorId = req.user.userId;
     const periodMonth = parseInt(req.query.periodMonth, 10) || (new Date().getMonth() + 1);
@@ -351,13 +353,6 @@ router.get(
     const moduleCode = req.query.moduleCode
       ? String(req.query.moduleCode).trim().toUpperCase()
       : null;
-
-    if (periodMonth < 1 || periodMonth > 12) {
-      return res.status(400).json({ errors: ['Valid period month (1-12) is required.'] });
-    }
-    if (!moduleCode) {
-      return res.status(400).json({ errors: ['moduleCode is required.'] });
-    }
 
     try {
       const tutorResult = await pool.query(
@@ -595,19 +590,10 @@ router.post(
   '/',
   authenticate,
   requireRole('tutor'),
+  validateCreateClaim,
   async (req, res) => {
     const tutorId = req.user.userId;
     const { periodMonth, periodYear, lecturerId, sessionIds, moduleCode } = req.body;
-
-    const errors = [];
-    if (!periodMonth || periodMonth < 1 || periodMonth > 12) errors.push('Valid period month (1-12) is required.');
-    if (!periodYear || periodYear < 2020) errors.push('Valid period year is required.');
-    if (!lecturerId) errors.push('Lecturer ID is required.');
-    if (!moduleCode) errors.push('Module code is required.');
-    if (!sessionIds || !Array.isArray(sessionIds) || sessionIds.length === 0) {
-      errors.push('At least one session must be included in the claim.');
-    }
-    if (errors.length) return res.status(400).json({ errors });
 
     const mod = String(moduleCode).trim().toUpperCase();
 
@@ -690,14 +676,11 @@ router.patch(
   '/:id/resubmit',
   authenticate,
   requireRole('tutor'),
+  validateSessionIds,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
     const tutorId = req.user.userId;
     const { sessionIds } = req.body;
-
-    if (!sessionIds || !Array.isArray(sessionIds) || !sessionIds.length) {
-      return res.status(400).json({ errors: ['At least one session must be included.'] });
-    }
 
     try {
       const claim = await loadClaimById(claimId);
@@ -762,6 +745,7 @@ router.patch(
   '/:id/update-sessions',
   authenticate,
   requireRole('tutor'),
+  validateSessionIds,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
     const tutorId = req.user.userId;
@@ -839,6 +823,7 @@ router.patch(
 router.get(
   '/:id/sessions',
   authenticate,
+  validateClaimIdParam,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
     const { userId, role } = req.user;
@@ -990,14 +975,11 @@ router.patch(
   '/:id/lecturer-return',
   authenticate,
   requireRole('lecturer'),
+  validateClaimNote,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
     const lecturerId = req.user.userId;
     const { note } = req.body;
-
-    if (!note || !String(note).trim()) {
-      return res.status(400).json({ errors: ['Return note is required.'] });
-    }
 
     try {
       const claim = await loadClaimById(claimId);
@@ -1103,13 +1085,10 @@ router.patch(
   '/:id/coordinator-return',
   authenticate,
   requireRole('admin'),
+  validateClaimNote,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
     const { note } = req.body;
-
-    if (!note || !String(note).trim()) {
-      return res.status(400).json({ errors: ['Return note is required.'] });
-    }
 
     try {
       const claim = await loadClaimById(claimId);
