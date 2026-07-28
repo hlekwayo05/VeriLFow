@@ -3,6 +3,74 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = rateLimit;
+
+function parseBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === '') return fallback;
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+}
+
+function parseTrustProxy(value) {
+  if (value === undefined || value === null || value === '') {
+    return process.env.NODE_ENV === 'production' ? 1 : false;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return 1;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+
+  const asNumber = Number(normalized);
+  return Number.isFinite(asNumber) && asNumber >= 0 ? asNumber : 1;
+}
+
+function getConfiguredOrigins() {
+  return (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
+function validateEnvironment() {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const requiredProductionVars = [
+    'DATABASE_URL',
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_KEY',
+    'JWT_SECRET',
+    'CORS_ORIGIN',
+  ];
+
+  const missingProductionVars = requiredProductionVars.filter((name) => {
+    const value = process.env[name];
+    return !value || !String(value).trim();
+  });
+
+  if (isProduction && missingProductionVars.length > 0) {
+    console.error('\nStartup configuration error:');
+    missingProductionVars.forEach((name) => {
+      console.error(`- ${name} is required in production.`);
+    });
+    console.error('Set the missing values in backend/.env or your deployment environment and restart the server.');
+    process.exit(1);
+  }
+
+  if (!isProduction && missingProductionVars.length > 0) {
+    console.warn('\nStartup configuration warning:');
+    missingProductionVars.forEach((name) => {
+      console.warn(`- ${name} is not set. Local development will continue, but production deployment requires it.`);
+    });
+  }
+}
+
+validateEnvironment();
+
 const pool = require('./db');
 pool.connect((err, client, release) => {
   if (err) {
@@ -13,13 +81,10 @@ pool.connect((err, client, release) => {
   }
 });
 
-const express  = require('express');
-const cors     = require('cors');
-const helmet   = require('helmet');
-const rateLimit = require('express-rate-limit');
-const { ipKeyGenerator } = rateLimit;
-
 const app = express();
+app.set('env', process.env.NODE_ENV || 'development');
+app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
+app.disable('x-powered-by');
 
 // ── Security headers ─────────────────────────────────────────
 app.use(helmet({
@@ -30,18 +95,16 @@ app.use(helmet({
   frameguard: false,
 }));
 
-// ── CORS (restricted origins) ────────────────────────────────
+// ── CORS (environment-configurable origins) ─────────────────
+const configuredOrigins = getConfiguredOrigins();
+const allowAllOriginsInDevelopment = configuredOrigins.length === 0 && process.env.NODE_ENV !== 'production';
+
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowed = (process.env.CORS_ORIGIN || '')
-      .split(',')
-      .map((o) => o.trim())
-      .filter(Boolean);
-
     // Allow requests with no origin (mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    if (allowed.includes(origin)) {
+    if (allowAllOriginsInDevelopment || configuredOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -155,7 +218,8 @@ const { getLanIPv4, resolveFrontendBase } = require('./services/qrTokens');
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`VeriFlow API running on http://localhost:${PORT}`);
   console.log('  Security: helmet enabled, rate limiters active');
-  console.log(`  CORS origins: ${process.env.CORS_ORIGIN || '(none configured)'}`);
+  console.log(`  CORS origins: ${configuredOrigins.length ? configuredOrigins.join(', ') : '(using development fallback)'}`);
+  console.log(`  Trust proxy: ${app.get('trust proxy')}`);
   const lan = getLanIPv4();
   if (lan) {
     console.log(`  On your network: http://${lan}:${PORT}`);
