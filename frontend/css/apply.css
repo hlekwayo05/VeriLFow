@@ -410,9 +410,10 @@
     font-size: 26px;
   }
 
-  /* Mobile apply: form only — hide instructional chrome */
+  /* Mobile apply: show compact progress — hide instructional chrome */
   .apply-mobile-progress {
-    display: none !important;
+    display: block !important;
+    margin-bottom: 18px;
   }
 
   .apply-flow #applicationsOpenBadge,

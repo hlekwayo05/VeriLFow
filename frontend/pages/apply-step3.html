@@ -6,10 +6,12 @@
   <title>VeriFlow — Apply · Step 3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../css/main.css?v=4"/>
-  <link rel="stylesheet" href="../css/apply.css?v=8"/>
+  <link rel="stylesheet" href="../css/veriflow-mobile.css?v=6"/>
+  <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
+  <link rel="stylesheet" href="../css/apply.css?v=12"/>
   <style>
     .apply-flow .form-actions { flex-direction: column; }
     .upload-section-title { font-family:'Bebas Neue', sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ink-4); margin-bottom:14px; }
@@ -20,6 +22,22 @@
     .check-item i { font-size:17px; }
     .check-item.done { color:var(--ok); }
     .check-item.pending { color:var(--ink-4); }
+
+    /* Real clickable file input on top of the card — works on mobile (no JS .click()) */
+    .apply-flow .upload-box {
+      position: relative;
+      overflow: hidden;
+    }
+    .apply-flow .file-input-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 3;
+      font-size: 0;
+    }
   </style>
 </head>
 <body class="apply-flow">
@@ -36,7 +54,7 @@
         </div>
         <p class="form-subtitle">Tutor applications are not open at the moment. Please check back later or log in to track an existing application.</p>
         <div class="apply-window-closed-actions">
-          <a href="../../index.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
+          <a href="login.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
           <a href="login.html"><button type="button" class="btn btn-ink">Log in</button></a>
         </div>
       </div>
@@ -53,16 +71,16 @@
       <div class="upload-section-title">Required documents</div>
 
       <!-- CV UPLOAD -->
-      <div class="upload-box" id="cvBox" onclick="triggerUpload('cvInput', 'cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV')">
-        <input type="file" class="file-input-hidden" id="cvInput" accept=".pdf" onchange="handleFile(this, 'cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV')"/>
+      <div class="upload-box" id="cvBox">
+        <input type="file" class="file-input-overlay" id="cvInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV')"/>
         <i class="ti ti-file-cv upload-icon" id="cvIcon"></i>
         <div class="upload-title" id="cvName">Curriculum Vitae (PDF)</div>
         <div class="upload-sub" id="cvSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
       </div>
 
       <!-- ACADEMIC RECORD UPLOAD -->
-      <div class="upload-box" id="acadBox" onclick="triggerUpload('acadInput', 'acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record')">
-        <input type="file" class="file-input-hidden" id="acadInput" accept=".pdf" onchange="handleFile(this, 'acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record')"/>
+      <div class="upload-box" id="acadBox">
+        <input type="file" class="file-input-overlay" id="acadInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record')"/>
         <i class="ti ti-school upload-icon" id="acadIcon"></i>
         <div class="upload-title" id="acadName">Academic Record (PDF)</div>
         <div class="upload-sub" id="acadSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
@@ -73,21 +91,21 @@
       <!-- DECLARATION -->
       <div class="upload-section-title">Declaration</div>
       <div class="check-wrap" style="margin-bottom:24px">
-        <input type="checkbox" id="declChk" onchange="updateSubmit()"/>
+        <input type="checkbox" id="declChk"/>
         <label class="check-label" for="declChk">
           I, the undersigned, declare that all information provided in this application is true, correct and complete to the best of my knowledge and belief. I understand that the submission of false, misleading or incomplete information may result in the immediate disqualification of my application, or dismissal if already appointed.
         </label>
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-ink btn-glow btn-disabled" id="submitBtn" onclick="handleSubmit()">
+        <button type="button" class="btn btn-ink btn-glow btn-disabled" id="submitBtn">
           <i class="ti ti-send"></i> Submit application
         </button>
         <div class="lock-notice" id="lockNotice">
           <i class="ti ti-lock"></i>
           <span id="lockText">Upload both documents and tick the declaration to unlock submission.</span>
         </div>
-        <button class="btn btn-ghost" onclick="VF.navigate('apply-step2.html')">
+        <button type="button" class="btn btn-ghost" onclick="VF.navigate('apply-step2.html')">
           <i class="ti ti-arrow-left"></i> Back to academic info
         </button>
       </div>
@@ -122,10 +140,242 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=19"></script>
 <script>
   VF.pageIn();
-  if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
+  if (!VF.requireAuth('login.html')) throw new Error('Not authenticated');
+
+  let state = {
+    cv: false,
+    acad: false,
+    decl: false,
+    cvFileObj: null,
+    acadFileObj: null,
+    cvSaved: false,
+    acadSaved: false,
+  };
+  let submitting = false;
+
+  function markUploaded(boxId, iconId, nameId, subId, label, fileName) {
+    document.getElementById(boxId).classList.add('uploaded');
+    document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
+    document.getElementById(nameId).textContent = label + ' uploaded';
+    document.getElementById(subId).textContent = fileName
+      ? (fileName + ' · saved')
+      : 'Saved on server — ready to submit';
+  }
+
+  function updateChecklist(which) {
+    const map = { cv: 'chk-cv', acad: 'chk-acad', decl: 'chk-decl' };
+    const el = document.getElementById(map[which]);
+    el.classList.remove('pending');
+    el.classList.add('done');
+    el.querySelector('i').className = 'ti ti-circle-check';
+  }
+
+  function updateSubmit() {
+    const btn    = document.getElementById('submitBtn');
+    const notice = document.getElementById('lockNotice');
+    const docsReady = (state.cvSaved || state.cv) && (state.acadSaved || state.acad);
+    const ready  = docsReady && state.decl && !submitting;
+
+    if (ready) {
+      btn.classList.remove('btn-disabled');
+      btn.classList.add('btn-ink');
+      notice.style.display = 'none';
+    } else {
+      btn.classList.add('btn-disabled');
+      btn.classList.remove('btn-ink');
+      notice.style.display = 'flex';
+      if (!submitting) {
+        const missing = [];
+        if (!(state.cvSaved || state.cv))   missing.push('CV');
+        if (!(state.acadSaved || state.acad)) missing.push('academic record');
+        if (!state.decl) missing.push('declaration');
+        document.getElementById('lockText').textContent =
+          'Still needed: ' + missing.join(', ') + '.';
+      }
+    }
+    if (typeof syncStep3Progress === 'function') syncStep3Progress();
+  }
+
+  function syncStep3Progress() {
+    const parts = [
+      (state.cvSaved || state.cv) ? 1 : 0,
+      (state.acadSaved || state.acad) ? 1 : 0,
+      state.decl ? 1 : 0,
+    ];
+    VF.setApplyStepProgress(parts.reduce((a, b) => a + b, 0) / 3);
+  }
+
+  function restoreSavedDocs(app) {
+    if (app.cv_filename) {
+      state.cv = true;
+      state.cvSaved = true;
+      state.cvFile = app.cv_filename.split('/').pop();
+      markUploaded('cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV', state.cvFile);
+      updateChecklist('cv');
+    }
+    if (app.transcript_filename) {
+      state.acad = true;
+      state.acadSaved = true;
+      state.acadFile = app.transcript_filename.split('/').pop();
+      markUploaded('acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record', state.acadFile);
+      updateChecklist('acad');
+    }
+    updateSubmit();
+  }
+
+  function isPdfFile(file) {
+    const name = (file.name || '').toLowerCase();
+    const mime = (file.type || '').toLowerCase();
+    return mime === 'application/pdf' || name.endsWith('.pdf') || mime === 'application/octet-stream';
+  }
+
+  async function saveDraftDocument(fieldName, file) {
+    const formData = new FormData();
+    formData.append(fieldName, file, file.name || 'document.pdf');
+    return VF.apiFetch('/applications/me/documents', {
+      method: 'POST',
+      body: formData,
+      isFormData: true,
+    });
+  }
+
+  async function handleFile(input, boxId, iconId, nameId, subId, label) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!isPdfFile(file)) {
+      VF.toast('Only PDF files are accepted.', 'err');
+      input.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      VF.toast('File must be under 5MB.', 'err');
+      input.value = '';
+      return;
+    }
+
+    const fieldName = boxId === 'cvBox' ? 'cvFile' : 'transcriptFile';
+    markUploaded(boxId, iconId, nameId, subId, label, file.name + ' · saving…');
+    document.getElementById(subId).textContent = file.name + ' · saving…';
+
+    try {
+      await saveDraftDocument(fieldName, file);
+      if (boxId === 'cvBox') {
+        state.cv = true;
+        state.cvSaved = true;
+        state.cvFile = file.name;
+        state.cvFileObj = file;
+        updateChecklist('cv');
+      } else {
+        state.acad = true;
+        state.acadSaved = true;
+        state.acadFile = file.name;
+        state.acadFileObj = file;
+        updateChecklist('acad');
+      }
+      markUploaded(boxId, iconId, nameId, subId, label, file.name);
+      updateSubmit();
+      VF.toast(label + ' saved.', 'ok');
+    } catch (err) {
+      input.value = '';
+      document.getElementById(boxId).classList.remove('uploaded');
+      VF.toast(err.errors ? err.errors[0] : ('Could not save ' + label + '.'), 'err');
+      updateSubmit();
+    }
+  }
+
+  document.getElementById('declChk').addEventListener('change', function() {
+    state.decl = this.checked;
+    if (this.checked) updateChecklist('decl');
+    else {
+      const el = document.getElementById('chk-decl');
+      el.classList.add('pending'); el.classList.remove('done');
+      el.querySelector('i').className = 'ti ti-circle';
+    }
+    updateSubmit();
+  });
+
+  async function handleSubmit(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (submitting) return;
+
+    const declared = document.getElementById('declChk').checked;
+    const cvFile = document.getElementById('cvInput').files[0] || state.cvFileObj;
+    const acadFile = document.getElementById('acadInput').files[0] || state.acadFileObj;
+    const hasCv = state.cvSaved || !!cvFile;
+    const hasAcad = state.acadSaved || !!acadFile;
+
+    if (!hasCv || !hasAcad || !declared) {
+      state.decl = declared;
+      updateSubmit();
+      VF.toast('Please upload both PDFs and accept the declaration before submitting.', 'err');
+      return;
+    }
+
+    submitting = true;
+    state.decl = true;
+    const btn = document.getElementById('submitBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Submitting…';
+    btn.classList.add('btn-disabled');
+
+    const formData = new FormData();
+    formData.append('declared', 'true');
+    // Re-send local files if present; otherwise server uses draft-saved files
+    if (cvFile) formData.append('cvFile', cvFile, cvFile.name || 'cv.pdf');
+    if (acadFile) formData.append('transcriptFile', acadFile, acadFile.name || 'transcript.pdf');
+
+    try {
+      const result = await VF.apiFetch('/applications/me/submit', {
+        method: 'POST',
+        body: formData,
+        isFormData: true,
+      });
+
+      // Confirm the status actually changed before leaving this page
+      let confirmed = null;
+      try {
+        confirmed = await VF.apiFetch('/applications/me');
+        VF.syncApplicationState(confirmed);
+      } catch (_) { /* use submit result */ }
+
+      const status = (confirmed && confirmed.status) || result.status;
+      const passed = result.pass === true || status === 'submitted';
+      const rejected = result.pass === false || status === 'rejected';
+
+      if (passed) {
+        VF.setState({ applicationStatus: 'submitted', declared: true });
+        VF.navigate('submitted.html');
+        return;
+      }
+      if (rejected) {
+        VF.setState({
+          applicationStatus: 'rejected',
+          rejectionReason: result.reason || null,
+          rejectionDetail: result.detail || null,
+        });
+        VF.navigate('rejected.html');
+        return;
+      }
+
+      submitting = false;
+      btn.innerHTML = originalHTML;
+      updateSubmit();
+      VF.toast('Submission did not complete. Your PDFs are still saved — try Submit again.', 'err');
+    } catch (err) {
+      submitting = false;
+      btn.innerHTML = originalHTML;
+      updateSubmit();
+      VF.toast(err.errors ? err.errors[0] : 'Could not submit. Your PDFs are still saved — try again.', 'err');
+    }
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', handleSubmit);
 
   (async function initStep3() {
     await VF.gateApplicationWindow(async () => {
@@ -149,137 +399,13 @@
         }
 
         document.getElementById('step3Form').style.display = '';
+        restoreSavedDocs(app);
+        syncStep3Progress();
       } catch (err) {
         VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
       }
     });
   })();
-
-  let state = { cv: false, acad: false, decl: false, cvFileObj: null, acadFileObj: null };
-
-  function triggerUpload(inputId) {
-    document.getElementById(inputId).click();
-  }
-
-  function handleFile(input, boxId, iconId, nameId, subId, label) {
-    const file = input.files[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf') {
-      VF.toast('Only PDF files are accepted.', 'err');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      VF.toast('File must be under 5MB.', 'err');
-      return;
-    }
-    document.getElementById(boxId).classList.add('uploaded');
-    document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
-    document.getElementById(nameId).textContent = label + ' uploaded';
-    document.getElementById(subId).textContent  = file.name + ' · ' + (file.size / 1024).toFixed(0) + ' KB';
-    if (boxId === 'cvBox') {
-      state.cv = true;
-      state.cvFile = file.name;
-      state.cvFileObj = file;
-      updateChecklist('cv');
-    }
-    if (boxId === 'acadBox') {
-      state.acad = true;
-      state.acadFile = file.name;
-      state.acadFileObj = file;
-      updateChecklist('acad');
-    }
-    updateSubmit();
-    VF.toast(label + ' uploaded successfully.', 'ok');
-  }
-
-  function updateChecklist(which) {
-    const map = { cv: 'chk-cv', acad: 'chk-acad', decl: 'chk-decl' };
-    const el = document.getElementById(map[which]);
-    el.classList.remove('pending');
-    el.classList.add('done');
-    el.querySelector('i').className = 'ti ti-circle-check';
-  }
-
-  document.getElementById('declChk').addEventListener('change', function() {
-    state.decl = this.checked;
-    if (this.checked) updateChecklist('decl');
-    else {
-      const el = document.getElementById('chk-decl');
-      el.classList.add('pending'); el.classList.remove('done');
-      el.querySelector('i').className = 'ti ti-circle';
-    }
-    updateSubmit();
-  });
-
-  function updateSubmit() {
-    const btn    = document.getElementById('submitBtn');
-    const notice = document.getElementById('lockNotice');
-    const ready  = state.cv && state.acad && state.decl;
-
-    if (ready) {
-      btn.classList.remove('btn-disabled');
-      btn.classList.add('btn-ink');
-      notice.style.display = 'none';
-    } else {
-      btn.classList.add('btn-disabled');
-      btn.classList.remove('btn-ink');
-      notice.style.display = 'flex';
-      const missing = [];
-      if (!state.cv)   missing.push('CV');
-      if (!state.acad) missing.push('academic record');
-      if (!state.decl) missing.push('declaration');
-      document.getElementById('lockText').textContent =
-        'Still needed: ' + missing.join(', ') + '.';
-    }
-  }
-
-  async function handleSubmit() {
-    if (!state.cv || !state.acad || !state.decl) return;
-
-    const btn = document.getElementById('submitBtn');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Submitting…';
-    btn.classList.add('btn-disabled');
-
-    const formData = new FormData();
-    formData.append('cvFile',         state.cvFileObj);
-    formData.append('transcriptFile', state.acadFileObj);
-    formData.append('declared',       'true');
-
-    try {
-      const result = await VF.apiFetch('/applications/me/submit', {
-        method: 'POST',
-        body: formData,
-        isFormData: true,
-      });
-
-      if (result.pass) {
-        VF.setState({
-          applicationStatus: 'submitted',
-          docs: {
-            cv: true,
-            academic: true,
-            cvFile:       state.cvFile || null,
-            academicFile: state.acadFile || null,
-          },
-          declared: true,
-        });
-        VF.navigate('submitted.html');
-      } else {
-        VF.setState({
-          applicationStatus: 'rejected',
-          rejectionReason: result.reason,
-          rejectionDetail: result.detail || null,
-        });
-        VF.navigate('rejected.html');
-      }
-
-    } catch (err) {
-      btn.innerHTML = originalHTML;
-      btn.classList.remove('btn-disabled');
-      VF.toast(err.errors ? err.errors[0] : 'Could not submit application. Please try again.', 'err');
-    }
-  }
 </script>
 </body>
 </html>

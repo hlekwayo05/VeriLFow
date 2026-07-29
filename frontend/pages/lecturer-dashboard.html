@@ -6,10 +6,81 @@
 <title>VeriFlow — Lecturer Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
-<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=30"/>
+<link rel="stylesheet" href="../css/veriflow-mobile.css?v=12"/>
+<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=43"/>
+<link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=22"/>
+<style id="lec-session-card-css">
+  #lecSessionCard {
+    display: block !important;
+    box-sizing: border-box !important;
+    width: calc(100% - 40px) !important;
+    margin: 0 20px 18px !important;
+    padding: 18px 18px 16px !important;
+    border: none !important;
+    border-radius: 20px !important;
+    background: linear-gradient(160deg, #1c3b38, #152e2c) !important;
+    box-shadow: 0 12px 28px rgba(21, 46, 44, 0.28) !important;
+    color: #eef4f1 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    min-height: 108px !important;
+    height: auto !important;
+    max-height: none !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+  #lecSessionCardKicker,
+  #lec-hub-next-title,
+  #lec-hub-next-meta {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    width: auto !important;
+    clip: auto !important;
+    clip-path: none !important;
+    transform: none !important;
+  }
+  #lecSessionCardKicker {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: #a9c4bd !important;
+    margin: 0 0 8px !important;
+    line-height: 1.3 !important;
+  }
+  #lec-hub-next-title {
+    font-family: "Space Grotesk", "DM Sans", sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    color: #ffffff !important;
+    margin: 0 0 8px !important;
+  }
+  #lec-hub-next-meta {
+    font-family: "Space Grotesk", "DM Sans", sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+    color: #c3d8d2 !important;
+    margin: 0 !important;
+  }
+  #lec-hub-name {
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #152e2c !important;
+  }
+</style>
 </head>
 <body class="lec-dash">
 <div class="app">
@@ -85,53 +156,120 @@
     <!-- Mobile home hub -->
     <div class="lec-mobile-hub" id="lec-mobile-hub">
       <header class="lec-hub-top">
-        <h1 class="lec-hub-name" id="lec-hub-name">Loading…</h1>
-        <p class="lec-hub-module" id="lec-hub-module">Loading module…</p>
+        <div class="td-hub-who">
+          <div class="td-hub-avatar" id="lec-hub-avatar" aria-hidden="true">VF</div>
+          <div class="lec-hub-who-text">
+            <h1 class="lec-hub-name" id="lec-hub-name">Loading…</h1>
+            <p class="lec-hub-module" id="lec-hub-module">Loading module…</p>
+          </div>
+        </div>
+        <button type="button" class="lec-hub-bell" aria-label="Messages" onclick="goView('messages',document.getElementById('nav-messages'))">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
       </header>
       <div class="lec-hub-modules" id="lec-hub-modules" aria-label="Switch module" hidden></div>
-      <button type="button" class="lec-hub-hero" id="lec-hub-hero" onclick="goView('sessions',document.getElementById('nav-sessions'))">
-        <div class="lec-hub-hero-label">Today / next</div>
-        <div class="lec-hub-hero-title" id="lec-hub-next-title">Loading…</div>
-        <div class="lec-hub-hero-meta" id="lec-hub-next-meta">—</div>
-      </button>
-      <div class="lec-hub-grid" role="navigation" aria-label="Lecturer sections">
-        <button type="button" class="lec-hub-tile" onclick="goView('sessions',document.getElementById('nav-sessions'))">
-          <span class="lec-hub-tile-title">Sessions</span>
-          <span class="lec-hub-tile-sub">Schedule &amp; confirm</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('messages',document.getElementById('nav-messages'))">
-          <span class="lec-hub-tile-title">Messages</span>
-          <span class="lec-hub-tile-sub" id="lec-hub-msg-sub">Inbox</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('tutors',document.getElementById('nav-tutors'))">
-          <span class="lec-hub-tile-title">Tutors</span>
-          <span class="lec-hub-tile-sub" id="lec-hub-tutors-sub">Your team</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('claims',document.getElementById('nav-claims'))">
-          <span class="lec-hub-tile-title">Claims</span>
-          <span class="lec-hub-tile-sub" id="lec-hub-claims-sub">Approvals</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('calendar',document.getElementById('nav-calendar'))">
-          <span class="lec-hub-tile-title">Calendar</span>
-          <span class="lec-hub-tile-sub">Dates</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('classlist',document.getElementById('nav-classlist'))">
-          <span class="lec-hub-tile-title">Class lists</span>
-          <span class="lec-hub-tile-sub">Enrolments</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('support',document.getElementById('nav-support'))">
-          <span class="lec-hub-tile-title">Support</span>
-          <span class="lec-hub-tile-sub">Help</span>
-        </button>
-        <button type="button" class="lec-hub-tile" onclick="goView('report',document.getElementById('nav-report'))">
-          <span class="lec-hub-tile-title">Report</span>
-          <span class="lec-hub-tile-sub">Module</span>
-        </button>
-        <button type="button" class="lec-hub-tile lec-hub-tile--accent" onclick="openNewSession()">
-          <span class="lec-hub-tile-title">New session</span>
-          <span class="lec-hub-tile-sub">Create</span>
-        </button>
+
+      <!-- Full TODAY/NEXT card: kicker + title + meta (never a slim pill) -->
+      <div id="lecSessionCard" class="lec-session-card" role="button" tabindex="0"
+           onclick="goView('sessions',document.getElementById('nav-sessions'))"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goView('sessions',document.getElementById('nav-sessions'));}"
+           aria-label="Today / next session">
+        <div id="lecSessionCardKicker">Today / next</div>
+        <div id="lec-hub-next-title">No session today</div>
+        <div id="lec-hub-next-meta">Check calendar for upcoming sessions</div>
       </div>
+
+      <div class="lec-hub-section">
+        <div class="lec-hub-section-title">Quick actions</div>
+        <div class="lec-hub-grid" role="navigation" aria-label="Lecturer sections">
+          <button type="button" class="lec-hub-tile" onclick="goView('sessions',document.getElementById('nav-sessions'))">
+            <span class="lec-hub-ico c1" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 14l2 2 4-4"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Sessions</span>
+              <span class="lec-hub-tile-sub">Schedule &amp; confirm</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('messages',document.getElementById('nav-messages'))">
+            <span class="lec-hub-ico c4" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Messages</span>
+              <span class="lec-hub-tile-sub" id="lec-hub-msg-sub">Inbox</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('tutors',document.getElementById('nav-tutors'))">
+            <span class="lec-hub-ico c1" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Tutors</span>
+              <span class="lec-hub-tile-sub" id="lec-hub-tutors-sub">Manage this module's tutors</span>
+            </span>
+            <span class="lec-hub-meta" id="lec-hub-tutors-badge">0</span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('claims',document.getElementById('nav-claims'))">
+            <span class="lec-hub-ico c3" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Claims</span>
+              <span class="lec-hub-tile-sub" id="lec-hub-claims-sub">Approvals</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('calendar',document.getElementById('nav-calendar'))">
+            <span class="lec-hub-ico c3" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Calendar</span>
+              <span class="lec-hub-tile-sub">Dates</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('classlist',document.getElementById('nav-classlist'))">
+            <span class="lec-hub-ico c4" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Class lists</span>
+              <span class="lec-hub-tile-sub">Enrolments</span>
+            </span>
+            <span class="lec-hub-meta" id="lec-hub-classlist-badge">0</span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('report',document.getElementById('nav-report'))">
+            <span class="lec-hub-ico c1" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Report</span>
+              <span class="lec-hub-tile-sub">Module report</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="lec-hub-tile" onclick="goView('support',document.getElementById('nav-support'))">
+            <span class="lec-hub-ico c2" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+            </span>
+            <span class="lec-hub-tile-body">
+              <span class="lec-hub-tile-title">Support</span>
+              <span class="lec-hub-tile-sub">Help</span>
+            </span>
+            <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="lec-fab" onclick="openNewSession()" aria-label="New session" title="New session">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </div>
 
     <!-- ═══════════ DASHBOARD ═══════════ -->
@@ -205,48 +343,78 @@
 
     <!-- ═══════════ SESSIONS ═══════════ -->
     <div class="view" id="view-sessions">
-      <div class="page-hero"><h1>All <em>Sessions</em></h1><p id="sessions-hero-sub">IS211 · Information Systems 211 &nbsp;·&nbsp; 2025 — 18 sessions total</p></div>
+      <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero lec-page-hero">
+        <h1>All Sessions</h1>
+        <p id="sessions-hero-sub">Loading…</p>
+      </div>
       <div class="sessions-toolbar">
-        <div class="filter-tabs">
-          <button class="filter-tab active" onclick="filterSessions('all',this)">All</button>
-          <button class="filter-tab" onclick="filterSessions('upcoming',this)">Upcoming</button>
-          <button class="filter-tab" onclick="filterSessions('past',this)">Past</button>
-          <button class="filter-tab" onclick="filterSessions('flagged',this)">Flagged</button>
+        <div class="filter-tabs" role="tablist" aria-label="Filter sessions">
+          <button type="button" class="filter-tab active" onclick="filterSessions('all',this)">All</button>
+          <button type="button" class="filter-tab" onclick="filterSessions('upcoming',this)">Upcoming</button>
+          <button type="button" class="filter-tab" onclick="filterSessions('past',this)">Past</button>
+          <button type="button" class="filter-tab" onclick="filterSessions('flagged',this)">Flagged</button>
         </div>
-        <button class="new-session-btn" style="margin-left:auto;" onclick="openNewSession()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <button type="button" class="new-session-btn lec-desk-ns-btn" onclick="openNewSession()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           New Session
         </button>
       </div>
       <div class="sessions-list" id="sessions-list">
-        <div style="padding:24px;text-align:center;color:var(--muted)">Loading sessions…</div>
+        <div class="vf-sess-empty lec-sess-empty">
+          <div class="vf-sess-empty-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          </div>
+          <h3>No sessions yet</h3>
+          <p>Create one using the button below.</p>
+        </div>
+      </div>
+      <div class="lec-mobile-cta" id="lec-sessions-cta">
+        <button type="button" class="new-session-btn lec-btn-glow" onclick="openNewSession()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="lec-btn-glow-label">New Session</span>
+        </button>
       </div>
     </div>
 
     <!-- ═══════════ TUTORS ═══════════ -->
     <div class="view" id="view-tutors">
-      <div class="page-hero"><h1>My <em>Tutors</em></h1><p id="tutors-hero-sub">Tutors assigned to your modules</p></div>
+      <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero lec-page-hero">
+        <h1>My Tutors</h1>
+        <p id="tutors-hero-sub">Loading…</p>
+      </div>
       <div class="stats-strip">
         <div class="stat-box"><div class="stat-label">Total Tutors</div><div class="stat-val" id="tutors-count">—</div></div>
         <div class="stat-box"><div class="stat-label">Approved</div><div class="stat-val green" id="tutors-approved">—</div></div>
       </div>
       <div class="tutors-grid" id="tutors-grid">
-        <div style="padding:24px;text-align:center;color:var(--muted);grid-column:1/-1">Loading tutors…</div>
+        <div class="lec-tutors-loading">Loading tutors…</div>
       </div>
-      <div style="margin-top:28px;">
-        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:12px;">
-          My Referrals
-        </div>
-        <div id="my-referrals-list">
-          <div style="font-size:12px;color:var(--muted);">
-            Loading referrals…
+      <section class="lec-referrals" aria-label="My referrals">
+        <h2 class="lec-referrals-title">My referrals</h2>
+        <div class="lec-referrals-card">
+          <div id="my-referrals-list">
+            <div class="lec-referrals-empty">Loading referrals…</div>
+          </div>
+          <div class="lec-referrals-actions">
+            <button type="button" class="lec-ref-btn" onclick="openReferTutor()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              Refer a tutor
+            </button>
+            <button type="button" class="lec-ref-btn" onclick="openMsgAll()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Message all
+            </button>
           </div>
         </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:16px;align-self:flex-start;">
-        <button onclick="openReferTutor()" style="padding:10px 20px;border-radius:9px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--border-hi)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Refer a tutor</button>
-        <button onclick="openMsgAll()" style="display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:9px;border:1px solid var(--border);background:var(--faint);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff';this.style.borderColor='var(--accent)'" onmouseout="this.style.background='var(--faint)';this.style.color='var(--muted)';this.style.borderColor='var(--border)'"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Message All Tutors</button>
-      </div>
+      </section>
     </div>
 
     <!-- ═══════════ MESSAGES ═══════════ -->
@@ -254,6 +422,10 @@
       <div class="msg-layout">
         <div class="inbox-sidebar">
           <div class="inbox-top">
+            <button type="button" class="lec-page-back lec-msg-home" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+              HOME
+            </button>
             <div class="tm-msg-title-row">
               <h2>Messages</h2>
             </div>
@@ -310,72 +482,219 @@
 
     <!-- ═══════════ MODULE REPORT ═══════════ -->
     <div class="view" id="view-report">
-      <div class="report-header">
-        <div><div class="report-eyebrow" id="report-eyebrow">Academic Report</div><h1 class="report-title" id="report-title">Module Report</h1><p class="report-sub" id="report-sub">Loading…</p></div>
-        <div class="report-actions"><button type="button" class="rpt-btn primary" onclick="exportModuleReport()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button></div>
+      <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="lec-report-head">
+        <span class="report-eyebrow" id="report-eyebrow">Academic Report</span>
+        <h1 class="report-title" id="report-title">Module Report</h1>
+        <p class="report-sub" id="report-sub">Loading…</p>
       </div>
-      <div class="kpi-strip" id="report-kpi-strip">
-        <div class="kpi-box"><div class="kpi-label">Sessions Run</div><div class="kpi-val">—</div><div class="kpi-sub">this month</div></div>
+      <div class="lec-report-export">
+        <button type="button" class="rpt-btn primary" onclick="exportModuleReport()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
       </div>
-      <div class="rpt-grid">
-        <div class="rpt-card">
-          <div class="rpt-card-header"><span class="rpt-card-title">Sessions by Type</span><span class="rpt-card-badge" id="report-type-badge">—</span></div>
-          <div id="report-by-type"><div style="padding:16px;color:var(--muted);font-size:12px">Loading…</div></div>
+
+      <div class="lec-an-hero" id="report-hero">
+        <div class="lec-an-hero-top">
+          <span class="lec-an-hero-label">Completion rate</span>
+          <span class="lec-an-hero-sem" id="report-hero-sem">—</span>
         </div>
-        <div class="rpt-card">
-          <div class="rpt-card-header"><span class="rpt-card-title">Sessions per Month</span><span class="rpt-card-badge" id="report-month-badge">—</span></div>
-          <div class="month-chart" id="report-month-chart"><div style="padding:16px;color:var(--muted);font-size:12px">Loading…</div></div>
+        <div class="lec-an-hero-body">
+          <div class="lec-an-ring-wrap">
+            <svg width="98" height="98" viewBox="0 0 98 98" aria-hidden="true">
+              <circle cx="49" cy="49" r="42" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
+              <circle id="report-ring-arc" cx="49" cy="49" r="42" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
+            </svg>
+            <div class="lec-an-ring-center">
+              <div class="lec-an-ring-num" id="report-completion-pct">0%</div>
+              <div class="lec-an-ring-pct" id="report-completion-sub">0 OF 0<br>COMPLETED</div>
+            </div>
+          </div>
+          <div class="lec-an-hero-stats">
+            <div class="lec-an-hero-stat"><span class="v" id="report-stat-sessions">0</span><span class="l">SESSIONS RUN</span></div>
+            <div class="lec-an-hero-stat"><span class="v" id="report-stat-attendance">0%</span><span class="l">TUTOR ATTENDANCE</span></div>
+          </div>
         </div>
       </div>
-      <div class="rpt-card" style="margin-bottom:14px;animation:fadeUp .35s ease .15s both;">
-        <div class="rpt-card-header"><span class="rpt-card-title">Tutor Performance</span><span class="rpt-card-badge" id="report-tutor-badge">—</span></div>
-        <table class="perf-table">
-          <thead><tr><th style="width:36px;"></th><th>Name</th><th>Module(s)</th><th>Sessions Attended</th><th>Rate</th><th>Missed</th><th>Grade</th></tr></thead>
-          <tbody id="report-tutor-tbody">
-            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
-          </tbody>
-        </table>
+
+      <div class="lec-an-chips">
+        <div class="lec-an-chip">
+          <span class="l">Active tutors</span>
+          <div class="v" id="report-stat-tutors">0</div>
+          <div class="sub" id="report-stat-tutors-sub">—</div>
+        </div>
+        <div class="lec-an-chip">
+          <span class="l">Flagged sessions</span>
+          <div class="v red" id="report-stat-flagged">0</div>
+          <div class="sub">need attention</div>
+        </div>
+      </div>
+
+      <!-- Desktop-only detailed report -->
+      <div class="lec-report-desk">
+        <div class="kpi-strip" id="report-kpi-strip">
+          <div class="kpi-box"><div class="kpi-label">Sessions Run</div><div class="kpi-val">—</div><div class="kpi-sub">this month</div></div>
+        </div>
+        <div class="rpt-grid">
+          <div class="rpt-card">
+            <div class="rpt-card-header"><span class="rpt-card-title">Sessions by Type</span><span class="rpt-card-badge" id="report-type-badge">—</span></div>
+            <div id="report-by-type"><div style="padding:16px;color:var(--muted);font-size:12px">Loading…</div></div>
+          </div>
+          <div class="rpt-card">
+            <div class="rpt-card-header"><span class="rpt-card-title">Sessions per Month</span><span class="rpt-card-badge" id="report-month-badge">—</span></div>
+            <div class="month-chart" id="report-month-chart"><div style="padding:16px;color:var(--muted);font-size:12px">Loading…</div></div>
+          </div>
+        </div>
+        <div class="rpt-card" style="margin-bottom:14px;">
+          <div class="rpt-card-header"><span class="rpt-card-title">Tutor Performance</span><span class="rpt-card-badge" id="report-tutor-badge">—</span></div>
+          <table class="perf-table">
+            <thead><tr><th style="width:36px;"></th><th>Name</th><th>Module(s)</th><th>Sessions Attended</th><th>Rate</th><th>Missed</th><th>Grade</th></tr></thead>
+            <tbody id="report-tutor-tbody">
+              <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
     <!-- ═══════════ CLAIMS ═══════════ -->
     <div class="view" id="view-claims">
-      <div class="claims-header"><div><h1>Claim <em>Approvals</em></h1><p>IS211 · Tutor claims for review — January 2025</p></div><div class="report-actions"><button class="rpt-btn" onclick="showToast('Exporting claims summary…')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export</button></div></div>
-      <div class="claims-strip">
+      <button type="button" class="lec-page-back lec-claims-home" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="claims-header">
+        <div>
+          <h1>Claim Approvals</h1>
+          <p>Loading…</p>
+        </div>
+        <div class="report-actions lec-claims-desk-actions">
+          <button type="button" class="rpt-btn" onclick="showToast('Exporting claims summary…')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <div class="lec-claims-export">
+        <button type="button" class="lec-export-chip" onclick="showToast('Exporting claims summary…')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Export
+        </button>
+      </div>
+
+      <div class="lec-an-hero" id="claims-hero">
+        <div class="lec-an-hero-top">
+          <span class="lec-an-hero-label">Approval rate</span>
+          <span class="lec-an-hero-sem" id="claims-hero-sem">—</span>
+        </div>
+        <div class="lec-an-hero-body">
+          <div class="lec-an-ring-wrap">
+            <svg width="98" height="98" viewBox="0 0 98 98" aria-hidden="true">
+              <circle cx="49" cy="49" r="42" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
+              <circle id="claims-ring-arc" cx="49" cy="49" r="42" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
+            </svg>
+            <div class="lec-an-ring-center">
+              <div class="lec-an-ring-num" id="claims-approval-pct">0%</div>
+              <div class="lec-an-ring-pct" id="claims-approval-sub">0 OF 0<br>SUBMITTED</div>
+            </div>
+          </div>
+          <div class="lec-an-hero-stats">
+            <div class="lec-an-hero-stat"><span class="v" id="claims-stat-pending">0</span><span class="l">PENDING REVIEW</span></div>
+            <div class="lec-an-hero-stat"><span class="v" id="claims-stat-coordinator">0</span><span class="l">WITH COORDINATOR</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lec-an-chips" id="claims-chips">
+        <div class="lec-an-chip">
+          <span class="l">Total submitted</span>
+          <div class="v" id="claims-stat-submitted">0</div>
+          <div class="sub">this module</div>
+        </div>
+        <div class="lec-an-chip">
+          <span class="l">Total approved</span>
+          <div class="v teal" id="claims-stat-approved">R0</div>
+          <div class="sub" id="claims-stat-approved-sub">0 approved</div>
+        </div>
+      </div>
+
+      <div class="claims-strip lec-claims-desk">
         <div class="cl-stat"><div class="cl-stat-label">Total Submitted</div><div class="cl-stat-val">—</div><div class="cl-stat-sub">loading…</div></div>
       </div>
-      <div class="claims-toolbar"><div class="filter-tabs"><button class="filter-tab active" onclick="filterClaims('all',this)">All</button><button class="filter-tab" onclick="filterClaims('needs-review',this)">Needs Review</button><button class="filter-tab" onclick="filterClaims('under-review',this)">Under Review</button><button class="filter-tab" onclick="filterClaims('approved',this)">Approved</button><button class="filter-tab" onclick="filterClaims('rejected',this)">Rejected</button></div></div>
+
+      <div class="claims-toolbar lec-claims-filters">
+        <div class="filter-wrap">
+          <div class="filter-tabs" role="tablist" aria-label="Filter claims">
+            <button type="button" class="filter-tab active" onclick="filterClaims('all',this)">All</button>
+            <button type="button" class="filter-tab" onclick="filterClaims('needs-review',this)">Needs Review</button>
+            <button type="button" class="filter-tab" onclick="filterClaims('under-review',this)">Under Review</button>
+            <button type="button" class="filter-tab" onclick="filterClaims('approved',this)">Approved</button>
+            <button type="button" class="filter-tab lec-claims-filter-rejected" onclick="filterClaims('rejected',this)">Rejected</button>
+          </div>
+          <div class="filter-fade" aria-hidden="true"></div>
+        </div>
+      </div>
       <div class="claims-list" id="claims-list">
-        <div style="padding:24px;text-align:center;color:var(--muted)">Loading claims…</div>
+        <div class="lec-empty-card"><p>Loading claims…</p></div>
       </div>
     </div>
 
     <!-- ═══════════ CALENDAR ═══════════ -->
     <div class="view" id="view-calendar">
-      <div class="page-hero"><h1>Session <em>Calendar</em></h1><p>IS211 · Click a highlighted date to view details · Click any empty date to create a session</p></div>
+      <button type="button" class="lec-page-back lec-cal-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero lec-cal-hero"><h1>Session Calendar</h1><p>Click a highlighted date to view details</p></div>
       <div class="cal-page-layout">
         <div class="cal-wrap">
-          <div class="cal-header"><button class="cal-nav-btn" onclick="calChangeMonth(-1)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><span class="cal-title" id="cal-month-title">January 2025</span><button class="cal-nav-btn" onclick="calChangeMonth(1)"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button></div>
-          <div class="cal-days-header"><div class="cal-day-name">Sun</div><div class="cal-day-name">Mon</div><div class="cal-day-name">Tue</div><div class="cal-day-name">Wed</div><div class="cal-day-name">Thu</div><div class="cal-day-name">Fri</div><div class="cal-day-name">Sat</div></div>
+          <div class="cal-header">
+            <button type="button" class="cal-nav-btn" onclick="calChangeMonth(-1)" aria-label="Previous month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <span class="cal-title" id="cal-month-title">July</span>
+            <button type="button" class="cal-nav-btn" onclick="calChangeMonth(1)" aria-label="Next month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+          <div class="cal-days-header">
+            <div class="cal-day-name"><span class="cal-day-full">Sun</span><span class="cal-day-short">S</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Mon</span><span class="cal-day-short">M</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Tue</span><span class="cal-day-short">T</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Wed</span><span class="cal-day-short">W</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Thu</span><span class="cal-day-short">T</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Fri</span><span class="cal-day-short">F</span></div>
+            <div class="cal-day-name"><span class="cal-day-full">Sat</span><span class="cal-day-short">S</span></div>
+          </div>
           <div class="cal-grid" id="lec-cal-grid"></div>
-          <div class="cal-legend"><div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,.7);"></div>Upcoming</div><div class="leg-item"><div class="leg-dot" style="background:var(--green);"></div>Completed</div><div class="leg-item"><div class="leg-dot" style="background:var(--red);"></div>Flagged</div><div class="leg-item"><div class="leg-dot" style="background:var(--accent);"></div>Today</div></div>
+          <div class="cal-legend">
+            <div class="leg-item"><div class="leg-dot leg-dot--upcoming"></div>Upcoming</div>
+            <div class="leg-item"><div class="leg-dot leg-dot--confirmed"></div>Confirmed</div>
+            <div class="leg-item"><div class="leg-dot leg-dot--flagged"></div>Flagged</div>
+          </div>
         </div>
         <div class="cal-detail" id="lec-cal-detail">
           <div class="cal-detail-empty" id="lec-detail-empty">
-            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <p>Select a highlighted date to view session details<br>or any empty date to schedule a new session</p>
+            <div class="cal-empty-ico" aria-hidden="true">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h3>No date selected</h3>
+            <p>Tap a highlighted date above to view session details.</p>
           </div>
-          <!-- FIX 12 — empty date shortcut panel -->
           <div id="lec-detail-empty-date" style="display:none;" class="cal-create-shortcut">
-            <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.3;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="13" x2="12" y2="18"/><line x1="9.5" y1="15.5" x2="14.5" y2="15.5"/></svg>
-            <p id="lec-empty-date-label">No session on this date.<br>Would you like to schedule one?</p>
-            <button class="cal-create-btn" id="cal-create-shortcut-btn" onclick="openNewSessionOnDate()">
+            <div class="cal-empty-ico" aria-hidden="true">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M12 11v6M9 14h6"/></svg>
+            </div>
+            <h3 id="lec-empty-date-label">No session on this date</h3>
+            <p>Would you like to schedule one?</p>
+            <button type="button" class="cal-create-btn" id="cal-create-shortcut-btn" onclick="openNewSessionOnDate()">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Create Session on This Date
             </button>
           </div>
           <div id="lec-detail-content" style="display:none;">
-            <div class="cal-detail-header"><div><div class="cal-detail-title" id="lcd-title">—</div><div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;" id="lcd-module">IS211</div></div><span class="cal-detail-tag" id="lcd-tag">—</span></div>
+            <div class="cal-detail-header"><div><div class="cal-detail-title" id="lcd-title">—</div><div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:3px;" id="lcd-module">—</div></div><span class="cal-detail-tag" id="lcd-tag">—</span></div>
             <div class="cal-detail-row"><span class="cal-detail-label">Date</span><span class="cal-detail-val" id="lcd-date"></span></div>
             <div class="cal-detail-row"><span class="cal-detail-label">Time</span><span class="cal-detail-val" id="lcd-time"></span></div>
             <div class="cal-detail-row"><span class="cal-detail-label">Venue</span><span class="cal-detail-val" id="lcd-venue"></span></div>
@@ -390,51 +709,68 @@
       </div>
     </div>
 
-    <!-- ═══════════ CLASS LIST (FIX 9) ═══════════ -->
+    <!-- ═══════════ CLASS LIST ═══════════ -->
     <div class="view" id="view-classlist">
-      <div class="page-hero"><h1>Class <em>Lists</em></h1><p id="classlist-hero-sub">IS211 · Manage enrolled student lists for attendance validation</p></div>
+      <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero lec-page-hero">
+        <h1>Class Lists</h1>
+        <p id="classlist-hero-sub">Loading…</p>
+      </div>
       <div class="cl-stats-row">
-        <div class="stat-box"><div class="stat-label">Total Enrolled</div><div class="stat-val" id="cl-stat-enrolled">—</div></div>
-        <div class="stat-box"><div class="stat-label">Module</div><div class="stat-val" id="cl-stat-module" style="font-size:22px;padding-top:4px;">—</div></div>
-        <div class="stat-box"><div class="stat-label">Last Updated</div><div class="stat-val" id="cl-stat-updated" style="font-size:22px;padding-top:4px;">—</div></div>
+        <div class="stat-box"><div class="stat-label">Enrolled</div><div class="stat-val" id="cl-stat-enrolled">—</div></div>
+        <div class="stat-box"><div class="stat-label">Module</div><div class="stat-val" id="cl-stat-module">—</div></div>
+        <div class="stat-box"><div class="stat-label">Updated</div><div class="stat-val" id="cl-stat-updated">—</div></div>
       </div>
 
-      <!-- Upload zone -->
       <div class="cl-upload-zone" id="cl-upload-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleClassListDrop(event)">
         <div class="cl-upload-icon" aria-hidden="true">
-          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </div>
         <div class="cl-upload-title">Upload a new class list</div>
-        <div class="cl-upload-sub">Drag and drop a CSV file here, or click to browse.<br>Format: first_names, surname, email, student_number, programme, year_level</div>
+        <div class="cl-upload-sub">Drag and drop a CSV file here, or tap to browse.</div>
+        <div class="cl-upload-hint">first_names, surname, email, student_number, programme, year_level</div>
         <label class="cl-upload-btn" style="cursor:pointer;">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Browse CSV File
           <input type="file" accept=".csv" style="display:none;" onchange="handleClassListUpload(this)">
         </label>
       </div>
 
       <div id="classlist-module-wrap">
-        <div style="padding:24px;text-align:center;color:var(--muted)">Loading class list…</div>
+        <div class="lec-empty-card"><p>Loading class list…</p></div>
       </div>
     </div>
 
     <!-- ═══════════ SUPPORT ═══════════ -->
     <div class="view" id="view-support">
       <div class="support-page">
-        <div class="page-hero">
+        <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+        <div class="page-hero lec-page-hero">
           <h1>Support</h1>
-          <p>Raise a ticket if you need help from the Student Employment Office</p>
+          <p>Raise a ticket if you need help from the Student Employment Office.</p>
+        </div>
+        <div id="lecturer-tickets-list">
+          <div class="lec-empty-card">
+            <div class="lec-empty-ico" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <h3>No tickets yet</h3>
+            <p>Tap New Ticket below if you need help.</p>
+          </div>
         </div>
         <button type="button" class="st-new-btn" onclick="openLecturerTicketModal()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
           New Ticket
         </button>
-        <div id="lecturer-tickets-list">
-          <div style="padding:24px;text-align:center;color:var(--muted)">Loading tickets…</div>
-        </div>
       </div>
     </div>
 
@@ -444,21 +780,31 @@
 <nav class="lec-bottom-nav" id="lec-bottom-nav" aria-label="Primary">
   <div class="lec-bnav-pill">
     <button type="button" class="lec-bnav-item active" data-bnav="dashboard" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      <span class="lec-bnav-label">HOME</span>
+      <span class="lec-bnav-dot" aria-hidden="true"></span>
     </button>
-    <button type="button" class="lec-bnav-item" data-bnav="messages" onclick="goView('messages',document.getElementById('nav-messages'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span>Messages</span>
+    <button type="button" class="lec-bnav-item" data-bnav="sessions" onclick="goView('sessions',document.getElementById('nav-sessions'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span class="lec-bnav-label">SESSIONS</span>
+      <span class="lec-bnav-dot" aria-hidden="true"></span>
     </button>
     <button type="button" class="lec-bnav-item" data-bnav="tutors" onclick="goView('tutors',document.getElementById('nav-tutors'))">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      <span>Tutors</span>
+      <span class="lec-bnav-label">TUTORS</span>
+      <span class="lec-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="lec-bnav-item" data-bnav="claims" onclick="goView('claims',document.getElementById('nav-claims'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="lec-bnav-label">CLAIMS</span>
+      <span class="lec-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="lec-bnav-item" data-bnav="messages" onclick="goView('messages',document.getElementById('nav-messages'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="lec-bnav-label">MSGS</span>
+      <span class="lec-bnav-dot" aria-hidden="true"></span>
     </button>
   </div>
-  <button type="button" class="lec-bnav-logout" aria-label="Log out" title="Log out" onclick="VF.logout()">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-  </button>
 </nav>
 
 <!-- LECTURER SUPPORT TICKET MODAL -->
@@ -683,9 +1029,9 @@
     <div class="ns-divider"></div>
     <div class="ns-footer">
       <button class="ns-cancel" onclick="closeNewSession()">Cancel</button>
-      <button class="ns-create" onclick="createSession()">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Create Session
+      <button class="ns-create lec-btn-glow" onclick="createSession()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="lec-btn-glow-label">Create Session</span>
       </button>
     </div>
   </div>
@@ -695,43 +1041,43 @@
 <div class="modal-overlay" id="rt-overlay" onclick="rtCloseOutside(event)">
   <div class="modal ns-modal" id="rt-modal">
     <div class="modal-header"><div><div class="modal-to">VeriFlow · Tutor Referral</div><div class="modal-name">Refer a Tutor</div></div><button class="modal-close" onclick="closeReferTutor()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <div class="ns-section-label">Personal Details</div>
-    <div class="ns-row">
-      <div class="ns-field"><label class="ns-label">First Name</label><input class="ns-input" id="rt-name" type="text" placeholder="e.g. Thabo" /></div>
-      <div class="ns-field"><label class="ns-label">Surname</label><input class="ns-input" id="rt-surname" type="text" placeholder="e.g. Dlamini" /></div>
-    </div>
-    <div class="ns-section-label" style="margin-top:14px;">Contact</div>
-    <div class="ns-field"><label class="ns-label">Email Address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
-    <div class="ns-section-label" style="margin-top:14px;">Academic Details</div>
-    <div class="ns-row">
-      <div class="ns-field">
-        <label class="ns-label">Course</label>
-        <div class="ns-select-wrap"><select class="ns-select" id="rt-course"><option value="" disabled selected>Select course…</option><option value="BICT">BICT — Bachelor of ICT</option><option value="DICT">DICT — Diploma in ICT</option></select><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="ns-modal-body">
+      <div class="ns-section-label">Personal details</div>
+      <div class="ns-row">
+        <div class="ns-field"><label class="ns-label">First name</label><input class="ns-input" id="rt-name" type="text" placeholder="e.g. Thabo" /></div>
+        <div class="ns-field"><label class="ns-label">Surname</label><input class="ns-input" id="rt-surname" type="text" placeholder="e.g. Dlamini" /></div>
       </div>
-      <div class="ns-field"><label class="ns-label">Module</label><input class="ns-input" id="rt-module" type="text" placeholder="e.g. DICT111, IS211…" /></div>
-    </div>
-    <!-- FIX 10 — qualification level -->
-    <div class="ns-section-label" style="margin-top:14px;">Qualification Level</div>
-    <div class="ns-field">
-      <label class="ns-label">Current Qualification Level</label>
-      <div class="ns-select-wrap">
-        <select class="ns-select" id="rt-qualification">
-          <option value="" disabled selected>Select qualification level…</option>
-          <option>3rd year student</option>
-          <option>4th year or Honours student</option>
-          <option>Masters student</option>
-          <option>Masters Holder</option>
-          <option>PhD Candidate or Holder</option>
-        </select>
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="ns-section-label">Contact</div>
+      <div class="ns-field"><label class="ns-label">Email address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
+      <div class="ns-section-label">Academic details</div>
+      <div class="ns-row">
+        <div class="ns-field">
+          <label class="ns-label">Course</label>
+          <div class="ns-select-wrap"><select class="ns-select" id="rt-course"><option value="" disabled selected>Select course…</option><option value="BICT">BICT — Bachelor of ICT</option><option value="DICT">DICT — Diploma in ICT</option></select><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+        <div class="ns-field"><label class="ns-label">Module</label><input class="ns-input" id="rt-module" type="text" placeholder="e.g. DICT111, IS211…" /></div>
+      </div>
+      <div class="ns-section-label">Qualification level</div>
+      <div class="ns-field">
+        <div class="ns-select-wrap">
+          <select class="ns-select" id="rt-qualification">
+            <option value="" disabled selected>Select qualification level…</option>
+            <option>3rd year student</option>
+            <option>4th year or Honours student</option>
+            <option>Masters student</option>
+            <option>Masters Holder</option>
+            <option>PhD Candidate or Holder</option>
+          </select>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
       </div>
     </div>
     <div class="ns-divider"></div>
     <div class="ns-footer">
       <button class="ns-cancel" onclick="closeReferTutor()">Cancel</button>
-      <button class="ns-create" onclick="submitReferral()">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Submit Referral
+      <button class="ns-create lec-btn-glow" onclick="submitReferral()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="lec-btn-glow-label">Submit Referral</span>
       </button>
     </div>
   </div>
@@ -817,7 +1163,7 @@
   })();
 </script>
 <script src="../js/messaging.js?v=10"></script>
-<script src="../js/lecturer-dashboard.js?v=37"></script>
+<script src="../js/lecturer-dashboard.js?v=54"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';
@@ -827,19 +1173,28 @@
       const user = await VF.fetchCurrentUser();
       const nameEl = document.getElementById('lecturer-hero-name');
       if (nameEl) {
-        const full = `${user.first_names || ''} ${user.surname || ''}`.trim().toLowerCase();
-        nameEl.textContent = full || 'lecturer';
-        lecturerDisplayName = full;
-        window.lecturerDisplayName = full;
-        setText('#lec-hub-name', full || 'lecturer');
+        const full = `${user.first_names || ''} ${user.surname || ''}`.trim();
+        const display = full || 'Lecturer';
+        nameEl.textContent = display;
+        lecturerDisplayName = display;
+        window.lecturerDisplayName = display;
+        setText('#lec-hub-name', display.toUpperCase());
+        const av = document.getElementById('lec-hub-avatar');
+        if (av && full) {
+          const parts = full.split(/\s+/).filter(Boolean);
+          av.textContent = (parts.length >= 2
+            ? parts[0][0] + parts[parts.length - 1][0]
+            : full.slice(0, 2)).toUpperCase();
+        }
       }
     } catch (e) {
       const s = VF.getState();
       if (s.user) {
-        const full = `${s.user.firstNames || ''} ${s.user.surname || ''}`.trim().toLowerCase();
-        setText('#lecturer-hero-name', full || 'lecturer');
-        lecturerDisplayName = full;
-        setText('#lec-hub-name', full || 'lecturer');
+        const full = `${s.user.firstNames || ''} ${s.user.surname || ''}`.trim();
+        const display = full || 'Lecturer';
+        setText('#lecturer-hero-name', display);
+        lecturerDisplayName = display;
+        setText('#lec-hub-name', display.toUpperCase());
       }
     }
 

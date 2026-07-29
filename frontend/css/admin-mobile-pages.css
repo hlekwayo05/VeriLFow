@@ -1,0 +1,2040 @@
+/* VeriFlow — Admin mobile pages (max-width 900px)
+   Matches coordinator mobile suite mock */
+
+@media (max-width: 900px) {
+  body.admin-dash {
+    --ad-teal-900: #152e2c;
+    --ad-teal-800: #1c3b38;
+    --ad-teal-700: #26534d;
+    --ad-teal-500: #3a7d72;
+    --ad-mist: #f2f4f1;
+    --ad-ink: #182420;
+    --ad-ink-soft: #5b6864;
+    --ad-ink-faint: #94a09c;
+    --ad-line: #e4e8e3;
+    --ad-clay: #d97757;
+    --ad-amber: #c8862f;
+    --ad-red: #c85a3d;
+  }
+
+  body.admin-dash .main {
+    background: var(--ad-mist);
+  }
+
+  body.admin-dash .page.active:not(#page-dashboard):not(#page-messages) {
+    display: flex !important;
+    flex-direction: column;
+    background: var(--ad-mist);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.admin-dash .page .full-page {
+    padding: 12px 0 28px !important;
+    background: var(--ad-mist);
+  }
+
+  /* ── Shared page head ── */
+  body.admin-dash .ad-page-back {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--ad-ink-soft) !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    padding: max(4px, env(safe-area-inset-top, 0px)) 0 12px !important;
+    margin: 0 !important;
+    width: max-content !important;
+  }
+
+  body.admin-dash .ad-page-head {
+    padding: 4px 20px 16px;
+  }
+
+  body.admin-dash .ad-page-head .page-hero,
+  body.admin-dash .ad-page-head .page-hero-row {
+    margin: 0 !important;
+  }
+
+  body.admin-dash .ad-page-title,
+  body.admin-dash .ad-page-head .page-hero h1,
+  body.admin-dash #page-applications .page-hero h1,
+  body.admin-dash #page-claims .page-hero h1,
+  body.admin-dash #page-referrals .page-hero h1,
+  body.admin-dash #page-flagged .page-hero h1,
+  body.admin-dash #page-postings .page-hero h1,
+  body.admin-dash #page-users .page-hero h1,
+  body.admin-dash #page-support .page-hero h1,
+  body.admin-dash #page-analysis .page-hero h1,
+  body.admin-dash #page-settings .page-hero h1,
+  body.admin-dash #page-messages .page-hero h1 {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
+    color: var(--ad-ink) !important;
+    margin: 0 !important;
+  }
+
+  body.admin-dash .ad-page-head .page-hero h1 em,
+  body.admin-dash .page-hero h1 em {
+    font-style: normal !important;
+    color: inherit !important;
+    font-weight: 700 !important;
+  }
+
+  body.admin-dash .ad-page-sub,
+  body.admin-dash .ad-page-head .page-hero p,
+  body.admin-dash #page-applications #app-summary,
+  body.admin-dash #page-claims .page-hero p,
+  body.admin-dash #page-referrals .page-hero p,
+  body.admin-dash #page-flagged .page-hero p,
+  body.admin-dash #page-postings .page-hero p,
+  body.admin-dash #page-users .page-hero p,
+  body.admin-dash #page-support .page-hero p,
+  body.admin-dash #page-analysis .page-hero p,
+  body.admin-dash #page-settings .page-hero p {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 12px !important;
+    color: var(--ad-ink-soft) !important;
+    margin-top: 5px !important;
+    line-height: 1.5 !important;
+  }
+
+  body.admin-dash .ad-section {
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash .ad-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    margin-bottom: 10px;
+  }
+
+  body.admin-dash .ad-btn-primary {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--ad-teal-700);
+    color: #eef4f1;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    font-family: "Space Grotesk", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: pointer;
+  }
+
+  body.admin-dash .ad-btn-outline {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--ad-line);
+    background: var(--ad-mist);
+    color: var(--ad-ink);
+    font-weight: 600;
+    font-size: 11.5px;
+    font-family: "Space Grotesk", sans-serif;
+    cursor: pointer;
+  }
+
+  body.admin-dash .ad-btn-outline.danger {
+    color: var(--ad-red);
+    border-color: #f0d5cc;
+  }
+
+  /* Empty state */
+  body.admin-dash .ad-empty-card {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  body.admin-dash .ad-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 36px 24px;
+    gap: 9px;
+  }
+
+  body.admin-dash .ad-empty-ico {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #eef3f1;
+    color: var(--ad-teal-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.admin-dash .ad-empty-state h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    margin: 0;
+  }
+
+  body.admin-dash .ad-empty-state p {
+    font-size: 11.5px;
+    color: var(--ad-ink-soft);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Filter pills */
+  body.admin-dash .ad-filter-wrap {
+    position: relative;
+    margin: 0 0 14px;
+  }
+
+  body.admin-dash .ad-filter-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 20px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.admin-dash .ad-filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.admin-dash .ad-filter-tabs .tab-btn,
+  body.admin-dash .ad-filter-tabs .filter-tab {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10.5px !important;
+    padding: 8px 13px !important;
+    border-radius: 20px !important;
+    background: #fff !important;
+    border: 1px solid var(--ad-line) !important;
+    color: var(--ad-ink-soft) !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 500 !important;
+  }
+
+  body.admin-dash .ad-filter-tabs .tab-btn.active,
+  body.admin-dash .ad-filter-tabs .filter-tab.active {
+    background: var(--ad-teal-700) !important;
+    color: #eef4f1 !important;
+    border-color: var(--ad-teal-700) !important;
+  }
+
+  /* Record cards (apps / claims / etc.) */
+  body.admin-dash .ad-rec-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash .ad-rec-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    font-family: "Space Grotesk", sans-serif;
+    box-shadow: none;
+  }
+
+  body.admin-dash .ad-rec-card.flag {
+    border-left: 3px solid var(--ad-amber);
+  }
+
+  body.admin-dash .ad-rec-card.pref-high {
+    border-left: 3px solid #4f9c8e;
+  }
+
+  body.admin-dash .ad-rec-card.pref-med {
+    border-left: 3px solid var(--ad-amber);
+  }
+
+  body.admin-dash .ad-rec-card.pref-orange {
+    border-left: 3px solid var(--ad-clay);
+  }
+
+  body.admin-dash .ad-rec-card.pref-none {
+    border-left: 3px solid var(--ad-ink-faint);
+  }
+
+  body.admin-dash .ad-rec-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash .ad-rec-sub {
+    font-size: 11px;
+    color: var(--ad-ink-soft);
+    margin-top: 2px;
+  }
+
+  body.admin-dash .ad-rec-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+  }
+
+  body.admin-dash .ad-rec-grid .item .k {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash .ad-rec-grid .item .l {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8.5px;
+    color: var(--ad-ink-faint);
+    margin-top: 1px;
+    text-transform: uppercase;
+  }
+
+  body.admin-dash .ad-status-pill {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 12px;
+  }
+
+  body.admin-dash .ad-status-pill.approved,
+  body.admin-dash .ad-rec-card .stag.open {
+    background: #e7f3ee !important;
+    color: var(--ad-teal-700) !important;
+    border: none !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+  }
+
+  body.admin-dash .ad-rec-card .sc,
+  body.admin-dash .ad-rec-card .stag {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    margin-top: 12px;
+    display: inline-block;
+  }
+
+  /* Hide desktop tables on list pages */
+  body.admin-dash #page-applications .ad-apps-table,
+  body.admin-dash #page-claims .data-table,
+  body.admin-dash #page-referrals .data-table,
+  body.admin-dash #page-flagged .data-table,
+  body.admin-dash #page-postings .data-table,
+  body.admin-dash #page-support .data-table,
+  body.admin-dash #page-users .data-table {
+    display: none !important;
+  }
+
+  body.admin-dash #page-users .ad-rec-list {
+    padding-bottom: 120px;
+  }
+
+  body.admin-dash .ad-mobile-only {
+    display: block !important;
+  }
+
+  /* ── Applications ── */
+  body.admin-dash #page-applications .ad-apps-page {
+    padding: 12px 0 28px !important;
+  }
+
+  body.admin-dash #page-applications .ad-page-head {
+    padding: 4px 20px 16px;
+  }
+
+  body.admin-dash #page-applications .ad-page-head .page-hero {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.admin-dash #page-applications .ad-apps-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin: 0;
+  }
+
+  body.admin-dash #page-applications .ad-apps-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 20px 14px;
+    margin: 0 !important;
+    scrollbar-width: none;
+  }
+
+  body.admin-dash #page-applications .ad-apps-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.admin-dash #page-applications .ad-apps-tabs .tab-btn {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10.5px !important;
+    padding: 8px 13px !important;
+    border-radius: 20px !important;
+    background: #fff !important;
+    border: 1px solid var(--ad-line) !important;
+    color: var(--ad-ink-soft) !important;
+    font-weight: 500 !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-applications .ad-apps-tabs .tab-btn.active {
+    background: var(--ad-teal-700) !important;
+    color: #eef4f1 !important;
+    border-color: var(--ad-teal-700) !important;
+  }
+
+  body.admin-dash #page-applications .ad-apps-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 0 20px 14px;
+    margin: 0;
+  }
+
+  body.admin-dash #page-applications .ad-apps-leg {
+    font-size: 10px;
+    color: var(--ad-ink-soft);
+    gap: 5px;
+  }
+
+  body.admin-dash #page-applications .ad-apps-leg .pref-dot.high {
+    background: #4f9c8e;
+  }
+
+  body.admin-dash #page-applications .ad-apps-leg .pref-dot.med {
+    background: var(--ad-amber);
+  }
+
+  body.admin-dash #page-applications .ad-apps-leg .pref-dot.orange {
+    background: var(--ad-clay);
+  }
+
+  body.admin-dash #page-applications .ad-apps-leg .pref-dot.none {
+    background: var(--ad-ink-faint);
+  }
+
+  body.admin-dash #page-applications .ad-apps-cards {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash #page-applications .ad-app-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: none;
+    cursor: pointer;
+    font-family: "Space Grotesk", sans-serif;
+    color: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  body.admin-dash #page-applications .ad-app-card.pref-high {
+    border-left: 3px solid #4f9c8e;
+  }
+
+  body.admin-dash #page-applications .ad-app-card.pref-med {
+    border-left: 3px solid var(--ad-amber);
+  }
+
+  body.admin-dash #page-applications .ad-app-card.pref-orange {
+    border-left: 3px solid var(--ad-clay);
+  }
+
+  body.admin-dash #page-applications .ad-app-card.pref-none {
+    border-left: 3px solid var(--ad-ink-faint);
+  }
+
+  body.admin-dash #page-applications .ad-app-card-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    line-height: 1.25;
+  }
+
+  body.admin-dash #page-applications .ad-app-card-module {
+    font-size: 11px;
+    color: var(--ad-ink-soft);
+    margin-top: 2px;
+  }
+
+  body.admin-dash #page-applications .ad-app-card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+  }
+
+  body.admin-dash #page-applications .ad-app-stat {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  body.admin-dash #page-applications .ad-app-stat-val {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ad-ink);
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  body.admin-dash #page-applications .ad-app-stat-lab {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8.5px;
+    color: var(--ad-ink-faint);
+    margin-top: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  body.admin-dash #page-applications .ad-app-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  body.admin-dash #page-applications .ad-app-card-chevron {
+    color: var(--ad-ink-faint);
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-applications .ad-app-card-foot .ad-status-pill,
+  body.admin-dash #page-applications .ad-app-card-foot .sc,
+  body.admin-dash #page-applications .ad-app-card-foot .stag {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    font-weight: 500 !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    display: inline-block;
+    margin-top: 0;
+    border: none !important;
+  }
+
+  body.admin-dash #page-applications .ad-status-pill.approved,
+  body.admin-dash #page-applications .ad-app-card-foot .stag.open {
+    background: #e7f3ee !important;
+    color: var(--ad-teal-700) !important;
+  }
+
+  body.admin-dash #page-applications .ad-status-pill.rejected {
+    background: #fde9e5 !important;
+    color: var(--ad-red) !important;
+  }
+
+  body.admin-dash #page-applications .ad-apps-empty {
+    margin: 0;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--ad-ink-faint);
+    font-size: 13px;
+  }
+
+  /* Override older applications rules that conflict */
+  body.admin-dash #page-applications .page-hero h1 {
+    font-size: 20px !important;
+  }
+
+  /* ── Hub icon c5 (flagged red) ── */
+  body.admin-dash .ad-hub-ico.c5 {
+    background: #fde9e5;
+    color: var(--ad-red);
+  }
+
+  body.admin-dash .ad-hub-ico.c3 {
+    background: #f6efe0;
+    color: var(--ad-amber);
+  }
+
+  /* ── Postings ── */
+  body.admin-dash #page-postings .page-hero-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 4px 20px 0;
+    margin-bottom: 0 !important;
+  }
+
+  body.admin-dash #page-postings .page-hero-row .btn-primary {
+    display: none !important;
+  }
+
+  body.admin-dash #page-postings .ad-mobile-cta {
+    padding: 0 20px 14px;
+  }
+
+  body.admin-dash #page-postings .ad-posting-card {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  body.admin-dash #page-postings .ad-posting-card + .ad-posting-card {
+    margin-top: 10px;
+  }
+
+  body.admin-dash #page-postings .ad-posting-code {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #page-postings .ad-posting-prog {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ad-ink-soft);
+    margin-top: 2px;
+  }
+
+  body.admin-dash #page-postings .ad-posting-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin-top: 12px;
+  }
+
+  body.admin-dash #page-postings .ad-posting-stats .k {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #page-postings .ad-posting-stats .l {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 8.5px;
+    color: var(--ad-ink-faint);
+    margin-top: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── Users ── */
+  body.admin-dash #page-users .full-page > .tabs {
+    display: none !important;
+  }
+
+  body.admin-dash #page-users .ad-filter-wrap {
+    display: block !important;
+  }
+
+  body.admin-dash #page-users .ad-filter-tabs {
+    display: flex !important;
+  }
+
+  body.admin-dash #page-users .ad-mobile-cta {
+    position: fixed !important;
+    bottom: 72px;
+    left: 0;
+    right: 0;
+    z-index: 120;
+    padding: 10px 20px 12px;
+    background: rgba(246, 248, 247, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash #page-users .ad-users-student-cta {
+    display: flex !important;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  body.admin-dash #page-users .ad-users-student-cta .ad-btn-primary {
+    flex: 1;
+  }
+
+  body.admin-dash #page-users .ad-import-btn {
+    width: auto !important;
+    flex-shrink: 0;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  body.admin-dash #page-users .tab-pane > div[style*="justify-content"] {
+    display: none !important;
+  }
+
+  body.admin-dash #page-users .ad-rec-list {
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash #page-users .ad-list-count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ad-ink-faint);
+    margin-bottom: 10px;
+  }
+
+  body.admin-dash #page-users .ad-compact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 13px 14px;
+    cursor: pointer;
+    font-family: "Space Grotesk", sans-serif;
+    color: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  body.admin-dash #page-users .ad-compact-row + .ad-compact-row {
+    margin-top: 8px;
+  }
+
+  body.admin-dash #page-users .ad-compact-row--static {
+    cursor: default;
+  }
+
+  body.admin-dash #page-users .ad-cr-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #eaf3f1;
+    color: var(--ad-teal-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-users .ad-cr-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  body.admin-dash #page-users .ad-cr-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.admin-dash #page-users .ad-cr-email {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ad-ink-soft);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.admin-dash #page-users .ad-cr-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 7px;
+    flex-wrap: wrap;
+  }
+
+  body.admin-dash #page-users .ad-mini-chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: #eaf3f1;
+    color: var(--ad-teal-700);
+  }
+
+  body.admin-dash #page-users .ad-mini-chip.status {
+    background: #e7f3ee;
+    color: var(--ad-teal-700);
+  }
+
+  body.admin-dash #page-users .ad-mini-chip.neutral {
+    background: var(--ad-mist);
+    color: var(--ad-ink-soft);
+    border: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash #page-users .ad-more-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--ad-mist);
+    border: 1px solid var(--ad-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ad-ink-soft);
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-users .ad-remove-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: #fde9e5;
+    border: none;
+    color: var(--ad-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  body.admin-dash #page-users .ad-btn-primary.ad-btn-glow {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  body.admin-dash #page-users .ad-btn-primary.ad-btn-glow > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  body.admin-dash #page-users .ad-btn-primary.ad-btn-glow::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 230deg,
+      rgba(255, 255, 255, 0.2) 265deg,
+      rgba(255, 255, 255, 1) 300deg,
+      #9fd4c8 330deg,
+      transparent 360deg
+    );
+    z-index: 0;
+    animation: adBtnGlowSpin 2s linear infinite;
+    pointer-events: none;
+  }
+
+  body.admin-dash #page-users .ad-btn-primary.ad-btn-glow::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 8px;
+    background: var(--ad-teal-700);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* User action sheet */
+  body.admin-dash #ad-user-sheet-overlay.modal-overlay {
+    background: rgba(13, 26, 24, 0.55);
+    backdrop-filter: none;
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay.modal-overlay.open {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-user-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    border: none !important;
+    background: var(--ad-mist) !important;
+    box-shadow: none !important;
+    max-height: min(92dvh, 92vh) !important;
+    overflow-y: auto !important;
+    padding: 18px 20px calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-person {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-person .ad-cr-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 14px;
+    background: #eaf3f1;
+    color: var(--ad-teal-700);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-person-name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-person-role {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ad-ink-soft);
+    margin-top: 2px;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 2px;
+    border: none;
+    border-top: 1px solid var(--ad-line);
+    background: transparent;
+    cursor: pointer;
+    font-family: "Space Grotesk", sans-serif;
+    text-align: left;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-item:first-of-type,
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-person + .ad-sheet-item {
+    border-top: none;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-item[hidden] {
+    display: none !important;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-ico {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--ad-mist);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ad-ink-soft);
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-lbl {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-item.danger .ad-sheet-ico {
+    background: #fde9e5;
+    color: var(--ad-red);
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-item.danger .ad-sheet-lbl {
+    color: var(--ad-red);
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-user-sheet-cancel {
+    margin-top: 16px;
+  }
+
+  body.admin-dash #ad-user-sheet-overlay .ad-sheet-btn-secondary {
+    width: 100%;
+    padding: 13px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    color: var(--ad-ink);
+    font-weight: 600;
+    font-size: 13px;
+    font-family: "Space Grotesk", sans-serif;
+    cursor: pointer;
+  }
+
+  /* legacy user-card styles unused on mobile compact rows */
+
+  /* ── Messages ── */
+  body.admin-dash #page-messages.active,
+  body.admin-dash #page-messages .full-page {
+    background: var(--ad-mist) !important;
+  }
+
+  body.admin-dash #page-messages .msg-layout,
+  body.admin-dash #page-messages .inbox-sidebar,
+  body.admin-dash #page-messages .inbox-top,
+  body.admin-dash #page-messages .inbox-list {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  body.admin-dash #page-messages .page-hero-row {
+    padding: 4px 20px 0;
+    margin: 0 !important;
+  }
+
+  body.admin-dash #page-messages .page-hero-row .btn-primary,
+  body.admin-dash #page-messages .page-hero p {
+    display: none !important;
+  }
+
+  body.admin-dash #page-messages .ad-mobile-cta {
+    padding: 0 20px 14px;
+  }
+
+  body.admin-dash #page-messages.ad-msg-in-group .ad-page-back {
+    display: none !important;
+  }
+
+  body.admin-dash #page-messages .ad-mobile-cta:empty {
+    display: none !important;
+    padding: 0 !important;
+  }
+
+  body.admin-dash #page-messages .ad-msg-compose-desk {
+    display: none !important;
+  }
+
+  body.admin-dash #page-messages .inbox-top {
+    padding: 0 20px 4px !important;
+  }
+
+  body.admin-dash #page-messages .inbox-top h2 {
+    display: none;
+  }
+
+  body.admin-dash #page-messages .inbox-list .tm-recent-empty-card,
+  body.admin-dash #page-messages .ad-msg-empty {
+    display: none !important;
+  }
+
+  body.admin-dash #page-messages .tm-msg-people {
+    padding: 0 20px 16px;
+    background: transparent;
+    border-bottom: none;
+  }
+
+  body.admin-dash #page-messages .tm-people-head-title {
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  body.admin-dash #page-messages .ad-msg-group-btn {
+    padding: 14px 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--ad-line, #e4e8e3);
+  }
+
+  body.admin-dash #page-messages .ad-msg-group-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 14px;
+  }
+
+  body.admin-dash #page-messages .ad-msg-group-sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+  }
+
+  body.admin-dash #page-messages .ad-msg-people-list .tm-person {
+    background: #fff;
+    border: 1px solid var(--ad-line, #e4e8e3);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 2px;
+  }
+
+  body.admin-dash #page-messages .ad-msg-all-btn {
+    margin-top: 14px;
+    width: 100%;
+  }
+
+  body.admin-dash #page-messages .msg-thread {
+    background: var(--ad-mist) !important;
+  }
+
+  body.admin-dash #page-messages.tm-chat-open .ad-page-head,
+  body.admin-dash #page-messages.tm-chat-open #ad-msg-mobile-cta {
+    display: none !important;
+  }
+
+  body.admin-dash #page-messages .thread-header {
+    background: #fff;
+    border-bottom: 1px solid var(--ad-line, #e4e8e3);
+  }
+
+  body.admin-dash #page-messages .thread-messages {
+    background: var(--ad-mist);
+  }
+
+  body.admin-dash #page-messages .thread-compose {
+    background: #fff;
+    border-top: 1px solid var(--ad-line, #e4e8e3);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.admin-dash #page-messages .tm-chat-empty-icon {
+    background: #fff;
+    border-color: var(--ad-line, #e4e8e3);
+    color: var(--ad-ink-faint, #94a09c);
+  }
+
+  body.admin-dash #page-messages .compose-send {
+    border-radius: 50%;
+  }
+
+  /* Analysis mobile spacing overrides base styles */
+  body.admin-dash #page-analysis .ad-an-hero {
+    margin: 0 20px 16px;
+    max-width: none;
+  }
+  body.admin-dash #page-analysis .ad-an-chips {
+    padding: 0 20px 18px;
+    margin-bottom: 0;
+    max-width: none;
+  }
+  body.admin-dash #page-analysis .ad-an-section {
+    padding: 0 20px 20px;
+    margin-bottom: 0;
+    max-width: none;
+  }
+  body.admin-dash #page-analysis .ad-an-bar-label { width: 88px; }
+
+  /* ── Settings accordion ── */
+  body.admin-dash #page-settings .page-hero-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 4px 20px 0;
+    margin: 0 !important;
+  }
+
+  body.admin-dash #page-settings .page-hero-row .btn-primary {
+    display: none !important;
+  }
+
+  body.admin-dash #page-settings .ad-mobile-cta {
+    padding: 0 20px 14px;
+  }
+
+  body.admin-dash #page-settings .ad-settings-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash #page-settings details.ad-acc {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body.admin-dash #page-settings details.ad-acc > summary {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 16px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--ad-ink);
+    font-family: "Space Grotesk", sans-serif;
+    pointer-events: auto;
+    margin-bottom: 0;
+  }
+
+  body.admin-dash #page-settings details.ad-acc > summary .chevicon {
+    display: block;
+  }
+
+  body.admin-dash #page-settings details.ad-acc > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  body.admin-dash #page-settings details.ad-acc > summary .chevicon {
+    transition: transform 0.15s ease;
+    color: var(--ad-ink-faint);
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-settings details.ad-acc[open] > summary .chevicon {
+    transform: rotate(90deg);
+  }
+
+  body.admin-dash #page-settings .ad-acc-body {
+    padding: 0 16px 18px;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .settings-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .field-label {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.05em !important;
+    color: var(--ad-ink-faint) !important;
+    text-transform: uppercase !important;
+    margin: 12px 0 6px !important;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .field-group:first-child .field-label {
+    margin-top: 0 !important;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .field-input,
+  body.admin-dash #page-settings .ad-acc-body .field-textarea {
+    width: 100%;
+    padding: 11px 13px !important;
+    border: 1px solid var(--ad-line) !important;
+    border-radius: 10px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 13px !important;
+    background: var(--ad-mist) !important;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .toggle-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--ad-line);
+    margin: 0;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .toggle-wrap:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  body.admin-dash #page-settings .ad-acc-body .toggle-label {
+    font-size: 12px;
+    color: var(--ad-ink);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  /* ── Application detail (mobile page) ── */
+  body.admin-dash #page-application-detail.active {
+    display: flex !important;
+    flex-direction: column;
+    background: var(--ad-mist);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-page {
+    padding: 12px 0 28px !important;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-head {
+    padding: 4px 20px 18px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-eyebrow {
+    display: block;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ad-ink-faint);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    letter-spacing: -0.01em;
+    margin: 5px 0 0;
+    line-height: 1.2;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-sub {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 11.5px;
+    color: var(--ad-ink-soft);
+    margin: 6px 0 0;
+    line-height: 1.45;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-status {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-status .ad-status-pill,
+  body.admin-dash #page-application-detail .ad-appd-status .sc,
+  body.admin-dash #page-application-detail .ad-appd-status .stag {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    font-weight: 500 !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    border: none !important;
+    white-space: nowrap;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-section {
+    padding: 0 20px 20px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-section-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-section-meta {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ad-ink-soft);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-card {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 12px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-summary-span {
+    grid-column: 1 / -1;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-field-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9.5px;
+    color: var(--ad-ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-summary-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-summary-val.ad-appd-muted,
+  body.admin-dash #page-application-detail .ad-appd-muted {
+    color: var(--ad-ink-faint);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-reject-reason {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--ad-red);
+    line-height: 1.4;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-field-group {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 4px 16px;
+    margin: 0;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-field-group-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+    padding: 12px 0 8px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 11px 0;
+    border-top: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-field-row.bare {
+    padding: 0;
+    border-top: none;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-k {
+    font-size: 12.5px;
+    color: var(--ad-ink-soft);
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-v {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ad-ink);
+    text-align: right;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-v.mono,
+  body.admin-dash #page-application-detail .ad-appd-doc-file {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 500;
+    font-size: 11px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-v.ok {
+    color: var(--ad-teal-500);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-v-right {
+    text-align: right;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-faint {
+    color: var(--ad-ink-faint);
+    font-weight: 500;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-kw-box {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--ad-ink-soft);
+    background: var(--ad-mist);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-kw-extra {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-decl-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-decl-label {
+    font-size: 12.5px;
+    color: var(--ad-ink-soft);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-chip {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #e7f3ee;
+    color: var(--ad-teal-700);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-chip.muted {
+    background: var(--ad-mist);
+    color: var(--ad-ink-faint);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-decl-extra {
+    font-size: 12px;
+    color: var(--ad-ink-soft);
+    margin-top: 8px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-row + .ad-appd-doc-row {
+    margin-top: 10px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-ico {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e7f3ee;
+    color: var(--ad-teal-700);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-file {
+    color: var(--ad-ink-faint);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-doc-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--ad-line);
+    background: var(--ad-mist);
+    color: var(--ad-ink);
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-end {
+    height: 1px;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-actions {
+    position: relative;
+    z-index: 20;
+    margin-top: 4px;
+    padding: 14px 20px calc(90px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(242, 244, 241, 0) 0%, var(--ad-mist) 28%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-actions.is-revealed {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-actions[hidden] {
+    display: none !important;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.primary {
+    background: var(--ad-teal-700);
+    color: #eef4f1;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.danger {
+    background: #fff;
+    color: var(--ad-red);
+    border: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.ad-btn-glow {
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
+    overflow: hidden;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.ad-btn-glow > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.ad-btn-glow::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 230deg,
+      rgba(255, 255, 255, 0.2) 265deg,
+      rgba(255, 255, 255, 1) 300deg,
+      #9fd4c8 330deg,
+      transparent 360deg
+    );
+    z-index: 0;
+    animation: adBtnGlowSpin 2s linear infinite;
+    pointer-events: none;
+  }
+
+  body.admin-dash #page-application-detail .ad-appd-btn.ad-btn-glow::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 8px;
+    background: var(--ad-teal-700);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.admin-dash #page-application-detail .ad-appd-actions {
+      transition: none;
+      transform: none;
+    }
+    body.admin-dash #page-application-detail .ad-appd-btn.ad-btn-glow::before {
+      animation: none !important;
+      opacity: 0 !important;
+    }
+  }
+
+  body.admin-dash #application-modal {
+    display: none !important;
+  }
+
+  body.admin-dash .ad-app-doc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(24, 36, 32, 0.45);
+    align-items: stretch;
+    justify-content: center;
+    padding: 12px;
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+
+  body.admin-dash .ad-app-doc-sheet {
+    width: min(720px, 100%);
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  }
+
+  body.admin-dash .ad-app-doc-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ad-line);
+  }
+
+  body.admin-dash .ad-app-doc-toolbar-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ad-ink);
+  }
+
+  body.admin-dash .ad-app-doc-toolbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  body.admin-dash .ad-app-doc-sheet iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #fff;
+    min-height: 0;
+  }
+
+  /* ── Add Lecturer bottom sheet (mock-aligned) ── */
+  body.admin-dash #add-lecturer-overlay.modal-overlay {
+    background: rgba(13, 26, 24, 0.55);
+    backdrop-filter: none;
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.admin-dash #add-lecturer-overlay.modal-overlay.open {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    border: none !important;
+    background: var(--ad-mist) !important;
+    box-shadow: none !important;
+    max-height: min(92dvh, 92vh) !important;
+    overflow-y: auto !important;
+    padding: 18px 20px calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-eyebrow,
+  body.admin-dash #add-lecturer-overlay .ad-sheet-head .modal-to {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    color: var(--ad-ink-faint) !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-title,
+  body.admin-dash #add-lecturer-overlay .ad-sheet-head .modal-name {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: var(--ad-ink) !important;
+    margin-top: 4px !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-close {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+    border: 1px solid var(--ad-line) !important;
+    color: var(--ad-ink-soft) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0;
+    padding: 0 !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-fields {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-fields .um-field {
+    gap: 0;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-label,
+  body.admin-dash #add-lecturer-overlay .ad-sheet-label.um-label {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.05em !important;
+    color: var(--ad-ink-faint) !important;
+    text-transform: uppercase !important;
+    margin: 12px 0 6px !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-fields .um-field:first-child .ad-sheet-label {
+    margin-top: 8px !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-modules-label {
+    margin: 22px 0 10px !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-input.um-input,
+  body.admin-dash #add-lecturer-overlay .ad-sheet-input {
+    width: 100%;
+    padding: 11px 13px !important;
+    border: 1px solid var(--ad-line) !important;
+    border-radius: 10px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 13px !important;
+    color: var(--ad-ink) !important;
+    background-color: #fff !important;
+    background-image: none !important;
+    height: auto !important;
+    min-height: 42px;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-modules {
+    margin: 0 !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-lecturer-module-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-module-row-card {
+    background: #fff;
+    border: 1px solid var(--ad-line);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 0;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-module-row-idx {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+    color: var(--ad-ink-faint);
+    text-transform: uppercase;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-module-row-remove {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ad-red);
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-module-fields-2 {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-module-fields-2 .ad-sheet-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-add-module-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1.5px dashed var(--ad-line);
+    background: #fff;
+    color: var(--ad-ink-soft);
+    font-weight: 600;
+    font-size: 12px;
+    font-family: "Space Grotesk", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-hint {
+    font-size: 10.5px !important;
+    color: var(--ad-ink-faint) !important;
+    margin-top: 6px !important;
+    line-height: 1.5 !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-actions {
+    display: flex !important;
+    gap: 10px !important;
+    margin-top: 22px !important;
+    justify-content: stretch !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-btn-secondary {
+    flex: 1 !important;
+    padding: 13px !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    border: 1px solid var(--ad-line) !important;
+    color: var(--ad-ink) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    margin: 0 !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-sheet-btn-primary {
+    flex: 2 !important;
+    padding: 13px !important;
+    border-radius: 10px !important;
+    background: var(--ad-teal-700) !important;
+    border: none !important;
+    color: #eef4f1 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    width: auto !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay .ad-btn-glow::after {
+    border-radius: 8px;
+    background: var(--ad-teal-700);
+  }
+
+  /* Focus glow must beat .ad-sheet-input.um-input base (same specificity + :focus) */
+  body.admin-dash #add-lecturer-overlay .ad-sheet-input.um-input:focus,
+  body.admin-dash #add-lecturer-overlay .ad-sheet-input:focus,
+  body.admin-dash #add-lecturer-overlay .um-input:focus {
+    border: 2px solid transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: #fff !important;
+    background-image:
+      linear-gradient(#fff, #fff),
+      conic-gradient(
+        from var(--ad-field-glow, 0deg),
+        #e4e8e3 0%,
+        #e4e8e3 58%,
+        rgba(159, 212, 200, 0.45) 72%,
+        #ffffff 86%,
+        #9fd4c8 93%,
+        #e4e8e3 100%
+      ) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    animation: adFieldGlowSpin 2.2s linear infinite !important;
+  }
+
+  body.admin-dash #add-lecturer-overlay select.ad-sheet-input.um-input:focus,
+  body.admin-dash #add-lecturer-overlay select.ad-sheet-input:focus,
+  body.admin-dash #add-lecturer-overlay select.um-input:focus {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+      linear-gradient(#fff, #fff),
+      conic-gradient(
+        from var(--ad-field-glow, 0deg),
+        #e4e8e3 0%,
+        #e4e8e3 58%,
+        rgba(159, 212, 200, 0.45) 72%,
+        #ffffff 86%,
+        #9fd4c8 93%,
+        #e4e8e3 100%
+      ) !important;
+    background-size: 12px 8px, auto, auto !important;
+    background-position: right 16px center, center, center !important;
+    background-repeat: no-repeat, no-repeat, no-repeat !important;
+    background-origin: padding-box, border-box, border-box !important;
+    background-clip: padding-box, padding-box, border-box !important;
+  }
+}
+
+/* Desktop: hide mobile-only blocks */
+@media (min-width: 901px) {
+  body.admin-dash .ad-mobile-only,
+  body.admin-dash .ad-mobile-cta,
+  body.admin-dash .ad-settings-mobile,
+  body.admin-dash .ad-rec-list,
+  body.admin-dash .ad-apps-cards,
+  body.admin-dash .ad-page-back,
+  body.admin-dash #page-application-detail,
+  body.admin-dash .ad-app-doc-overlay,
+  body.admin-dash #ad-user-sheet-overlay {
+    display: none !important;
+  }
+}

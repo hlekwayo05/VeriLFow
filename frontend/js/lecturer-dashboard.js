@@ -75,8 +75,25 @@ function applyModuleUi() {
   setText('#lcd-module', `${code} · ${name}`);
   setText('#view-calendar .page-hero p', `${code} · ${name} · click a date to view or create a session`);
   setText('.claims-header p', `${code} · Tutor claims for this module`);
-  if (lecturerDisplayName) setText('#lec-hub-name', lecturerDisplayName);
-  setText('#lec-hub-module', `${code} · ${name}`);
+  if (lecturerDisplayName) {
+    setText('#lec-hub-name', String(lecturerDisplayName).toUpperCase());
+    const av = document.getElementById('lec-hub-avatar');
+    if (av) {
+      const parts = String(lecturerDisplayName).split(/\s+/).filter(Boolean);
+      const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0])
+        : String(lecturerDisplayName).slice(0, 2);
+      av.textContent = initials.toUpperCase();
+    }
+  }
+  const hubMod = document.getElementById('lec-hub-module');
+  if (hubMod) {
+    if (code && code !== '—') {
+      hubMod.innerHTML = `<b>${code}</b> · ${name}`;
+    } else {
+      hubMod.textContent = 'Loading module…';
+    }
+  }
 }
 
 function syncLecHubModules(modules) {
@@ -99,16 +116,16 @@ function syncLecHubModules(modules) {
 function syncLecBottomNav(pageId) {
   const map = {
     dashboard: 'dashboard',
-    sessions: 'dashboard',
-    claims: 'dashboard',
-    calendar: 'dashboard',
-    classlist: 'dashboard',
-    support: 'dashboard',
-    report: 'dashboard',
+    sessions: 'sessions',
+    claims: 'claims',
+    calendar: null,
+    classlist: null,
+    support: null,
+    report: null,
     messages: 'messages',
     tutors: 'tutors',
   };
-  const active = map[pageId] || null;
+  const active = Object.prototype.hasOwnProperty.call(map, pageId) ? map[pageId] : null;
   document.querySelectorAll('.lec-bnav-item').forEach((btn) => {
     btn.classList.toggle('active', active != null && btn.dataset.bnav === active);
   });
@@ -117,25 +134,42 @@ function syncLecBottomNav(pageId) {
 function updateLecMobileHubNext(sessions) {
   const titleEl = document.getElementById('lec-hub-next-title');
   const metaEl = document.getElementById('lec-hub-next-meta');
+  const heroEl = document.getElementById('lecSessionCard') || document.getElementById('lec-hub-hero');
   if (!titleEl || !metaEl) return;
 
+  titleEl.hidden = false;
+  metaEl.hidden = false;
+  titleEl.removeAttribute('hidden');
+  metaEl.removeAttribute('hidden');
+  titleEl.style.setProperty('display', 'block', 'important');
+  metaEl.style.setProperty('display', 'block', 'important');
+  titleEl.style.setProperty('visibility', 'visible', 'important');
+  metaEl.style.setProperty('visibility', 'visible', 'important');
+  titleEl.style.setProperty('font-size', '20px', 'important');
+  titleEl.style.setProperty('color', '#ffffff', 'important');
+  metaEl.style.setProperty('font-size', '12px', 'important');
+  metaEl.style.setProperty('color', '#c3d8d2', 'important');
+
   const result = findTodayCardSession(sessions || Object.values(SESSIONS));
+  let aria = 'Today / next';
   if (!result) {
     titleEl.textContent = 'No session today';
     metaEl.textContent = currentModuleCode
-      ? `${currentModuleCode} · Check calendar for upcoming`
+      ? `${currentModuleCode} · Check calendar for upcoming sessions`
       : 'Select a module to see sessions';
-    return;
+    aria = metaEl.textContent;
+  } else {
+    const { session: s, mode } = result;
+    titleEl.textContent = mode === 'live'
+      ? (s.topic || sessionTypeLabel(s.session_type) || 'Live session')
+      : (s.topic || sessionTypeLabel(s.session_type) || 'Up next');
+    const time = s.start_time ? String(s.start_time).slice(0, 5) : '—';
+    const venue = s.venue || 'Venue TBA';
+    const label = mode === 'live' ? 'Live now' : 'Up next';
+    metaEl.textContent = `${label} · ${time} · ${venue}`;
+    aria = `${titleEl.textContent}. ${metaEl.textContent}`;
   }
-
-  const { session: s, mode } = result;
-  titleEl.textContent = mode === 'live'
-    ? (s.topic || sessionTypeLabel(s.session_type) || 'Live session')
-    : (s.topic || sessionTypeLabel(s.session_type) || 'Up next');
-  const time = s.start_time ? String(s.start_time).slice(0, 5) : '—';
-  const venue = s.venue || 'Venue TBA';
-  const label = mode === 'live' ? 'Live now' : 'Up next';
-  metaEl.textContent = `${label} · ${time} · ${venue}`;
+  if (heroEl) heroEl.setAttribute('aria-label', aria);
 }
 
 function switchModule(btn) {
@@ -152,11 +186,12 @@ function switchModule(btn) {
 async function refreshModuleData() {
   if (!currentModuleCode) return;
   applyModuleUi();
-  // Sessions + tutors + claims for hub; class list loads when that page opens.
+  // Sessions + tutors + claims + class list count for hub
   await Promise.all([
     loadSessions(),
     loadMyTutors(),
     loadClaims(),
+    loadClassList(),
   ]);
   renderModuleReport(Object.values(SESSIONS), moduleTutorPool);
   if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
@@ -539,7 +574,7 @@ function renderClaimsList(claims) {
   if (!list) return;
 
   if (!claims.length) {
-    list.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">No tutor claims for this module yet.</div>';
+    list.innerHTML = '<div class="lec-empty-card"><p>No tutor claims for this module yet.</p></div>';
     return;
   }
 
@@ -593,11 +628,34 @@ function updateClaimsStats(claims) {
   const approved = claims.filter(c => c.status === 'approved');
   const coordinator = claims.filter(c => c.status === 'pending_coordinator');
   const approvedTotal = approved.reduce((sum, c) => sum + Number(c.total_amount || 0), 0);
-  const pendingTotal = pending.reduce((sum, c) => sum + Number(c.total_amount || 0), 0);
+  const submitted = claims.length;
+  const approvalRate = submitted ? Math.round((approved.length / submitted) * 100) : 0;
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
 
   setText('#pending-count', String(pending.length));
   setText('#claims-badge', pending.length ? String(pending.length) : '');
   setText('#lec-hub-claims-sub', pending.length ? `${pending.length} to review` : 'Approvals');
+
+  setText('#claims-hero-sem', `${MONTH_SHORT[month]} ${year}`);
+  setText('#claims-approval-pct', `${approvalRate}%`);
+  setText('#claims-stat-pending', String(pending.length));
+  setText('#claims-stat-coordinator', String(coordinator.length));
+  setText('#claims-stat-submitted', String(submitted));
+  setText('#claims-stat-approved', formatClaimAmount(approvedTotal));
+  setText('#claims-stat-approved-sub', `${approved.length} approved`);
+
+  const ring = document.getElementById('claims-ring-arc');
+  if (ring) {
+    const circ = 264;
+    const offset = circ * (1 - Math.min(100, Math.max(0, approvalRate)) / 100);
+    ring.setAttribute('stroke-dashoffset', String(offset));
+  }
+  const approvalSub = document.getElementById('claims-approval-sub');
+  if (approvalSub) {
+    approvalSub.innerHTML = `${approved.length} OF ${submitted}<br>SUBMITTED`;
+  }
 
   const strip = document.querySelector('#view-claims .claims-strip');
   if (strip) {
@@ -605,8 +663,7 @@ function updateClaimsStats(claims) {
       <div class="cl-stat"><div class="cl-stat-label">Total Submitted</div><div class="cl-stat-val">${claims.length}</div><div class="cl-stat-sub">this module</div></div>
       <div class="cl-stat"><div class="cl-stat-label">Pending Review</div><div class="cl-stat-val hi">${pending.length}</div><div class="cl-stat-sub">need your action</div></div>
       <div class="cl-stat"><div class="cl-stat-label">With Coordinator</div><div class="cl-stat-val amber">${coordinator.length}</div><div class="cl-stat-sub">awaiting approval</div></div>
-      <div class="cl-stat"><div class="cl-stat-label">Total Approved</div><div class="cl-stat-val green">${formatClaimAmount(approvedTotal)}</div><div class="cl-stat-sub">${approved.length} approved</div></div>
-      <div class="cl-stat"><div class="cl-stat-label">Awaiting Review</div><div class="cl-stat-val amber">${formatClaimAmount(pendingTotal)}</div><div class="cl-stat-sub">${pending.length} pending</div></div>`;
+      <div class="cl-stat"><div class="cl-stat-label">Total Approved</div><div class="cl-stat-val green">${formatClaimAmount(approvedTotal)}</div><div class="cl-stat-sub">${approved.length} approved</div></div>`;
   }
 }
 
@@ -748,7 +805,14 @@ function renderSessionRows(sessions) {
   if (!container) return;
 
   if (!sessions.length) {
-    container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted)">No sessions yet. Create one using the button above.</div>`;
+    container.innerHTML = `
+      <div class="vf-sess-empty lec-sess-empty">
+        <div class="vf-sess-empty-ico" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <h3>No sessions yet</h3>
+        <p>Create one using the button below.</p>
+      </div>`;
     return;
   }
 
@@ -1140,11 +1204,25 @@ function openNewSessionOnDate() {
 }
 
 /* ── TUTOR TOGGLES ── */
-function toggleTutor(row) { row.classList.toggle('checked'); }
+function toggleTutor(row) {
+  row.classList.toggle('checked');
+  const check = row.querySelector('.ns-tutor-check');
+  if (!check) return;
+  check.innerHTML = row.classList.contains('checked')
+    ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+    : '';
+}
 function toggleSelectAllTutors() {
   const rows = document.querySelectorAll('.ns-tutor-row');
   const allChecked = [...rows].every(r => r.classList.contains('checked'));
-  rows.forEach(r => allChecked ? r.classList.remove('checked') : r.classList.add('checked'));
+  rows.forEach(r => {
+    r.classList.toggle('checked', !allChecked);
+    const check = r.querySelector('.ns-tutor-check');
+    if (!check) return;
+    check.innerHTML = !allChecked
+      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+      : '';
+  });
 }
 
 /* ── LOAD TUTORS INTO NEW SESSION MODAL ── */
@@ -1152,18 +1230,18 @@ function renderNsTutorList(tutors) {
   const wrap = document.getElementById('ns-tutor-list');
   if (!wrap) return;
   if (!tutors.length) {
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No approved tutors on this module yet.</div>';
+    wrap.innerHTML = '<div class="ns-tutor-empty">No approved tutors on this module yet.</div>';
     return;
   }
   wrap.innerHTML = tutors.map(t => {
     const initials = VF.initials(t.first_names, t.surname);
     return `<div class="ns-tutor-row" data-tutor="${t.id}" onclick="toggleTutor(this)">
-        <div class="ns-tutor-av" style="color:var(--green);border-color:rgba(92,200,138,.3)">${initials}</div>
+        <div class="ns-tutor-av">${initials}</div>
         <div class="ns-tutor-info">
           <div class="ns-tutor-name">${t.first_names} ${t.surname}</div>
           <div class="ns-tutor-meta">${t.module_name || currentModuleCode}</div>
         </div>
-        <div class="ns-tutor-check"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="ns-tutor-check" aria-hidden="true"></div>
       </div>`;
   }).join('');
 }
@@ -1656,7 +1734,14 @@ function renderLecturerTickets(tickets) {
   if (!wrap) return;
 
   if (!tickets.length) {
-    wrap.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0">No tickets yet. Click "+ New Ticket" if you need help.</div>';
+    wrap.innerHTML = `
+      <div class="lec-empty-card">
+        <div class="lec-empty-ico" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        </div>
+        <h3>No tickets yet</h3>
+        <p>Tap New Ticket below if you need help.</p>
+      </div>`;
     return;
   }
 
@@ -1862,11 +1947,33 @@ function renderModuleReport(sessions, tutors) {
   });
   const tutorAttendance = tutorRateCount ? Math.round(tutorRateSum / tutorRateCount) : 0;
   const tutorNamesShort = tutors.slice(0, 3).map((t) => t.first_names).filter(Boolean).join(', ') || '—';
+  const mod = getSelectedModule();
+  const modName = currentModuleName || mod?.name || '—';
+  const generated = now.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
 
   setText('#report-eyebrow', `Academic Report · ${MONTH_SHORT[month]} ${year}`);
-  setText('#report-sub', `${currentModuleName || currentModuleCode} · ${lecturerDisplayName || 'Lecturer'} · Generated ${now.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}`);
+  setText('#report-title', `${currentModuleCode || '—'} Module Report`);
+  setText('#report-sub', `${modName} · ${lecturerDisplayName || 'lecturer'} · Generated ${generated}`);
   setText('#report-type-badge', `${planned} total`);
   setText('#report-tutor-badge', `${currentModuleCode || '—'} · ${MONTH_SHORT[month]} ${year}`);
+  setText('#report-hero-sem', `${MONTH_SHORT[month]} ${year}`);
+  setText('#report-completion-pct', `${completionRate}%`);
+  setText('#report-stat-sessions', String(planned));
+  setText('#report-stat-attendance', `${tutorAttendance}%`);
+  setText('#report-stat-tutors', String(tutors.length));
+  setText('#report-stat-tutors-sub', tutorNamesShort);
+  setText('#report-stat-flagged', String(flagged));
+
+  const ring = document.getElementById('report-ring-arc');
+  if (ring) {
+    const circ = 264;
+    const offset = circ * (1 - Math.min(100, Math.max(0, completionRate)) / 100);
+    ring.setAttribute('stroke-dashoffset', String(offset));
+  }
+  const completionSub = document.getElementById('report-completion-sub');
+  if (completionSub) {
+    completionSub.innerHTML = `${completed} OF ${planned}<br>COMPLETED`;
+  }
 
   renderDashboardMonthPanel(sessions);
 
@@ -1875,7 +1982,7 @@ function renderModuleReport(sessions, tutors) {
     kpiStrip.innerHTML = `
       <div class="kpi-box"><div class="kpi-label">Sessions Run</div><div class="kpi-val">${planned}</div><div class="kpi-sub">scheduled this month</div></div>
       <div class="kpi-box"><div class="kpi-label">Completion Rate</div><div class="kpi-val green">${completionRate}%</div><div class="kpi-sub">${completed} completed</div></div>
-      <div class="kpi-box"><div class="kpi-label">Tutor Attendance</div><div class="kpi-val yellow">${tutorAttendance}%</div><div class="kpi-sub">avg confirmation rate</div></div>
+      <div class="kpi-box"><div class="kpi-label">Tutor Attendance</div><div class="kpi-val yellow">${tutorAttendance}%</div><div class="kpi-sub">avg confirmation</div></div>
       <div class="kpi-box"><div class="kpi-label">Flagged Sessions</div><div class="kpi-val red">${flagged}</div><div class="kpi-sub">need attention</div></div>
       <div class="kpi-box"><div class="kpi-label">Active Tutors</div><div class="kpi-val">${tutors.length}</div><div class="kpi-sub">${tutorNamesShort}</div></div>`;
   }
@@ -2003,10 +2110,6 @@ function formatClassListDate(iso) {
   return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function currentSemesterLabel() {
-  return new Date().toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
-}
-
 function renderClassList(data) {
   classListData = data;
   const wrap = document.getElementById('classlist-module-wrap');
@@ -2014,16 +2117,13 @@ function renderClassList(data) {
 
   const code = data?.moduleCode || currentModuleCode || '—';
   const name = data?.moduleName || currentModuleName || '—';
-  const course = data?.course || currentModuleCourse || '';
   const entries = data?.entries || [];
   const count = entries.length;
 
   setText('#cl-stat-enrolled', String(count));
   setText('#cl-stat-module', code);
   setText('#cl-stat-updated', formatClassListDate(data?.lastUpdated));
-
-  const prog = course.startsWith('BICT') ? 'BICT' : course.startsWith('DICT') ? 'DICT' : (course || 'ICT');
-  const meta = `${prog} &nbsp;·&nbsp; ${currentSemesterLabel()}`;
+  setText('#lec-hub-classlist-badge', String(count));
 
   if (!count) {
     wrap.innerHTML = `
@@ -2031,14 +2131,11 @@ function renderClassList(data) {
         <div class="cl-mod-header">
           <div>
             <div class="cl-mod-title">${code} — ${name}</div>
-            <div class="cl-mod-meta">${meta}</div>
+            <div class="cl-mod-count-sub">enrolled</div>
           </div>
-          <div style="text-align:right;">
-            <div class="cl-mod-count">0</div>
-            <div class="cl-mod-count-sub">enrolled students</div>
-          </div>
+          <div class="cl-mod-count">0</div>
         </div>
-        <div style="padding:20px 0;text-align:center;color:var(--muted);font-size:13px;">
+        <div class="cl-empty-note">
           No students on this class list yet. Upload a CSV above to add enrolled students for ${code}.
         </div>
       </div>`;
@@ -2064,18 +2161,15 @@ function renderClassList(data) {
       <div class="cl-mod-header">
         <div>
           <div class="cl-mod-title">${code} — ${name}</div>
-          <div class="cl-mod-meta">${meta}</div>
+          <div class="cl-mod-count-sub">enrolled</div>
         </div>
-        <div style="text-align:right;">
-          <div class="cl-mod-count">${count}</div>
-          <div class="cl-mod-count-sub">enrolled students</div>
-          ${data.lastUpdated ? `<div class="cl-updated" style="justify-content:flex-end;margin-top:4px;"><div class="cl-updated-dot"></div>Updated ${formatClassListDate(data.lastUpdated)}</div>` : ''}
-        </div>
+        <div class="cl-mod-count">${count}</div>
       </div>
       <table class="cl-table">
         <thead><tr><th>Student No.</th><th>Full Name</th><th>Email</th><th>Status</th></tr></thead>
         <tbody>${rows}${moreRow}</tbody>
       </table>
+      ${data.lastUpdated ? `<div class="cl-updated cl-updated-footer"><div class="cl-updated-dot"></div>Updated ${formatClassListDate(data.lastUpdated)}</div>` : ''}
     </div>`;
 }
 
@@ -2288,13 +2382,25 @@ function rebuildCalendarFromSessions(sessions) {
   buildCalGrid();
 }
 
+function selectCalDay(d) {
+  document.querySelectorAll('#lec-cal-grid .cal-cell.selected').forEach((el) => {
+    el.classList.remove('selected');
+  });
+  const cell = document.querySelector(`#lec-cal-grid .cal-cell[data-day="${d}"]`);
+  if (cell) cell.classList.add('selected');
+}
+
 function resetLecCalDetail() {
   document.getElementById('lec-detail-empty').style.display = 'flex';
   document.getElementById('lec-detail-empty-date').style.display = 'none';
   document.getElementById('lec-detail-content').style.display = 'none';
+  document.querySelectorAll('#lec-cal-grid .cal-cell.selected').forEach((el) => {
+    el.classList.remove('selected');
+  });
 }
 
 function showLecEmptyDatePanel(d) {
+  selectCalDay(d);
   const dateStr = calDateKey(calYear, calMonth, d);
   calEmptyDateValue = dateStr;
   document.getElementById('lec-detail-empty').style.display = 'none';
@@ -2365,6 +2471,7 @@ function renderLecCalSession(ev, dateStr) {
 }
 
 function showLecCalDetail(d, dayEvents) {
+  selectCalDay(d);
   const dateStr = `${d} ${monthNames[calMonth]} ${calYear}`;
   const items = dayEvents.items || [];
   if (!items.length) return;
@@ -2410,7 +2517,7 @@ function buildCalGrid() {
   if (!grid) return;
   grid.innerHTML = '';
   const titleEl = document.getElementById('cal-month-title');
-  if (titleEl) titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+  if (titleEl) titleEl.textContent = monthNames[calMonth];
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
@@ -2427,14 +2534,18 @@ function buildCalGrid() {
     const key = calDateKey(calYear, calMonth, d);
     const dayEvents = lecCalEvents[key];
     const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
+    const cellDate = new Date(calYear, calMonth, d);
+    const isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     let cls = 'cal-cell';
+    if (isPast) cls += ' past';
     if (isToday && dayEvents) cls += ' today has-event';
     else if (isToday) cls += ' today';
     else if (dayEvents) cls += ` has-event ev-${dayEvents.type}`;
     else cls += ' no-event';
 
     cell.className = cls;
+    cell.dataset.day = String(d);
     cell.textContent = d;
 
     if (dayEvents && dayEvents.items.length > 1) {
@@ -2492,7 +2603,7 @@ async function loadMyReferrals() {
     if (!wrap) return;
 
     if (!referrals.length) {
-      wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);">No referrals submitted yet for this module.</div>';
+      wrap.innerHTML = '<div class="lec-referrals-empty">No referrals submitted yet for this module.</div>';
       return;
     }
 
@@ -2534,9 +2645,8 @@ async function loadMyTutors() {
 
     const dashTutorStat = document.querySelector('#view-dashboard .stat-box:nth-child(1) .stat-val');
     if (dashTutorStat) dashTutorStat.textContent = String(tutors.length);
-    setText('#lec-hub-tutors-sub', tutors.length
-      ? `${tutors.length} tutor${tutors.length === 1 ? '' : 's'}`
-      : 'Your team');
+    setText('#lec-hub-tutors-sub', "Manage this module's tutors");
+    setText('#lec-hub-tutors-badge', String(tutors.length));
 
     renderSidebarTutors(tutors);
     renderNsTutorList(tutors);
@@ -2561,12 +2671,15 @@ async function loadMyTutors() {
       const resp     = t.responsibility_level
         ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1) + ' Tutor'
         : '—';
+      const safeName = String(t.first_names + ' ' + t.surname).replace(/'/g, "\\'");
       return `
         <div class="tutor-card">
-          <div class="tc-av" style="color:var(--green);border-color:rgba(92,200,138,.3);">${initials}</div>
-          <div>
-            <div class="tc-name">${t.first_names} ${t.surname}</div>
-            <div class="tc-module">${t.module_name || '—'}</div>
+          <div class="tc-top">
+            <div class="tc-av">${initials}</div>
+            <div class="tc-who">
+              <div class="tc-name">${t.first_names} ${t.surname}</div>
+              <div class="tc-module">${t.module_name || currentModuleName || '—'}</div>
+            </div>
           </div>
           <div class="tc-chips">
             <span class="tc-chip attend">${t.student_number || '—'}</span>
@@ -2575,13 +2688,12 @@ async function loadMyTutors() {
             <div class="tc-qual-item"><strong>${qual}</strong>Qualification Level</div>
             <div class="tc-qual-item"><strong>${resp}</strong>Responsibility Level</div>
           </div>
-          <div style="display:flex;justify-content:flex-end;">
-            <button class="msg-btn" onclick="openMsg(${t.id}, '${String(t.first_names + ' ' + t.surname).replace(/'/g, "\\'")}')">
-              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>Message
-            </button>
-          </div>
+          <button type="button" class="msg-btn" onclick="openMsg(${t.id}, '${safeName}')">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            Message
+          </button>
         </div>`;
     }).join('');
     loadMyReferrals();

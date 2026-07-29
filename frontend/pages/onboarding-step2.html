@@ -6,9 +6,11 @@
   <title>VeriFlow — Banking Details</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/veriflow-mobile.css?v=8"/>
+  <link rel="stylesheet" href="../css/auth-onboarding.css?v=3"/>
   <style>
     body.ob-page .page { padding-top: 0; }
     .ob-layout { min-height:100vh; display:grid; grid-template-columns:1fr 420px; align-items:start; }
@@ -66,25 +68,6 @@
       animation: obFieldGlowSpin 2.2s linear infinite;
     }
 
-    body.ob-page .form-group select:focus {
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
-        linear-gradient(var(--paper), var(--paper)),
-        conic-gradient(
-          from var(--ob-field-glow),
-          var(--border-2) 0%,
-          var(--border-2) 58%,
-          rgba(159, 212, 200, 0.45) 72%,
-          #ffffff 86%,
-          #9fd4c8 93%,
-          var(--border-2) 100%
-        );
-      background-size: 12px 8px, auto, auto;
-      background-position: right 16px center, center, center;
-      background-repeat: no-repeat, no-repeat, no-repeat;
-      background-origin: padding-box, border-box, border-box;
-      background-clip: padding-box, padding-box, border-box;
-    }
 
     body.ob-page .form-group.error input:focus,
     body.ob-page .form-group.error select:focus {
@@ -296,7 +279,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=14"></script>
 <script>
   VF.pageIn();
   VF.requireAuth('login.html');

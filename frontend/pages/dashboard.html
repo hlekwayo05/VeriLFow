@@ -6,9 +6,10 @@
 <title>VeriFlow — Tutor Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
-<link rel="stylesheet" href="../css/tutor-dashboard.css?v=43"/>
+<link rel="stylesheet" href="../css/veriflow-mobile.css?v=5"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=54"/>
 </head>
 <body class="tutor-dash td-on-hub">
 <div class="app">
@@ -78,83 +79,152 @@
   <!-- ═══════ DASHBOARD ═══════ -->
   <div id="page-dashboard" class="page active">
 
-    <!-- Mobile home hub (session-slot rails · mist + deep teal) -->
+    <!-- Mobile home hub — matches veriflow-mobile-suite.html -->
     <div class="td-mobile-hub" id="td-mobile-hub">
       <header class="td-hub-top">
-        <h1 class="td-hub-name" id="td-hub-name">Loading…</h1>
-        <p class="td-hub-module" id="td-hub-module">Loading module…</p>
+        <div class="td-hub-who">
+          <div class="td-hub-avatar" id="td-hub-avatar" aria-hidden="true">VF</div>
+          <div class="td-hub-who-text">
+            <h1 class="td-hub-name" id="td-hub-name">Loading…</h1>
+            <p class="td-hub-module" id="td-hub-module">Loading module…</p>
+          </div>
+        </div>
+        <button type="button" class="td-hub-bell" aria-label="Messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
       </header>
       <div class="td-hub-modules" id="td-hub-modules" aria-label="Switch module"></div>
 
-      <button type="button" class="td-hub-hero" id="td-hub-hero" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+      <div class="td-hub-hero" id="td-hub-hero">
+        <div class="td-hub-hero-top">
+          <span class="td-hub-hero-label">Semester hours</span>
+          <span class="td-hub-hero-sem" id="td-hub-sem-label">Jul 2026</span>
+        </div>
         <div class="td-hub-hero-body">
-          <div class="td-hub-hero-main">
-            <div class="td-hub-hero-label">Next session</div>
-            <div class="td-hub-hero-title" id="td-hub-next-title">Loading…</div>
-            <div class="td-hub-hero-meta" id="td-hub-next-meta">—</div>
+          <div class="td-hub-ring-wrap">
+            <svg width="104" height="104" viewBox="0 0 104 104" aria-hidden="true">
+              <circle cx="52" cy="52" r="45" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
+              <circle id="td-hub-ring" cx="52" cy="52" r="45" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="282.7" stroke-dashoffset="282.7" stroke-linecap="round"/>
+            </svg>
+            <div class="td-hub-ring-center">
+              <div class="td-hub-ring-num" id="td-hub-pct">0%</div>
+              <div class="td-hub-ring-lbl">USED</div>
+            </div>
           </div>
           <div class="td-hub-hero-stats">
-            <div class="td-hub-hero-stat">
-              <span class="td-hub-hero-stat-lbl">Used</span>
-              <span class="td-hub-hero-stat-val" id="td-hub-hrs-used">—</span>
-            </div>
-            <div class="td-hub-hero-stat">
-              <span class="td-hub-hero-stat-lbl">Left</span>
-              <span class="td-hub-hero-stat-val" id="td-hub-hrs-left">—</span>
-            </div>
-            <div class="td-hub-hero-stat">
-              <span class="td-hub-hero-stat-lbl">Month</span>
-              <span class="td-hub-hero-stat-val" id="td-hub-sess-month">—</span>
-            </div>
+            <div class="td-hub-hero-stat-row"><span class="v" id="td-hub-hrs-used">0</span><span class="l">HOURS USED</span></div>
+            <div class="td-hub-hero-stat-row"><span class="v" id="td-hub-hrs-left">160</span><span class="l">HOURS REMAINING</span></div>
+            <div class="td-hub-hero-stat-row"><span class="v" id="td-hub-hrs-total">160</span><span class="l">TOTAL ALLOCATED</span></div>
           </div>
         </div>
-      </button>
+      </div>
 
-      <div class="td-hub-grid" role="navigation" aria-label="Tutor sections">
-        <button type="button" class="td-hub-tile td-hub-tile--sessions" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <div class="td-hub-chips">
+        <div class="td-hub-chip">
+          <span class="td-hub-chip-l">This month</span>
+          <div class="td-hub-chip-v" id="td-hub-sess-month">0</div>
+          <div class="td-hub-chip-sub" id="td-hub-month-sub">0 confirmed · 0 pending</div>
+        </div>
+        <div class="td-hub-chip">
+          <span class="td-hub-chip-l">Pending claim</span>
+          <div class="td-hub-chip-v is-claim" id="td-hub-claim-amt">R0</div>
+          <div class="td-hub-chip-sub" id="td-hub-claim-sub">nothing submitted</div>
+        </div>
+      </div>
+
+      <div class="td-hub-section td-hub-section--tight">
+        <button type="button" class="td-hub-next" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+          <span class="td-hub-next-ico" aria-hidden="true">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
           </span>
-          <span class="td-hub-tile-title">Sessions</span>
-          <span class="td-hub-tile-sub" id="hub-sessions-sub">Upcoming &amp; registers</span>
-        </button>
-        <button type="button" class="td-hub-tile td-hub-tile--messages" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span class="td-hub-next-txt">
+            <span class="td-hub-next-t1" id="td-hub-next-title">Loading…</span>
+            <span class="td-hub-next-t2" id="td-hub-next-meta">—</span>
           </span>
-          <span class="td-hub-tile-badge" id="hub-msg-badge" hidden>0</span>
-          <span class="td-hub-tile-title">Messages</span>
-          <span class="td-hub-tile-sub" id="hub-messages-sub">Inbox</span>
+          <svg class="td-hub-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
         </button>
-        <button type="button" class="td-hub-tile td-hub-tile--hourlog" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </span>
-          <span class="td-hub-tile-title">Hour log</span>
-          <span class="td-hub-tile-sub" id="hub-hourlog-sub">Semester hours</span>
-        </button>
-        <button type="button" class="td-hub-tile td-hub-tile--calendar" onclick="showPage('calendar',document.getElementById('nav-calendar'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </span>
-          <span class="td-hub-tile-title">Calendar</span>
-          <span class="td-hub-tile-sub">Session dates</span>
-        </button>
-        <button type="button" class="td-hub-tile td-hub-tile--claims" onclick="showPage('claims',document.getElementById('nav-claims'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-          </span>
-          <span class="td-hub-tile-badge" id="hub-claims-badge" hidden>0</span>
-          <span class="td-hub-tile-title">Claims</span>
-          <span class="td-hub-tile-sub" id="hub-claims-sub">Timesheet</span>
-        </button>
-        <button type="button" class="td-hub-tile td-hub-tile--support" onclick="showPage('support',document.getElementById('nav-support'))">
-          <span class="td-hub-tile-icon" aria-hidden="true">
-            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </span>
-          <span class="td-hub-tile-title">Support</span>
-          <span class="td-hub-tile-sub">Help &amp; tickets</span>
-        </button>
+      </div>
+
+      <div class="td-hub-section">
+        <div class="td-hub-section-head">
+          <span class="td-hub-section-title">This month's sessions</span>
+          <span class="td-hub-section-meta" id="td-hub-strip-meta">—</span>
+        </div>
+        <div class="td-hub-strip-card">
+          <div class="td-hub-strip-msg" id="td-hub-strip-msg">No sessions logged yet this month — once you're assigned one, it'll light up here.</div>
+          <div class="td-hub-strip" id="td-hub-strip"></div>
+        </div>
+      </div>
+
+      <div class="td-hub-section">
+        <div class="td-hub-section-head">
+          <span class="td-hub-section-title">Quick actions</span>
+        </div>
+        <div class="td-hub-grid" role="navigation" aria-label="Tutor sections">
+          <button type="button" class="td-hub-tile td-hub-tile--sessions" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+            <span class="td-hub-tile-icon c1" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Sessions</span>
+              <span class="td-hub-tile-sub" id="hub-sessions-sub">No upcoming sessions</span>
+            </span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="td-hub-tile td-hub-tile--messages" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
+            <span class="td-hub-tile-icon c4" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Messages</span>
+              <span class="td-hub-tile-sub" id="hub-messages-sub">Inbox</span>
+            </span>
+            <span class="td-hub-tile-badge" id="hub-msg-badge" hidden>0</span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="td-hub-tile td-hub-tile--hourlog" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
+            <span class="td-hub-tile-icon c1" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Hour log</span>
+              <span class="td-hub-tile-sub" id="hub-hourlog-sub">Track logged time</span>
+            </span>
+            <span class="td-hub-tile-meta" id="hub-hourlog-meta">0 / 160</span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="td-hub-tile td-hub-tile--calendar" onclick="showPage('calendar',document.getElementById('nav-calendar'))">
+            <span class="td-hub-tile-icon c3" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Calendar</span>
+              <span class="td-hub-tile-sub">Session dates</span>
+            </span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="td-hub-tile td-hub-tile--claims" onclick="showPage('claims',document.getElementById('nav-claims'))">
+            <span class="td-hub-tile-icon c3" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Claims</span>
+              <span class="td-hub-tile-sub" id="hub-claims-sub">Submit or review a claim</span>
+            </span>
+            <span class="td-hub-tile-badge" id="hub-claims-badge" hidden>0</span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="td-hub-tile td-hub-tile--support" onclick="showPage('support',document.getElementById('nav-support'))">
+            <span class="td-hub-tile-icon c2" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+            </span>
+            <span class="td-hub-tile-body">
+              <span class="td-hub-tile-title">Support</span>
+              <span class="td-hub-tile-sub">Get help with your account</span>
+            </span>
+            <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -228,18 +298,19 @@
   <!-- ═══════ SESSIONS ═══════ -->
   <div id="page-sessions" class="page">
     <div class="full-page tm-sess-page">
+      <button type="button" class="st-back tm-sess-home" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
       <div class="page-hero tm-sess-hero">
-        <h1>Sessions — <em id="sessions-page-title">—</em></h1>
-        <p>Confirm availability for upcoming sessions · View register for completed sessions</p>
+        <h1>Sessions <span class="ts-title-dim">— <em id="sessions-page-title">—</em></span></h1>
       </div>
       <div class="tm-sess-summary" id="tm-sess-summary">
-        <div class="tm-sess-summary-top">
-          <div class="tm-sess-summary-label">Sessions</div>
-          <span class="tm-sess-summary-chip" id="tm-sess-summary-chip" hidden></span>
-        </div>
+        <div class="tm-sess-summary-label">Sessions</div>
         <div class="tm-sess-summary-title" id="tm-sess-summary-title">Loading…</div>
         <div class="tm-sess-summary-sub" id="tm-sess-summary-sub">—</div>
-        <div class="tm-sess-summary-stats" id="tm-sess-summary-stats"></div>
+        <span class="tm-sess-summary-pill" id="tm-sess-summary-stats">0 this month</span>
+        <span class="tm-sess-summary-chip" id="tm-sess-summary-chip" hidden></span>
       </div>
       <div class="tm-sess-cards" id="sessions-cards" aria-label="Sessions"></div>
       <div class="table-scroll tm-sess-table-wrap">
@@ -258,6 +329,10 @@
     <div class="msg-layout">
       <div class="inbox-sidebar" id="msg-inbox-pane">
         <div class="inbox-top">
+          <button type="button" class="st-back tm-msg-home" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            HOME
+          </button>
           <div class="tm-msg-title-row">
             <h2>Messages</h2>
           </div>
@@ -314,10 +389,18 @@
 
   <!-- ═══════ HOUR LOG ═══════ -->
   <div id="page-hourlog" class="page">
-    <div class="full-page">
-      <div class="page-hero">
+    <div class="full-page hl-suite">
+      <div class="st-page-head hl-page-head">
+        <button type="button" class="st-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+        <h1 class="st-page-title">Hour Log</h1>
+        <p class="hl-page-sub" id="hourlog-hero-sub">Loading…</p>
+      </div>
+      <div class="page-hero hl-desktop-hero">
         <h1>Hour <em>Log</em></h1>
-        <p id="hourlog-hero-sub">Loading…</p>
+        <p id="hourlog-hero-sub-desktop" class="hl-desktop-sub">Loading…</p>
       </div>
       <div class="hourlog-grid">
         <div class="hl-card"><div class="hl-label">Hours Used</div><div class="hl-value" id="hl-hours-used">—</div><div class="hl-sub">of 160 allocated this semester</div></div>
@@ -334,27 +417,29 @@
                 <span class="hl-pulse-used" id="hl-pulse-used">—</span>
                 <span class="hl-pulse-cap" id="hl-pulse-cap"> / —</span>
               </div>
-              <span class="hl-pulse-pct" id="hl-pulse-pct">—</span>
+              <span class="hl-pulse-pct" id="hl-pulse-pct" hidden>—</span>
             </div>
           </div>
           <div class="sem-track"><div class="sem-fill" style="width:0%"></div></div>
           <div class="hl-pulse-aside" aria-label="Hour log summary">
             <div class="hl-pulse-chip">
               <span class="hl-pulse-chip-val" id="hl-pulse-left">—</span>
-              <span class="hl-pulse-chip-lbl">hrs remaining</span>
+              <span class="hl-pulse-chip-lbl">HRS REMAINING</span>
             </div>
             <div class="hl-pulse-chip">
               <span class="hl-pulse-chip-val" id="hl-pulse-sess">—</span>
-              <span class="hl-pulse-chip-lbl" id="hl-pulse-sess-lbl">sessions</span>
+              <span class="hl-pulse-chip-lbl" id="hl-pulse-sess-lbl">CONFIRMED · PENDING</span>
             </div>
           </div>
         </div>
-        <div class="hl-breakdown">
+      </div>
+      <div class="hl-breakdown">
+        <div class="hl-breakdown-head">
           <div class="hl-breakdown-title">Monthly breakdown</div>
           <div class="hl-breakdown-sub" id="hourlog-month-summary">Hours logged per month</div>
-          <div class="chart-area" id="hourlog-month-chart"></div>
-          <div class="chart-labels" id="hourlog-month-chart-labels"></div>
         </div>
+        <div class="chart-area" id="hourlog-month-chart"></div>
+        <div class="chart-labels" id="hourlog-month-chart-labels"></div>
       </div>
       <div class="table-scroll hourlog-table-wrap">
         <table class="data-table" style="animation:tdFadeUp .4s ease .25s both">
@@ -370,6 +455,12 @@
   <!-- ═══════ CALENDAR ═══════ -->
   <div id="page-calendar" class="page">
     <div class="full-page tm-cal-page">
+      <div class="st-page-head tm-cal-back-head">
+        <button type="button" class="st-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+      </div>
       <div class="page-hero tm-cal-hero">
         <h1>Calendar — <em id="calendar-page-title">—</em></h1>
         <p id="calendar-hero-sub">Loading…</p>
@@ -399,8 +490,11 @@
         </div>
         <div class="cal-detail" id="cal-detail">
           <div class="cal-detail-empty" id="cal-detail-empty">
-            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <p>Select a highlighted date<br>to view session details</p>
+            <div class="cal-empty-ico" aria-hidden="true">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h3>No date selected</h3>
+            <p>Tap a highlighted date above to view session details.</p>
           </div>
           <div id="cal-detail-content" style="display:none">
             <h4 id="cal-detail-title">Session Details</h4>
@@ -421,9 +515,13 @@
 
   <!-- ═══════ CLAIMS ═══════ -->
   <div id="page-claims" class="page">
-    <div class="full-page">
-      <div class="page-hero">
-        <h1>Claims — <em>Timesheet</em></h1>
+    <div class="full-page ts-suite">
+      <div class="page-hero ts-page-head">
+        <button type="button" class="st-back ts-claims-home" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+        <h1>Claims <span class="ts-title-dim">— Timesheet</span></h1>
         <p id="claims-hero-sub">Loading…</p>
       </div>
       <div id="claims-list-wrap">
@@ -434,40 +532,33 @@
 
   <!-- ═══════ SUPPORT ═══════ -->
   <div id="page-support" class="page">
-    <div class="full-page">
-      <div class="page-hero">
-        <h1>Support</h1>
-        <p>Raise a ticket if you need help from the Student Employment Office</p>
+    <div class="full-page st-suite">
+      <div class="st-page-head">
+        <button type="button" class="st-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+        <h1 class="st-page-title">Support</h1>
       </div>
+
       <div class="st-help-card">
-        <div class="st-help-top">
-          <div class="st-help-label">Support</div>
-          <span class="st-help-chip" id="st-help-chip" hidden>0 open</span>
-        </div>
+        <div class="st-help-label">Support</div>
         <div class="st-help-title">Student Employment Office</div>
-        <div class="st-help-sub">Typical reply within 1–2 business days</div>
+        <div class="st-help-sub">Typical reply within 1–2 business days.</div>
       </div>
+
+      <div class="st-tickets-section">
+        <div class="st-tickets-head">
+          <span class="st-tickets-title">Your tickets</span>
+          <span class="st-tickets-count" id="st-tickets-count"></span>
+        </div>
+        <div id="tutor-tickets-list" class="st-tickets-list">
+          <div class="st-tickets-loading">Loading tickets…</div>
+        </div>
+      </div>
+
       <button type="button" class="st-new-btn" onclick="openNewTicketModal()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        New Ticket
-      </button>
-      <div class="st-tickets-head">
-        <span class="st-tickets-title">Your tickets</span>
-        <span class="st-tickets-count" id="st-tickets-count"></span>
-      </div>
-      <div id="tutor-tickets-list" class="st-tickets-list">
-        <div class="st-tickets-loading">Loading tickets…</div>
-      </div>
-    </div>
-    <div class="st-sticky-bar">
-      <button type="button" class="st-sticky-btn" onclick="openNewTicketModal()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         New Ticket
       </button>
     </div>
@@ -475,15 +566,18 @@
 
   <!-- ═══════ PROFILE ═══════ -->
   <div id="page-profile" class="page">
-    <div class="full-page">
+    <div class="full-page pf-suite">
       <div class="page-hero" id="profile-hero">
         <h1>My <em>Profile</em></h1>
-        <p id="profile-hero-sub">Your submitted application and onboarding details</p>
+        <p id="profile-hero-sub-desktop">Your submitted application and onboarding details</p>
       </div>
-      <div class="tm-profile-hero" id="tm-profile-hero" aria-hidden="true">
-        <div class="tm-profile-hero-label">Profile</div>
-        <div class="tm-profile-hero-name" id="tm-profile-hero-name">—</div>
-        <div class="tm-profile-hero-meta" id="tm-profile-hero-meta">—</div>
+      <div class="pf-page-head">
+        <button type="button" class="st-back pf-home" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          HOME
+        </button>
+        <h1 class="pf-page-title">My Profile</h1>
+        <p class="pf-page-sub" id="profile-hero-sub">Loading…</p>
       </div>
       <div class="profile-grid" id="profile-content"></div>
     </div>
@@ -650,17 +744,30 @@
 <nav class="td-bottom-nav" id="td-bottom-nav" aria-label="Primary">
   <div class="td-bnav-pill">
     <button type="button" class="td-bnav-item active" data-bnav="dashboard" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      <span class="td-bnav-label">HOME</span>
+      <span class="td-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="td-bnav-item" data-bnav="sessions" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span class="td-bnav-label">SESSIONS</span>
+      <span class="td-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="td-bnav-item" data-bnav="claims" onclick="showPage('claims',document.getElementById('nav-claims'))">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 01 2-2h11"/></svg>
+      <span class="td-bnav-label">CLAIMS</span>
+      <span class="td-bnav-dot" aria-hidden="true"></span>
     </button>
     <button type="button" class="td-bnav-item" data-bnav="messages" onclick="showPage('messages',document.getElementById('nav-messages'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span>Messages</span>
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="td-bnav-label">MSGS</span>
       <span class="td-bnav-badge" id="bnav-msg-badge" hidden>0</span>
+      <span class="td-bnav-dot" aria-hidden="true"></span>
     </button>
     <button type="button" class="td-bnav-item" data-bnav="profile" onclick="showPage('profile',document.getElementById('nav-profile'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      <span>Profile</span>
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="td-bnav-label">PROFILE</span>
+      <span class="td-bnav-dot" aria-hidden="true"></span>
     </button>
   </div>
   <button type="button" class="td-bnav-logout" aria-label="Log out" title="Log out" onclick="VF.logout()">
@@ -669,8 +776,8 @@
 </nav>
 
 <script src="../js/app.js?v=13"></script>
-<script src="../js/messaging.js?v=10"></script>
-<script src="../js/tutor-dashboard.js?v=65"></script>
+<script src="../js/messaging.js?v=11"></script>
+<script src="../js/tutor-dashboard.js?v=73"></script>
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 

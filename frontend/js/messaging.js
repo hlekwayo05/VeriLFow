@@ -9,6 +9,9 @@ let msgPendingStart = null; // { type, id?, name, initials, label }
 let msgInboxFilter = 'all';
 let msgCurrentUserId = null;
 let msgPeers = [];
+/** Admin only: which contact group is selected ('tutor' | 'lecturer' | null) */
+let msgAdminGroup = null;
+let msgAdminContacts = { tutor: [], lecturer: [] };
 
 function msgInitials(first, surname) {
   const a = String(first || '').trim().charAt(0);
@@ -78,6 +81,16 @@ function normalizePeerContact(raw) {
   };
 }
 
+function dedupeContactsById(list) {
+  const seen = new Set();
+  return (list || []).filter((c) => {
+    const key = c.id != null ? String(c.id) : msgContactKey(c);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function findThreadForContact(contact) {
   if (!contact) return null;
   if (contact.type === 'admin') return findThreadByPeerRole('admin');
@@ -89,6 +102,38 @@ function findThreadForContact(contact) {
 
 async function loadMessagePeers() {
   const role = window.MESSAGING_ROLE;
+
+  if (role === 'admin') {
+    try {
+      const [tutors, lecturers] = await Promise.all([
+        VF.apiFetch('/users/tutors'),
+        VF.apiFetch('/users/lecturers'),
+      ]);
+      msgAdminContacts = {
+        tutor: dedupeContactsById((Array.isArray(tutors) ? tutors : []).map((t) => normalizePeerContact({
+          type: 'tutor',
+          id: t.id,
+          first_names: t.first_names,
+          surname: t.surname,
+          name: `${t.first_names || ''} ${t.surname || ''}`.trim(),
+        }))),
+        lecturer: dedupeContactsById((Array.isArray(lecturers) ? lecturers : []).map((l) => normalizePeerContact({
+          type: 'lecturer',
+          id: l.id,
+          first_names: l.first_names,
+          surname: l.surname,
+          name: `${l.first_names || ''} ${l.surname || ''}`.trim(),
+        }))),
+      };
+      msgPeers = msgAdminGroup ? (msgAdminContacts[msgAdminGroup] || []) : [];
+    } catch (err) {
+      console.error('loadMessagePeers (admin):', err);
+      msgAdminContacts = { tutor: [], lecturer: [] };
+      msgPeers = [];
+    }
+    return msgPeers;
+  }
+
   if (role !== 'tutor' && role !== 'lecturer') {
     msgPeers = [];
     return msgPeers;
@@ -115,10 +160,127 @@ function peerRoleLabel(type) {
   return 'Contact';
 }
 
+function selectAdminMessageGroup(group) {
+  msgAdminGroup = group === 'tutor' || group === 'lecturer' ? group : null;
+  msgPeers = msgAdminGroup ? (msgAdminContacts[msgAdminGroup] || []) : [];
+  renderMessagePeople();
+}
+
+function clearAdminMessageGroup() {
+  msgAdminGroup = null;
+  msgPeers = [];
+  renderMessagePeople();
+}
+
+function syncAdminMsgChrome() {
+  const page = document.getElementById('page-messages');
+  const cta = document.getElementById('ad-msg-mobile-cta');
+  if (!page || window.MESSAGING_ROLE !== 'admin') return;
+
+  if (!msgAdminGroup) {
+    page.classList.remove('ad-msg-in-group');
+  } else {
+    page.classList.add('ad-msg-in-group');
+  }
+  if (cta) cta.innerHTML = '';
+}
+
+function getAdminMessageGroupContacts(group) {
+  return msgAdminContacts[group] || [];
+}
+
 function renderMessagePeople() {
   const wrap = document.getElementById('tm-msg-people');
   if (!wrap) return;
   const role = window.MESSAGING_ROLE;
+
+  if (role === 'admin') {
+    syncAdminMsgChrome();
+    const tutorCount = (msgAdminContacts.tutor || []).length;
+    const lecturerCount = (msgAdminContacts.lecturer || []).length;
+
+    if (!msgAdminGroup) {
+      wrap.innerHTML = `
+        <div class="tm-people-head">
+          <span class="tm-people-head-title">Who do you want to message?</span>
+          <span class="tm-people-head-sub">Choose a group</span>
+        </div>
+        <div class="ad-msg-group-pick">
+          <button type="button" class="ad-msg-group-btn" onclick="selectAdminMessageGroup('tutor')">
+            <span class="ad-msg-group-ico c-tutor" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="ad-msg-group-text">
+              <span class="ad-msg-group-title">Tutors</span>
+              <span class="ad-msg-group-sub">${tutorCount} on the system</span>
+            </span>
+            <svg class="ad-msg-group-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="ad-msg-group-btn" onclick="selectAdminMessageGroup('lecturer')">
+            <span class="ad-msg-group-ico c-lecturer" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            </span>
+            <span class="ad-msg-group-text">
+              <span class="ad-msg-group-title">Lecturers</span>
+              <span class="ad-msg-group-sub">${lecturerCount} on the system</span>
+            </span>
+            <svg class="ad-msg-group-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>`;
+      return;
+    }
+
+    const people = msgAdminContacts[msgAdminGroup] || [];
+    const heading = msgAdminGroup === 'tutor' ? 'All tutors' : 'All lecturers';
+    if (!people.length) {
+      wrap.innerHTML = `
+        <button type="button" class="ad-msg-group-back" onclick="clearAdminMessageGroup()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          Back
+        </button>
+        <div class="tm-people-empty">
+          <strong>No ${msgAdminGroup === 'tutor' ? 'tutors' : 'lecturers'} yet</strong>
+          <span>Accounts will appear here once they are on the system.</span>
+        </div>`;
+      return;
+    }
+
+    wrap.innerHTML = `
+      <button type="button" class="ad-msg-group-back" onclick="clearAdminMessageGroup()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </button>
+      <div class="tm-people-head">
+        <span class="tm-people-head-title">${heading}</span>
+        <span class="tm-people-head-sub">${people.length} · Tap to chat</span>
+      </div>
+      <div class="tm-people-row ad-msg-people-list">
+        ${people.map((c) => {
+          const key = msgContactKey(c);
+          const existing = findThreadForContact(c);
+          const unread = existing?.unread ? '<span class="tm-person-dot" aria-hidden="true"></span>' : '';
+          const active = existing && existing.id === msgActiveThreadId ? ' is-active' : '';
+          return `<button type="button" class="tm-person${active}" data-contact="${key}" onclick="openMessageContact('${key}')">
+            <span class="tm-person-ring ${c.type}">
+              <span class="tm-person-av ${c.type}">${c.initials}${unread}</span>
+            </span>
+            <span class="tm-person-name">${c.name.replace(/</g, '&lt;')}</span>
+            <span class="tm-person-role">${peerRoleLabel(c.type)}</span>
+          </button>`;
+        }).join('')}
+      </div>
+      <button type="button" class="ad-btn-primary ad-msg-all-btn" onclick="openAdminGroupBroadcast('${msgAdminGroup}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        ${msgAdminGroup === 'tutor' ? 'Message all tutors' : 'Message all lecturers'}
+      </button>`;
+    return;
+  }
+
+  const page = document.getElementById('page-messages');
+  page?.classList.remove('ad-msg-in-group');
+  const cta = document.getElementById('ad-msg-mobile-cta');
+  if (cta) cta.innerHTML = '';
+
   if (role !== 'tutor' && role !== 'lecturer') {
     wrap.innerHTML = '';
     return;
@@ -163,7 +325,9 @@ function renderTutorMessagePeople() {
 function showPendingChat(contact) {
   msgPendingStart = contact;
   msgActiveThreadId = null;
-  msgActiveThreadKind = contact.type === 'admin' ? 'coordinator' : 'peer';
+  msgActiveThreadKind = (contact.type === 'admin' || window.MESSAGING_ROLE === 'admin')
+    ? 'coordinator'
+    : 'peer';
   msgActiveThread = null;
 
   document.getElementById('thread-empty').style.display = 'none';
@@ -177,7 +341,9 @@ function showPendingChat(contact) {
   document.getElementById('t-meta').textContent =
     contact.type === 'admin'
       ? 'Student Employment Office'
-      : (moduleLabel || (contact.type === 'tutor' ? 'Tutor' : 'Lecturer'));
+      : (window.MESSAGING_ROLE === 'admin'
+        ? peerRoleLabel(contact.type)
+        : (moduleLabel || peerRoleLabel(contact.type)));
   document.getElementById('thread-messages').innerHTML = `
     <div class="tm-chat-empty">
       <div class="tm-chat-empty-icon" aria-hidden="true">
@@ -192,14 +358,16 @@ function showPendingChat(contact) {
 }
 
 async function openMessageContact(key) {
-  const contact = msgPeers.find((c) => msgContactKey(c) === key);
+  const contact = msgPeers.find((c) => msgContactKey(c) === key)
+    || (msgAdminContacts.tutor || []).find((c) => msgContactKey(c) === key)
+    || (msgAdminContacts.lecturer || []).find((c) => msgContactKey(c) === key);
   if (!contact) return;
 
   const existing = findThreadForContact(contact);
   if (existing) {
     msgPendingStart = null;
     await openThread(
-      existing.threadKind || (contact.type === 'admin' ? 'coordinator' : 'peer'),
+      existing.threadKind || (contact.type === 'admin' || window.MESSAGING_ROLE === 'admin' ? 'coordinator' : 'peer'),
       existing.id
     );
     return;
@@ -322,6 +490,16 @@ function updateUnreadBadge(count) {
   if (hubTile) hubTile.classList.toggle('has-unread', n > 0);
   const hubSub = document.getElementById('hub-messages-sub') || document.getElementById('lec-hub-msg-sub');
   if (hubSub) hubSub.textContent = n > 0 ? `${n} unread` : 'Inbox';
+  const hubBadge = document.getElementById('hub-messages-badge');
+  if (hubBadge) {
+    if (n > 0) {
+      hubBadge.textContent = String(n);
+      hubBadge.hidden = false;
+    } else {
+      hubBadge.textContent = '';
+      hubBadge.hidden = true;
+    }
+  }
 }
 
 async function refreshUnreadBadge() {
@@ -341,16 +519,22 @@ function renderInboxList() {
 
   const items = Object.values(msgThreads);
   if (!items.length) {
+    if (window.MESSAGING_ROLE === 'admin') {
+      list.innerHTML = '';
+      return;
+    }
     const role = window.MESSAGING_ROLE;
     const emptySub = role === 'lecturer'
       ? 'Choose a tutor above to start chatting.'
       : 'Choose Admin or your lecturer above to start chatting.';
-    list.innerHTML = `<div class="tm-recent-empty">
-      <div class="tm-recent-empty-icon" aria-hidden="true">
-        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    list.innerHTML = `<div class="tm-recent-empty-card">
+      <div class="tm-recent-empty">
+        <div class="tm-recent-empty-icon" aria-hidden="true">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </div>
+        <p class="tm-recent-empty-title">Your inbox is empty</p>
+        <p class="tm-recent-empty-sub">${emptySub}</p>
       </div>
-      <p class="tm-recent-empty-title">Your inbox is empty</p>
-      <p class="tm-recent-empty-sub">${emptySub}</p>
     </div>`;
     return;
   }
@@ -539,10 +723,12 @@ async function sendReply() {
     let result = null;
     if (pending.type === 'admin') {
       result = await sendTutorAdminMessage(null, text);
-    } else if (pending.type === 'tutor' && pending.id) {
-      result = await sendDirectMessage(pending.id, null, text);
-    } else if (pending.type === 'lecturer' && pending.id) {
-      result = await sendDirectMessage(pending.id, null, text);
+    } else if ((pending.type === 'tutor' || pending.type === 'lecturer') && pending.id) {
+      if (window.MESSAGING_ROLE === 'admin') {
+        result = await sendAdminDirectMessage(pending.id, null, text);
+      } else {
+        result = await sendDirectMessage(pending.id, null, text);
+      }
     } else {
       result = await sendTutorMessage(null, text);
     }
@@ -645,6 +831,24 @@ async function sendDirectMessage(recipientId, subject, body) {
   }
 }
 
+async function sendAdminDirectMessage(recipientId, subject, body) {
+  try {
+    const result = await VF.apiFetch('/messages/threads', {
+      method: 'POST',
+      body: {
+        recipientId: Number(recipientId),
+        subject: subject || 'Message from Student Employment Office',
+        body,
+      },
+    });
+    await loadMessageThreads(result.threadId, result.threadKind || 'coordinator');
+    return result;
+  } catch (err) {
+    msgShowToast(err.errors ? err.errors[0] : 'Could not send message');
+    return null;
+  }
+}
+
 async function sendTutorMessage(subject, body) {
   if (!currentModuleCode) {
     msgShowToast('Select a module first');
@@ -712,3 +916,7 @@ window.closeMobileMessageChat = closeMobileMessageChat;
 window.renderTutorMessagePeople = renderTutorMessagePeople;
 window.renderMessagePeople = renderMessagePeople;
 window.loadMessagePeers = loadMessagePeers;
+window.selectAdminMessageGroup = selectAdminMessageGroup;
+window.clearAdminMessageGroup = clearAdminMessageGroup;
+window.getAdminMessageGroupContacts = getAdminMessageGroupContacts;
+window.sendAdminDirectMessage = sendAdminDirectMessage;

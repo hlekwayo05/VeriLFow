@@ -6,9 +6,11 @@
   <title>VeriFlow — Log In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/veriflow-mobile.css?v=7"/>
+  <link rel="stylesheet" href="../css/auth-onboarding.css?v=14"/>
   <style>
     .login-flow .page {
       padding-top: 0;
@@ -61,11 +63,11 @@
     }
 
     .auth-title {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: 'Space Grotesk', 'DM Sans', sans-serif;
       font-size: 28px;
-      font-weight: 800;
+      font-weight: 700;
       color: var(--ink);
-      letter-spacing: -1px;
+      letter-spacing: -0.01em;
       margin-bottom: 6px;
     }
 
@@ -90,7 +92,11 @@
       text-underline-offset: 3px;
     }
 
-    /* Focus glow on inputs (same idea as apply fields) */
+    .login-flow label {
+      font-family: 'JetBrains Mono', 'DM Mono', monospace;
+    }
+
+    /* Focus glow on inputs (desktop) */
     @property --login-field-glow {
       syntax: "<angle>";
       initial-value: 0deg;
@@ -135,31 +141,39 @@
         );
     }
 
-    /* Log in button — traveling glow only */
     .auth-login-btn {
       position: relative;
       z-index: 0;
-      isolation: isolate;
       overflow: hidden;
       border: none;
       margin-top: 8px;
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .auth-login-btn-label {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .auth-login-btn::before {
       content: "";
       position: absolute;
-      inset: -45%;
+      inset: -40%;
       border-radius: 50%;
       background: conic-gradient(
         from 0deg,
         transparent 0deg,
-        transparent 250deg,
-        rgba(255, 255, 255, 0.12) 280deg,
-        rgba(255, 255, 255, 0.95) 320deg,
-        #9fd4c8 340deg,
+        transparent 240deg,
+        rgba(255, 255, 255, 0.15) 270deg,
+        rgba(255, 255, 255, 0.95) 310deg,
+        #9fd4c8 335deg,
         transparent 360deg
       );
-      z-index: -2;
+      z-index: 0;
       animation: authBtnGlowSpin 2.2s linear infinite;
       pointer-events: none;
     }
@@ -170,84 +184,28 @@
       inset: 2px;
       border-radius: calc(var(--r-lg) - 1px);
       background: var(--ink);
-      z-index: -1;
+      z-index: 1;
       pointer-events: none;
       transition: background 0.18s ease;
+    }
+
+    .auth-login-btn:hover {
+      background: var(--ink);
+      transform: none;
+      box-shadow: none;
     }
 
     .auth-login-btn:hover::after {
       background: var(--ink-2);
     }
 
-    @keyframes authBtnGlowSpin {
-      to { transform: rotate(360deg); }
+    .auth-login-btn:active {
+      transform: none;
+      box-shadow: none;
     }
 
-    @media (max-width: 900px) {
-      .auth-page {
-        grid-template-columns: 1fr;
-        grid-template-rows: min(46vh, 380px) 1fr;
-      }
-
-      .auth-left {
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 28px 28px 3.5rem;
-      }
-
-      .auth-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        position: absolute;
-        top: max(1.5rem, calc(env(safe-area-inset-top, 0px) + 1rem));
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 3;
-        font-family: "DM Sans", sans-serif;
-        font-size: 12px;
-        font-weight: 500;
-        color: #fff;
-        background: transparent;
-        border: 1.5px solid rgba(255, 255, 255, 0.85);
-        border-radius: 999px;
-        padding: 7px 18px;
-        white-space: nowrap;
-      }
-
-      .auth-brand-fill {
-        position: relative;
-        inset: auto;
-        z-index: 1;
-        width: 100%;
-        max-width: min(280px, 78vw);
-        height: auto;
-        padding: 0;
-      }
-
-      .auth-wave {
-        display: block;
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -1px;
-        width: 100%;
-        height: clamp(56px, 14vw, 78px);
-        z-index: 2;
-        pointer-events: none;
-      }
-
-      .auth-right {
-        padding: 28px 28px calc(40px + env(safe-area-inset-bottom, 0px));
-        background: #fff;
-      }
-
-      .auth-title {
-        font-size: 24px;
-      }
+    @keyframes authBtnGlowSpin {
+      to { transform: rotate(360deg); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -277,8 +235,26 @@
         class="auth-brand-fill"
         decoding="async"
       />
-      <svg class="auth-wave" viewBox="0 0 430 90" preserveAspectRatio="none" aria-hidden="true">
-        <path fill="#ffffff" d="M0,48 C70,14 160,6 250,32 C320,52 380,18 430,26 L430,90 L0,90 Z"/>
+      <svg class="auth-wave" viewBox="0 0 390 34" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="authWaveGlow" x="-10%" y="-120%" width="120%" height="280%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <path
+          class="auth-wave-glow"
+          fill="none"
+          stroke="#9fd4c8"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          filter="url(#authWaveGlow)"
+          d="M0,20 C80,45 160,0 195,10 C260,26 320,0 390,18"
+        />
+        <path class="auth-wave-fill" fill="#f2f4f1" d="M0,20 C80,45 160,0 195,10 C260,26 320,0 390,18 L390,34 L0,34 Z"/>
       </svg>
     </div>
 
@@ -299,19 +275,19 @@
             <div class="form-error">Please enter your password.</div>
           </div>
           <button type="submit" class="btn btn-ink btn-full auth-login-btn" id="loginBtn">
-            Log in <i class="ti ti-arrow-right"></i>
+            <span class="auth-login-btn-label">Log in <i class="ti ti-arrow-right"></i></span>
           </button>
         </form>
 
         <div class="auth-footer">
-          Don't have an account? <a href="apply-step1.html">Apply now</a>
+          Don't have an account? <a href="apply-step1.html" id="applyNowLink">Apply now</a>
         </div>
       </div>
     </div>
   </div>
 </main>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=17"></script>
 <script>
   VF.pageIn();
 
@@ -339,7 +315,7 @@
 
     const btn = document.getElementById('loginBtn');
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Logging in…';
+    btn.innerHTML = '<span class="auth-login-btn-label"><div class="spinner" style="width:18px;height:18px;border-width:2px"></div> Logging in…</span>';
     btn.classList.add('btn-disabled');
 
     try {
@@ -352,6 +328,7 @@
       });
 
       // Store the JWT — this is what keeps the user logged in
+      VF.clearState();
       VF.setToken(data.token);
 
       const tutorRoute = {
@@ -370,6 +347,7 @@
           cell:       '',
         },
         applicationStatus: tutorRoute.applicationStatus,
+        academic: null,
         onboarding: {
           step1: tutorRoute.onboardingComplete,
           step2: tutorRoute.onboardingComplete,

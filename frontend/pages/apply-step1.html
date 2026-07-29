@@ -6,10 +6,12 @@
   <title>VeriFlow — Apply · Step 1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../css/main.css?v=4"/>
-  <link rel="stylesheet" href="../css/apply.css?v=8"/>
+  <link rel="stylesheet" href="../css/veriflow-mobile.css?v=6"/>
+  <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
+  <link rel="stylesheet" href="../css/apply.css?v=11"/>
 </head>
 <body class="apply-flow">
 <main class="page">
@@ -25,7 +27,7 @@
         </div>
         <p class="form-subtitle">Tutor applications are not open at the moment. Please check back later or log in to track an existing application.</p>
         <div class="apply-window-closed-actions">
-          <a href="../../index.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
+          <a href="login.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
           <a href="login.html"><button type="button" class="btn btn-ink">Log in</button></a>
         </div>
       </div>
@@ -104,7 +106,7 @@
             <span class="btn-next-copy">Next — Academic information</span>
             <i class="ti ti-arrow-right" aria-hidden="true"></i>
           </button>
-          <a href="../../index.html">
+          <a href="login.html">
             <button type="button" class="btn btn-ghost">Cancel</button>
           </a>
         </div>
@@ -135,7 +137,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=17"></script>
 <script>
   VF.pageIn();
 
@@ -150,15 +152,21 @@
     mq.addEventListener('change', set);
   })();
 
-  // Pre-fill if returning (e.g. browser back button after already saving)
-  const s = VF.getState();
-  if (s.user) {
-    document.getElementById('surname').value    = s.user.surname    || '';
-    document.getElementById('title').value      = s.user.title      || '';
-    document.getElementById('initials').value   = s.user.initials   || '';
-    document.getElementById('firstNames').value = s.user.firstNames || '';
-    document.getElementById('email').value      = s.user.email      || '';
-    document.getElementById('cell').value       = s.user.cell       || '';
+  // Pre-fill only for a returning applicant in this browser session.
+  // Token lives in sessionStorage; vf_state lives in localStorage — so closing
+  // the tab can leave someone else's draft behind. Never show that on a fresh apply.
+  if (!VF.isAuthenticated()) {
+    VF.clearState();
+  } else {
+    const s = VF.getState();
+    if (s.user) {
+      document.getElementById('surname').value    = s.user.surname    || '';
+      document.getElementById('title').value      = s.user.title      || '';
+      document.getElementById('initials').value   = s.user.initials   || '';
+      document.getElementById('firstNames').value = s.user.firstNames || '';
+      document.getElementById('email').value      = s.user.email      || '';
+      document.getElementById('cell').value       = s.user.cell       || '';
+    }
   }
 
   (async function initApplyStep1() {
@@ -168,6 +176,10 @@
         VF.resumeTutorApplication();
       } else {
         document.getElementById('step1Form').style.display = '';
+        VF.bindApplyFormProgress([
+          'surname', 'title', 'initials', 'firstNames',
+          'email', 'cell', 'studentNumber', 'password', 'confirm',
+        ]);
       }
     });
 
@@ -218,6 +230,7 @@
       });
 
       // Account created — store the JWT so step 2 is authenticated
+      VF.clearState();
       VF.setToken(data.token);
 
       // Keep a lightweight local copy for pre-filling and navbar display
@@ -231,6 +244,7 @@
           cell:       formValues.cell,
         },
         step: 2,
+        academic: null,
       });
 
       VF.navigate('apply-step2.html');

@@ -176,7 +176,7 @@
     </div>
   </div>
 </main>
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=18"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) return;
@@ -199,7 +199,8 @@
       VF.syncApplicationState(app);
 
       if (app.status === 'incomplete') {
-        VF.navigate('apply-step2.html');
+        VF.toast('Your application is still incomplete. Please upload your documents and submit again.', 'err');
+        VF.navigate('apply-step3.html');
         return;
       }
       if (app.status === 'rejected') {

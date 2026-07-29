@@ -6,10 +6,12 @@
   <title>VeriFlow — Apply · Step 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
   <link rel="stylesheet" href="../css/main.css?v=4"/>
-  <link rel="stylesheet" href="../css/apply.css?v=8"/>
+  <link rel="stylesheet" href="../css/veriflow-mobile.css?v=6"/>
+  <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
+  <link rel="stylesheet" href="../css/apply.css?v=11"/>
   <style>
     .module-hint {
       background: var(--paper-3);
@@ -53,7 +55,7 @@
         </div>
         <p class="form-subtitle">Tutor applications are not open at the moment. Please check back later or log in to track an existing application.</p>
         <div class="apply-window-closed-actions">
-          <a href="../../index.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
+          <a href="login.html"><button type="button" class="btn btn-ghost">Back to home</button></a>
           <a href="login.html"><button type="button" class="btn btn-ink">Log in</button></a>
         </div>
       </div>
@@ -131,7 +133,8 @@
             <i class="ti ti-arrow-left"></i> Back
           </button>
           <button type="submit" class="btn btn-ink btn-glow" style="flex:1" id="nextBtn">
-            Next — Documents <i class="ti ti-arrow-right"></i>
+            <span class="btn-next-copy">Next — Documents</span>
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
           </button>
         </div>
       </form>
@@ -162,17 +165,25 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=17"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
 
+  VF.bindResponsiveBtnLabel({
+    btnId: 'nextBtn',
+    labelSelector: '.btn-next-copy',
+    short: 'Next',
+    long: 'Next — Documents',
+  });
+
   (async function initStep2() {
     const open = await VF.gateApplicationWindow(async () => {
       VF.mountApplyProgress(2);
+      let app = null;
       try {
-        const app = await VF.apiFetch('/applications/me');
+        app = await VF.apiFetch('/applications/me');
         VF.syncApplicationState(app);
 
         if (app.status !== 'incomplete') {
@@ -188,7 +199,11 @@
       }
 
       document.getElementById('step2Form').style.display = '';
-      populateFromState();
+      // Prefill only from this account's server record — never leftover local drafts
+      populateFromApp(app);
+      VF.bindApplyFormProgress([
+        'faculty', 'course', 'qualificationLevel', 'year', 'module', 'gpa',
+      ]);
     });
   })();
 
@@ -262,35 +277,66 @@
     document.getElementById('moduleHint').classList.remove('visible');
   }
 
-  function populateFromState() {
-    const s = VF.getState();
-    if (!s.academic) return;
+  function populateFromApp(app) {
+    if (!app || !(app.faculty || app.course || app.module_name)) return;
 
-    document.getElementById('faculty').value = s.academic.faculty || '';
-    if (s.academic.faculty) {
+    const faculty = app.faculty || '';
+    const course = app.course || '';
+    const year = app.module_year_level || '';
+    const moduleName = app.module_name || '';
+    const moduleCode = app.module_code || '';
+
+    let qlValue = '';
+    if (app.qualification_level) {
+      for (const [label, code] of Object.entries(QUALIFICATION_CODE_MAP)) {
+        if (code === app.qualification_level || label === app.qualification_level) {
+          qlValue = label;
+          break;
+        }
+      }
+      if (!qlValue) qlValue = app.qualification_level;
+    }
+
+    document.getElementById('faculty').value = faculty;
+    if (faculty) {
       populateCourses();
-      document.getElementById('course').value = s.academic.course || '';
-      if (s.academic.course) {
+      document.getElementById('course').value = course || '';
+      if (course) {
         populateYears();
-        const yearOptions = curriculumYearSemesters(s.academic.course);
-        if (yearOptions.includes(s.academic.year)) {
-          document.getElementById('year').value = s.academic.year;
+        const yearOptions = curriculumYearSemesters(course);
+        if (yearOptions.includes(year)) {
+          document.getElementById('year').value = year;
           populateModules();
-          const moduleOptions = curriculumModulesForYear(s.academic.course, s.academic.year);
-          const savedModule = moduleOptions.find(m => m.name === s.academic.module);
+          const moduleOptions = curriculumModulesForYear(course, year);
+          const savedModule = moduleOptions.find(m => m.name === moduleName);
           if (savedModule) {
             document.getElementById('module').value = savedModule.name;
             onModuleSelected();
           }
-          if (s.academic.moduleCode) {
-            document.getElementById('input-module-code').value = s.academic.moduleCode;
+          if (moduleCode) {
+            document.getElementById('input-module-code').value = moduleCode;
           }
         }
       }
     }
-    document.getElementById('qualificationLevel').value = s.academic.qualificationLevel || '';
+    if (qlValue) document.getElementById('qualificationLevel').value = qlValue;
     checkQualificationEligibility();
-    document.getElementById('gpa').value = s.academic.gpa || '';
+    document.getElementById('gpa').value = app.gpa != null ? app.gpa : '';
+  }
+
+  /** Back-compat: only used if something still calls it — prefers empty over stale */
+  function populateFromState() {
+    const s = VF.getState();
+    if (!s.academic) return;
+    populateFromApp({
+      faculty: s.academic.faculty,
+      course: s.academic.course,
+      module_year_level: s.academic.year,
+      module_name: s.academic.module,
+      module_code: s.academic.moduleCode,
+      qualification_level: QUALIFICATION_CODE_MAP[s.academic.qualificationLevel] || s.academic.qualificationLevel,
+      gpa: s.academic.gpa,
+    });
   }
 
   async function handleNext(e) {

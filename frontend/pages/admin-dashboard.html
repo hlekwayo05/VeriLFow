@@ -6,9 +6,11 @@
 <title>VeriFlow — Admin Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=14"/>
+<link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=30"/>
+<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=20"/>
 </head>
 <body class="admin-dash ad-on-hub">
 <div class="app">
@@ -83,55 +85,85 @@
 <!-- Mobile home hub -->
 <div class="ad-mobile-hub" id="ad-mobile-hub">
   <header class="ad-hub-top">
-    <h1 class="ad-hub-name" id="ad-hub-name">Loading…</h1>
-    <p class="ad-hub-sub" id="ad-hub-sub">Coordinator · Student Employment Office</p>
+    <div class="ad-hub-who">
+      <div class="ad-hub-avatar" id="ad-hub-avatar" aria-hidden="true">VF</div>
+      <div class="ad-hub-who-text">
+        <h1 class="ad-hub-name" id="ad-hub-name">VeriFlow Coordinator</h1>
+        <p class="ad-hub-sub" id="ad-hub-sub">Coordinator · Loading…</p>
+      </div>
+    </div>
+    <button type="button" class="ad-hub-bell" aria-label="Notifications" onclick="showPage('messages',document.getElementById('nav-messages-admin'))">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </button>
   </header>
+
   <button type="button" class="ad-hub-hero" id="ad-hub-hero" onclick="showPage('applications',document.getElementById('nav-applications'))">
     <div class="ad-hub-hero-label">Priority queue</div>
     <div class="ad-hub-hero-title" id="ad-hub-next-title">Loading…</div>
     <div class="ad-hub-hero-meta" id="ad-hub-next-meta">—</div>
   </button>
-  <div class="ad-hub-grid" role="navigation" aria-label="Admin sections">
-    <button type="button" class="ad-hub-tile" onclick="showPage('applications',document.getElementById('nav-applications'))">
-      <span class="ad-hub-tile-title">Applications</span>
-      <span class="ad-hub-tile-sub" id="ad-hub-apps-sub">Review</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('claims',document.getElementById('nav-claims'))">
-      <span class="ad-hub-tile-title">Claims</span>
-      <span class="ad-hub-tile-sub" id="ad-hub-claims-sub">Queue</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('referrals',document.getElementById('nav-referrals'))">
-      <span class="ad-hub-tile-title">Referrals</span>
-      <span class="ad-hub-tile-sub" id="ad-hub-refs-sub">Approvals</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('flagged',document.getElementById('nav-flagged'))">
-      <span class="ad-hub-tile-title">Flagged</span>
-      <span class="ad-hub-tile-sub" id="ad-hub-flagged-sub">Disputes</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('postings',document.getElementById('nav-postings'))">
-      <span class="ad-hub-tile-title">Postings</span>
-      <span class="ad-hub-tile-sub">Jobs</span>
-    </button>
-    <button type="button" class="ad-hub-tile" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages-admin'))">
-      <span class="ad-hub-tile-title">Messages</span>
-      <span class="ad-hub-tile-sub" id="hub-messages-sub">Inbox</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('users',document.getElementById('nav-users'))">
-      <span class="ad-hub-tile-title">Users</span>
-      <span class="ad-hub-tile-sub">Accounts</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('support',document.getElementById('nav-support'))">
-      <span class="ad-hub-tile-title">Support</span>
-      <span class="ad-hub-tile-sub" id="ad-hub-support-sub">Tickets</span>
-    </button>
-    <button type="button" class="ad-hub-tile" onclick="showPage('analysis',document.getElementById('nav-analysis'))">
-      <span class="ad-hub-tile-title">Analysis</span>
-      <span class="ad-hub-tile-sub">Reports</span>
-    </button>
-    <button type="button" class="ad-hub-tile ad-hub-tile--accent" onclick="showPage('settings',document.getElementById('nav-settings'))">
-      <span class="ad-hub-tile-title">Settings</span>
-      <span class="ad-hub-tile-sub">System</span>
-    </button>
+
+  <div class="ad-hub-section">
+    <div class="ad-hub-section-title">Quick actions</div>
+    <div class="ad-hub-grid" role="navigation" aria-label="Admin sections">
+      <button type="button" class="ad-hub-tile" onclick="showPage('applications',document.getElementById('nav-applications'))">
+        <span class="ad-hub-ico c1" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Applications</span><span class="ad-hub-tile-sub">Review</span></span>
+        <span class="ad-hub-meta" id="ad-hub-apps-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('claims',document.getElementById('nav-claims'))">
+        <span class="ad-hub-ico c3" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Claims</span><span class="ad-hub-tile-sub">Queue</span></span>
+        <span class="ad-hub-meta" id="ad-hub-claims-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('referrals',document.getElementById('nav-referrals'))">
+        <span class="ad-hub-ico c1" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Referrals</span><span class="ad-hub-tile-sub">Approvals</span></span>
+        <span class="ad-hub-meta" id="ad-hub-refs-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('flagged',document.getElementById('nav-flagged'))">
+        <span class="ad-hub-ico c5" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Flagged</span><span class="ad-hub-tile-sub">Disputes</span></span>
+        <span class="ad-hub-meta" id="ad-hub-flagged-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('postings',document.getElementById('nav-postings'))">
+        <span class="ad-hub-ico c3" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Postings</span><span class="ad-hub-tile-sub">Jobs</span></span>
+        <span class="ad-hub-meta" id="ad-hub-postings-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages-admin'))">
+        <span class="ad-hub-ico c4" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Messages</span><span class="ad-hub-tile-sub">Inbox</span></span>
+        <span class="ad-hub-meta" id="hub-messages-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('users',document.getElementById('nav-users'))">
+        <span class="ad-hub-ico c1" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Users</span><span class="ad-hub-tile-sub">Accounts</span></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('support',document.getElementById('nav-support'))">
+        <span class="ad-hub-ico c2" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Support</span><span class="ad-hub-tile-sub">Tickets</span></span>
+        <span class="ad-hub-meta" id="ad-hub-support-badge" hidden></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('analysis',document.getElementById('nav-analysis'))">
+        <span class="ad-hub-ico c1" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Analysis</span><span class="ad-hub-tile-sub">Session &amp; payout totals</span></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="ad-hub-tile" onclick="showPage('settings',document.getElementById('nav-settings'))">
+        <span class="ad-hub-ico c4" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
+        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Settings</span><span class="ad-hub-tile-sub">Rates, eligibility, flags</span></span>
+        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -213,10 +245,23 @@
 <!-- ══ 2. JOB POSTINGS ══ -->
 <div id="page-postings" class="page">
   <div class="full-page">
-    <div class="page-hero-row">
-      <div class="page-hero" style="margin-bottom:0"><h1>Job <em>Postings</em></h1><p>Open and closed tutor positions across all modules</p></div>
-      <button class="btn-primary" onclick="openPostingModal()">+ New Posting</button>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero-row">
+        <div class="page-hero" style="margin-bottom:0"><h1>Job Postings</h1><p>Open and closed tutor positions across all modules</p></div>
+        <button class="btn-primary" onclick="openPostingModal()">+ New Posting</button>
+      </div>
     </div>
+    <div class="ad-mobile-cta ad-mobile-only">
+      <button type="button" class="ad-btn-primary" onclick="openPostingModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        New Posting
+      </button>
+    </div>
+    <div class="ad-rec-list ad-mobile-only" id="postings-cards"></div>
     <table class="data-table">
       <thead><tr><th>Module</th><th>Programme</th><th>Position</th><th>Year level req.</th><th>Avg req.</th><th>Apps needed</th><th>Applications</th><th>Action</th></tr></thead>
       <tbody id="postings-body">
@@ -228,42 +273,52 @@
 
 <!-- ══ 3. APPLICATIONS ══ -->
 <div id="page-applications" class="page">
-  <div class="full-page">
-    <div class="page-hero"><h1>Applications</h1><p id="app-summary">Loading applications…</p></div>
-    <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
-      <div class="tabs" style="margin-bottom:0">
+  <div class="full-page ad-apps-page">
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>Applications</h1><p id="app-summary">Loading applications…</p></div>
+    </div>
+    <div class="ad-apps-toolbar">
+      <div class="tabs ad-apps-tabs" style="margin-bottom:0">
         <button class="tab-btn active" onclick="switchTab('dict',this,'applications')">DICT</button>
         <button class="tab-btn" onclick="switchTab('bict',this,'applications')">BICT</button>
         <button class="tab-btn" onclick="switchTab('in-progress',this,'applications')">In Progress</button>
         <button class="tab-btn" onclick="switchTab('auto-rejected',this,'applications')">Auto-Rejected</button>
       </div>
-      <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="pref-dot high"></span> Definitely Preferred (80-100%)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="pref-dot med"></span> Highly Preferred (85-90%)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="pref-dot orange"></span> Preferred (70-84%)</span>
-        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span class="pref-dot none"></span> Eligible but lowest preference (65-69%)</span>
+      <div class="ad-apps-legend">
+        <span class="ad-apps-leg"><span class="pref-dot high"></span>Definitely preferred (80–100%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot med"></span>Highly preferred (85–90%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot orange"></span>Preferred (70–84%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot none"></span>Eligible, lowest preference (65–69%)</span>
       </div>
     </div>
     <div id="tab-dict" class="tab-pane active">
-      <table class="data-table">
+      <div class="ad-apps-cards" id="dict-cards" aria-live="polite"></div>
+      <table class="data-table ad-apps-table">
         <thead><tr><th></th><th>Applicant</th><th>Module</th><th>Qualification</th><th>Average</th><th>Date applied</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="dict-tbody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-bict" class="tab-pane">
-      <table class="data-table">
+      <div class="ad-apps-cards" id="bict-cards" aria-live="polite"></div>
+      <table class="data-table ad-apps-table">
         <thead><tr><th></th><th>Applicant</th><th>Module</th><th>Qualification</th><th>Average</th><th>Date applied</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="bict-tbody"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-in-progress" class="tab-pane">
-      <table class="data-table">
+      <div class="ad-apps-cards" id="in-progress-cards" aria-live="polite"></div>
+      <table class="data-table ad-apps-table">
         <thead><tr><th></th><th>Applicant</th><th>Email</th><th>Student no.</th><th>Started</th><th>Status</th></tr></thead>
         <tbody id="in-progress-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-auto-rejected" class="tab-pane">
-      <table class="data-table">
+      <div class="ad-apps-cards" id="auto-rejected-cards" aria-live="polite"></div>
+      <table class="data-table ad-apps-table">
         <thead><tr><th></th><th>Applicant</th><th>Module</th><th>Qualification</th><th>Average</th><th>Reason</th><th>Status</th></tr></thead>
         <tbody id="auto-rejected-tbody"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
@@ -271,10 +326,87 @@
   </div>
 </div>
 
+<!-- ══ 3b. APPLICATION DETAIL (mobile) ══ -->
+<div id="page-application-detail" class="page">
+  <div class="full-page ad-appd-page">
+    <div class="ad-page-head ad-appd-head">
+      <button type="button" class="ad-page-back" onclick="closeMobileApplicationDetail()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        APPLICATIONS
+      </button>
+      <div class="ad-appd-title-row">
+        <div class="ad-appd-title-block">
+          <span class="ad-appd-eyebrow">Application submission</span>
+          <h1 class="ad-appd-title" id="ad-appd-title">Applicant</h1>
+          <p class="ad-appd-sub" id="ad-appd-subtitle">—</p>
+        </div>
+        <div id="ad-appd-status" class="ad-appd-status"></div>
+      </div>
+    </div>
+
+    <div class="ad-appd-body">
+      <section class="ad-appd-section">
+        <div class="ad-appd-section-head"><span class="ad-appd-section-title">Status summary</span></div>
+        <div class="ad-appd-card" id="ad-appd-status-summary"></div>
+      </section>
+
+      <section class="ad-appd-section">
+        <div class="ad-appd-field-group" id="ad-appd-personal"></div>
+      </section>
+
+      <section class="ad-appd-section">
+        <div class="ad-appd-field-group" id="ad-appd-academic"></div>
+      </section>
+
+      <section class="ad-appd-section">
+        <div class="ad-appd-section-head">
+          <span class="ad-appd-section-title">CV keyword match</span>
+          <span class="ad-appd-section-meta" id="ad-appd-kw-meta"></span>
+        </div>
+        <div class="ad-appd-card" id="ad-appd-keywords"></div>
+      </section>
+
+      <section class="ad-appd-section">
+        <div class="ad-appd-section-head"><span class="ad-appd-section-title">Declaration &amp; outcome</span></div>
+        <div class="ad-appd-card ad-appd-decl" id="ad-appd-declaration"></div>
+      </section>
+
+      <section class="ad-appd-section">
+        <div class="ad-appd-section-head"><span class="ad-appd-section-title">Documents</span></div>
+        <div id="ad-appd-docs"></div>
+      </section>
+      <div id="ad-appd-end" class="ad-appd-end" aria-hidden="true"></div>
+    </div>
+
+    <div class="ad-appd-actions" id="ad-appd-actions" hidden></div>
+  </div>
+</div>
+
+<!-- Mobile document preview -->
+<div id="ad-app-doc-overlay" class="ad-app-doc-overlay" style="display:none;" aria-hidden="true">
+  <div class="ad-app-doc-sheet">
+    <div class="ad-app-doc-toolbar">
+      <div class="ad-app-doc-toolbar-title" id="ad-app-doc-title">Document</div>
+      <div class="ad-app-doc-toolbar-actions">
+        <a id="ad-app-doc-newtab" href="#" target="_blank" rel="noopener" class="btn-sm">Open</a>
+        <button type="button" class="btn-sm" onclick="closeMobileAppDoc()">Close</button>
+      </div>
+    </div>
+    <iframe id="ad-app-doc-frame" title="Document preview" src=""></iframe>
+  </div>
+</div>
+
 <!-- ══ 4. REFERRAL APPROVALS ══ -->
 <div id="page-referrals" class="page">
   <div class="full-page">
-    <div class="page-hero"><h1>Referral <em>Approvals</em></h1><p id="referrals-summary">Loading referrals…</p></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>Referral Approvals</h1><p id="referrals-summary">Loading referrals…</p></div>
+    </div>
+    <div class="ad-rec-list ad-mobile-only" id="referrals-cards"></div>
     <table class="data-table">
       <thead><tr><th>Student</th><th>Referred by</th><th>Module</th><th>Programme</th><th>Qualification</th><th>Average</th><th>Action</th></tr></thead>
       <tbody id="referrals-tbody">
@@ -287,7 +419,14 @@
 <!-- ══ 5. CLAIMS QUEUE ══ -->
 <div id="page-claims" class="page">
   <div class="full-page">
-    <div class="page-hero"><h1>Claims <em>Queue</em></h1><p>Loading claims…</p></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>Claims Queue</h1><p>Loading claims…</p></div>
+    </div>
+    <div class="ad-rec-list ad-mobile-only" id="claims-cards"></div>
     <table class="data-table">
       <thead><tr><th>Tutor</th><th>Module</th><th>Period</th><th>Hours</th><th>Rate</th><th>Qualification Level</th><th>Responsibility Level</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="claims-tbody">
@@ -300,7 +439,14 @@
 <!-- ══ 6. FLAGGED SESSIONS ══ -->
 <div id="page-flagged" class="page">
   <div class="full-page">
-    <div class="page-hero"><h1>Flagged <em>Sessions</em></h1><p>Loading flagged sessions…</p></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>Flagged Sessions</h1><p>Loading flagged sessions…</p></div>
+    </div>
+    <div class="ad-rec-list ad-mobile-only" id="flagged-cards"></div>
     <table class="data-table">
       <thead><tr><th>Tutor</th><th>Module</th><th>Session date</th><th>Type</th><th>Issue</th><th>Reported by</th><th>Action</th></tr></thead>
       <tbody id="flagged-tbody">
@@ -313,10 +459,17 @@
 <!-- ══ 7. MESSAGES ══ -->
 <div id="page-messages" class="page">
   <div class="full-page">
-    <div class="page-hero-row">
-      <div class="page-hero" style="margin-bottom:0"><h1>Messages</h1><p>Communications with tutors and lecturers</p></div>
-      <button class="btn-primary" onclick="openMsgAll()">+ New Message</button>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero-row">
+        <div class="page-hero" style="margin-bottom:0"><h1>Messages</h1><p>Communications with tutors and lecturers</p></div>
+        <button class="btn-primary" onclick="openMsgAll()">+ New Message</button>
+      </div>
     </div>
+    <div class="ad-mobile-cta ad-mobile-only" id="ad-msg-mobile-cta"></div>
     <div class="msg-layout">
       <div class="inbox-sidebar">
         <div class="inbox-top">
@@ -329,7 +482,8 @@
           <button class="inbox-filter" onclick="setInboxFilter('tutor',this)">Tutors</button>
           <button class="inbox-filter" onclick="setInboxFilter('lecturer',this)">Lecturers</button>
         </div>
-        <button onclick="openAdminCompose()" style="width:100%;margin-bottom:8px;padding:8px 12px;border-radius:8px;background:var(--accent);color:var(--bg);font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Compose</button>
+        <div class="tm-msg-people" id="tm-msg-people" aria-label="Message contacts"></div>
+        <button type="button" class="ad-msg-compose-desk" onclick="openAdminCompose()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Compose</button>
         <div class="inbox-list" id="inbox-list">
           <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
         </div>
@@ -356,22 +510,43 @@
 <!-- ══ 8. USER MANAGEMENT ══ -->
 <div id="page-users" class="page">
   <div class="full-page">
-    <div class="page-hero"><h1>User <em>Management</em></h1><p id="users-summary">Lecturers and tutors only — create accounts, reset passwords, manage modules</p></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>User Management</h1><p id="users-summary">Lecturers and tutors only — create accounts, reset passwords, manage modules</p></div>
+    </div>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('lecturers',this,'users')">Lecturers</button>
       <button class="tab-btn" onclick="switchTab('tutors-u',this,'users')">Tutors</button>
       <button class="tab-btn" onclick="switchTab('students-u',this,'users')">Students</button>
     </div>
+    <div class="ad-filter-wrap ad-mobile-only">
+      <div class="ad-filter-tabs tabs">
+        <button class="tab-btn active" onclick="switchTab('lecturers',this,'users')">Lecturers</button>
+        <button class="tab-btn" onclick="switchTab('tutors-u',this,'users')">Tutors</button>
+        <button class="tab-btn" onclick="switchTab('students-u',this,'users')">Students</button>
+      </div>
+    </div>
     <div id="tab-lecturers" class="tab-pane active">
       <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
         <button class="btn-primary" onclick="openAddLecturerModal()">+ Add Lecturer</button>
       </div>
+      <div class="ad-mobile-cta ad-mobile-only">
+        <button type="button" class="ad-btn-primary ad-btn-glow" onclick="openAddLecturerModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="ad-btn-glow-label">Add Lecturer</span>
+        </button>
+      </div>
+      <div class="ad-rec-list ad-mobile-only" id="lecturers-cards"></div>
       <table class="data-table">
         <thead><tr><th>Name</th><th>Email</th><th>Modules</th><th>Status</th><th>Action</th></tr></thead>
         <tbody id="lecturers-body"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-tutors-u" class="tab-pane">
+      <div class="ad-rec-list ad-mobile-only" id="tutors-cards"></div>
       <table class="data-table">
         <thead><tr><th>Name</th><th>Student no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
         <tbody id="tutors-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
@@ -383,6 +558,17 @@
         <button class="btn-sm" onclick="document.getElementById('students-csv-input').click()">Import CSV</button>
         <input id="students-csv-input" type="file" accept=".csv" style="display:none" onchange="importStudentsCSV(this.files[0])" />
       </div>
+      <div class="ad-mobile-cta ad-mobile-only ad-users-student-cta">
+        <button type="button" class="ad-btn-primary ad-btn-glow" onclick="openAddStudentModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="ad-btn-glow-label">Add Student</span>
+        </button>
+        <button type="button" class="ad-btn-outline ad-import-btn" onclick="document.getElementById('students-csv-input').click()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          Import
+        </button>
+      </div>
+      <div class="ad-rec-list ad-mobile-only" id="students-cards"></div>
       <table class="data-table">
         <thead><tr><th>Name</th><th>Email</th><th>Student No.</th><th>Programme</th><th>Year Level</th><th>Action</th></tr></thead>
         <tbody id="students-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
@@ -391,10 +577,49 @@
   </div>
 </div>
 
+<!-- User action sheet (mobile) -->
+<div class="modal-overlay ad-sheet-overlay" id="ad-user-sheet-overlay" onclick="closeUserActionSheet(event)">
+  <div class="modal um-modal ad-sheet ad-user-sheet" id="ad-user-sheet" onclick="event.stopPropagation()">
+    <div class="ad-sheet-person">
+      <div class="ad-cr-avatar" id="ad-user-sheet-avatar">—</div>
+      <div>
+        <div class="ad-sheet-person-name" id="ad-user-sheet-name">Name</div>
+        <div class="ad-sheet-person-role" id="ad-user-sheet-role">Role</div>
+      </div>
+    </div>
+    <button type="button" class="ad-sheet-item" onclick="userSheetMessage()">
+      <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span class="ad-sheet-lbl">Message</span>
+    </button>
+    <button type="button" class="ad-sheet-item" id="ad-user-sheet-edit-modules" onclick="userSheetEditModules()">
+      <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+      <span class="ad-sheet-lbl">Edit modules</span>
+    </button>
+    <button type="button" class="ad-sheet-item" onclick="userSheetResetPassword()">
+      <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+      <span class="ad-sheet-lbl">Reset password</span>
+    </button>
+    <button type="button" class="ad-sheet-item danger" onclick="userSheetDeactivate()">
+      <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></span>
+      <span class="ad-sheet-lbl">Deactivate</span>
+    </button>
+    <div class="ad-user-sheet-cancel">
+      <button type="button" class="ad-sheet-btn-secondary" onclick="closeUserActionSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 9. SUPPORT ══ -->
 <div id="page-support" class="page">
   <div class="full-page">
-    <div class="page-hero"><h1>Support</h1><p>Complaints and support requests from tutors and lecturers</p></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero"><h1>Support</h1><p>Complaints and support requests from tutors and lecturers</p></div>
+    </div>
+    <div class="ad-rec-list ad-mobile-only" id="support-cards"></div>
     <table class="data-table">
       <thead><tr><th>Ticket</th><th>From</th><th>Role</th><th>Subject</th><th>Priority</th><th>Date</th><th>Action</th></tr></thead>
       <tbody id="support-tbody">
@@ -406,18 +631,67 @@
 
 <!-- ══ 10. ANALYSIS ══ -->
 <div id="page-analysis" class="page">
-  <div class="full-page">
-    <div class="page-hero"><h1>Analysis</h1><p>Loading analysis…</p></div>
-    <div class="analysis-grid" id="analysis-kpi-grid">
-      <div class="an-card"><div class="an-label">Total sessions</div><div class="an-value">—</div><div class="an-sub">loading</div></div>
+  <div class="full-page ad-analysis-page">
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero">
+        <h1>Analysis</h1>
+        <p id="analysis-page-sub">Session totals, active tutors and payout summaries</p>
+      </div>
     </div>
-    <div class="chart-section">
-      <div class="chart-section-title">Payout by tutor</div>
-      <div id="analysis-payout-chart"><div style="padding:12px;color:var(--muted);font-size:12px">Loading…</div></div>
+
+    <div class="ad-an-hero" id="analysis-hero">
+      <div class="ad-an-hero-top">
+        <span class="ad-an-hero-label">Flagged rate</span>
+        <span class="ad-an-hero-sem" id="analysis-hero-sem">—</span>
+      </div>
+      <div class="ad-an-hero-body">
+        <div class="ad-an-ring-wrap">
+          <svg width="98" height="98" viewBox="0 0 98 98" aria-hidden="true">
+            <circle cx="49" cy="49" r="42" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
+            <circle id="analysis-ring-arc" cx="49" cy="49" r="42" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
+          </svg>
+          <div class="ad-an-ring-center">
+            <div class="ad-an-ring-num" id="analysis-flagged-pct">0%</div>
+            <div class="ad-an-ring-pct" id="analysis-flagged-sub">0 OF 0<br>SESSIONS</div>
+          </div>
+        </div>
+        <div class="ad-an-hero-stats">
+          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-sessions">0</span><span class="l">TOTAL SESSIONS</span></div>
+          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-hours">0</span><span class="l">HOURS LOGGED</span></div>
+          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-pending">R0</span><span class="l">PENDING CLAIMS</span></div>
+        </div>
+      </div>
     </div>
-    <div class="chart-section">
-      <div class="chart-section-title">Sessions by module</div>
-      <div id="analysis-module-chart"><div style="padding:12px;color:var(--muted);font-size:12px">Loading…</div></div>
+
+    <div class="ad-an-chips">
+      <div class="ad-an-chip">
+        <span class="l">Active tutors</span>
+        <div class="v" id="analysis-stat-tutors">0</div>
+        <div class="sub">approved on system</div>
+      </div>
+      <div class="ad-an-chip">
+        <span class="l">Total payouts</span>
+        <div class="v" id="analysis-stat-payouts">R0</div>
+        <div class="sub">approved claims</div>
+      </div>
+    </div>
+
+    <div class="ad-an-section">
+      <div class="ad-an-section-head"><span class="ad-an-section-title">Payout by tutor</span></div>
+      <div class="ad-an-card" id="analysis-payout-chart">
+        <div class="ad-analysis-empty">Loading…</div>
+      </div>
+    </div>
+
+    <div class="ad-an-section">
+      <div class="ad-an-section-head"><span class="ad-an-section-title">Sessions by module</span></div>
+      <div class="ad-an-card" id="analysis-module-chart">
+        <div class="ad-analysis-empty">Loading…</div>
+      </div>
     </div>
   </div>
 </div>
@@ -425,59 +699,84 @@
 <!-- ══ 11. SYSTEM SETTINGS ══ -->
 <div id="page-settings" class="page">
   <div class="full-page">
-    <div class="page-hero-row">
-      <div class="page-hero" style="margin-bottom:0"><h1>System <em>Settings</em></h1><p>Session rates, requirements and keyword configuration</p></div>
-      <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
-    </div>
-    <div class="settings-section" style="animation-delay:.05s">
-      <div class="settings-section-title">Pay Rates</div>
-      <div class="settings-grid">
-        <div class="field-group"><div class="field-label">Undergrad rate (R/hr)</div><input class="field-input" id="setting-rate-undergrad" value="70"/></div>
-        <div class="field-group"><div class="field-label">Honours rate (R/hr)</div><input class="field-input" id="setting-rate-honours" value="85"/></div>
-        <div class="field-group"><div class="field-label">Masters rate (R/hr)</div><input class="field-input" id="setting-rate-masters" value="100"/></div>
-        <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" value="160"/></div>
+    <div class="ad-page-head">
+      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        HOME
+      </button>
+      <div class="page-hero-row">
+        <div class="page-hero" style="margin-bottom:0"><h1>System Settings</h1><p>Session rates, requirements and keyword configuration</p></div>
+        <button class="btn-primary" onclick="saveSettings()">Save Changes</button>
       </div>
     </div>
-    <div class="settings-section" style="animation-delay:.10s">
-      <div class="settings-section-title">Eligibility Requirements</div>
-      <div class="settings-grid">
-        <div class="field-group"><div class="field-label">Minimum average (%)</div><input class="field-input" id="setting-min-average" value="75"/></div>
-        <div class="field-group"><div class="field-label">Minimum year level</div><input class="field-input" id="setting-min-year" value="3rd year" disabled/></div>
-        <div class="field-group"><div class="field-label">Module pass mark (%)</div><input class="field-input" id="setting-module-pass" value="70"/></div>
-        <div class="field-group"><div class="field-label">Min CV keywords to pass</div><input class="field-input" id="setting-min-cv-keywords" value="0"/></div>
-      </div>
+    <div class="ad-mobile-cta ad-mobile-only">
+      <button type="button" class="ad-btn-primary" onclick="saveSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        Save Changes
+      </button>
     </div>
-    <div class="settings-section" style="animation-delay:.15s">
-      <div class="settings-section-title">CV Keywords (used for automated screening)</div>
-      <textarea class="field-textarea" id="setting-cv-keywords" rows="3">database, SQL, networking, programming, data structures, algorithms, systems analysis</textarea>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">Separate keywords with commas. Used to rank applicant CVs automatically.</div>
-    </div>
-    <div class="settings-section" style="animation-delay:.20s">
-      <div class="settings-section-title">Curriculum Modules</div>
-      <div id="curriculum-module-list" style="max-height:320px;overflow-y:auto;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--faint);"></div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">Read-only list from the official curriculum. Used by postings, lecturer modules, and student applications.</div>
-    </div>
-    <div class="settings-section" style="animation-delay:.25s">
-      <div class="settings-section-title">System Flags</div>
-      <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Auto-flag sessions with no tutor confirmation after 24 hrs</span></div>
-      <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Send reminder email to tutors before claim deadline (15th of month)</span></div>
-      <div class="toggle-wrap"><div class="toggle" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Allow tutors to edit submitted timesheets (before approval)</span></div>
-      <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Require CV upload for all applications</span></div>
-      <div class="toggle-wrap"><div class="toggle" id="setting-applications-open" onclick="toggleApplicationsOpen(this)"></div><span class="toggle-label">Applications are currently open</span></div>
-    </div>
-    <div class="settings-section" style="animation-delay:.30s">
-      <div class="settings-section-title">Application Window</div>
-      <div class="settings-grid">
-        <div class="field-group"><div class="field-label">Closing date</div><input class="field-input" id="setting-closing-date" type="date" /></div>
-        <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email subject</div><input class="field-input" id="setting-announcement-subject" type="text" /></div>
-        <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email body</div><textarea class="field-textarea" id="setting-announcement-body" rows="6"></textarea></div>
-      </div>
-      <!-- <div style="font-size:11px;color:var(--muted);margin-top:6px">This email will be sent automatically to all students when applications are opened</div> -->
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6;">
-        A professionally designed HTML email will be sent automatically to all students when applications are
-        opened. The body field above is optional — leave it blank to use the standard template, or write a custom
-        message to add a personal note from the coordinator at the top of the email.
-      </div>
+    <div class="ad-settings-stack">
+      <details class="ad-acc settings-section" open style="animation-delay:.05s">
+        <summary>Pay Rates <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div class="settings-grid">
+            <div class="field-group"><div class="field-label">Undergrad rate (R/hr)</div><input class="field-input" id="setting-rate-undergrad" value="70"/></div>
+            <div class="field-group"><div class="field-label">Honours rate (R/hr)</div><input class="field-input" id="setting-rate-honours" value="85"/></div>
+            <div class="field-group"><div class="field-label">Masters rate (R/hr)</div><input class="field-input" id="setting-rate-masters" value="100"/></div>
+            <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" value="160"/></div>
+          </div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.10s">
+        <summary>Eligibility Requirements <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div class="settings-grid">
+            <div class="field-group"><div class="field-label">Minimum average (%)</div><input class="field-input" id="setting-min-average" value="75"/></div>
+            <div class="field-group"><div class="field-label">Minimum year level</div><input class="field-input" id="setting-min-year" value="3rd year" disabled/></div>
+            <div class="field-group"><div class="field-label">Module pass mark (%)</div><input class="field-input" id="setting-module-pass" value="70"/></div>
+            <div class="field-group"><div class="field-label">Min CV keywords to pass</div><input class="field-input" id="setting-min-cv-keywords" value="0"/></div>
+          </div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.15s">
+        <summary>CV Keywords <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <textarea class="field-textarea field-input" id="setting-cv-keywords" rows="3">database, SQL, networking, programming, data structures, algorithms, systems analysis</textarea>
+          <div class="field-hint" style="font-size:11px;color:var(--muted);margin-top:6px">Separate keywords with commas. Used to rank applicant CVs automatically.</div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.20s">
+        <summary>Curriculum Modules <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div id="curriculum-module-list" class="curriculum-box" style="max-height:320px;overflow-y:auto;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--faint);"></div>
+          <div class="field-hint" style="font-size:11px;color:var(--muted);margin-top:6px">Read-only list from the official curriculum. Used by postings, lecturer modules, and student applications.</div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.25s">
+        <summary>System Flags <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Auto-flag sessions with no tutor confirmation after 24 hrs</span></div>
+          <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Send reminder email to tutors before claim deadline (15th of month)</span></div>
+          <div class="toggle-wrap"><div class="toggle" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Allow tutors to edit submitted timesheets (before approval)</span></div>
+          <div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"></div><span class="toggle-label">Require CV upload for all applications</span></div>
+          <div class="toggle-wrap"><div class="toggle" id="setting-applications-open" onclick="toggleApplicationsOpen(this)"></div><span class="toggle-label">Applications are currently open</span></div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.30s">
+        <summary>Application Window <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div class="settings-grid">
+            <div class="field-group"><div class="field-label">Closing date</div><input class="field-input" id="setting-closing-date" type="date" /></div>
+            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email subject</div><input class="field-input" id="setting-announcement-subject" type="text" /></div>
+            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email body</div><textarea class="field-textarea" id="setting-announcement-body" rows="6"></textarea></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6;">
+            A professionally designed HTML email will be sent automatically to all students when applications are
+            opened. The body field above is optional — leave it blank to use the standard template, or write a custom
+            message to add a personal note from the coordinator at the top of the email.
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 </div>
@@ -743,21 +1042,34 @@
 <nav class="ad-bottom-nav" id="ad-bottom-nav" aria-label="Primary">
   <div class="ad-bnav-pill">
     <button type="button" class="ad-bnav-item active" data-bnav="dashboard" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>Home</span>
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      <span class="ad-bnav-label">HOME</span>
+      <span class="ad-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="ad-bnav-item" data-bnav="applications" onclick="showPage('applications',document.getElementById('nav-applications'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span class="ad-bnav-label">APPS</span>
+      <span class="ad-bnav-badge" id="bnav-apps-badge" hidden></span>
+      <span class="ad-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="ad-bnav-item" data-bnav="claims" onclick="showPage('claims',document.getElementById('nav-claims'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="ad-bnav-label">CLAIMS</span>
+      <span class="ad-bnav-badge" id="bnav-claims-badge" hidden></span>
+      <span class="ad-bnav-dot" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="ad-bnav-item" data-bnav="users" onclick="showPage('users',document.getElementById('nav-users'))">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="ad-bnav-label">USERS</span>
+      <span class="ad-bnav-dot" aria-hidden="true"></span>
     </button>
     <button type="button" class="ad-bnav-item" data-bnav="messages" onclick="showPage('messages',document.getElementById('nav-messages-admin'))">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-      <span>Messages</span>
-    </button>
-    <button type="button" class="ad-bnav-item" data-bnav="applications" onclick="showPage('applications',document.getElementById('nav-applications'))">
-      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      <span>Apps</span>
+      <span class="ad-bnav-label">MSGS</span>
+      <span class="ad-bnav-badge" id="bnav-msg-badge" hidden></span>
+      <span class="ad-bnav-dot" aria-hidden="true"></span>
     </button>
   </div>
-  <button type="button" class="ad-bnav-logout" aria-label="Log out" title="Log out" onclick="VF.logout()">
-    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-  </button>
 </nav>
 <!-- MESSAGE ALL MODAL -->
 <div class="modal-overlay" id="ma-overlay" onclick="maCloseOutside(event)">
@@ -807,22 +1119,54 @@
   </div>
 </div>
   <!-- ADD LECTURER MODAL -->
-  <div class="modal-overlay" id="add-lecturer-overlay" onclick="closeAddLecturerModal(event)">
-    <div class="modal um-modal" id="add-lecturer-modal">
-      <div class="modal-header"><div><div class="modal-to">User Management</div><div class="modal-name">Add Lecturer</div></div><button class="modal-close" onclick="closeAddLecturerModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      <div class="um-section um-grid">
-        <div class="um-field"><div class="um-label">First name</div><input id="lecturer-first-name" class="um-input" type="text" placeholder="e.g. Zanele" /></div>
-        <div class="um-field"><div class="um-label">Surname</div><input id="lecturer-surname" class="um-input" type="text" placeholder="e.g. Khumalo" /></div>
-        <div class="um-field"><div class="um-label">Email address</div><input id="lecturer-email" class="um-input" type="email" placeholder="e.g. zkhumalo@ump.ac.za" /></div>
-        <div class="um-field"><div class="um-label">Cell number</div><input id="lecturer-cell" class="um-input" type="text" placeholder="e.g. 0137723002" /></div>
+  <div class="modal-overlay ad-sheet-overlay" id="add-lecturer-overlay" onclick="closeAddLecturerModal(event)">
+    <div class="modal um-modal ad-sheet" id="add-lecturer-modal" onclick="event.stopPropagation()">
+      <div class="modal-header ad-sheet-head">
+        <div>
+          <div class="modal-to ad-sheet-eyebrow">User Management</div>
+          <div class="modal-name ad-sheet-title">Add Lecturer</div>
+        </div>
+        <button type="button" class="modal-close ad-sheet-close" onclick="closeAddLecturerModal()" aria-label="Close">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
-      <div class="um-section">
-        <div class="um-label" style="margin-bottom:8px;">Module assignment</div>
-        <div id="lecturer-module-rows" style="display:grid;gap:8px;"></div>
-        <button class="btn-sm" style="margin-top:8px;" onclick="addLecturerModuleRow()">+ Add another module</button>
-        <div class="um-help" style="margin-top:8px;">Enter the real module code (e.g. IS211) and full name for each module this lecturer will teach. At least one is required. The account will force a password change on first login.</div>
+
+      <div class="um-section um-grid ad-sheet-fields">
+        <div class="um-field">
+          <div class="um-label ad-sheet-label">First name</div>
+          <input id="lecturer-first-name" class="um-input ad-sheet-input" type="text" placeholder="e.g. Nomthandazo" />
+        </div>
+        <div class="um-field">
+          <div class="um-label ad-sheet-label">Surname</div>
+          <input id="lecturer-surname" class="um-input ad-sheet-input" type="text" placeholder="e.g. Khoza" />
+        </div>
+        <div class="um-field">
+          <div class="um-label ad-sheet-label">Email address</div>
+          <input id="lecturer-email" class="um-input ad-sheet-input" type="email" placeholder="name@ump.ac.za" />
+        </div>
+        <div class="um-field">
+          <div class="um-label ad-sheet-label">Cell number</div>
+          <input id="lecturer-cell" class="um-input ad-sheet-input" type="text" placeholder="e.g. 082 456 7890" />
+        </div>
       </div>
-      <div class="um-actions"><button class="btn-sm" onclick="closeAddLecturerModal()">Cancel</button><button class="btn-primary" id="save-lecturer-btn" onclick="saveLecturerAccount()">Save Lecturer</button></div>
+
+      <div class="um-section ad-sheet-modules">
+        <div class="um-label ad-sheet-label ad-sheet-modules-label">Module assignment</div>
+        <div id="lecturer-module-rows" class="ad-lecturer-module-rows"></div>
+        <button type="button" class="ad-add-module-btn" onclick="addLecturerModuleRow()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Add another module
+        </button>
+        <div class="um-help ad-sheet-hint">Enter the real module code (e.g. IS211) and full name for each module this lecturer will teach. At least one is required. The account will force a password change on first login.</div>
+      </div>
+
+      <div class="um-actions ad-sheet-actions">
+        <button type="button" class="btn-sm ad-sheet-btn-secondary" onclick="closeAddLecturerModal()">Cancel</button>
+        <button type="button" class="btn-primary ad-sheet-btn-primary ad-btn-glow" id="save-lecturer-btn" onclick="saveLecturerAccount()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          <span class="ad-btn-glow-label">Save Lecturer</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -990,24 +1334,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="../js/app.js?v=13"></script>
 <script src="../js/curriculum.js?v=2"></script>
-<script src="../js/messaging.js?v=10"></script>
-<script src="../js/admin-dashboard-api.js?v=24"></script>
+<script src="../js/messaging.js?v=15"></script>
+<script src="../js/admin-dashboard-api.js?v=33"></script>
 <script>
   if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
   if (!VF.requireRole('admin', 'login.html')) { /* stop — requireRole already redirected */ }
 
+  let activeApplicationDetailId = null;
+
   function syncAdBottomNav(pageId) {
     const map = {
       dashboard: 'dashboard',
-      postings: 'dashboard',
+      postings: 'applications',
       applications: 'applications',
-      referrals: 'dashboard',
-      claims: 'dashboard',
-      flagged: 'dashboard',
-      users: 'dashboard',
-      support: 'dashboard',
+      'application-detail': 'applications',
+      referrals: 'applications',
+      claims: 'claims',
+      flagged: 'claims',
+      users: 'users',
+      support: 'users',
       analysis: 'dashboard',
-      settings: 'dashboard',
+      settings: 'users',
       messages: 'messages',
     };
     const active = map[pageId] || null;
@@ -1022,9 +1369,14 @@
     if (page) page.classList.add('active');
     if (navEl) { document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); navEl.classList.add('active'); }
     document.body.classList.toggle('ad-on-hub', id === 'dashboard');
+    document.body.classList.toggle('ad-on-app-detail', id === 'application-detail');
+    if (id !== 'application-detail') {
+      activeApplicationDetailId = null;
+    }
     if (id !== 'messages' && typeof closeMobileMessageChat === 'function') {
       closeMobileMessageChat();
     }
+    if (typeof closeMobileAppDoc === 'function') closeMobileAppDoc();
     syncAdBottomNav(id);
     if (id === 'dashboard') {
       loadDashboardOverview();
@@ -1061,8 +1413,16 @@
           badge.style.display = pending ? '' : 'none';
         }
       }
-      const hubRefs = document.getElementById('ad-hub-refs-sub');
-      if (hubRefs) hubRefs.textContent = pending ? `${pending} pending` : 'Approvals';
+      const hubRefs = document.getElementById('ad-hub-refs-badge');
+      if (hubRefs) {
+        if (pending > 0) {
+          hubRefs.textContent = String(pending);
+          hubRefs.hidden = false;
+        } else {
+          hubRefs.textContent = '';
+          hubRefs.hidden = true;
+        }
+      }
     } catch (err) {
       /* non-critical */
     }
@@ -1218,6 +1578,22 @@ function renderPostingRow(p) {
   </tr>`;
 }
 
+function renderPostingCard(p) {
+  const prog = p.programme || (p.course && p.course.startsWith('BICT') ? 'BICT' : 'DICT');
+  const avg = p.min_average != null ? `${Number(p.min_average).toFixed(2)}%` : '—';
+  return `<div class="ad-posting-card">
+    <div class="ad-posting-code">${p.module_code || '—'}</div>
+    <div class="ad-posting-prog">${prog} · ${formatPositionType(p.position_type)}</div>
+    <div class="ad-posting-stats">
+      <div class="item"><div class="k">${p.min_year_level || '—'}</div><div class="l">Year level req.</div></div>
+      <div class="item"><div class="k">${avg}</div><div class="l">Avg req.</div></div>
+      <div class="item"><div class="k">${p.applications_needed ?? p.apps_needed ?? '—'}</div><div class="l">Apps needed</div></div>
+      <div class="item"><div class="k">${p.application_count || 0}</div><div class="l">Applications</div></div>
+    </div>
+    <button type="button" class="ad-btn-outline" style="margin-top:14px;" onclick="editPosting(${p.id})">Edit</button>
+  </div>`;
+}
+
 async function loadPostings() {
   try {
     const postings = await VF.apiFetch('/postings');
@@ -1226,6 +1602,12 @@ async function loadPostings() {
     document.getElementById('postings-body').innerHTML = postings.length
       ? postings.map(renderPostingRow).join('')
       : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No job postings yet.</td></tr>';
+    const cards = document.getElementById('postings-cards');
+    if (cards) {
+      cards.innerHTML = postings.length
+        ? postings.map(renderPostingCard).join('')
+        : `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No job postings yet</h3><p>Create a posting to open tutor applications for a module.</p></div></div>`;
+    }
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not load postings.', 'err');
   }
@@ -1282,8 +1664,8 @@ function applicationStatusChip(status) {
     submitted:    '<span class="sc new-app">Submitted</span>',
     under_review: '<span class="sc review">Under Review</span>',
     shortlisted:  '<span class="sc shortl">Shortlisted</span>',
-    approved:     '<span class="stag open" style="background:rgba(92,200,138,.1);color:var(--green);border:1px solid rgba(92,200,138,.2)">Approved</span>',
-    rejected:     '<span class="stag review" style="background:rgba(200,90,90,.1);color:var(--red);border:1px solid rgba(200,90,90,.2)">Rejected</span>',
+    approved:     '<span class="ad-status-pill approved">Approved</span>',
+    rejected:     '<span class="ad-status-pill rejected">Rejected</span>',
   };
   return labels[status] || labels.submitted;
 }
@@ -1390,9 +1772,119 @@ async function loadReferrals() {
         ? refs.map(renderReferralRow).join('')
         : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No referrals yet</td></tr>';
     }
+
+    const cards = document.getElementById('referrals-cards');
+    if (cards) {
+      cards.innerHTML = refs.length
+        ? refs.map((ref) => {
+          const gpa = ref.gpa != null ? `${Number(ref.gpa).toFixed(2)}%` : '—';
+          return `<div class="ad-rec-card">
+            <div class="ad-rec-name">${ref.first_names} ${ref.surname}</div>
+            <div class="ad-rec-sub">${formatLecturerName(ref)} · ${ref.module_code || '—'}</div>
+            <div class="ad-rec-grid">
+              <div class="item"><div class="k">${qualificationPlain(ref.qualification_level)}</div><div class="l">Qualification</div></div>
+              <div class="item"><div class="k">${gpa}</div><div class="l">Average</div></div>
+              <div class="item"><div class="k">${courseShort(ref.course)}</div><div class="l">Programme</div></div>
+            </div>
+            <div style="margin-top:12px">${referralActions(ref.id, ref.status)}</div>
+          </div>`;
+        }).join('')
+        : `<div class="ad-empty-card"><div class="ad-empty-state">
+          <div class="ad-empty-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <h3>No referrals yet</h3>
+          <p>Referred tutors awaiting your countersignature will show up here.</p>
+        </div></div>`;
+    }
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not load referrals.', 'err');
   }
+}
+
+function qualificationPlain(level) {
+  if (level === 'masters' || level === 'masters_holder' || level === 'phd') {
+    return QUALIFICATION_DISPLAY_MAP[level] || level || '—';
+  }
+  if (level === '4th_year_honours') return 'Honours';
+  return 'Undergrad';
+}
+
+function formatGpaDisplay(gpa) {
+  if (gpa == null || gpa === '') return '—';
+  const n = Number(gpa);
+  if (Number.isNaN(n)) return `${gpa}%`;
+  return `${n.toFixed(2)}%`;
+}
+
+function renderApplicationCard(app, opts) {
+  const withReason = !!(opts && opts.withReason);
+  const inProgress = !!(opts && opts.inProgress);
+  const pref = inProgress ? { dotClass: 'none' } : getPreferenceTier(app.gpa);
+  const name = `${app.first_names || ''} ${app.surname || ''}`.trim() || 'Applicant';
+
+  let module;
+  let col1Val;
+  let col1Lab;
+  let col2Val;
+  let col2Lab;
+  let col3Val;
+  let col3Lab;
+
+  if (inProgress) {
+    module = app.email || 'In progress';
+    col1Val = app.email || '—';
+    col1Lab = 'EMAIL';
+    col2Val = app.student_number || '—';
+    col2Lab = 'STUDENT NO.';
+    col3Val = formatDate(app.created_at);
+    col3Lab = 'STARTED';
+  } else if (withReason) {
+    module = app.module_name || '—';
+    col1Val = qualificationPlain(app.qualification_level);
+    col1Lab = 'QUALIFICATION';
+    col2Val = formatGpaDisplay(app.gpa);
+    col2Lab = 'AVERAGE';
+    col3Val = app.rejection_reason || 'Did not meet eligibility';
+    col3Lab = 'REASON';
+  } else {
+    module = app.module_name || '—';
+    col1Val = qualificationPlain(app.qualification_level);
+    col1Lab = 'QUALIFICATION';
+    col2Val = formatGpaDisplay(app.gpa);
+    col2Lab = 'AVERAGE';
+    col3Val = formatDate(app.submitted_at || app.created_at);
+    col3Lab = 'DATE APPLIED';
+  }
+
+  return `
+    <button type="button" class="ad-app-card pref-${pref.dotClass}" onclick="openApplicationDetail(${app.id})">
+      <div class="ad-app-card-name">${name}</div>
+      <div class="ad-app-card-module">${module}</div>
+      <div class="ad-app-card-grid">
+        <div class="ad-app-stat">
+          <div class="ad-app-stat-val">${col1Val}</div>
+          <div class="ad-app-stat-lab">${col1Lab}</div>
+        </div>
+        <div class="ad-app-stat">
+          <div class="ad-app-stat-val">${col2Val}</div>
+          <div class="ad-app-stat-lab">${col2Lab}</div>
+        </div>
+        <div class="ad-app-stat">
+          <div class="ad-app-stat-val">${col3Val}</div>
+          <div class="ad-app-stat-lab">${col3Lab}</div>
+        </div>
+      </div>
+      <div class="ad-app-card-foot">
+        ${applicationStatusChip(app.status)}
+        <svg class="ad-app-card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </div>
+    </button>`;
+}
+
+function renderAppsCards(listEl, apps, opts, emptyMsg) {
+  if (!listEl) return;
+  listEl.innerHTML = apps.length
+    ? apps.map((a) => renderApplicationCard(a, opts)).join('')
+    : `<div class="ad-apps-empty">${emptyMsg}</div>`;
 }
 
 function renderApplicationRow(app, withReason) {
@@ -1606,12 +2098,44 @@ function renderStudentRow(s) {
   </tr>`;
 }
 
+function renderStudentCard(s) {
+  const name = `${s.first_names || ''} ${s.surname || ''}`.trim() || 'Student';
+  const initials = ((s.first_names || '').trim().charAt(0) + (s.surname || '').trim().charAt(0) || '?').toUpperCase();
+  const prog = s.programme || '—';
+  const year = s.year_level || '—';
+  return `<div class="ad-compact-row ad-compact-row--static">
+    <div class="ad-cr-avatar">${initials}</div>
+    <div class="ad-cr-info">
+      <div class="ad-cr-name">${name}</div>
+      <div class="ad-cr-email">${s.email || '—'}</div>
+      <div class="ad-cr-meta">
+        <span class="ad-mini-chip">${prog}</span>
+        <span class="ad-mini-chip neutral">${year}</span>
+      </div>
+    </div>
+    <button type="button" class="ad-remove-icon-btn" onclick="removeStudent(${s.id})" aria-label="Remove student">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+    </button>
+  </div>`;
+}
+
 async function loadStudents() {
   try {
     const students = await VF.apiFetch('/students');
     document.getElementById('students-body').innerHTML = students.length
       ? students.map(renderStudentRow).join('')
       : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No students yet.</td></tr>';
+    const cards = document.getElementById('students-cards');
+    if (cards) {
+      if (!students.length) {
+        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No students yet</h3><p>Add or import students to get started.</p></div></div>`;
+      } else {
+        const n = students.length;
+        cards.innerHTML =
+          `<div class="ad-list-count">${n} student${n === 1 ? '' : 's'}</div>` +
+          students.map(renderStudentCard).join('');
+      }
+    }
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not load students.', 'err');
   }
@@ -1680,6 +2204,11 @@ async function loadApplications() {
       autoRejected.length ? autoRejected.map(a => renderApplicationRow(a, true)).join('')
                           : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No rejected applications.</td></tr>';
 
+    renderAppsCards(document.getElementById('dict-cards'), dict, null, 'No DICT applications.');
+    renderAppsCards(document.getElementById('bict-cards'), bict, null, 'No BICT applications.');
+    renderAppsCards(document.getElementById('in-progress-cards'), inProgress, { inProgress: true }, 'No in-progress registrations.');
+    renderAppsCards(document.getElementById('auto-rejected-cards'), autoRejected, { withReason: true }, 'No rejected applications.');
+
     document.getElementById('app-summary').textContent =
       `${dict.length + bict.length} submitted application${dict.length + bict.length === 1 ? '' : 's'} across DICT and BICT, ${inProgress.length} in progress, ${autoRejected.length} rejected.`;
 
@@ -1696,8 +2225,7 @@ async function moveApplicationToReview(id) {
   try {
     await VF.apiFetch(`/applications/${id}/under-review`, { method: 'PATCH' });
     VF.toast('Moved to review', 'ok');
-    loadApplications();
-    refreshDashboardPanels();
+    await afterApplicationMutation();
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not update application.', 'err');
   }
@@ -1707,8 +2235,7 @@ async function shortlistApplication(id) {
   try {
     await VF.apiFetch(`/applications/${id}/shortlist`, { method: 'PATCH' });
     VF.toast('Shortlisted', 'ok');
-    loadApplications();
-    refreshDashboardPanels();
+    await afterApplicationMutation();
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not shortlist application.', 'err');
   }
@@ -1767,8 +2294,7 @@ async function confirmRejectApplication() {
     });
     VF.toast('Application rejected', 'ok');
     closeRejectModal();
-    loadApplications();
-    refreshDashboardPanels();
+    await afterApplicationMutation();
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not reject.', 'err');
   }
@@ -1894,18 +2420,278 @@ async function finalizeApplicationApproval() {
     });
     VF.toast('Application approved', 'ok');
     closeApprovalModal();
-    loadApplications();
+    await afterApplicationMutation();
     if (typeof loadTutors === 'function') loadTutors();
-    refreshDashboardPanels();
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not approve.', 'err');
   }
 }
 
-// ── Application detail modal ─────────────────────────────────
+// ── Application detail modal / mobile page ───────────────────
+function isAdminMobileView() {
+  return window.matchMedia('(max-width: 900px)').matches;
+}
+
+function formatAppStage(status) {
+  return String(status || '—')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function parseScreeningResult(app) {
+  const raw = app && app.screening_result;
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+  return raw;
+}
+
+function adAppdFieldRow(label, value, mono) {
+  const vClass = mono ? 'ad-appd-v mono' : 'ad-appd-v';
+  return `<div class="ad-appd-field-row"><span class="ad-appd-k">${label}</span><span class="${vClass}">${value}</span></div>`;
+}
+
+function mobileApplicationActions(id, status) {
+  if (status === 'submitted') {
+    return `<button type="button" class="ad-appd-btn primary ad-btn-glow" onclick="moveApplicationToReview(${id})"><span class="ad-btn-glow-label">Move to Review</span></button>`;
+  }
+  if (status === 'under_review') {
+    return `
+      <button type="button" class="ad-appd-btn primary ad-btn-glow" onclick="shortlistApplication(${id})"><span class="ad-btn-glow-label">Shortlist</span></button>
+      <button type="button" class="ad-appd-btn danger" onclick="openRejectModal(${id})">Reject</button>`;
+  }
+  if (status === 'shortlisted') {
+    return `
+      <button type="button" class="ad-appd-btn primary ad-btn-glow" onclick="openApprovalModal(${id})"><span class="ad-btn-glow-label">Approve</span></button>
+      <button type="button" class="ad-appd-btn danger" onclick="openRejectModal(${id})">Reject</button>`;
+  }
+  return '';
+}
+
+function fillMobileApplicationDetail(app) {
+  const name = `${app.first_names || ''} ${app.surname || ''}`.trim() || 'Applicant';
+  const lecturer = app.lecturer_first_names
+    ? `${app.lecturer_first_names} ${app.lecturer_surname || ''}`.trim()
+    : 'Not yet assigned';
+  const lecturerClass = app.lecturer_first_names ? '' : ' ad-appd-muted';
+
+  document.getElementById('ad-appd-title').textContent = name;
+  document.getElementById('ad-appd-subtitle').textContent =
+    `${app.module_name || '—'} · ${app.course || '—'} · ${formatDate(app.submitted_at || app.created_at)}`;
+  document.getElementById('ad-appd-status').innerHTML = applicationStatusChip(app.status);
+
+  document.getElementById('ad-appd-status-summary').innerHTML = `
+    <div class="ad-appd-summary-grid">
+      <div>
+        <div class="ad-appd-field-label">Current stage</div>
+        <div class="ad-appd-summary-val">${formatAppStage(app.status)}</div>
+      </div>
+      <div>
+        <div class="ad-appd-field-label">Date submitted</div>
+        <div class="ad-appd-summary-val">${formatDate(app.submitted_at || app.created_at)}</div>
+      </div>
+      <div class="ad-appd-summary-span">
+        <div class="ad-appd-field-label">Module</div>
+        <div class="ad-appd-summary-val">${app.module_name || '—'}</div>
+      </div>
+      <div class="ad-appd-summary-span">
+        <div class="ad-appd-field-label">Assigned lecturer</div>
+        <div class="ad-appd-summary-val${lecturerClass}">${lecturer}</div>
+      </div>
+    </div>
+    ${app.rejection_reason ? `<div class="ad-appd-reject-reason">${app.rejection_reason}</div>` : ''}`;
+
+  document.getElementById('ad-appd-personal').innerHTML = `
+    <div class="ad-appd-field-group-title">Personal information</div>
+    ${adAppdFieldRow('Title', app.title || '—')}
+    ${adAppdFieldRow('Initials', app.initials || '—')}
+    ${adAppdFieldRow('Name', name)}
+    ${adAppdFieldRow('Email', app.email || '—', true)}
+    ${adAppdFieldRow('Cell', app.cell || '—', true)}
+    ${adAppdFieldRow('Student number', app.student_number || '—', true)}`;
+
+  document.getElementById('ad-appd-academic').innerHTML = `
+    <div class="ad-appd-field-group-title">Academic information</div>
+    ${adAppdFieldRow('Faculty', app.faculty || '—')}
+    ${adAppdFieldRow('Course', app.course || '—')}
+    ${adAppdFieldRow('Qualification level', QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '—')}
+    ${adAppdFieldRow('Module year level', app.module_year_level || '—')}
+    ${adAppdFieldRow('Module to tutor', app.module_name || '—')}
+    ${adAppdFieldRow('Current average', formatGpaDisplay(app.gpa))}`;
+
+  const screening = parseScreeningResult(app);
+  const cv = (screening && screening.cv) || {};
+  const tr = (screening && screening.transcript) || {};
+  const score = cv.score != null ? cv.score : app.cv_keyword_score;
+  const total = cv.totalKeywords;
+  const matchedList = Array.isArray(cv.matched) ? cv.matched.join(', ') : '';
+  const metaEl = document.getElementById('ad-appd-kw-meta');
+  if (score != null && total != null) metaEl.textContent = `${score} / ${total}`;
+  else if (score != null) metaEl.textContent = String(score);
+  else metaEl.textContent = '';
+
+  const tutorLine = tr.tutorModule
+    ? `${tr.tutorModule.name} — ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
+    : (screening ? 'Not found on transcript' : '—');
+  const avgLine = tr.calculatedAverage != null
+    ? `${tr.calculatedAverage}%${tr.claimedAverage != null ? ` <span class="ad-appd-faint">(declared ${tr.claimedAverage}%)</span>` : ''}`
+    : '—';
+
+  document.getElementById('ad-appd-keywords').innerHTML = `
+    <div class="ad-appd-kw-box">${matchedList || (score != null ? 'No matched keywords listed.' : 'No screening result yet.')}</div>
+    <div class="ad-appd-kw-extra">
+      <div class="ad-appd-field-row bare"><span class="ad-appd-k">Transcript average</span><span class="ad-appd-v">${avgLine}</span></div>
+      <div class="ad-appd-field-row bare"><span class="ad-appd-k">All modules passed</span><span class="ad-appd-v${tr.allModulesPassed ? ' ok' : ''}">${screening ? (tr.allModulesPassed ? 'Yes' : 'No') : '—'}</span></div>
+      <div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${tutorLine}</span></div>
+    </div>`;
+
+  const declaredOk = app.declared === true || app.declared === 't' || app.declared === 'true' || app.status !== 'incomplete';
+  const declChip = declaredOk
+    ? '<span class="ad-appd-chip">Accepted</span>'
+    : '<span class="ad-appd-chip muted">Not accepted</span>';
+  const outcomeExtra = app.responsibility_level
+    ? `<div class="ad-appd-decl-extra">Approved responsibility: ${String(app.responsibility_level).charAt(0).toUpperCase() + String(app.responsibility_level).slice(1)}</div>`
+    : '';
+  document.getElementById('ad-appd-declaration').innerHTML = `
+    <div class="ad-appd-decl-row">
+      <span class="ad-appd-decl-label">Declaration</span>
+      ${declChip}
+    </div>
+    ${outcomeExtra}`;
+
+  const docSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
+  const recSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg>';
+  const cvName = app.cv_filename || 'Not uploaded';
+  const trName = app.transcript_filename || 'Not uploaded';
+  document.getElementById('ad-appd-docs').innerHTML = `
+    <div class="ad-appd-doc-row">
+      <div class="ad-appd-doc-left">
+        <div class="ad-appd-doc-ico">${docSvg}</div>
+        <div>
+          <div class="ad-appd-doc-name">CV</div>
+          <div class="ad-appd-doc-file">${cvName}</div>
+        </div>
+      </div>
+      ${app.cv_filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('CV', '${String(app.cv_filename).replace(/'/g, "\\'")}')">Review</button>` : ''}
+    </div>
+    <div class="ad-appd-doc-row">
+      <div class="ad-appd-doc-left">
+        <div class="ad-appd-doc-ico">${recSvg}</div>
+        <div>
+          <div class="ad-appd-doc-name">Academic record</div>
+          <div class="ad-appd-doc-file">${trName}</div>
+        </div>
+      </div>
+      ${app.transcript_filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('Academic record', '${String(app.transcript_filename).replace(/'/g, "\\'")}')">Review</button>` : ''}
+    </div>`;
+
+  const actionsHtml = mobileApplicationActions(app.id, app.status);
+  const actionsEl = document.getElementById('ad-appd-actions');
+  if (actionsHtml) {
+    actionsEl.innerHTML = actionsHtml;
+    actionsEl.hidden = false;
+    actionsEl.classList.remove('is-revealed');
+  } else {
+    actionsEl.innerHTML = '';
+    actionsEl.hidden = true;
+    actionsEl.classList.remove('is-revealed');
+    teardownAppDetailActionsReveal();
+  }
+}
+
+let appDetailActionsObserver = null;
+
+function teardownAppDetailActionsReveal() {
+  if (appDetailActionsObserver) {
+    appDetailActionsObserver.disconnect();
+    appDetailActionsObserver = null;
+  }
+}
+
+function setupAppDetailActionsReveal() {
+  teardownAppDetailActionsReveal();
+  const page = document.getElementById('page-application-detail');
+  const end = document.getElementById('ad-appd-end');
+  const actionsEl = document.getElementById('ad-appd-actions');
+  if (!page || !end || !actionsEl || actionsEl.hidden) return;
+
+  // Reset scroll so the admin must review down the page again.
+  page.scrollTop = 0;
+  actionsEl.classList.remove('is-revealed');
+
+  const reveal = () => {
+    actionsEl.classList.add('is-revealed');
+  };
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const nearBottom = page.scrollHeight <= page.clientHeight + 24;
+      if (nearBottom) {
+        reveal();
+        return;
+      }
+
+      if (typeof IntersectionObserver === 'undefined') {
+        const onScroll = () => {
+          if (page.scrollTop + page.clientHeight >= page.scrollHeight - 40) {
+            reveal();
+            page.removeEventListener('scroll', onScroll);
+          }
+        };
+        page.addEventListener('scroll', onScroll, { passive: true });
+        return;
+      }
+
+      appDetailActionsObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            reveal();
+            teardownAppDetailActionsReveal();
+          }
+        },
+        { root: page, rootMargin: '0px 0px 48px 0px', threshold: 0 }
+      );
+      appDetailActionsObserver.observe(end);
+    });
+  });
+}
+
+function closeMobileApplicationDetail() {
+  activeApplicationDetailId = null;
+  teardownAppDetailActionsReveal();
+  closeMobileAppDoc();
+  showPage('applications', document.getElementById('nav-applications'));
+}
+
+async function afterApplicationMutation() {
+  await loadApplications();
+  refreshDashboardPanels();
+  if (activeApplicationDetailId != null && isAdminMobileView()) {
+    const app = APPLICATIONS[activeApplicationDetailId];
+    if (app) {
+      fillMobileApplicationDetail(app);
+      setupAppDetailActionsReveal();
+    } else {
+      activeApplicationDetailId = null;
+      showPage('applications', document.getElementById('nav-applications'));
+    }
+  }
+}
+
 function openApplicationDetail(id) {
   const app = APPLICATIONS[id];
   if (!app) return;
+
+  if (isAdminMobileView()) {
+    fillMobileApplicationDetail(app);
+    showPage('application-detail');
+    activeApplicationDetailId = id;
+    setupAppDetailActionsReveal();
+    return;
+  }
+
+  activeApplicationDetailId = null;
   document.getElementById('app-modal-title').textContent = app.first_names + ' ' + app.surname;
   document.getElementById('app-modal-subtitle').textContent = (app.module_name || '—') + ' · ' + (app.course || '—') + ' · ' + formatDate(app.submitted_at);
   document.getElementById('app-modal-status').innerHTML = applicationStatusChip(app.status);
@@ -1913,7 +2699,7 @@ function openApplicationDetail(id) {
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;grid-column:1 / -1;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Status summary</div>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
-        <div><div style="font-size:11px;color:var(--muted)">Current stage</div><div style="font-weight:700;color:var(--text)">${app.status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">Current stage</div><div style="font-weight:700;color:var(--text)">${formatAppStage(app.status)}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Module</div><div style="font-weight:700;color:var(--text)">${app.module_name || '—'}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Date submitted</div><div style="font-weight:700;color:var(--text)">${formatDate(app.submitted_at)}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Assigned lecturer</div><div style="font-weight:700;color:var(--text)">${app.lecturer_first_names ? app.lecturer_first_names + ' ' + app.lecturer_surname : 'Not yet assigned'}</div></div>
@@ -1973,6 +2759,45 @@ function openApplicationDetail(id) {
   `;
   document.getElementById('application-modal').style.display = 'flex';
   document.body.classList.add('admin-modal-open');
+}
+
+async function openAppDocReview(label, filename) {
+  if (!isAdminMobileView()) {
+    return openDocPanel(label, filename);
+  }
+  const overlay = document.getElementById('ad-app-doc-overlay');
+  const frame = document.getElementById('ad-app-doc-frame');
+  const link = document.getElementById('ad-app-doc-newtab');
+  document.getElementById('ad-app-doc-title').textContent = label;
+  if (frame.dataset.blobUrl) {
+    URL.revokeObjectURL(frame.dataset.blobUrl);
+    delete frame.dataset.blobUrl;
+  }
+  frame.src = '';
+  link.removeAttribute('href');
+  overlay.style.display = 'flex';
+  overlay.setAttribute('aria-hidden', 'false');
+  try {
+    const url = await VF.fetchUploadDownloadUrl(filename);
+    frame.src = url;
+    link.href = url;
+  } catch (err) {
+    VF.toast(err.message || 'Could not load document.', 'err');
+    closeMobileAppDoc();
+  }
+}
+
+function closeMobileAppDoc() {
+  const overlay = document.getElementById('ad-app-doc-overlay');
+  if (!overlay) return;
+  const frame = document.getElementById('ad-app-doc-frame');
+  if (frame && frame.dataset.blobUrl) {
+    URL.revokeObjectURL(frame.dataset.blobUrl);
+    delete frame.dataset.blobUrl;
+  }
+  if (frame) frame.src = '';
+  overlay.style.display = 'none';
+  overlay.setAttribute('aria-hidden', 'true');
 }
 
 async function openDocPanel(label, filename) {
@@ -2044,22 +2869,53 @@ function addLecturerModuleRow() {
   const rows  = document.getElementById('lecturer-module-rows');
   const rowId = 'mod-row-' + Date.now() + Math.floor(Math.random() * 1000);
   const nameSelId = 'mod-name-' + rowId;
+  const index = rows.children.length + 1;
   const div = document.createElement('div');
   div.id = rowId;
-  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:start;margin-bottom:4px;';
+  div.className = 'ad-module-row-card';
   div.innerHTML = `
-    <select class="um-input new-lecturer-module-course" style="height:38px;" onchange="populateModuleNameDropdown(this, '${nameSelId}')">
-      <option value="">Course…</option>
-      <option value="BICT — Bachelor of ICT">BICT</option>
-      <option value="DICT — Diploma in ICT">DICT</option>
-    </select>
-    <select class="um-input new-lecturer-module-name" id="${nameSelId}" style="height:38px;" disabled onchange="onLecturerModuleNameSelected(this)">
-      <option value="">Select course first…</option>
-    </select>
-    <input class="um-input new-lecturer-module-code" type="text" placeholder="Auto-filled" readonly />
-    <button class="btn-sm" type="button" onclick="document.getElementById('${rowId}').remove()" style="margin-top:0;">Remove</button>
+    <div class="ad-module-row-head">
+      <span class="ad-module-row-idx">Module ${index}</span>
+      <button type="button" class="ad-module-row-remove" onclick="removeLecturerModuleRow('${rowId}')">Remove</button>
+    </div>
+    <div class="ad-module-fields-2">
+      <select class="um-input ad-sheet-input new-lecturer-module-course" onchange="populateModuleNameDropdown(this, '${nameSelId}')">
+        <option value="">Course…</option>
+        <option value="BICT — Bachelor of ICT">BICT</option>
+        <option value="DICT — Diploma in ICT">DICT</option>
+      </select>
+      <select class="um-input ad-sheet-input new-lecturer-module-name" id="${nameSelId}" disabled onchange="onLecturerModuleNameSelected(this)">
+        <option value="">Select course first…</option>
+      </select>
+    </div>
+    <input class="um-input ad-sheet-input new-lecturer-module-code" type="text" placeholder="Module code, e.g. DICT211" readonly />
   `;
   rows.appendChild(div);
+  refreshLecturerModuleRowLabels();
+}
+
+function removeLecturerModuleRow(rowId) {
+  const el = document.getElementById(rowId);
+  if (!el) return;
+  const rows = document.getElementById('lecturer-module-rows');
+  if (rows && rows.children.length <= 1) {
+    VF.toast('At least one module is required', 'err');
+    return;
+  }
+  el.remove();
+  refreshLecturerModuleRowLabels();
+}
+
+function refreshLecturerModuleRowLabels() {
+  const rows = document.getElementById('lecturer-module-rows');
+  if (!rows) return;
+  const cards = [...rows.querySelectorAll('.ad-module-row-card')];
+  cards.forEach((card, i) => {
+    const idx = card.querySelector('.ad-module-row-idx');
+    if (idx) idx.textContent = `Module ${i + 1}`;
+    const removeBtn = card.querySelector('.ad-module-row-remove');
+    if (removeBtn) removeBtn.hidden = cards.length <= 1;
+  });
 }
 
 function populateModuleNameDropdown(courseSelect, nameSelId) {
@@ -2109,8 +2965,8 @@ async function saveLecturerAccount() {
   if (!modules.length) { VF.toast('Add at least one complete module row (course, name, and code)', 'err'); return; }
 
   const btn = document.getElementById('save-lecturer-btn');
-  const originalText = btn.textContent;
-  btn.textContent = 'Saving…';
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="ad-btn-glow-label">Saving…</span>';
   btn.disabled = true;
 
   try {
@@ -2130,7 +2986,7 @@ async function saveLecturerAccount() {
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not create lecturer.', 'err');
   } finally {
-    btn.textContent = originalText;
+    btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
 }
@@ -2142,10 +2998,12 @@ initAdminApiDashboard().catch((err) => {
 
 function switchTab(id, btn, pageId) {
   const page = document.getElementById('page-' + pageId);
-  page.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   page.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + id).classList.add('active');
-  btn.classList.add('active');
+  page.querySelectorAll('.tab-btn').forEach((b) => {
+    const onclick = b.getAttribute('onclick') || '';
+    b.classList.toggle('active', onclick.includes(`'${id}'`) || onclick.includes(`"${id}"`));
+  });
   if (pageId === 'users' && id === 'students-u') loadStudents();
 }
 </script>

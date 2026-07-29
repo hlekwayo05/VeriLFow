@@ -130,10 +130,19 @@ async function loadClaims() {
     }
 
     const tbody = document.getElementById('claims-tbody');
+    const cards = document.getElementById('claims-cards');
     if (!tbody) return;
 
     if (!claims.length) {
       tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px">No claims submitted yet.</td></tr>';
+      if (cards) {
+        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state">
+          <div class="ad-empty-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <h3>No claims submitted yet</h3>
+          <p>Tutor timesheet claims will appear here once submitted for approval.</p>
+        </div></div>`;
+      }
+      updateNavBadges();
       return;
     }
 
@@ -155,6 +164,23 @@ async function loadClaims() {
         <td>${adClaimActionButtons(c.id, c.status)}</td>
       </tr>`;
     }).join('');
+
+    if (cards) {
+      cards.innerHTML = claims.map((c) => {
+        const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '—';
+        const hours = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
+        return `<button type="button" class="ad-rec-card" onclick="openClaimDetail(${c.id})">
+          <div class="ad-rec-name">${tutor}</div>
+          <div class="ad-rec-sub">${c.module_code || '—'} · ${adFormatClaimPeriod(c)}</div>
+          <div class="ad-rec-grid">
+            <div class="item"><div class="k">${hours}</div><div class="l">Hours</div></div>
+            <div class="item"><div class="k">${adFormatMoney(c.total_amount)}</div><div class="l">Amount</div></div>
+            <div class="item"><div class="k">${c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '—'}</div><div class="l">Rate</div></div>
+          </div>
+          <div>${adClaimStatusChip(c.status)}</div>
+        </button>`;
+      }).join('');
+    }
 
     updateNavBadges();
   } catch (err) {
@@ -410,6 +436,28 @@ async function loadFlaggedSessions() {
       tbody.innerHTML = flagged.length
         ? flagged.map(adFlaggedRow).join('')
         : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No flagged sessions.</td></tr>';
+    }
+
+    const flaggedCards = document.getElementById('flagged-cards');
+    if (flaggedCards) {
+      flaggedCards.innerHTML = flagged.length
+        ? flagged.map((s) => {
+          const tutor = s.tutor_names || '—';
+          const dateStr = adFormatSessionDate(s.session_date, s.start_time);
+          return `<button type="button" class="ad-rec-card flag" onclick="investigateFlaggedSession(${s.id})">
+            <div class="ad-rec-name">${tutor}</div>
+            <div class="ad-rec-sub">${s.module_code || '—'} · ${dateStr}</div>
+            <div class="ad-rec-grid">
+              <div class="item"><div class="k">${adSessionTypeLabel(s.session_type)}</div><div class="l">Type</div></div>
+              <div class="item"><div class="k">${adFlagIssueLabel(s)}</div><div class="l">Issue</div></div>
+            </div>
+          </button>`;
+        }).join('')
+        : `<div class="ad-empty-card"><div class="ad-empty-state">
+          <div class="ad-empty-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg></div>
+          <h3>No flagged sessions</h3>
+          <p>Sessions with attendance or scheduling disputes will appear here.</p>
+        </div></div>`;
     }
 
     const dashBody = document.getElementById('dash-flagged-tbody');
@@ -692,13 +740,14 @@ function markFlagInvestigating() {
 
 async function loadDashboardOverview() {
   try {
-    const [applications, claims, sessions, tutors, referrals, supportTickets] = await Promise.all([
+    const [applications, claims, sessions, tutors, referrals, supportTickets, postings] = await Promise.all([
       VF.apiFetch('/applications?includeIncomplete=true'),
       VF.apiFetch('/admin/claims'),
       VF.apiFetch('/sessions'),
       VF.apiFetch('/users/tutors'),
       VF.apiFetch('/referrals'),
       VF.apiFetch('/support/tickets'),
+      VF.apiFetch('/postings'),
     ]);
 
     adminClaimsCache = claims;
@@ -713,6 +762,10 @@ async function loadDashboardOverview() {
     const flagged = sessions.filter((s) => s.status === 'flagged');
     const pendingReferrals = referrals.filter((r) => r.status === 'pending');
     const openSupport = supportTickets.filter((t) => t.status === 'open' || t.status === 'in_progress');
+    const openPostings = (Array.isArray(postings) ? postings : []).filter((p) => {
+      const status = String(p.status || 'open').toLowerCase();
+      return status !== 'closed' && status !== 'archived' && status !== 'inactive';
+    });
 
     const statApps = document.getElementById('stat-open-apps');
     if (statApps) statApps.textContent = String(openApps.length);
@@ -729,6 +782,7 @@ async function loadDashboardOverview() {
       pendingReferrals: pendingReferrals.length,
       flagged: flagged.length,
       openSupport: openSupport.length,
+      openPostings: openPostings.length,
     });
 
     renderLatestApplicants(applications);
@@ -749,8 +803,16 @@ async function loadDashboardOverview() {
         refBadge.style.display = pendingRefCount ? '' : 'none';
       }
     }
-    const hubRefs = document.getElementById('ad-hub-refs-sub');
-    if (hubRefs) hubRefs.textContent = pendingRefCount ? `${pendingRefCount} pending` : 'Approvals';
+    const hubRefs = document.getElementById('ad-hub-refs-badge');
+    if (hubRefs) {
+      if (pendingRefCount > 0) {
+        hubRefs.textContent = String(pendingRefCount);
+        hubRefs.hidden = false;
+      } else {
+        hubRefs.textContent = '';
+        hubRefs.hidden = true;
+      }
+    }
   } catch (err) {
     console.error('loadDashboardOverview:', err);
     showToast(err.errors ? err.errors[0] : 'Could not refresh dashboard');
@@ -758,7 +820,7 @@ async function loadDashboardOverview() {
       const el = document.getElementById(id);
       if (el) el.textContent = '—';
     });
-    updateAdminMobileHub({ openApps: 0, pendingClaims: 0, pendingReferrals: 0, flagged: 0, openSupport: 0 });
+    updateAdminMobileHub({ openApps: 0, pendingClaims: 0, pendingReferrals: 0, flagged: 0, openSupport: 0, openPostings: 0 });
     const notif = document.getElementById('dash-notifications');
     if (notif) notif.innerHTML = '<div style="padding:16px;font-size:12px;color:var(--muted);text-align:center">Could not load notifications.</div>';
     const apps = document.getElementById('dash-latest-applicants');
@@ -1031,20 +1093,24 @@ function renderDashboardReports(sessions, claims, tutors, flagged) {
 
 async function loadAnalysis() {
   try {
-    const [sessions, claims, tutors] = await Promise.all([
+    const [sessions, claims, tutorsRaw] = await Promise.all([
       VF.apiFetch('/sessions'),
       VF.apiFetch('/admin/claims'),
       VF.apiFetch('/users/tutors'),
     ]);
 
-    const completed = sessions.filter((s) => s.status === 'completed');
+    const tutors = Array.isArray(tutorsRaw)
+      ? [...new Map(tutorsRaw.map((t) => [t.id, t])).values()]
+      : [];
+
     const flagged = sessions.filter((s) => s.status === 'flagged');
     const approved = claims.filter((c) => c.status === 'approved');
     const pending = claims.filter((c) => c.status === 'pending_coordinator');
     const paidTotal = approved.reduce((s, c) => s + Number(c.total_amount || 0), 0);
     const pendingTotal = pending.reduce((s, c) => s + Number(c.total_amount || 0), 0);
     const hours = claims.reduce((s, c) => s + Number(c.total_hours || 0), 0);
-    const flaggedRate = sessions.length ? ((flagged.length / sessions.length) * 100).toFixed(1) : '0';
+    const flaggedRateNum = sessions.length ? (flagged.length / sessions.length) * 100 : 0;
+    const flaggedRate = sessions.length ? flaggedRateNum.toFixed(flaggedRateNum % 1 ? 1 : 0) : '0';
 
     const modules = {};
     sessions.forEach((s) => {
@@ -1061,23 +1127,49 @@ async function loadAnalysis() {
     const payoutEntries = Object.entries(tutorPayouts).sort((a, b) => b[1] - a[1]).slice(0, 6);
     const maxPay = Math.max(1, ...payoutEntries.map((e) => e[1]));
 
-    const grid = document.getElementById('analysis-kpi-grid');
-    if (grid) {
-      grid.innerHTML = `
-        <div class="an-card"><div class="an-label">Total sessions</div><div class="an-value">${sessions.length}</div><div class="an-sub">${completed.length} completed</div></div>
-        <div class="an-card"><div class="an-label">Active tutors</div><div class="an-value" style="color:var(--green)">${tutors.length}</div><div class="an-sub">approved on system</div></div>
-        <div class="an-card"><div class="an-label">Hours logged</div><div class="an-value">${Math.round(hours)}</div><div class="an-sub">on claims</div></div>
-        <div class="an-card"><div class="an-label">Total payouts</div><div class="an-value" style="color:var(--green);font-size:28px;padding-top:4px">${adFormatMoney(paidTotal)}</div><div class="an-sub">approved claims</div></div>
-        <div class="an-card"><div class="an-label">Pending claims</div><div class="an-value" style="color:var(--yellow)">${adFormatMoney(pendingTotal)}</div><div class="an-sub">${pending.length} awaiting approval</div></div>
-        <div class="an-card"><div class="an-label">Flagged rate</div><div class="an-value" style="color:var(--red)">${flaggedRate}%</div><div class="an-sub">${flagged.length} of ${sessions.length} sessions</div></div>`;
+    const now = new Date();
+    const periodLong = now.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+    const periodShort = now.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' });
+
+    const sub = document.getElementById('analysis-page-sub');
+    if (sub) {
+      sub.textContent = `Session totals, active tutors and payout summaries — ${periodLong}`;
     }
+    const sem = document.getElementById('analysis-hero-sem');
+    if (sem) sem.textContent = periodShort;
+
+    const ring = document.getElementById('analysis-ring-arc');
+    if (ring) {
+      const circ = 264;
+      const offset = circ * (1 - Math.min(100, Math.max(0, flaggedRateNum)) / 100);
+      ring.setAttribute('stroke-dashoffset', String(offset));
+    }
+
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    };
+    setText('analysis-flagged-pct', `${flaggedRate}%`);
+    const flaggedSub = document.getElementById('analysis-flagged-sub');
+    if (flaggedSub) {
+      flaggedSub.innerHTML = `${flagged.length} OF ${sessions.length}<br>SESSIONS`;
+    }
+    setText('analysis-stat-sessions', String(sessions.length));
+    setText('analysis-stat-hours', String(Math.round(hours)));
+    setText('analysis-stat-pending', adFormatMoney(pendingTotal));
+    setText('analysis-stat-tutors', String(tutors.length));
+    setText('analysis-stat-payouts', adFormatMoney(paidTotal));
 
     const payoutEl = document.getElementById('analysis-payout-chart');
     if (payoutEl) {
       payoutEl.innerHTML = payoutEntries.length
         ? payoutEntries.map(([name, amt]) => `
-          <div class="report-row"><span class="report-label">${name}</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${Math.round((amt / maxPay) * 100)}%"></div></div><span class="report-val">${adFormatMoney(amt)}</span></div>`).join('')
-        : '<div style="padding:12px;color:var(--muted);font-size:12px">No approved payouts yet.</div>';
+          <div class="ad-an-bar-row">
+            <span class="ad-an-bar-label">${String(name).replace(/</g, '&lt;')}</span>
+            <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((amt / maxPay) * 100)}%"></div></div>
+            <span class="ad-an-bar-val">${adFormatMoney(amt)}</span>
+          </div>`).join('')
+        : '<div class="ad-analysis-empty">No approved payouts yet.</div>';
     }
 
     const modEl = document.getElementById('analysis-module-chart');
@@ -1085,14 +1177,12 @@ async function loadAnalysis() {
       const modEntries = Object.entries(modules).sort((a, b) => b[1] - a[1]);
       modEl.innerHTML = modEntries.length
         ? modEntries.map(([code, count]) => `
-          <div class="report-row"><span class="report-label">${code}</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${Math.round((count / maxMod) * 100)}%"></div></div><span class="report-val">${count}</span></div>`).join('')
-        : '<div style="padding:12px;color:var(--muted);font-size:12px">No sessions recorded yet.</div>';
-    }
-
-    const sub = document.querySelector('#page-analysis .page-hero p');
-    if (sub) {
-      const period = new Date().toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
-      sub.textContent = `Session totals, active tutors and payout summaries — ${period}`;
+          <div class="ad-an-bar-row">
+            <span class="ad-an-bar-label">${String(code).replace(/</g, '&lt;')}</span>
+            <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((count / maxMod) * 100)}%"></div></div>
+            <span class="ad-an-bar-val">${count}</span>
+          </div>`).join('')
+        : '<div class="ad-analysis-empty">No session data yet this month.</div>';
     }
   } catch (err) {
     showToast('Could not load analysis');
@@ -1152,10 +1242,18 @@ function renderSupportThread(replies, containerEl) {
 
 function renderSupportTicketTable(tickets) {
   const tbody = document.getElementById('support-tbody');
+  const cards = document.getElementById('support-cards');
   if (!tbody) return;
 
   if (!tickets.length) {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No support tickets yet.</td></tr>';
+    if (cards) {
+      cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state">
+        <div class="ad-empty-ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg></div>
+        <h3>No support tickets yet</h3>
+        <p>Tickets raised by tutors and lecturers will appear here.</p>
+      </div></div>`;
+    }
     return;
   }
 
@@ -1178,6 +1276,23 @@ function renderSupportTicketTable(tickets) {
       `<td>${actions}</td>` +
       `</tr>`;
   }).join('');
+
+  if (cards) {
+    cards.innerHTML = tickets.map((t) => {
+      const openFn = t.status === 'resolved'
+        ? `openSupportRespondModal(${t.id})`
+        : `openSupportRespondModal(${t.id})`;
+      return `<button type="button" class="ad-rec-card" onclick="${openFn}">
+        <div class="ad-rec-name">${supportEscapeHtml(t.created_by_name || 'Ticket #' + t.id)}</div>
+        <div class="ad-rec-sub">${supportEscapeHtml(t.subject || t.details || '—')}</div>
+        <div class="ad-rec-grid">
+          <div class="item"><div class="k">#${t.id}</div><div class="l">Ticket</div></div>
+          <div class="item"><div class="k">${supportEscapeHtml(t.priority || '—')}</div><div class="l">Priority</div></div>
+          <div class="item"><div class="k">${supportFormatDate(t.created_at)}</div><div class="l">Date</div></div>
+        </div>
+      </button>`;
+    }).join('');
+  }
 }
 
 async function loadSupportTickets() {
@@ -1356,9 +1471,16 @@ async function hydrateAdminHero() {
       sub.textContent = `Coordinator · Student Employment Office · ${period}`;
     }
     const hubName = document.getElementById('ad-hub-name');
-    if (hubName) hubName.textContent = name || 'Coordinator';
+    if (hubName) hubName.textContent = 'VeriFlow Coordinator';
+    const av = document.getElementById('ad-hub-avatar');
+    if (av) {
+      av.textContent = 'VF';
+    }
     const hubSub = document.getElementById('ad-hub-sub');
-    if (hubSub) hubSub.textContent = `Coordinator · ${period}`;
+    if (hubSub) {
+      const shortPeriod = new Date().toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
+      hubSub.textContent = `Coordinator · ${shortPeriod}`;
+    }
   } catch (_) { /* optional */ }
 }
 
@@ -1369,17 +1491,31 @@ function updateAdminMobileHub(counts) {
   const refs = Number(c.pendingReferrals) || 0;
   const flagged = Number(c.flagged) || 0;
   const support = Number(c.openSupport) || 0;
+  const postings = Number(c.openPostings) || 0;
   const total = apps + claims + refs + flagged;
 
-  const setSub = (id, text) => {
+  const setBadge = (id, value) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = text;
+    if (!el) return;
+    if (value > 0) {
+      el.textContent = String(value);
+      el.hidden = false;
+      el.removeAttribute('hidden');
+      el.style.display = '';
+    } else {
+      el.textContent = '';
+      el.hidden = true;
+      el.setAttribute('hidden', '');
+    }
   };
-  setSub('ad-hub-apps-sub', apps ? `${apps} open` : 'Review');
-  setSub('ad-hub-claims-sub', claims ? `${claims} to approve` : 'Queue');
-  setSub('ad-hub-refs-sub', refs ? `${refs} pending` : 'Approvals');
-  setSub('ad-hub-flagged-sub', flagged ? `${flagged} open` : 'Disputes');
-  setSub('ad-hub-support-sub', support ? `${support} open` : 'Tickets');
+  setBadge('ad-hub-apps-badge', apps);
+  setBadge('ad-hub-claims-badge', claims);
+  setBadge('ad-hub-refs-badge', refs);
+  setBadge('ad-hub-flagged-badge', flagged);
+  setBadge('ad-hub-support-badge', support);
+  setBadge('ad-hub-postings-badge', postings);
+  setBadge('bnav-apps-badge', apps);
+  setBadge('bnav-claims-badge', claims);
 
   const titleEl = document.getElementById('ad-hub-next-title');
   const metaEl = document.getElementById('ad-hub-next-meta');
@@ -1387,8 +1523,8 @@ function updateAdminMobileHub(counts) {
   if (!titleEl || !metaEl) return;
 
   let target = 'applications';
-  let title = 'All clear';
-  let meta = 'No urgent items in your queues';
+  let title = 'Queues are clear';
+  let meta = 'Check messages or support if needed.';
 
   if (flagged > 0) {
     target = 'flagged';
@@ -1406,16 +1542,25 @@ function updateAdminMobileHub(counts) {
     target = 'applications';
     title = `${apps} application${apps === 1 ? '' : 's'} open`;
     meta = 'Awaiting review';
+  } else if (support > 0) {
+    target = 'support';
+    title = `${support} support ticket${support === 1 ? '' : 's'}`;
+    meta = 'Needs a response';
+  } else if (postings > 0) {
+    target = 'postings';
+    title = `${postings} open posting${postings === 1 ? '' : 's'}`;
+    meta = 'Active tutor positions';
   } else if (total === 0) {
     title = 'Queues are clear';
-    meta = 'Check messages or support if needed';
+    meta = 'Check messages or support if needed.';
   }
 
   titleEl.textContent = title;
   metaEl.textContent = meta;
   if (heroBtn) {
     heroBtn.onclick = () => {
-      const nav = document.getElementById(`nav-${target}`);
+      const nav = document.getElementById(`nav-${target}`)
+        || document.getElementById(`nav-${target === 'messages' ? 'messages-admin' : target}`);
       if (typeof showPage === 'function') showPage(target, nav);
     };
   }
@@ -1452,9 +1597,46 @@ async function loadLecturers() {
         ? lecturers.map(renderLecturerRow).join('')
         : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No lecturers yet.</td></tr>';
     }
+    const cards = document.getElementById('lecturers-cards');
+    if (cards) {
+      if (!lecturers.length) {
+        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No lecturers yet</h3><p>Add a lecturer to get started.</p></div></div>`;
+      } else {
+        const n = lecturers.length;
+        cards.innerHTML =
+          `<div class="ad-list-count">${n} lecturer${n === 1 ? '' : 's'}</div>` +
+          lecturers.map(renderLecturerCard).join('');
+      }
+    }
   } catch (err) {
     adToast(err.errors ? err.errors[0] : 'Could not load lecturers.', true);
   }
+}
+
+function userInitials(firstNames, surname) {
+  const a = String(firstNames || '').trim().charAt(0);
+  const b = String(surname || '').trim().charAt(0);
+  return ((a + b) || '?').toUpperCase();
+}
+
+function renderLecturerCard(l) {
+  const name = `${l.first_names} ${l.surname}`;
+  const status = l.temp_password_flag ? 'Temp password' : 'Active';
+  const firstMod = ((l.modules || [])[0] && (l.modules || [])[0].code) || '—';
+  const initials = userInitials(l.first_names, l.surname);
+  const statusClass = l.temp_password_flag ? 'neutral' : 'status';
+  return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('lecturer', ${l.id})">
+    <div class="ad-cr-avatar">${adEscapeHtml(initials)}</div>
+    <div class="ad-cr-info">
+      <div class="ad-cr-name">${adEscapeHtml(name)}</div>
+      <div class="ad-cr-email">${adEscapeHtml(l.email)}</div>
+      <div class="ad-cr-meta">
+        <span class="ad-mini-chip">${adEscapeHtml(firstMod)}</span>
+        <span class="ad-mini-chip ${statusClass}">${status}</span>
+      </div>
+    </div>
+    <span class="ad-more-btn" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span>
+  </button>`;
 }
 
 function renderLecturerRow(l) {
@@ -1487,9 +1669,95 @@ async function loadTutors() {
         ? tutors.map(renderTutorRow).join('')
         : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
     }
+    const cards = document.getElementById('tutors-cards');
+    if (cards) {
+      if (!tutors.length) {
+        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No tutors yet</h3><p>Approved tutors will appear here.</p></div></div>`;
+      } else {
+        const n = tutors.length;
+        cards.innerHTML =
+          `<div class="ad-list-count">${n} tutor${n === 1 ? '' : 's'}</div>` +
+          tutors.map(renderTutorCard).join('');
+      }
+    }
   } catch (err) {
     adToast(err.errors ? err.errors[0] : 'Could not load tutors.', true);
   }
+}
+
+function renderTutorCard(t) {
+  const name = `${t.first_names} ${t.surname}`;
+  const initials = userInitials(t.first_names, t.surname);
+  const mod = t.module_code || t.module_name || '—';
+  const status = t.temp_password_flag ? 'Temp password' : 'Active';
+  const statusClass = t.temp_password_flag ? 'neutral' : 'status';
+  return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('tutor', ${t.id})">
+    <div class="ad-cr-avatar">${adEscapeHtml(initials)}</div>
+    <div class="ad-cr-info">
+      <div class="ad-cr-name">${adEscapeHtml(name)}</div>
+      <div class="ad-cr-email">${adEscapeHtml(t.email || t.student_number || '—')}</div>
+      <div class="ad-cr-meta">
+        <span class="ad-mini-chip">${adEscapeHtml(mod)}</span>
+        <span class="ad-mini-chip ${statusClass}">${status}</span>
+      </div>
+    </div>
+    <span class="ad-more-btn" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span>
+  </button>`;
+}
+
+let activeUserSheet = null;
+
+function openUserActionSheet(role, id) {
+  const user = getManagedUser(role, id);
+  if (!user) {
+    adToast('User not found — refresh the page and try again.', true);
+    return;
+  }
+  activeUserSheet = { role, id: Number(id) };
+  const name = `${user.first_names} ${user.surname}`;
+  document.getElementById('ad-user-sheet-name').textContent = name;
+  document.getElementById('ad-user-sheet-avatar').textContent = userInitials(user.first_names, user.surname);
+  document.getElementById('ad-user-sheet-role').textContent =
+    role.charAt(0).toUpperCase() + role.slice(1);
+  const editBtn = document.getElementById('ad-user-sheet-edit-modules');
+  if (editBtn) editBtn.hidden = role !== 'lecturer';
+  document.getElementById('ad-user-sheet-overlay').classList.add('open');
+}
+
+function closeUserActionSheet(e) {
+  if (e && e.target !== document.getElementById('ad-user-sheet-overlay')) return;
+  document.getElementById('ad-user-sheet-overlay')?.classList.remove('open');
+  activeUserSheet = null;
+}
+
+function userSheetMessage() {
+  if (!activeUserSheet) return;
+  const { role, id } = activeUserSheet;
+  const user = getManagedUser(role, id);
+  const name = user ? `${user.first_names} ${user.surname}` : 'User';
+  closeUserActionSheet();
+  openUserMessageModal(id, name);
+}
+
+function userSheetEditModules() {
+  if (!activeUserSheet || activeUserSheet.role !== 'lecturer') return;
+  const id = activeUserSheet.id;
+  closeUserActionSheet();
+  openEditModulesModal(id);
+}
+
+function userSheetResetPassword() {
+  if (!activeUserSheet) return;
+  const { role, id } = activeUserSheet;
+  closeUserActionSheet();
+  confirmResetPassword(role, id);
+}
+
+function userSheetDeactivate() {
+  if (!activeUserSheet) return;
+  const { role, id } = activeUserSheet;
+  closeUserActionSheet();
+  confirmDeleteUser(role, id);
 }
 
 function renderTutorRow(t) {
@@ -1762,7 +2030,13 @@ function renderBroadcastChips(tutors, lecturers) {
   const xt = tutors.length;
   const yl = lecturers.length;
   if (hint) {
-    hint.textContent = `Sending to ${xt} tutor${xt === 1 ? '' : 's'} and ${yl} lecturer${yl === 1 ? '' : 's'} via VeriFlow`;
+    if (xt && !yl) {
+      hint.textContent = `Sending to ${xt} tutor${xt === 1 ? '' : 's'} via VeriFlow`;
+    } else if (yl && !xt) {
+      hint.textContent = `Sending to ${yl} lecturer${yl === 1 ? '' : 's'} via VeriFlow`;
+    } else {
+      hint.textContent = `Sending to ${xt} tutor${xt === 1 ? '' : 's'} and ${yl} lecturer${yl === 1 ? '' : 's'} via VeriFlow`;
+    }
   }
 }
 
@@ -1770,6 +2044,11 @@ async function openMsgAll() {
   document.getElementById('ma-subject').value = '';
   document.getElementById('ma-body').value = '';
   broadcastRecipients = [];
+
+  const nameEl = document.querySelector('#ma-modal .modal-name');
+  const toEl = document.querySelector('#ma-modal .modal-to');
+  if (nameEl) nameEl.textContent = 'All Tutors and Lecturers';
+  if (toEl) toEl.textContent = 'Broadcasting to';
 
   const wrap = document.getElementById('ma-recipients');
   if (wrap) {
@@ -1789,6 +2068,46 @@ async function openMsgAll() {
     showToast('Could not load recipients');
     closeMsgAll();
   }
+}
+
+function openAdminGroupBroadcast(group) {
+  const role = group === 'lecturer' ? 'lecturer' : 'tutor';
+  const contacts = typeof getAdminMessageGroupContacts === 'function'
+    ? getAdminMessageGroupContacts(role)
+    : [];
+
+  document.getElementById('ma-subject').value = '';
+  document.getElementById('ma-body').value = '';
+
+  const nameEl = document.querySelector('#ma-modal .modal-name');
+  const toEl = document.querySelector('#ma-modal .modal-to');
+  if (nameEl) nameEl.textContent = role === 'tutor' ? 'All Tutors' : 'All Lecturers';
+  if (toEl) toEl.textContent = 'Message all';
+
+  const tutors = role === 'tutor'
+    ? contacts.map((c) => ({
+      id: c.id,
+      first_names: (c.name || '').split(/\s+/)[0] || '',
+      surname: (c.name || '').split(/\s+/).slice(1).join(' ') || '',
+    }))
+    : [];
+  const lecturers = role === 'lecturer'
+    ? contacts.map((c) => ({
+      id: c.id,
+      first_names: (c.name || '').split(/\s+/)[0] || '',
+      surname: (c.name || '').split(/\s+/).slice(1).join(' ') || '',
+    }))
+    : [];
+
+  renderBroadcastChips(tutors, lecturers);
+
+  if (!broadcastRecipients.length) {
+    showToast(role === 'tutor' ? 'No tutors to message' : 'No lecturers to message');
+    return;
+  }
+
+  document.getElementById('ma-overlay')?.classList.add('open');
+  setTimeout(() => document.getElementById('ma-subject')?.focus(), 300);
 }
 
 async function sendMsgAll() {
@@ -2060,6 +2379,7 @@ window.closeSupportResolveModal = closeSupportResolveModal;
 window.confirmSupportResolution = confirmSupportResolution;
 window.updateNavBadges = updateNavBadges;
 window.openMsgAll = openMsgAll;
+window.openAdminGroupBroadcast = openAdminGroupBroadcast;
 window.sendMsgAll = sendMsgAll;
 window.closeMsgAll = closeMsgAll;
 window.maCloseOutside = maCloseOutside;
@@ -2086,6 +2406,12 @@ window.confirmResetPassword = confirmResetPassword;
 window.confirmDeleteUser = confirmDeleteUser;
 window.openEditModulesModal = openEditModulesModal;
 window.closeEditModulesModal = closeEditModulesModal;
+window.openUserActionSheet = openUserActionSheet;
+window.closeUserActionSheet = closeUserActionSheet;
+window.userSheetMessage = userSheetMessage;
+window.userSheetEditModules = userSheetEditModules;
+window.userSheetResetPassword = userSheetResetPassword;
+window.userSheetDeactivate = userSheetDeactivate;
 window.populateEditModuleNameDropdown = populateEditModuleNameDropdown;
 window.addModuleToLecturer = addModuleToLecturer;
 window.removeModuleFromLecturer = removeModuleFromLecturer;

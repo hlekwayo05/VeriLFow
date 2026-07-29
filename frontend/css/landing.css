@@ -1,4 +1,4 @@
-/* VeriFlow — mobile landing only (≤900px) — monochrome */
+/* VeriFlow — mobile landing only (≤900px) — aligned with login.html */
 
 .vf-desktop-home {
   display: block;
@@ -31,34 +31,43 @@
 }
 
 .vf-mobile-home.landing-page {
-  --brand-bg: #2B5259;
-  --brand-teal: #3D6B73;
-  --brand-teal-hover: #345E67;
+  --brand-bg: #1c3b38;
+  --brand-teal: #26534d;
+  --brand-teal-hover: #1c3b38;
+  --mist: #f2f4f1;
   --white: #ffffff;
-  --ink: #2B5259;
-  --gray: #4A6570;
-  --gray-light: #6B8289;
-  background: var(--white);
+  --ink: #182420;
+  --gray: #5b6864;
+  --gray-light: #94a09c;
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
+  background: var(--mist);
 }
 
-/* ─── Logo hero on black (~58%) ─── */
+/* ─── Logo hero (matches login wave panel) ─── */
 .landing-hero {
   position: relative;
-  flex: 0 0 58%;
-  min-height: 0;
+  flex: 0 0 min(46vh, 380px);
+  min-height: min(46vh, 380px);
   width: 100%;
-  background: var(--brand-bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 28px 28px 5.5rem;
+  background: linear-gradient(160deg, #1c3b38, #152e2c);
+  display: block;
+  padding: 0;
   overflow: hidden;
 }
 
 .landing-hero .landing-logo-img {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   z-index: 1;
+  width: 118%;
+  height: 118%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -54%);
+  object-fit: contain;
+  object-position: center center;
 }
 
 .landing-wave {
@@ -67,15 +76,30 @@
   right: 0;
   bottom: -1px;
   width: 100%;
-  height: clamp(72px, 18vw, 90px);
+  height: 48px;
   display: block;
   z-index: 2;
   pointer-events: none;
+  overflow: visible;
+  filter:
+    drop-shadow(0 -3px 6px rgba(159, 212, 200, 0.55))
+    drop-shadow(0 -8px 16px rgba(159, 212, 200, 0.28))
+    drop-shadow(0 1px 4px rgba(255, 255, 255, 0.35));
+}
+
+.landing-wave-fill {
+  fill: #f2f4f1;
+}
+
+.landing-wave-glow {
+  fill: none;
+  stroke: #9fd4c8;
+  opacity: 0.95;
 }
 
 .landing-badge {
   position: absolute;
-  top: max(2rem, calc(env(safe-area-inset-top, 0px) + 1.25rem));
+  top: max(14px, calc(env(safe-area-inset-top, 0px) + 10px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
@@ -83,49 +107,51 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: "DM Sans", sans-serif;
-  font-size: 12px;
+  font-family: "JetBrains Mono", "DM Mono", monospace;
+  font-size: 10px;
   font-weight: 500;
-  color: var(--white);
-  background: transparent;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(28, 59, 56, 0.55);
+  border: 1px solid rgba(159, 212, 200, 0.35);
   border-radius: 999px;
-  padding: 7px 18px;
+  padding: 7px 14px;
   white-space: nowrap;
+  backdrop-filter: blur(6px);
 }
 
 .landing-badge--closed {
-  border-color: rgba(220, 90, 90, 0.85);
+  border-color: rgba(220, 90, 90, 0.55);
   color: #ffc9c9;
 }
 
 .landing-logo-img {
   display: block;
   width: 100%;
-  max-width: min(300px, 88vw);
   height: auto;
   object-fit: contain;
 }
 
-/* ─── White bottom panel ─── */
+/* ─── Mist bottom panel (matches login form panel) ─── */
 .landing-light {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  background: var(--white);
-  padding: 28px 32px calc(44px + env(safe-area-inset-bottom, 0px));
+  background: var(--mist);
+  padding: 26px 22px calc(34px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
 }
 
 .landing-welcome {
-  font-family: "Bebas Neue", sans-serif;
-  font-size: 38px;
-  font-weight: 400;
-  color: var(--brand-bg);
-  letter-spacing: -1px;
-  line-height: 1.08;
-  margin: 0 0 14px;
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 10px;
   position: relative;
   display: inline-block;
 }
@@ -137,7 +163,6 @@
   transform: translateY(0.12em);
 }
 
-/* Short line under the active letter — moves along, then gone */
 .landing-welcome-letter::after {
   content: "";
   position: absolute;
@@ -146,15 +171,15 @@
   bottom: -5px;
   height: 2px;
   border-radius: 1px;
-  background: var(--brand-bg);
+  background: var(--brand-teal);
   opacity: 0;
   pointer-events: none;
 }
 
 .landing-subtitle {
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 300;
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--gray);
   line-height: 1.65;
   max-width: 320px;
@@ -176,14 +201,14 @@
   bottom: -3px;
   height: 1.5px;
   border-radius: 1px;
-  background: var(--brand-bg);
+  background: var(--brand-teal);
   opacity: 0;
   pointer-events: none;
 }
 
 .landing-actions {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   margin-top: auto;
   padding-top: 28px;
   width: 100%;
@@ -195,12 +220,13 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
-  border-radius: 999px;
-  padding: 14px;
+  border-radius: 24px;
+  padding: 15px;
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   border: none;
 }
@@ -211,59 +237,67 @@
   isolation: isolate;
   overflow: hidden;
   background: var(--brand-teal);
-  color: var(--white);
+  color: #eef4f1;
 }
 
-/* Traveling glow around Apply */
+/* Traveling glow around Apply (same as login CTA) */
 .landing-btn-primary::before {
   content: "";
   position: absolute;
-  inset: -45%;
+  inset: -50%;
   border-radius: 50%;
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    transparent 250deg,
-    rgba(255, 255, 255, 0.12) 280deg,
-    rgba(255, 255, 255, 0.95) 320deg,
-    #9fd4c8 340deg,
+    transparent 230deg,
+    rgba(255, 255, 255, 0.2) 265deg,
+    rgba(255, 255, 255, 1) 300deg,
+    #9fd4c8 330deg,
     transparent 360deg
   );
-  z-index: -2;
-  animation: landingApplyGlowSpin 2.2s linear infinite;
+  z-index: 0;
+  animation: landingApplyGlowSpin 2s linear infinite;
   pointer-events: none;
 }
 
-/* Solid face so only the border ring shows the glow */
 .landing-btn-primary::after {
   content: "";
   position: absolute;
   inset: 2px;
-  border-radius: inherit;
+  border-radius: 22px;
   background: var(--brand-teal);
-  z-index: -1;
+  z-index: 1;
   pointer-events: none;
   transition: background 0.18s ease;
 }
 
+.landing-btn-primary {
+  color: #eef4f1;
+}
+
 .landing-btn-primary:hover {
-  background: var(--ink);
-  color: var(--white);
+  background: var(--brand-teal);
+  color: #eef4f1;
 }
 
 .landing-btn-primary:hover::after {
-  background: var(--ink);
+  background: #1c3b38;
+}
+
+.landing-btn-label {
+  position: relative;
+  z-index: 2;
 }
 
 .landing-btn-secondary {
-  background: var(--white);
-  color: var(--brand-bg);
-  border: 2px solid var(--brand-teal);
+  background: transparent;
+  color: var(--brand-teal);
+  border: 1.5px solid #c5d0cb;
 }
 
 .landing-btn-secondary:hover {
-  background: var(--brand-teal);
-  color: var(--white);
+  background: #eef3f0;
+  color: var(--brand-teal);
   border-color: var(--brand-teal);
 }
 
@@ -274,7 +308,7 @@
 
 @media (max-width: 380px) {
   .landing-welcome {
-    font-size: 32px;
+    font-size: 24px;
   }
 }
 
@@ -357,11 +391,11 @@
 @keyframes landingLogoIn {
   from {
     opacity: 0;
-    transform: scale(0.92) translateY(16px);
+    transform: translate(-50%, -54%) scale(0.92);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translate(-50%, -54%) scale(1);
   }
 }
 

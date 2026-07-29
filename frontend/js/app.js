@@ -190,12 +190,9 @@ const VF = (() => {
     return `<img src="${logoSrc()}" alt="${alt}" class="brand-logo" width="160" height="48" decoding="async"/>`;
   }
 
-  /** Landing page URL — index.html lives at project root, not under frontend/. */
+  /** App home — login is the single entry screen (index redirects here). */
   function homeUrl() {
-    if (inPagesDir()) {
-      return new URL('../../index.html', window.location.href).href;
-    }
-    return new URL('index.html', window.location.href).href;
+    return new URL(loginUrl(), window.location.href).href;
   }
 
   function loginUrl() {
@@ -299,7 +296,7 @@ const VF = (() => {
       </nav>
     ` : '';
 
-    const home = logoSrc().startsWith('../') ? '../index.html' : 'index.html';
+    const home = loginUrl();
     document.getElementById('navbar').innerHTML = `
       <div class="navbar-logo" onclick="VF.navigate('${home}')">
         ${logoHtml()}
@@ -386,6 +383,7 @@ const VF = (() => {
       rejectionReason:   app.rejection_reason || null,
       rejectionDetail:   rejectionDetailFromApp(app),
     };
+    // Always replace academic from the server — never keep another session's draft
     if (app.faculty || app.course || app.module_name) {
       patch.academic = {
         faculty:             app.faculty || '',
@@ -396,6 +394,8 @@ const VF = (() => {
         moduleCode:          app.module_code || '',
         gpa:                 app.gpa != null ? app.gpa : '',
       };
+    } else {
+      patch.academic = null;
     }
     if (app.first_names || app.surname || app.email) {
       patch.user = {
@@ -530,8 +530,28 @@ const VF = (() => {
       const cls = currentStep > n ? 'done' : currentStep === n ? 'active' : '';
       return `<div class="ps-step ${cls}"><div class="ps-dot"></div><div class="ps-name">${label}</div></div>`;
     }).join('');
+    /* Current step starts empty; fill grows as the user completes fields */
+    const segHtml = [1, 2, 3].map((n) => {
+      let cls = '';
+      let width = 0;
+      if (currentStep > n) {
+        cls = 'done';
+        width = 100;
+      } else if (currentStep === n) {
+        cls = 'active';
+        width = 0;
+      }
+      return `<div class="progress-seg ${cls}" data-step="${n}"><div class="progress-seg-fill" style="width:${width}%"></div></div>`;
+    }).join('');
+    const labels = [
+      'Personal Info',
+      'Academic Info',
+      'Documents',
+    ];
     return `
       <div class="apply-mobile-progress" aria-label="Application progress, step ${currentStep} of 3">
+        <div class="wizard-label">Application · Step ${currentStep} of 3 — ${labels[currentStep - 1] || ''}</div>
+        <div class="progress-track">${segHtml}</div>
         <div class="progress-sidebar">
           <div class="progress-sidebar-label">Your progress</div>
           ${stepHtml}
@@ -543,6 +563,58 @@ const VF = (() => {
   function mountApplyProgress(currentStep) {
     const el = document.getElementById('applyProgress');
     if (el) el.innerHTML = renderApplyProgress(currentStep);
+  }
+
+  /** Set the active step segment fill (0–1). Previous steps stay full. */
+  function setApplyStepProgress(ratio) {
+    const fill = document.querySelector('.apply-mobile-progress .progress-seg.active .progress-seg-fill');
+    if (!fill) return;
+    const pct = Math.max(0, Math.min(100, Math.round(Number(ratio) * 100)));
+    fill.style.width = pct + '%';
+  }
+
+  function fieldCountsTowardProgress(el) {
+    if (!el) return false;
+    if (el.type === 'hidden') return false;
+    const grp = el.closest('.form-group');
+    if (grp) {
+      const style = window.getComputedStyle(grp);
+      if (style.display === 'none' || style.visibility === 'hidden') return false;
+    }
+    return true;
+  }
+
+  function fieldIsFilled(el) {
+    if (!el) return false;
+    if (el.type === 'checkbox') return el.checked;
+    if (el.type === 'file') return !!(el.files && el.files.length);
+    return String(el.value || '').trim().length > 0;
+  }
+
+  /**
+   * Grow the current step's progress segment as fields are filled.
+   * Returns a sync() function you can call after programmatic fills (uploads, etc.).
+   */
+  function bindApplyFormProgress(fieldIds) {
+    const ids = Array.isArray(fieldIds) ? fieldIds : [];
+    const sync = () => {
+      const active = ids
+        .map((id) => document.getElementById(id))
+        .filter(fieldCountsTowardProgress);
+      if (!active.length) {
+        setApplyStepProgress(0);
+        return;
+      }
+      const filled = active.filter(fieldIsFilled).length;
+      setApplyStepProgress(filled / active.length);
+    };
+    const onEvent = (e) => {
+      if (e.target && ids.includes(e.target.id)) sync();
+    };
+    document.addEventListener('input', onEvent);
+    document.addEventListener('change', onEvent);
+    requestAnimationFrame(sync);
+    return sync;
   }
 
   /**
@@ -600,6 +672,7 @@ const VF = (() => {
     API_BASE, uploadsUrl, fetchUploadObjectUrl, fetchUploadDownloadUrl, openUploadDocument,
     logoSrc, logoHtml,
     requireAuth, renderNavbar, renderApplyProgress, mountApplyProgress,
+    setApplyStepProgress, bindApplyFormProgress,
     bindResponsiveBtnLabel, toast,
     validateForm, initials, logout,
     syncApplicationState, routeTutor, routeTutorAsync, resumeTutorApplication,

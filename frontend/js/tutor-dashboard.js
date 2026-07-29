@@ -156,9 +156,14 @@ function applyModuleUi() {
   setText('#sidebar-mod-name', name);
   setText('#hero-module-text', `${code} · ${name} · ${period}${prog ? ' · ' + prog : ''}`);
   setText('#td-hub-module', `${code} · ${name}`);
+  const hubMod = document.getElementById('td-hub-module');
+  if (hubMod && code && code !== '—') {
+    hubMod.innerHTML = `<b>${code}</b> · ${name}`;
+  }
   setText('#dash-upcoming-label', code);
   setText('#sessions-page-title', code);
   setText('#hourlog-hero-sub', `${code} · ${name} · ${period}`);
+  setText('#hourlog-hero-sub-desktop', `${code} · ${name} · ${period}`);
   setText('#calendar-hero-sub', `${code} · ${name} · highlighted dates have sessions`);
   setText('#claims-hero-sub', `${code} · Submit monthly timesheet to your lecturer`);
   setText('#reg-eyebrow', `${code} · ${name}`);
@@ -656,7 +661,7 @@ function updateSessionsSummary(sessions) {
 
   if (!next) {
     titleEl.textContent = 'No upcoming sessions';
-    subEl.textContent = 'Past sessions stay available for registers below';
+    subEl.textContent = 'Past sessions stay available for registers below.';
   } else {
     const isToday = sessionDateKey(next.session_date) === localTodayKey();
     const dateLabel = isToday ? 'Today' : formatSessionDate(next, true);
@@ -666,11 +671,7 @@ function updateSessionsSummary(sessions) {
     subEl.textContent = `${dateLabel} · ${time} · ${next.venue || 'Venue TBA'}`;
   }
 
-  const chips = [];
-  if (groups.needs.length) chips.push(`<span class="tm-sess-stat">${groups.needs.length} need reply</span>`);
-  if (groups.live.length) chips.push(`<span class="tm-sess-stat">${groups.live.length} live</span>`);
-  chips.push(`<span class="tm-sess-stat">${monthCount} this month</span>`);
-  statsEl.innerHTML = chips.join('');
+  statsEl.textContent = `${monthCount} this month`;
 }
 
 function tutorMobileCardActions(s) {
@@ -750,7 +751,13 @@ function renderSessionsCards(sessions) {
   updateSessionsSummary(list);
 
   if (!list.length) {
-    wrap.innerHTML = '<div class="vf-sess-empty">No sessions assigned on this module yet.</div>';
+    wrap.innerHTML = `<div class="vf-sess-empty">
+      <div class="vf-sess-empty-ico" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      </div>
+      <h3>No sessions assigned yet</h3>
+      <p>Once your lecturer assigns a session on this module, it'll show up here with the date, time, and register.</p>
+    </div>`;
     return;
   }
 
@@ -798,14 +805,12 @@ function updateMobileHubNextSession(next, upcomingCount) {
   if (sessSub) {
     sessSub.textContent = upcomingCount
       ? `${upcomingCount} upcoming`
-      : 'No upcoming';
+      : 'No upcoming sessions';
   }
   if (!titleEl || !metaEl) return;
   if (!next) {
     titleEl.textContent = 'No upcoming session';
-    metaEl.textContent = currentModuleCode
-      ? `${currentModuleCode} · Check calendar for dates`
-      : 'Select a module to see sessions';
+    metaEl.textContent = 'Check the calendar for open dates';
     return;
   }
   titleEl.textContent = next.topic || sessionTypeLabel(next.session_type) || 'Session';
@@ -927,33 +932,54 @@ function renderHourLogMonthChart(sessions) {
   const series = buildHourLogMonthSeries(sessions, 6);
   const maxHours = Math.max(...series.map((s) => s.hours), 1);
   const current = series[series.length - 1];
+  const mobile = window.matchMedia('(max-width: 900px)').matches;
 
   const summaryEl = document.getElementById('hourlog-month-summary');
   if (summaryEl) {
-    summaryEl.textContent = current
-      ? `${current.hours} hr${current.hours === 1 ? '' : 's'} logged in ${MONTH_NAMES[current.month - 1]}`
-      : 'Hours logged per month';
+    if (mobile && current) {
+      summaryEl.textContent = `${current.hours} HRS IN ${MONTH_SHORT[current.month].toUpperCase()}`;
+    } else {
+      summaryEl.textContent = current
+        ? `${current.hours} hr${current.hours === 1 ? '' : 's'} logged in ${MONTH_NAMES[current.month - 1]}`
+        : 'Hours logged per month';
+    }
   }
 
   const chartEl = document.getElementById('hourlog-month-chart');
   if (chartEl) {
-    chartEl.innerHTML = series.map((m, i) => {
-      const height = m.hours ? Math.max(8, Math.round((m.hours / maxHours) * 100)) : 4;
-      return `<div class="chart-bar${m.isCurrent ? ' active' : ''}" title="${m.hours} hrs" style="height:${height}%;animation-delay:${0.2 + i * 0.05}s;"></div>`;
-    }).join('');
-    chartEl.querySelectorAll('.chart-bar').forEach((bar) => {
-      bar.addEventListener('click', () => {
-        chartEl.querySelectorAll('.chart-bar').forEach((b) => b.classList.remove('active'));
-        bar.classList.add('active');
+    if (mobile) {
+      chartEl.classList.add('hl-month-track');
+      chartEl.innerHTML = series.map((m) => `
+        <div class="hl-mbar-wrap">
+          <div class="hl-mbar${m.isCurrent ? ' active' : ''}" title="${m.hours} hrs"></div>
+          <div class="hl-mbar-label${m.isCurrent ? ' active' : ''}">${m.label}</div>
+        </div>`).join('');
+    } else {
+      chartEl.classList.remove('hl-month-track');
+      chartEl.innerHTML = series.map((m, i) => {
+        const height = m.hours ? Math.max(8, Math.round((m.hours / maxHours) * 100)) : 4;
+        return `<div class="chart-bar${m.isCurrent ? ' active' : ''}" title="${m.hours} hrs" style="height:${height}%;animation-delay:${0.2 + i * 0.05}s;"></div>`;
+      }).join('');
+      chartEl.querySelectorAll('.chart-bar').forEach((bar) => {
+        bar.addEventListener('click', () => {
+          chartEl.querySelectorAll('.chart-bar').forEach((b) => b.classList.remove('active'));
+          bar.classList.add('active');
+        });
       });
-    });
+    }
   }
 
   const labelsEl = document.getElementById('hourlog-month-chart-labels');
   if (labelsEl) {
-    labelsEl.innerHTML = series.map((m) =>
-      `<span class="${m.isCurrent ? 'is-current' : ''}">${m.label}</span>`
-    ).join('');
+    if (mobile) {
+      labelsEl.innerHTML = '';
+      labelsEl.hidden = true;
+    } else {
+      labelsEl.hidden = false;
+      labelsEl.innerHTML = series.map((m) =>
+        `<span class="${m.isCurrent ? 'is-current' : ''}">${m.label}</span>`
+      ).join('');
+    }
   }
 }
 
@@ -1024,10 +1050,33 @@ function updateDashboardStats(sessions) {
   setText('#stat-sessions-sub', `${completed} confirmed · ${pending} pending`);
   setText('#semester-hours-label', `${hoursUsed} / ${getSemesterHoursCap()} hrs (${pct}%)`);
 
+  const cap = getSemesterHoursCap();
   setText('#td-hub-hrs-used', String(hoursUsed));
   setText('#td-hub-hrs-left', String(hoursLeft));
+  setText('#td-hub-hrs-total', String(cap));
+  setText('#td-hub-pct', `${pct}%`);
   setText('#td-hub-sess-month', String(monthSessions.length));
-  setText('#hub-hourlog-sub', `${hoursUsed} / ${getSemesterHoursCap()} hrs`);
+  setText('#td-hub-month-sub', `${completed} confirmed · ${pending} pending`);
+  setText('#hub-hourlog-sub', 'Track logged time');
+  setText('#hub-hourlog-meta', `${hoursUsed} / ${cap}`);
+
+  const ring = document.getElementById('td-hub-ring');
+  if (ring) {
+    const circ = 282.7;
+    ring.setAttribute('stroke-dashoffset', String(circ * (1 - pct / 100)));
+  }
+
+  const semLabel = document.getElementById('td-hub-sem-label');
+  if (semLabel) {
+    const d = new Date();
+    semLabel.textContent = `${MONTH_SHORT[d.getMonth() + 1]} ${d.getFullYear()}`;
+  }
+  const stripMeta = document.getElementById('td-hub-strip-meta');
+  if (stripMeta) {
+    const d = new Date();
+    stripMeta.textContent = `${MONTH_SHORT[d.getMonth() + 1].toUpperCase()} ${d.getFullYear()}`;
+  }
+  renderHubMonthStrip(sessions);
 
   const semFill = document.querySelector('#page-dashboard .sem-fill');
   if (semFill) semFill.style.width = pct + '%';
@@ -1041,14 +1090,52 @@ function updateDashboardStats(sessions) {
   setText('#hl-pulse-cap', ` / ${getSemesterHoursCap()}`);
   setText('#hl-pulse-pct', `${pct}%`);
   setText('#hl-pulse-left', String(hoursLeft));
-  setText('#hl-pulse-sess', String(monthSessions.length));
-  setText('#hl-pulse-sess-lbl', `${completed} confirmed · ${pending} pending`);
+  setText('#hl-pulse-sess', `${completed} · ${pending}`);
+  setText('#hl-pulse-sess-lbl', 'CONFIRMED · PENDING');
 
   const hlFill = document.querySelector('#page-hourlog .sem-fill');
   if (hlFill) hlFill.style.width = pct + '%';
 
   renderDashboardMonthPanel(sessions);
   renderHourLogMonthChart(sessions);
+}
+
+function renderHubMonthStrip(sessions) {
+  const strip = document.getElementById('td-hub-strip');
+  const msg = document.getElementById('td-hub-strip-msg');
+  if (!strip) return;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-based
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = now.getDate();
+
+  const sessionDays = new Set();
+  (sessions || []).forEach((s) => {
+    const key = sessionDateKey(s.session_date);
+    if (!key) return;
+    const [y, m, d] = key.split('-').map(Number);
+    if (y === year && m === month + 1) sessionDays.add(d);
+  });
+
+  if (msg) {
+    msg.textContent = sessionDays.size
+      ? `${sessionDays.size} day${sessionDays.size === 1 ? '' : 's'} with sessions this month`
+      : "No sessions logged yet this month — once you're assigned one, it'll light up here.";
+  }
+
+  let html = '';
+  for (let i = 1; i <= daysInMonth; i++) {
+    const classes = ['td-hub-day-dot'];
+    if (sessionDays.has(i)) classes.push('has-session');
+    if (i === today) classes.push('is-today');
+    const showLabel = i === 1 || i === today || i === daysInMonth;
+    html += `<div class="td-hub-day-wrap"><div class="${classes.join(' ')}"></div>${
+      showLabel ? `<div class="td-hub-day-label">${i}</div>` : ''
+    }</div>`;
+  }
+  strip.innerHTML = html;
 }
 
 function claimStatusLabel(status) {
@@ -1250,8 +1337,18 @@ function timesheetStatusSub(ts) {
       : '—';
     return `${claimStatusLabel(ts.claim.status)} · Submitted ${submitted}`;
   }
-  if (ts.pastDue) return `Not submitted · ${dueDateLabel(ts.periodMonth, ts.periodYear)} · Past due`;
-  return `Not yet submitted · ${dueDateLabel(ts.periodMonth, ts.periodYear)}`;
+  if (ts.pastDue) return `Not submitted · ${dueDateLabel(ts.periodMonth, ts.periodYear)}`;
+  return `Not submitted · ${dueDateLabel(ts.periodMonth, ts.periodYear)}`;
+}
+
+function timesheetClaimMetaHtml(ts, dueLine) {
+  if (ts.claim) {
+    return `<div class="ts-claim-summary-sub">${timesheetStatusSub(ts)}</div>`;
+  }
+  if (ts.pastDue) {
+    return `<div class="ts-claim-summary-sub">Not submitted · ${dueLine}<br>Past due · ${dueLine}</div>`;
+  }
+  return `<div class="ts-claim-summary-sub">Not submitted · ${dueLine}</div>`;
 }
 
 function renderTimesheetRows(ts) {
@@ -1358,11 +1455,14 @@ function renderTimesheetView(ts) {
 
   wrap.innerHTML = `
     <div class="ts-month-nav">
-      <button type="button" class="dl-btn ts-month-btn" onclick="changeClaimsMonth(-1)">Prev</button>
+      <button type="button" class="ts-month-btn" onclick="changeClaimsMonth(-1)">‹ Prev</button>
       <span class="ts-month-label">${label}</span>
-      <button type="button" class="dl-btn ts-month-btn" onclick="changeClaimsMonth(1)" ${nextDisabled ? 'disabled' : ''}>Next</button>
+      <button type="button" class="ts-month-btn" onclick="changeClaimsMonth(1)" ${nextDisabled ? 'disabled' : ''}>Next ›</button>
     </div>
-    ${ts.pastDue && !ts.claim ? `<div class="ts-info-bar">Submission deadline passed (${dueLine}). Contact your lecturer if you still need to submit.</div>` : ''}
+    ${ts.pastDue && !ts.claim ? `<div class="ts-info-bar ts-banner-warn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+      <span>Submission deadline passed (${dueLine}). Contact your lecturer if you still need to submit.</span>
+    </div>` : ''}
     ${unclaimedBanner}
     <div class="ts-claim-summary">
       <div class="ts-claim-summary-top">
@@ -1371,15 +1471,14 @@ function renderTimesheetView(ts) {
       </div>
       <div class="ts-claim-summary-figures">
         <div class="ts-claim-summary-nums">
-          <span class="ts-claim-hours">${totalHours}</span>
-          <span class="ts-claim-hours-unit">hrs</span>
+          <span class="ts-claim-hours">${totalHours} <span class="ts-claim-hours-unit">hrs</span></span>
           <span class="ts-claim-amt">${formatClaimAmount(totalAmount)}</span>
         </div>
         <button type="button" class="ts-claim-dl" onclick="downloadTimesheet()" aria-label="Download timesheet">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
         </button>
       </div>
-      <div class="ts-claim-summary-sub">${timesheetStatusSub(ts)} · ${dueLine}</div>
+      ${timesheetClaimMetaHtml(ts, dueLine)}
     </div>
     ${claimForView ? renderTutorApprovalTimeline(claimForView) : ''}
     ${isReturned && returnNote ? `<div class="ts-info-bar returned">Please review the feedback above, correct your timesheet, and resubmit below.</div>` : ''}
@@ -1601,9 +1700,17 @@ function renderClaimsPanels(claims) {
   const hubClaimsSub = document.getElementById('hub-claims-sub');
   if (hubClaimsSub) {
     hubClaimsSub.textContent = pending.length
-      ? `${pending.length} pending`
-      : 'Timesheet';
+      ? `${pending.length} pending review`
+      : 'Submit or review a claim';
   }
+
+  let claimTotal = 0;
+  if (pending.length === 1) claimTotal = Number(pending[0].total_amount || 0);
+  else if (pending.length > 1) {
+    claimTotal = pending.reduce((sum, c) => sum + Number(c.total_amount || 0), 0);
+  }
+  setText('#td-hub-claim-amt', formatClaimAmount(claimTotal));
+  setText('#td-hub-claim-sub', pending.length ? `${pending.length} pending` : 'nothing submitted');
 
   if (pendingPanel) {
     pendingPanel.innerHTML = pending.length
@@ -1977,15 +2084,15 @@ function showPage(id, navEl) {
 function syncBottomNav(pageId) {
   const map = {
     dashboard: 'dashboard',
-    sessions: 'dashboard',
-    hourlog: 'dashboard',
-    calendar: 'dashboard',
-    claims: 'dashboard',
-    support: 'dashboard',
+    sessions: 'sessions',
+    hourlog: null,
+    calendar: null,
+    claims: 'claims',
+    support: null,
     messages: 'messages',
     profile: 'profile',
   };
-  const active = map[pageId] || null;
+  const active = Object.prototype.hasOwnProperty.call(map, pageId) ? map[pageId] : null;
   document.querySelectorAll('.td-bnav-item').forEach((btn) => {
     btn.classList.toggle('active', active != null && btn.dataset.bnav === active);
   });
@@ -2021,19 +2128,29 @@ function renderProfile() {
   const fullName = app
     ? `${app.first_names || ''} ${app.surname || ''}`.trim()
     : [u.firstNames, u.surname].filter(Boolean).join(' ') || 'Tutor';
-  const displayName = fullName.toLowerCase();
+  const properName = fullName || 'Tutor';
+  const displayNameLower = properName.toLowerCase();
   const initials = VF.initials(
     app?.first_names || u.firstNames,
     app?.surname || u.surname
   );
   const dash = (v) => (v === null || v === undefined || v === '') ? '—' : v;
+  const esc = (v) => String(v == null ? '' : v).replace(/</g, '&lt;');
+  const monoVal = (v) => {
+    const t = dash(v);
+    if (t === '—') return '—';
+    return `<span class="profile-mono">${esc(t)}</span>`;
+  };
 
   function profileDocHtml(filename) {
     if (!filename) {
-      return '<span style="color:var(--muted)">Not uploaded</span>';
+      return '<span class="profile-muted">Not uploaded</span>';
     }
     const safe = String(filename).replace(/</g, '&lt;');
-    return `<a href="#" onclick="event.preventDefault(); VF.openUploadDocument(${JSON.stringify(filename)})" style="color:var(--accent);text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;">${safe}</a>`;
+    const short = safe.length > 28
+      ? `${safe.slice(0, 12)}…${safe.slice(-8)}`
+      : safe;
+    return `<a class="profile-doc-link profile-mono" href="#" onclick="event.preventDefault(); VF.openUploadDocument(${JSON.stringify(filename)})">${short}</a>`;
   }
 
   const idDoc = user?.id_document_filename || profile?.id_document_filename;
@@ -2057,42 +2174,35 @@ function renderProfile() {
       </div>`
     : '';
 
-  const sectionHtml = (title, rows) => `
-    <div class="profile-card">
+  const qualLabel = app?.qualification_level || a.qualificationLevel;
+  const titleLabel = u.title || app?.title;
+  const roleLine = [titleLabel, moduleLabel, qualLabel ? `${qualLabel} student` : null]
+    .filter(Boolean)
+    .join(' · ') || 'Tutor';
+
+  const heroSub = document.getElementById('profile-hero-sub');
+  if (heroSub) {
+    heroSub.textContent = [
+      displayNameLower,
+      moduleLabel || null,
+      qualLabel ? `${qualLabel} student` : null,
+    ].filter(Boolean).join(' · ');
+  }
+  const heroSubDesktop = document.getElementById('profile-hero-sub-desktop');
+  if (heroSubDesktop) {
+    heroSubDesktop.textContent =
+      displayNameLower +
+      (moduleLabel ? ` · ${moduleLabel}` : '') +
+      (qualLabel ? ` · ${qualLabel}` : '');
+  }
+
+  const section = (title, rows, extraClass = '') => `
+    <div class="profile-card${extraClass ? ` ${extraClass}` : ''}">
       <div class="profile-section-title">${title}</div>
       ${rows.map(([label, valHtml]) => `
         <div class="profile-row">
           <span class="profile-row-label">${label}</span>
           <span class="profile-row-val">${valHtml}</span>
-        </div>`).join('')}
-    </div>`;
-
-  const heroSub = document.getElementById('profile-hero-sub');
-  if (heroSub) {
-    heroSub.textContent =
-      displayName +
-      (moduleLabel ? ` · ${moduleLabel}` : '') +
-      (a.qualificationLevel ? ` · ${a.qualificationLevel}` : '');
-  }
-
-  const mobileHeroName = document.getElementById('tm-profile-hero-name');
-  const mobileHeroMeta = document.getElementById('tm-profile-hero-meta');
-  if (mobileHeroName) mobileHeroName.textContent = displayName;
-  if (mobileHeroMeta) {
-    mobileHeroMeta.textContent = [
-      moduleLabel || null,
-      a.qualificationLevel || null,
-      studentNum ? `Student ${studentNum}` : null,
-    ].filter(Boolean).join(' · ') || 'Tutor profile';
-  }
-
-  const section = (title, rows) => `
-    <div class="profile-card">
-      <div class="profile-section-title">${title}</div>
-      ${rows.map(([label, val]) => `
-        <div class="profile-row">
-          <span class="profile-row-label">${label}</span>
-          <span class="profile-row-val">${dash(val)}</span>
         </div>`).join('')}
     </div>`;
 
@@ -2112,47 +2222,52 @@ function renderProfile() {
   const content = document.getElementById('profile-content');
   if (!content) return;
 
+  const gpaRaw = app?.gpa ?? a.gpa;
+  const gpaLabel = gpaRaw != null && gpaRaw !== ''
+    ? (String(gpaRaw).includes('%') ? String(gpaRaw) : `${gpaRaw}%`)
+    : null;
+
   content.innerHTML = `
     ${warningStripHtml}
     <div class="profile-card profile-card-main">
       <div class="profile-av-wrap">
         <div class="profile-av">${initials}</div>
         <div>
-          <div class="profile-name">${displayName}</div>
-          <div class="profile-meta">${dash(u.title)} · ${dash(moduleLabel)} · ${dash(a.qualificationLevel)}</div>
+          <div class="profile-name">${esc(properName)}</div>
+          <div class="profile-meta">${esc(roleLine)}</div>
         </div>
       </div>
     </div>
-    ${section('Personal information (application)', [
-      ['Title', u.title],
-      ['Initials', u.initials],
-      ['First names', app?.first_names || u.firstNames],
-      ['Surname', app?.surname || u.surname],
-      ['Email', app?.email || u.email],
-      ['Cell phone', app?.cell_phone || u.cell],
+    ${section('Personal information', [
+      ['Title', esc(dash(titleLabel))],
+      ['Initials', esc(dash(u.initials))],
+      ['First names', esc(dash(app?.first_names || u.firstNames))],
+      ['Surname', esc(dash(app?.surname || u.surname))],
+      ['Email', monoVal(app?.email || u.email)],
+      ['Cell phone', monoVal(app?.cell_phone || u.cell)],
     ])}
-    ${section('Academic information (application)', [
-      ['Faculty', app?.faculty || a.faculty],
-      ['Course / programme', courseLabel],
-      ['Qualification level', app?.qualification_level || a.qualificationLevel],
-      ['Module year level', app?.module_year || a.year],
-      ['Module to tutor', moduleLabel],
-      ['Module code', app?.module_code || currentModuleCode],
-      ['GPA / average', (app?.gpa ?? a.gpa) != null ? `${app?.gpa ?? a.gpa}%` : null],
+    ${section('Academic information', [
+      ['Faculty', esc(dash(app?.faculty || a.faculty))],
+      ['Programme', esc(dash(courseLabel))],
+      ['Qualification level', esc(dash(qualLabel))],
+      ['Module year level', esc(dash(app?.module_year || a.year))],
+      ['Module to tutor', esc(dash(moduleLabel))],
+      ['Module code', monoVal(app?.module_code || currentModuleCode)],
+      ['GPA / average', esc(dash(gpaLabel))],
     ])}
-    ${sectionHtml('Documents & declaration', [
-      ['CV (application)', profileDocHtml(app?.cv_filename)],
-      ['Academic record (application)', profileDocHtml(app?.transcript_filename)],
-      ['ID document (onboarding)', profileDocHtml(idDoc)],
-      ['Tax proof (onboarding)', profileDocHtml(taxDoc)],
-      ['Bank letter (onboarding)', profileDocHtml(bankDoc)],
+    ${section('Documents & declaration', [
+      ['CV', profileDocHtml(app?.cv_filename)],
+      ['Academic record', profileDocHtml(app?.transcript_filename)],
+      ['ID document', profileDocHtml(idDoc)],
+      ['Tax proof', profileDocHtml(taxDoc)],
+      ['Bank letter', profileDocHtml(bankDoc)],
       ['Declaration', app?.declared ? 'Yes' : 'No'],
-      ['Application status', dash(app?.status || s.applicationStatus)],
-    ])}
+      ['Application status', esc(dash(app?.status || s.applicationStatus))],
+    ], 'profile-card--docs')}
     ${(!idDoc || !taxDoc || !bankDoc) ? `
-    <div class="profile-card" id="profile-doc-upload-card">
+    <div class="profile-card profile-card--upload" id="profile-doc-upload-card">
       <div class="profile-section-title">Upload supporting documents</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5;">
+      <p class="profile-help">
         Some onboarding documents were not saved. Upload any missing files below (PDF or image, max 5MB each).
       </p>
       <div class="um-grid one" style="gap:12px;">
@@ -2164,24 +2279,24 @@ function renderProfile() {
         <button type="button" class="btn-primary" id="profile-doc-upload-btn" onclick="uploadProfileDocuments()">Upload documents</button>
       </div>
     </div>` : ''}
-    ${section('Onboarding — personal & address', [
-      ['ID number', ob.idnum || profile?.id_number],
-      ['Postal address', postalAddr],
-      ['Residential address', resAddr],
-    ])}
+    ${section('Onboarding — address', [
+      ['ID number', monoVal(idNum)],
+      ['Postal address', `<span class="profile-addr">${esc(dash(postalAddr))}</span>`],
+      ['Residential address', esc(dash(resAddr))],
+    ], 'profile-card--address')}
     ${section('Onboarding — banking & tax', [
-      ['Bank', tp.bank || profile?.bank_name],
-      ['Branch code', tp.branch || profile?.branch_code],
-      ['Account type', tp.acctype || profile?.account_type],
+      ['Bank', esc(dash(tp.bank || profile?.bank_name))],
+      ['Branch code', monoVal(tp.branch || profile?.branch_code)],
+      ['Account type', esc(dash(tp.acctype || profile?.account_type))],
       ['Account number', (tp.accnum || profile?.account_number)
-        ? `••••${String(tp.accnum || profile?.account_number).slice(-4)}`
-        : null],
-      ['Account holder', tp.accholder || profile?.account_holder],
-      ['Income tax number', tp.taxnum || profile?.tax_number],
-    ])}
-    <div class="profile-card" id="profile-update-card">
+        ? `<span class="profile-mono">••••${esc(String(tp.accnum || profile?.account_number).slice(-4))}</span>`
+        : '—'],
+      ['Account holder', esc(dash(tp.accholder || profile?.account_holder))],
+      ['Income tax number', monoVal(tp.taxnum || profile?.tax_number)],
+    ], 'profile-card--bank')}
+    <div class="profile-card profile-card--update" id="profile-update-card">
       <div class="profile-section-title">Update profile</div>
-      <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5;">
+      <p class="profile-help">
         Add or update your student number and cell phone number below.
       </p>
       <div class="um-grid one" style="gap:12px;">
@@ -2198,6 +2313,10 @@ function renderProfile() {
         <button type="button" class="btn-primary" id="profile-save-btn" onclick="saveProfileUpdate()">Save</button>
       </div>
     </div>
+    <button type="button" class="pf-logout-btn" onclick="VF.logout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      Log out
+    </button>
   `;
 }
 
@@ -2354,19 +2473,10 @@ function ticketPriorityLabel(priority) {
 
 function updateSupportSummary(tickets) {
   const list = Array.isArray(tickets) ? tickets : [];
-  const openCount = list.filter((t) => t.status !== 'resolved').length;
-  const chip = document.getElementById('st-help-chip');
-  if (chip) {
-    if (openCount > 0) {
-      chip.hidden = false;
-      chip.textContent = `${openCount} open`;
-    } else {
-      chip.hidden = true;
-    }
-  }
   const countEl = document.getElementById('st-tickets-count');
   if (countEl) {
     countEl.textContent = list.length ? String(list.length) : '';
+    countEl.hidden = !list.length;
   }
 }
 
@@ -2378,7 +2488,15 @@ function renderTutorTickets(tickets) {
   updateSupportSummary(list);
 
   if (!list.length) {
-    wrap.innerHTML = '<div class="st-ticket-empty">No tickets yet. Tap <strong>New Ticket</strong> if you need help from the Student Employment Office.</div>';
+    wrap.innerHTML = `<div class="st-empty-card">
+      <div class="st-empty-state">
+        <div class="st-empty-ico" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        </div>
+        <h3>No tickets yet</h3>
+        <p>Tap New Ticket below if you need help from the Student Employment Office.</p>
+      </div>
+    </div>`;
     return;
   }
 
@@ -2505,6 +2623,14 @@ function setHubDisplayName(name) {
   const display = String(name || '').trim() || 'tutor';
   setText('#tutor-hero-name', display);
   setText('#td-hub-name', display);
+  const av = document.getElementById('td-hub-avatar');
+  if (av) {
+    const parts = display.split(/\s+/).filter(Boolean);
+    const initials = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0])
+      : display.slice(0, 2);
+    av.textContent = initials.toUpperCase();
+  }
 }
 
 function hydrateHeroFromLocalState() {

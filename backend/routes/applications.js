@@ -39,7 +39,10 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const mime = (file.mimetype || '').toLowerCase();
+  // Mobile browsers often send application/octet-stream for PDFs
+  if (mime === 'application/pdf' || ext === '.pdf') {
     cb(null, true);
   } else {
     cb(new Error('Only PDF files are accepted.'), false);
@@ -51,6 +54,112 @@ const upload = multer({
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max per file
 });
+
+function multerFields(fields) {
+  const run = upload.fields(fields);
+  return (req, res, next) => {
+    run(req, res, (err) => {
+      if (!err) return next();
+      const msg = err.code === 'LIMIT_FILE_SIZE'
+        ? 'Each PDF must be under 5MB.'
+        : (err.message || 'File upload failed.');
+      return res.status(400).json({ errors: [msg] });
+    });
+  };
+}
+
+async function persistUploadToStorage(localPath, storagePath) {
+  try {
+    await uploadFile(localPath, storagePath, 'application/pdf');
+    console.log('Uploaded to Supabase Storage:', storagePath);
+    return storagePath;
+  } catch (storageErr) {
+    console.error('Storage upload failed:', storageErr.message);
+    // Keep local basename as fallback path the files route can serve
+    return 'applications/' + path.basename(localPath);
+  }
+}
+
+
+// =============================================================
+//  POST /api/applications/me/documents
+//  Draft-save CV / transcript while status is still incomplete.
+//  Survives page reloads — step 3 restores from these filenames.
+// =============================================================
+
+router.post(
+  '/me/documents',
+  authenticate,
+  requireRole('tutor'),
+  multerFields([
+    { name: 'cvFile',         maxCount: 1 },
+    { name: 'transcriptFile', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    const userId = req.user.userId;
+
+    if (!(await isApplicationsOpenFromDb())) {
+      return res.status(403).json({ errors: ['Applications are currently closed.'] });
+    }
+
+    const hasCv = !!(req.files && req.files.cvFile && req.files.cvFile[0]);
+    const hasTranscript = !!(req.files && req.files.transcriptFile && req.files.transcriptFile[0]);
+    if (!hasCv && !hasTranscript) {
+      return res.status(400).json({ errors: ['Please choose a PDF to upload.'] });
+    }
+
+    try {
+      const appResult = await pool.query(
+        `SELECT id, status, cv_filename, transcript_filename
+         FROM applications WHERE user_id = $1`,
+        [userId]
+      );
+      if (appResult.rows.length === 0) {
+        return res.status(404).json({ errors: ['Application record not found.'] });
+      }
+      const app = appResult.rows[0];
+      if (app.status !== 'incomplete') {
+        return res.status(409).json({ errors: ['Application has already been submitted.'] });
+      }
+
+      let cvStoragePath = app.cv_filename || null;
+      let transcriptStoragePath = app.transcript_filename || null;
+
+      if (hasCv) {
+        const file = req.files.cvFile[0];
+        cvStoragePath = await persistUploadToStorage(
+          file.path,
+          'applications/' + file.filename
+        );
+      }
+      if (hasTranscript) {
+        const file = req.files.transcriptFile[0];
+        transcriptStoragePath = await persistUploadToStorage(
+          file.path,
+          'applications/' + file.filename
+        );
+      }
+
+      await pool.query(
+        `UPDATE applications
+         SET cv_filename = COALESCE($1, cv_filename),
+             transcript_filename = COALESCE($2, transcript_filename)
+         WHERE user_id = $3 AND status = 'incomplete'`,
+        [cvStoragePath, transcriptStoragePath, userId]
+      );
+
+      return res.json({
+        cv: !!cvStoragePath,
+        transcript: !!transcriptStoragePath,
+        cv_filename: cvStoragePath,
+        transcript_filename: transcriptStoragePath,
+      });
+    } catch (err) {
+      console.error('Draft document upload error:', err.message);
+      return res.status(500).json({ errors: ['Could not save document. Please try again.'] });
+    }
+  }
+);
 
 
 // =============================================================
@@ -178,37 +287,23 @@ router.post(
   '/me/submit',
   authenticate,
   requireRole('tutor'),
-  upload.fields([
+  multerFields([
     { name: 'cvFile',         maxCount: 1 },
     { name: 'transcriptFile', maxCount: 1 },
   ]),
   async (req, res) => {
     const userId  = req.user.userId;
     const { declared } = req.body;
+    const fs = require('fs');
 
     if (!(await isApplicationsOpenFromDb())) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
 
-    // ── File validation ──────────────────────────────────────
-    const errors = [];
-
-    if (!req.files || !req.files['cvFile']) {
-      errors.push('CV (PDF) is required.');
-    }
-    if (!req.files || !req.files['transcriptFile']) {
-      errors.push('Academic transcript (PDF) is required.');
-    }
-    if (!declared || declared !== 'true') {
-      errors.push('You must accept the declaration before submitting.');
-    }
-
-    if (errors.length > 0) return res.status(400).json({ errors });
-
     try {
-      // ── Load the application to run eligibility ──────────
       const appResult = await pool.query(
-        `SELECT id, status, qualification_level, module_year_level, module_name, gpa, course
+        `SELECT id, status, qualification_level, module_year_level, module_name, gpa, course,
+                cv_filename, transcript_filename
          FROM applications
          WHERE user_id = $1`,
         [userId]
@@ -226,14 +321,54 @@ router.post(
         });
       }
 
-      // ── Check academic info was saved in step 2 ──────────
       if (!app.qualification_level || !app.module_name || !app.gpa) {
         return res.status(400).json({
           errors: ['Academic information is incomplete. Please complete Step 2 first.'],
         });
       }
 
-      // ── Rule 3: posting exists + qualification + declared average ──
+      const uploadsDir = path.join(__dirname, '../uploads');
+      const freshCv = req.files && req.files.cvFile && req.files.cvFile[0];
+      const freshTranscript = req.files && req.files.transcriptFile && req.files.transcriptFile[0];
+
+      let cvPath;
+      let transcriptPath;
+      let cvStoragePath;
+      let transcriptStoragePath;
+
+      if (freshCv) {
+        cvPath = freshCv.path;
+        cvStoragePath = await persistUploadToStorage(cvPath, 'applications/' + freshCv.filename);
+      } else if (app.cv_filename) {
+        cvStoragePath = app.cv_filename;
+        cvPath = path.join(uploadsDir, path.basename(app.cv_filename));
+      }
+
+      if (freshTranscript) {
+        transcriptPath = freshTranscript.path;
+        transcriptStoragePath = await persistUploadToStorage(
+          transcriptPath,
+          'applications/' + freshTranscript.filename
+        );
+      } else if (app.transcript_filename) {
+        transcriptStoragePath = app.transcript_filename;
+        transcriptPath = path.join(uploadsDir, path.basename(app.transcript_filename));
+      }
+
+      const errors = [];
+      if (!cvPath) errors.push('CV (PDF) is required.');
+      if (!transcriptPath) errors.push('Academic transcript (PDF) is required.');
+      if (!declared || declared !== 'true') {
+        errors.push('You must accept the declaration before submitting.');
+      }
+      if (errors.length > 0) return res.status(400).json({ errors });
+
+      if (!fs.existsSync(cvPath) || !fs.existsSync(transcriptPath)) {
+        return res.status(400).json({
+          errors: ['Uploaded documents are missing on the server. Please upload your PDFs again.'],
+        });
+      }
+
       const programme = courseToProgramme(app.course);
       const postingResult = programme
         ? await pool.query(
@@ -269,9 +404,6 @@ router.post(
         }
       }
 
-      const cvPath         = req.files['cvFile'][0].path;
-      const transcriptPath = req.files['transcriptFile'][0].path;
-
       if (eligibilityPass) {
         try {
           const settings = await getSettings();
@@ -293,35 +425,11 @@ router.post(
           }
         } catch (scanErr) {
           console.error('Document screening error:', scanErr.message);
-          // Screening failed — do not auto-reject for technical failure
-          // Let the application through with a note in screening_result
           screening = {
             error: true,
             note: 'Document screening could not be completed: ' + scanErr.message,
           };
-          // Keep eligibilityPass as true — human coordinator reviews
         }
-      }
-
-      const cvBasename         = req.files['cvFile'][0].filename;
-      const transcriptBasename = req.files['transcriptFile'][0].filename;
-      const cvStoragePath         = 'applications/' + cvBasename;
-      const transcriptStoragePath = 'applications/' + transcriptBasename;
-
-      try {
-        await uploadFile(cvPath, cvStoragePath, 'application/pdf');
-        console.log('CV uploaded to Supabase Storage:', cvStoragePath);
-      } catch (storageErr) {
-        console.error('Storage upload failed:', storageErr.message);
-        // Continue anyway — local file still saved as fallback
-      }
-
-      try {
-        await uploadFile(transcriptPath, transcriptStoragePath, 'application/pdf');
-        console.log('Transcript uploaded to Supabase Storage:', transcriptStoragePath);
-      } catch (storageErr) {
-        console.error('Storage upload failed:', storageErr.message);
-        // Continue anyway — local file still saved as fallback
       }
 
       const newStatus        = eligibilityPass ? 'submitted' : 'rejected';
