@@ -4,6 +4,7 @@ const router = require('express').Router();
 const pool = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole = require('../middleware/requireRole');
+const { messageLimiter, broadcastLimiter } = require('../middleware/rateLimiter');
 
 function initials(first, surname) {
   const a = (first || '').trim().charAt(0);
@@ -636,6 +637,7 @@ router.get(
 // POST /api/messages/threads — start or continue a conversation
 router.post(
   '/threads',
+  messageLimiter,
   authenticate,
   requireRole('lecturer', 'tutor', 'admin'),
   async (req, res) => {
@@ -763,6 +765,7 @@ router.post(
 // POST /api/messages/threads/:id/messages — reply
 router.post(
   '/threads/:id/messages',
+  messageLimiter,
   authenticate,
   requireRole('lecturer', 'tutor', 'admin'),
   async (req, res) => {
@@ -834,6 +837,7 @@ router.post(
 // POST /api/messages/broadcast — lecturer message all tutors on module
 router.post(
   '/broadcast',
+  broadcastLimiter,
   authenticate,
   requireRole('lecturer'),
   async (req, res) => {

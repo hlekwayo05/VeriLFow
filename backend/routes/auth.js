@@ -5,6 +5,7 @@ const bcrypt  = require('bcrypt');
 const jwt     = require('jsonwebtoken');
 const pool    = require('../db');
 const { isApplicationsOpenFromDb } = require('./public');
+const { validateRegister, validateLogin, validateChangePassword } = require('../validators/authValidator');
 
 const BCRYPT_COST = 12;
 
@@ -41,7 +42,7 @@ function signAuthToken({
 //  Returns a JWT so the tutor is immediately logged in for step 2.
 // =============================================================
 
-router.post('/register', async (req, res) => {
+router.post('/register', validateRegister, async (req, res) => {
   const {
     surname, title, initials, firstNames,
     email, cell, studentNumber, password, confirm,
@@ -50,19 +51,35 @@ router.post('/register', async (req, res) => {
   // ── Server-side validation ───────────────────────────────
   const errors = [];
 
-  if (!surname       || surname.trim().length === 0)       errors.push('Surname is required.');
-  if (!title         || title.trim().length === 0)         errors.push('Title is required.');
-  if (!initials      || initials.trim().length === 0)      errors.push('Initials are required.');
-  if (!firstNames    || firstNames.trim().length === 0)    errors.push('First name(s) are required.');
-  if (!email         || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
-    errors.push('Please enter a valid email.');
-  } else if (!/@ump\.ac\.za$/i.test(String(email).trim())) {
-    errors.push('Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).');
+  if (!surname       || surname.trim().length === 0) {
+    errors.push({ field: 'surname', message: 'Surname is required.' });
   }
-  if (!cell          || cell.trim().length < 9)            errors.push('Valid cell number is required.');
-  if (!studentNumber || studentNumber.trim().length < 5)   errors.push('Student number is required.');
-  if (!password      || password.length < 8)               errors.push('Password must be at least 8 characters.');
-  if (password !== confirm)                                errors.push('Passwords do not match.');
+  if (!title         || title.trim().length === 0) {
+    errors.push({ field: 'title', message: 'Title is required.' });
+  }
+  if (!initials      || initials.trim().length === 0) {
+    errors.push({ field: 'initials', message: 'Initials are required.' });
+  }
+  if (!firstNames    || firstNames.trim().length === 0) {
+    errors.push({ field: 'firstNames', message: 'First name(s) are required.' });
+  }
+  if (!email         || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim())) {
+    errors.push({ field: 'email', message: 'Please enter a valid email.' });
+  } else if (!/@ump\.ac\.za$/i.test(String(email).trim())) {
+    errors.push({ field: 'email', message: 'Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).' });
+  }
+  if (!cell          || cell.trim().length < 9) {
+    errors.push({ field: 'cell', message: 'Valid cell number is required.' });
+  }
+  if (!studentNumber || studentNumber.trim().length < 5) {
+    errors.push({ field: 'studentNumber', message: 'Student number is required.' });
+  }
+  if (!password      || password.length < 8) {
+    errors.push({ field: 'password', message: 'Password must be at least 8 characters.' });
+  }
+  if (password !== confirm) {
+    errors.push({ field: 'confirm', message: 'Passwords do not match.' });
+  }
 
   if (errors.length > 0) {
     return res.status(400).json({ errors });
@@ -260,11 +277,19 @@ router.post('/register', async (req, res) => {
 //  Returns JWT + enough info for the frontend to route correctly.
 // =============================================================
 
-router.post('/login', async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ errors: ['Email and password are required.'] });
+  const errors = [];
+  if (!email || !String(email).trim()) {
+    errors.push({ field: 'email', message: 'Email is required.' });
+  }
+  if (!password || !String(password).trim()) {
+    errors.push({ field: 'password', message: 'Password is required.' });
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
   }
 
   try {
@@ -355,18 +380,29 @@ router.post('/login', async (req, res) => {
 
 const authenticate = require('../middleware/authenticate');
 
-router.patch('/change-password', authenticate, async (req, res) => {
+router.patch('/change-password', authenticate, validateChangePassword, async (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
   const userId = req.user.userId;
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    return res.status(400).json({ errors: ['All fields are required.'] });
+  const errors = [];
+  if (!currentPassword || !String(currentPassword).trim()) {
+    errors.push({ field: 'currentPassword', message: 'Current password is required.' });
   }
-  if (newPassword.length < 8) {
-    return res.status(400).json({ errors: ['New password must be at least 8 characters.'] });
+  if (!newPassword || !String(newPassword).trim()) {
+    errors.push({ field: 'newPassword', message: 'New password is required.' });
+  }
+  if (!confirmPassword || !String(confirmPassword).trim()) {
+    errors.push({ field: 'confirmPassword', message: 'Confirm password is required.' });
+  }
+  if (newPassword && newPassword.length < 8) {
+    errors.push({ field: 'newPassword', message: 'New password must be at least 8 characters.' });
   }
   if (newPassword !== confirmPassword) {
-    return res.status(400).json({ errors: ['Passwords do not match.'] });
+    errors.push({ field: 'confirmPassword', message: 'Passwords do not match.' });
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
   }
 
   try {

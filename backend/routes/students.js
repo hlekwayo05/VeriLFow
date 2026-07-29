@@ -4,6 +4,8 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { studentImportLimiter } = require('../middleware/rateLimiter');
+const { validateCreateStudent, validateImportStudents } = require('../validators/studentValidator');
 
 function normalizeProgramme(value) {
   if (!value) return null;
@@ -38,6 +40,7 @@ router.post(
   '/',
   authenticate,
   requireRole('admin'),
+  validateCreateStudent,
   async (req, res) => {
     const {
       first_names,
@@ -57,13 +60,6 @@ router.post(
     const studentNo      = (student_number || studentNumber || '').trim() || null;
     const programmeValue = normalizeProgramme(programme);
     const yearLevelValue = (year_level || yearLevel || '').trim() || null;
-
-    const errors = [];
-    if (!firstNameValue) errors.push('First names are required.');
-    if (!surnameValue)   errors.push('Surname is required.');
-    if (!emailValue)     errors.push('Email is required.');
-
-    if (errors.length) return res.status(400).json({ errors });
 
     try {
       const result = await pool.query(
@@ -88,14 +84,12 @@ router.post(
 // POST /api/students/import
 router.post(
   '/import',
+  studentImportLimiter,
   authenticate,
   requireRole('admin'),
+  validateImportStudents,
   async (req, res) => {
     const students = req.body.students || req.body;
-
-    if (!Array.isArray(students) || !students.length) {
-      return res.status(400).json({ errors: ['Provide an array of students.'] });
-    }
 
     let imported = 0;
     let skipped  = 0;

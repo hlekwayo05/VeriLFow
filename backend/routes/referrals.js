@@ -5,6 +5,7 @@ const bcrypt       = require('bcrypt');
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { adminActionLimiter } = require('../middleware/rateLimiter');
 const { getRateEntry } = require('../constants');
 const { generateTempPassword } = require('../utils/tempPassword');
 const {
@@ -277,6 +278,7 @@ router.get(
 
 router.patch(
   '/:id/approve',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -488,6 +490,7 @@ router.patch(
 
 router.patch(
   '/:id/reject',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {

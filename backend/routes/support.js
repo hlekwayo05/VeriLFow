@@ -4,6 +4,7 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { supportLimiter } = require('../middleware/rateLimiter');
 
 function mapListRow(row) {
   return {
@@ -100,6 +101,7 @@ router.get(
 // POST /api/support/tickets
 router.post(
   '/tickets',
+  supportLimiter,
   authenticate,
   requireRole('tutor', 'lecturer'),
   async (req, res) => {
@@ -197,6 +199,7 @@ router.get(
 // POST /api/support/tickets/:id/reply
 router.post(
   '/tickets/:id/reply',
+  supportLimiter,
   authenticate,
   requireRole('admin', 'tutor', 'lecturer'),
   async (req, res) => {

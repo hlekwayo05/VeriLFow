@@ -4,6 +4,7 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { uploadLimiter } = require('../middleware/rateLimiter');
 const { isApplicationsOpenFromDb } = require('./public');
 const multer       = require('multer');
 const path         = require('path');
@@ -20,6 +21,8 @@ const {
 const { screenApplication } = require('../services/documentScanner');
 const { getSettings } = require('../services/settings');
 const { uploadFile } = require('../services/storage');
+const { validateUploadedFile } = require('../utils/fileValidation');
+const { validateAcademicSave, validateSubmitApplication } = require('../validators/applicationValidator');
 
 // =============================================================
 //  MULTER — file upload config
@@ -173,6 +176,7 @@ router.patch(
   '/me/academic',
   authenticate,
   requireRole('tutor'),
+  validateAcademicSave,
   async (req, res) => {
     const { faculty, course, qualificationLevel, moduleYearLevel, moduleName, moduleCode, gpa } = req.body;
     const userId = req.user.userId;
@@ -180,19 +184,6 @@ router.patch(
     if (!(await isApplicationsOpenFromDb())) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
-
-    // ── Validation ───────────────────────────────────────────
-    const errors = [];
-
-    if (!faculty          || faculty.trim().length === 0)          errors.push('Faculty is required.');
-    if (!course           || course.trim().length === 0)           errors.push('Course is required.');
-    if (!qualificationLevel)                                        errors.push('Qualification level is required.');
-    if (!moduleYearLevel  || moduleYearLevel.trim().length === 0)  errors.push('Year/semester level is required.');
-    if (!moduleName       || moduleName.trim().length === 0)        errors.push('Module is required.');
-    if (!moduleCode       || String(moduleCode).trim().length === 0) errors.push('Module code is required.');
-    if (gpa === undefined || gpa === null || gpa === '')            errors.push('GPA / academic average is required.');
-
-    if (errors.length > 0) return res.status(400).json({ errors });
 
     const gpaNum = parseFloat(gpa);
     if (isNaN(gpaNum) || gpaNum < 0 || gpaNum > 100) {
@@ -285,12 +276,14 @@ router.patch(
 
 router.post(
   '/me/submit',
+  uploadLimiter,
   authenticate,
   requireRole('tutor'),
   multerFields([
     { name: 'cvFile',         maxCount: 1 },
     { name: 'transcriptFile', maxCount: 1 },
   ]),
+  validateSubmitApplication,
   async (req, res) => {
     const userId  = req.user.userId;
     const { declared } = req.body;
@@ -367,6 +360,19 @@ router.post(
         return res.status(400).json({
           errors: ['Uploaded documents are missing on the server. Please upload your PDFs again.'],
         });
+      }
+
+      if (freshCv) {
+        const cvValidation = await validateUploadedFile(freshCv, ['application/pdf']);
+        if (!cvValidation.valid) {
+          return res.status(400).json({ error: 'Invalid file type.' });
+        }
+      }
+      if (freshTranscript) {
+        const transcriptValidation = await validateUploadedFile(freshTranscript, ['application/pdf']);
+        if (!transcriptValidation.valid) {
+          return res.status(400).json({ error: 'Invalid file type.' });
+        }
       }
 
       const programme = courseToProgramme(app.course);
