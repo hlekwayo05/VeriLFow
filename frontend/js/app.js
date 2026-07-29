@@ -5,14 +5,22 @@
 const VF = (() => {
 
   /* ─── API CONFIG ─── */
+  const PRODUCTION_API = "https://veriflow-backend.onrender.com/api";
+
   const API_BASE = (() => {
     const host = window.location.hostname;
-    const isDev = host === 'localhost' ||
-      host === '127.0.0.1' ||
+
+    const isDevelopment =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
       /^192\.168\./.test(host) ||
       /^10\./.test(host);
-    const port = isDev ? ':3000' : '';
-    return `${window.location.protocol}//${host}${port}/api`;
+
+    if (isDevelopment) {
+      return `${window.location.protocol}//${host}:3000/api`;
+    }
+
+    return PRODUCTION_API;
   })();
   const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
   const TOKEN_KEY  = 'vf_token';
