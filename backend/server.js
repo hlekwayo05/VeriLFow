@@ -37,6 +37,20 @@ function getConfiguredOrigins() {
     .filter(Boolean);
 }
 
+/** Live Server / phone QR scans use changing LAN IPs — allow them outside production. */
+function isPrivateLanOrigin(origin) {
+  try {
+    const host = new URL(origin).hostname;
+    return (
+      /^192\.168\.\d{1,3}\.\d{1,3}$/.test(host) ||
+      /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host) ||
+      /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function validateEnvironment() {
   const isProduction = process.env.NODE_ENV === 'production';
   const requiredProductionVars = [
@@ -105,6 +119,9 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     if (allowAllOriginsInDevelopment || configuredOrigins.includes(origin)) {
+      callback(null, true);
+    } else if (process.env.NODE_ENV !== 'production' && isPrivateLanOrigin(origin)) {
+      // Phone QR attendance from Live Server on the same Wi‑Fi
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

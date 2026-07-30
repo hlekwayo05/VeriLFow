@@ -8,9 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=30"/>
-<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=20"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=31"/>
+<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=22"/>
 </head>
 <body class="admin-dash ad-on-hub">
 <div class="app">
@@ -485,7 +486,9 @@
         <div class="tm-msg-people" id="tm-msg-people" aria-label="Message contacts"></div>
         <button type="button" class="ad-msg-compose-desk" onclick="openAdminCompose()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Compose</button>
         <div class="inbox-list" id="inbox-list">
-          <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
+          <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
         </div>
       </div>
       <div class="msg-thread">
@@ -643,54 +646,58 @@
       </div>
     </div>
 
-    <div class="ad-an-hero" id="analysis-hero">
-      <div class="ad-an-hero-top">
-        <span class="ad-an-hero-label">Flagged rate</span>
-        <span class="ad-an-hero-sem" id="analysis-hero-sem">—</span>
-      </div>
-      <div class="ad-an-hero-body">
-        <div class="ad-an-ring-wrap">
-          <svg width="98" height="98" viewBox="0 0 98 98" aria-hidden="true">
-            <circle cx="49" cy="49" r="42" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
-            <circle id="analysis-ring-arc" cx="49" cy="49" r="42" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
-          </svg>
-          <div class="ad-an-ring-center">
-            <div class="ad-an-ring-num" id="analysis-flagged-pct">0%</div>
-            <div class="ad-an-ring-pct" id="analysis-flagged-sub">0 OF 0<br>SESSIONS</div>
+    <div class="ad-an-layout">
+      <div class="ad-an-hero" id="analysis-hero">
+        <div class="ad-an-hero-top">
+          <span class="ad-an-hero-label">Flagged rate</span>
+          <span class="ad-an-hero-sem" id="analysis-hero-sem">—</span>
+        </div>
+        <div class="ad-an-hero-body">
+          <div class="ad-an-ring-wrap">
+            <svg width="112" height="112" viewBox="0 0 98 98" aria-hidden="true">
+              <circle cx="49" cy="49" r="42" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9"/>
+              <circle id="analysis-ring-arc" cx="49" cy="49" r="42" fill="none" stroke="#4f9c8e" stroke-width="9" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round"/>
+            </svg>
+            <div class="ad-an-ring-center">
+              <div class="ad-an-ring-num" id="analysis-flagged-pct">0%</div>
+              <div class="ad-an-ring-pct" id="analysis-flagged-sub">0 OF 0<br>SESSIONS</div>
+            </div>
+          </div>
+          <div class="ad-an-hero-stats">
+            <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-sessions">0</span><span class="l">TOTAL SESSIONS</span></div>
+            <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-hours">0</span><span class="l">HOURS LOGGED</span></div>
+            <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-pending">R0</span><span class="l">PENDING CLAIMS</span></div>
           </div>
         </div>
-        <div class="ad-an-hero-stats">
-          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-sessions">0</span><span class="l">TOTAL SESSIONS</span></div>
-          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-hours">0</span><span class="l">HOURS LOGGED</span></div>
-          <div class="ad-an-hero-stat"><span class="v" id="analysis-stat-pending">R0</span><span class="l">PENDING CLAIMS</span></div>
+      </div>
+
+      <div class="ad-an-chips">
+        <div class="ad-an-chip">
+          <span class="l">Active tutors</span>
+          <div class="v" id="analysis-stat-tutors">0</div>
+          <div class="sub">approved on system</div>
+        </div>
+        <div class="ad-an-chip">
+          <span class="l">Total payouts</span>
+          <div class="v" id="analysis-stat-payouts">R0</div>
+          <div class="sub">approved claims</div>
         </div>
       </div>
     </div>
 
-    <div class="ad-an-chips">
-      <div class="ad-an-chip">
-        <span class="l">Active tutors</span>
-        <div class="v" id="analysis-stat-tutors">0</div>
-        <div class="sub">approved on system</div>
+    <div class="ad-an-charts">
+      <div class="ad-an-section">
+        <div class="ad-an-section-head"><span class="ad-an-section-title">Payout by tutor</span></div>
+        <div class="ad-an-card" id="analysis-payout-chart">
+          <div class="ad-analysis-empty">Loading…</div>
+        </div>
       </div>
-      <div class="ad-an-chip">
-        <span class="l">Total payouts</span>
-        <div class="v" id="analysis-stat-payouts">R0</div>
-        <div class="sub">approved claims</div>
-      </div>
-    </div>
 
-    <div class="ad-an-section">
-      <div class="ad-an-section-head"><span class="ad-an-section-title">Payout by tutor</span></div>
-      <div class="ad-an-card" id="analysis-payout-chart">
-        <div class="ad-analysis-empty">Loading…</div>
-      </div>
-    </div>
-
-    <div class="ad-an-section">
-      <div class="ad-an-section-head"><span class="ad-an-section-title">Sessions by module</span></div>
-      <div class="ad-an-card" id="analysis-module-chart">
-        <div class="ad-analysis-empty">Loading…</div>
+      <div class="ad-an-section">
+        <div class="ad-an-section-head"><span class="ad-an-section-title">Sessions by module</span></div>
+        <div class="ad-an-card" id="analysis-module-chart">
+          <div class="ad-analysis-empty">Loading…</div>
+        </div>
       </div>
     </div>
   </div>
@@ -1332,10 +1339,10 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=20"></script>
 <script src="../js/curriculum.js?v=2"></script>
-<script src="../js/messaging.js?v=15"></script>
-<script src="../js/admin-dashboard-api.js?v=33"></script>
+<script src="../js/messaging.js?v=16"></script>
+<script src="../js/admin-dashboard-api.js?v=34"></script>
 <script>
   if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
   if (!VF.requireRole('admin', 'login.html')) { /* stop — requireRole already redirected */ }
@@ -1734,6 +1741,13 @@ function renderOverviewReferralRow(ref) {
 }
 
 async function loadReferrals() {
+  const overviewBody = document.getElementById('overview-referrals-tbody');
+  const tbody = document.getElementById('referrals-tbody');
+  const cards = document.getElementById('referrals-cards');
+  if (overviewBody && VF.skeleton) overviewBody.innerHTML = VF.skeleton.tbody(5, 4);
+  if (tbody && VF.skeleton) tbody.innerHTML = VF.skeleton.tbody(7, 6);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.claimCards(4);
+
   try {
     const refs = await VF.apiFetch('/referrals');
     REFERRALS = {};
@@ -1752,7 +1766,6 @@ async function loadReferrals() {
     const overviewSub = document.getElementById('overview-referrals-sub');
     if (overviewSub) overviewSub.textContent = pending.length ? `${pending.length} pending` : 'No pending referrals';
 
-    const overviewBody = document.getElementById('overview-referrals-tbody');
     if (overviewBody) {
       overviewBody.innerHTML = pending.length
         ? pending.slice(0, 5).map(renderOverviewReferralRow).join('')
@@ -1766,14 +1779,12 @@ async function loadReferrals() {
         : 'No referrals awaiting countersignature';
     }
 
-    const tbody = document.getElementById('referrals-tbody');
     if (tbody) {
       tbody.innerHTML = refs.length
         ? refs.map(renderReferralRow).join('')
         : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No referrals yet</td></tr>';
     }
 
-    const cards = document.getElementById('referrals-cards');
     if (cards) {
       cards.innerHTML = refs.length
         ? refs.map((ref) => {
@@ -2178,6 +2189,21 @@ function importStudentsCSV(file) {
 }
 
 async function loadApplications() {
+  const targets = [
+    ['in-progress-tbody', 6],
+    ['dict-tbody', 8],
+    ['bict-tbody', 8],
+    ['auto-rejected-tbody', 7],
+  ];
+  targets.forEach(([id, cols]) => {
+    const el = document.getElementById(id);
+    if (el && VF.skeleton) el.innerHTML = VF.skeleton.tbody(cols, 5);
+  });
+  ['dict-cards', 'bict-cards', 'in-progress-cards', 'auto-rejected-cards'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && VF.skeleton) el.innerHTML = VF.skeleton.cards(3);
+  });
+
   try {
     const apps = await VF.apiFetch('/applications?includeIncomplete=true');
     APPLICATIONS = {};

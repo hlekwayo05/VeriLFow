@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-  <link rel="stylesheet" href="../css/main.css?v=4"/>
+  <link rel="stylesheet" href="../css/main.css?v=5"/>
   <link rel="stylesheet" href="../css/veriflow-mobile.css?v=6"/>
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
   <link rel="stylesheet" href="../css/apply.css?v=11"/>
@@ -90,9 +90,10 @@
         <div class="row-2">
           <div class="form-group" id="grp-password">
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Create a password" autocomplete="new-password"/>
-            <div class="form-hint">At least 8 characters.</div>
-            <div class="form-error">Password must be at least 8 characters.</div>
+            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password"/>
+            <div class="form-hint">At least 8 characters, with uppercase, lowercase, a number, and a special character.</div>
+            <ul class="pwd-checklist" id="pwdChecklist" aria-live="polite"></ul>
+            <div class="form-error">Password is not strong enough.</div>
           </div>
           <div class="form-group" id="grp-confirm">
             <label for="confirm">Confirm password</label>
@@ -137,9 +138,10 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=17"></script>
+<script src="../js/app.js?v=19"></script>
 <script>
   VF.pageIn();
+  VF.bindPasswordChecklist('password', 'pwdChecklist');
 
   (function syncNextBtnLabel() {
     const mq = window.matchMedia('(max-width: 900px)');
@@ -201,7 +203,7 @@
       { id: 'email',         check: v => /^[a-zA-Z0-9._%+-]+@ump\.ac\.za$/i.test(v), msg: 'Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).' },
       { id: 'cell',          check: v => v.length >= 9,                         msg: 'Please enter a valid cell number.' },
       { id: 'studentNumber', check: v => v.length >= 5,                         msg: 'Student number is required.' },
-      { id: 'password',      check: v => v.length >= 8,                         msg: 'Password must be at least 8 characters.' },
+      { id: 'password',      check: v => VF.isStrongPassword(v),                 msg: VF.passwordErrorMessage(pwd) || 'Password is not strong enough.' },
       { id: 'confirm',       check: v => v === pwd,                             msg: 'Passwords do not match.' },
     ]);
     if (!valid) return;

@@ -17,6 +17,8 @@ const FILES = [
   '014_class_list_email.sql',
   '016_end_time_and_qr_tables.sql',
   '017_session_tutors_tutor_index.sql',
+  '018_session_cancelled_status.sql',
+  '019_perf_indexes_partition.sql',
 ];
 
 async function main() {

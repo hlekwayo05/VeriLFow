@@ -199,6 +199,7 @@ function tutorStatusChip(status) {
   if (status === 'active') return '<span class="sc confirmed">In progress</span>';
   if (status === 'completed') return '<span class="sc confirmed">Confirmed</span>';
   if (status === 'flagged') return '<span class="sc flagged">Flagged</span>';
+  if (status === 'cancelled') return '<span class="sc cancelled">Cancelled</span>';
   return '<span class="sc upcoming">Upcoming</span>';
 }
 
@@ -342,11 +343,17 @@ function formatSignInTime(recordedAt) {
 function renderRegisterModal(data) {
   const session = data.session || {};
   const modCode = session.module_code || currentModuleCode || '—';
+  const modName = currentModuleName || session.module_name || '';
   const date = session.session_date
     ? new Date(session.session_date).toLocaleDateString('en-ZA', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
     : '—';
+  const dateShort = session.session_date
+    ? new Date(session.session_date).toLocaleDateString('en-ZA', {
+        day: 'numeric', month: 'short', year: 'numeric',
+      })
+    : '';
   const time = session.start_time ? String(session.start_time).slice(0, 5) : '';
   const meta = [
     time,
@@ -370,15 +377,31 @@ function renderRegisterModal(data) {
   const titleEl = document.getElementById('reg-title');
   const eyebrowEl = document.getElementById('reg-eyebrow');
   const metaEl = document.getElementById('reg-meta');
+  const headCountEl = document.getElementById('reg-head-count');
+  const footerNoteEl = document.getElementById('reg-footer-note');
   const tbody = document.getElementById('reg-tbody');
 
   const isMobileReg = window.matchMedia('(max-width: 900px)').matches;
-  if (titleEl) titleEl.textContent = isMobileReg ? 'Attendance Register' : `Attendance Register — ${date}`;
-  if (eyebrowEl) eyebrowEl.textContent = `${modCode}${currentModuleName ? ' · ' + currentModuleName : ''}`;
+  if (titleEl) {
+    titleEl.textContent = isMobileReg
+      ? `${modCode}${modName ? ' — ' + modName : ''}`
+      : `Attendance Register — ${date}`;
+  }
+  if (eyebrowEl) {
+    eyebrowEl.textContent = isMobileReg
+      ? 'enrolled'
+      : `${modCode}${modName ? ' · ' + modName : ''}`;
+  }
+  if (headCountEl) headCountEl.textContent = String(enrolled);
   if (metaEl) {
     metaEl.textContent = isMobileReg
       ? [date !== '—' ? date : null, meta || null].filter(Boolean).join(' · ') || '—'
       : (meta || '—');
+  }
+  if (footerNoteEl) {
+    footerNoteEl.innerHTML = isMobileReg
+      ? `<span class="reg-footer-dot" aria-hidden="true"></span> Updated ${dateShort || '—'}`
+      : 'Read-only · Locked after session end<br>Linked to your timesheet claim';
   }
 
   setText('#reg-enrolled', String(enrolled));
@@ -431,7 +454,9 @@ async function openRegister(sessionId) {
   }
 
   const tbody = document.getElementById('reg-tbody');
-  if (tbody) {
+  if (tbody && VF.skeleton) {
+    tbody.innerHTML = VF.skeleton.tbody(3, 6);
+  } else if (tbody) {
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">Loading register…</td></tr>';
   }
   modal.classList.add('open');
@@ -570,6 +595,9 @@ function sessionActionHtml(s, dateLabel) {
   if (s.status === 'flagged') {
     return '<span style="color:var(--red);font-size:11px;font-family:\'DM Mono\',monospace">No confirmation submitted</span>';
   }
+  if (s.status === 'cancelled') {
+    return '<span style="color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">Cancelled by lecturer</span>';
+  }
   return '<span style="color:var(--muted);font-size:11px">—</span>';
 }
 
@@ -590,13 +618,16 @@ function tutorAvailCornerHtml(s) {
     </div>`;
   }
   if (s.status === 'active') {
-    return `<button type="button" class="vf-sess-corner vf-sess-corner--live" aria-label="Open register" onclick="event.stopPropagation();openQR(${s.id})"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>`;
+    return `<div class="vf-sess-corner vf-sess-corner--live" title="Live"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   }
   if (s.status === 'completed') {
     return `<div class="vf-sess-corner vf-sess-corner--done" title="Completed"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   }
   if (s.status === 'flagged') {
     return `<div class="vf-sess-corner vf-sess-corner--no" title="Flagged"><svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+  }
+  if (s.status === 'cancelled') {
+    return `<div class="vf-sess-corner vf-sess-corner--no" title="Cancelled"><svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
   }
   return '';
 }
@@ -615,10 +646,12 @@ function groupTutorSessions(sessions) {
   const needs = [];
   const live = [];
   const upcoming = [];
+  const cancelled = [];
   const past = [];
 
   sessions.forEach((s) => {
     if (s.status === 'active') live.push(s);
+    else if (s.status === 'cancelled') cancelled.push(s);
     else if (sessionNeedsResponse(s)) needs.push(s);
     else if (isScheduled(s.status)) upcoming.push(s);
     else past.push(s);
@@ -629,9 +662,10 @@ function groupTutorSessions(sessions) {
   needs.sort(bySoonest);
   live.sort(bySoonest);
   upcoming.sort(bySoonest);
+  cancelled.sort(byLatest);
   past.sort(byLatest);
 
-  return { needs, live, upcoming, past };
+  return { needs, live, upcoming, cancelled, past };
 }
 
 function updateSessionsSummary(sessions) {
@@ -679,7 +713,7 @@ function tutorMobileCardActions(s) {
     const count = s.attendance_count || 0;
     return `<div class="vf-sess-cta-row">
       <button type="button" class="vf-sess-cta vf-sess-cta--primary" onclick="event.stopPropagation();openQR(${s.id})">Open QR</button>
-      <button type="button" class="vf-sess-cta vf-sess-cta--ghost" onclick="event.stopPropagation();openRegister(${s.id})">${count ? `${count} sign-ins` : 'Sign-ins'}</button>
+      <button type="button" class="vf-sess-cta vf-sess-cta--ghost" onclick="event.stopPropagation();openRegister(${s.id})">${count} sign-ins</button>
     </div>`;
   }
   if (s.status === 'completed') {
@@ -696,6 +730,9 @@ function tutorMobileCardActions(s) {
   if (s.status === 'flagged') {
     return '<div class="vf-sess-status-note vf-sess-status-note--warn">No confirmation submitted</div>';
   }
+  if (s.status === 'cancelled') {
+    return '<div class="vf-sess-status-note vf-sess-status-note--warn">Cancelled by lecturer</div>';
+  }
   return '';
 }
 
@@ -707,11 +744,14 @@ function renderOneSessionCard(s) {
   const title = (s.topic || typeLabel || 'Session').replace(/</g, '&lt;');
   const desc = `${dateLabel} · ${s.venue || 'Venue TBA'}`.replace(/</g, '&lt;');
   const startLabel = s.start_time ? String(s.start_time).slice(0, 5) : timeLabel;
-  const tone = s.status === 'completed' || s.status === 'flagged' ? ' vf-sess-card--muted' : '';
+  const tone = s.status === 'completed' || s.status === 'flagged' || s.status === 'cancelled' ? ' vf-sess-card--muted' : '';
   const live = s.status === 'active' ? ' vf-sess-card--live' : '';
   const pendingAvail = sessionNeedsResponse(s);
   const desktopActions = pendingAvail ? '' : sessionActionHtml(s, dateLabel);
   const mobileActions = pendingAvail ? '' : tutorMobileCardActions(s);
+  const statusPill = s.status === 'cancelled'
+    ? '<span class="vf-sess-pill vf-sess-pill--cancelled">Cancelled</span>'
+    : `<span class="vf-sess-pill vf-sess-pill--due">Starts ${startLabel}</span>`;
 
   return `<article class="vf-sess-card${tone}${live}" data-session-id="${s.id}">
     <div class="vf-sess-card-top">
@@ -723,7 +763,7 @@ function renderOneSessionCard(s) {
     </div>
     <div class="vf-sess-card-tags">
       <span class="vf-sess-pill">${typeLabel}</span>
-      <span class="vf-sess-pill vf-sess-pill--due">Starts ${startLabel}</span>
+      ${statusPill}
     </div>
     ${desktopActions ? `<div class="vf-sess-card-actions">${desktopActions}</div>` : ''}
     ${mobileActions}
@@ -766,6 +806,7 @@ function renderSessionsCards(sessions) {
     renderSessionSection('Needs your response', groups.needs),
     renderSessionSection('Live now', groups.live),
     renderSessionSection('Upcoming', groups.upcoming),
+    renderSessionSection('Cancelled', groups.cancelled),
     renderSessionSection('Past', groups.past),
   ].filter(Boolean).join('');
 }
@@ -835,10 +876,12 @@ function renderSessionsTable(sessions) {
   }
 
   tbody.innerHTML = sessions.map(s => {
-    const isPast = s.status === 'completed';
+    const isPast = s.status === 'completed' || s.status === 'cancelled' || s.status === 'flagged';
     const isToday = sessionDateKey(s.session_date) === localTodayKey();
     const dateLabel = isToday ? `Today · ${formatSessionDate(s)}` : formatSessionDate(s, true);
-    const dateStyle = isToday ? 'color:var(--text);font-weight:700' : (isPast ? 'color:var(--muted)' : 'color:var(--text);font-weight:500');
+    const dateStyle = isToday && s.status !== 'cancelled'
+      ? 'color:var(--text);font-weight:700'
+      : (isPast ? 'color:var(--muted)' : 'color:var(--text);font-weight:500');
     const action = sessionActionHtml(s, dateLabel);
 
     return `<tr${isPast ? ' style="background:rgba(0,0,0,.02)"' : ''}>
@@ -1731,6 +1774,15 @@ function renderClaimsPanels(claims) {
 }
 
 async function loadSessions() {
+  const sessTbody = document.getElementById('sessions-table-body');
+  const sessCards = document.getElementById('sessions-cards');
+  const hourTbody = document.getElementById('hourlog-table-body');
+  const dashUpcoming = document.getElementById('dash-upcoming-body');
+  if (sessTbody && VF.skeleton) sessTbody.innerHTML = VF.skeleton.tbody(7, 5);
+  if (sessCards && VF.skeleton) sessCards.innerHTML = VF.skeleton.sessionRows(4);
+  if (hourTbody && VF.skeleton) hourTbody.innerHTML = VF.skeleton.tbody(5, 5);
+  if (dashUpcoming && VF.skeleton) dashUpcoming.innerHTML = VF.skeleton.tbody(5, 4);
+
   try {
     const raw = await VF.apiFetch(`/sessions${moduleQuerySuffix()}`);
     const sessions = Array.isArray(raw) ? raw : [];
@@ -1781,6 +1833,8 @@ function initTutorEmptyInbox() {
 }
 
 async function loadClaimsList() {
+  const wrap = document.getElementById('claims-list-wrap');
+  if (wrap && VF.skeleton) wrap.innerHTML = VF.skeleton.claimCards(4);
   try {
     const claimsRaw = await VF.apiFetch(`/claims${moduleQuerySuffix()}`);
     CLAIMS = Array.isArray(claimsRaw) ? claimsRaw : [];
@@ -1818,7 +1872,7 @@ let calEventData = {};
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
 const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const statusColors = { confirmed:'var(--green)', flagged:'var(--red)', today:'var(--accent)', upcoming:'var(--text)' };
+const statusColors = { confirmed:'var(--green)', flagged:'var(--red)', today:'var(--accent)', upcoming:'var(--text)', cancelled:'var(--muted)' };
 
 function sessionDateKey(sessionDate) {
   if (!sessionDate) return null;
@@ -1851,11 +1905,12 @@ function sessionToCalType(status) {
   if (status === 'active') return 'today';
   if (status === 'flagged') return 'flagged';
   if (status === 'completed') return 'confirmed';
+  if (status === 'cancelled') return 'cancelled';
   return 'upcoming';
 }
 
 function calTypePriority(type) {
-  return ({ today: 4, flagged: 3, confirmed: 2, upcoming: 1 })[type] || 0;
+  return ({ today: 4, flagged: 3, confirmed: 2, cancelled: 2, upcoming: 1 })[type] || 0;
 }
 
 function calStatusLabel(status) {
@@ -1863,6 +1918,7 @@ function calStatusLabel(status) {
   if (status === 'completed') return 'Confirmed';
   if (status === 'flagged') return 'Flagged';
   if (status === 'scheduled') return 'Scheduled';
+  if (status === 'cancelled') return 'Cancelled';
   return status || '—';
 }
 
@@ -1911,6 +1967,8 @@ function renderCalSessionActions(ev) {
     buttons.push(`<button type="button" class="cal-action-btn" onclick="openRegister(${ev.sessionId})">View register</button>`);
   } else if (ev.rawStatus === 'completed' || ev.rawStatus === 'flagged') {
     buttons.push(`<button type="button" class="cal-action-btn" onclick="openRegister(${ev.sessionId})">View register</button>`);
+  } else if (ev.rawStatus === 'cancelled') {
+    buttons.push(`<button type="button" class="cal-action-btn" onclick="showPage('sessions',document.getElementById('nav-sessions'))">View cancelled session</button>`);
   } else {
     buttons.push(`<button type="button" class="cal-action-btn" onclick="showPage('sessions',document.getElementById('nav-sessions'))">View in sessions</button>`);
   }
@@ -2322,7 +2380,9 @@ function renderProfile() {
 
 async function loadProfile() {
   const content = document.getElementById('profile-content');
-  if (content) {
+  if (content && VF.skeleton) {
+    content.innerHTML = VF.skeleton.cards(2) + VF.skeleton.block(true);
+  } else if (content) {
     content.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">Loading profile…</div>';
   }
 
@@ -2446,6 +2506,7 @@ window.showCalSessionById = showCalSessionById;
 
 async function loadTutorTickets() {
   const wrap = document.getElementById('tutor-tickets-list');
+  if (wrap && VF.skeleton) wrap.innerHTML = VF.skeleton.listRows(4);
   try {
     const tickets = await VF.apiFetch('/support/tickets');
     renderTutorTickets(tickets);

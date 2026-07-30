@@ -1,6 +1,7 @@
 'use strict';
 
 const { body, validationResult } = require('express-validator');
+const { strongPasswordRules } = require('../utils/passwordPolicy');
 
 function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
@@ -26,7 +27,7 @@ const validateLogin = [
   body('password')
     .notEmpty().withMessage('Password is required.')
     .isString().withMessage('Password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('Password must be between 8 and 64 characters.'),
+    .isLength({ min: 1, max: 64 }).withMessage('Password must be between 1 and 64 characters.'),
   handleValidationErrors,
 ];
 
@@ -46,10 +47,7 @@ const validateRegister = [
     .notEmpty().withMessage('Email is required.')
     .isEmail().withMessage('Please enter a valid email.')
     .normalizeEmail(),
-  body('password')
-    .notEmpty().withMessage('Password is required.')
-    .isString().withMessage('Password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('Password must be between 8 and 64 characters.'),
+  strongPasswordRules('password', 'Password'),
   body('studentNumber')
     .trim()
     .notEmpty().withMessage('Student number is required.')
@@ -71,15 +69,11 @@ const validateChangePassword = [
   body('currentPassword')
     .notEmpty().withMessage('Current password is required.')
     .isString().withMessage('Current password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('Current password must be between 8 and 64 characters.'),
-  body('newPassword')
-    .notEmpty().withMessage('New password is required.')
-    .isString().withMessage('New password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('New password must be between 8 and 64 characters.'),
+    .isLength({ min: 1, max: 64 }).withMessage('Current password is required.'),
+  strongPasswordRules('newPassword', 'New password'),
   body('confirmPassword')
     .notEmpty().withMessage('Confirm password is required.')
     .isString().withMessage('Confirm password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('Confirm password must be between 8 and 64 characters.')
     .custom((value, { req }) => {
       if (value !== req.body.newPassword) {
         throw new Error('Passwords do not match.');
@@ -102,10 +96,7 @@ const validateResetPassword = [
   body('token')
     .trim()
     .notEmpty().withMessage('Token is required.'),
-  body('password')
-    .notEmpty().withMessage('Password is required.')
-    .isString().withMessage('Password must be a string.')
-    .isLength({ min: 8, max: 64 }).withMessage('Password must be between 8 and 64 characters.'),
+  strongPasswordRules('password', 'Password'),
   handleValidationErrors,
 ];
 

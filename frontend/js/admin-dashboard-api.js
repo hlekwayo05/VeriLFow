@@ -115,6 +115,11 @@ function adQualChip(level) {
 }
 
 async function loadClaims() {
+  const tbody = document.getElementById('claims-tbody');
+  const cards = document.getElementById('claims-cards');
+  if (tbody && VF.skeleton) tbody.innerHTML = VF.skeleton.tbody(10, 6);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.claimCards(4);
+
   try {
     const claims = await VF.apiFetch('/admin/claims');
     ADMIN_CLAIMS = {};
@@ -129,8 +134,6 @@ async function loadClaims() {
         : 'No claims awaiting approval';
     }
 
-    const tbody = document.getElementById('claims-tbody');
-    const cards = document.getElementById('claims-cards');
     if (!tbody) return;
 
     if (!claims.length) {
@@ -414,6 +417,13 @@ function adFlaggedRow(session) {
 }
 
 async function loadFlaggedSessions() {
+  const tbodyPre = document.getElementById('flagged-tbody');
+  const flaggedCardsPre = document.getElementById('flagged-cards');
+  const dashBodyPre = document.getElementById('dash-flagged-tbody');
+  if (tbodyPre && VF.skeleton) tbodyPre.innerHTML = VF.skeleton.tbody(7, 5);
+  if (flaggedCardsPre && VF.skeleton) flaggedCardsPre.innerHTML = VF.skeleton.claimCards(3);
+  if (dashBodyPre && VF.skeleton) dashBodyPre.innerHTML = VF.skeleton.tbody(5, 4);
+
   try {
     const sessions = await VF.apiFetch('/sessions');
     adminSessionsCache = sessions;
@@ -739,6 +749,15 @@ function markFlagInvestigating() {
 }
 
 async function loadDashboardOverview() {
+  const notif = document.getElementById('dash-notifications');
+  const apps = document.getElementById('dash-recent-apps');
+  const reports = document.getElementById('dash-reports');
+  const dashFlagged = document.getElementById('dash-flagged-tbody');
+  if (notif && VF.skeleton) notif.innerHTML = VF.skeleton.panel(4);
+  if (apps && VF.skeleton) apps.innerHTML = VF.skeleton.panel(4);
+  if (reports && VF.skeleton) reports.innerHTML = VF.skeleton.panel(3);
+  if (dashFlagged && VF.skeleton) dashFlagged.innerHTML = VF.skeleton.tbody(5, 4);
+
   try {
     const [applications, claims, sessions, tutors, referrals, supportTickets, postings] = await Promise.all([
       VF.apiFetch('/applications?includeIncomplete=true'),
@@ -1092,6 +1111,11 @@ function renderDashboardReports(sessions, claims, tutors, flagged) {
 }
 
 async function loadAnalysis() {
+  const payoutEl = document.getElementById('analysis-payout-chart');
+  const modEl = document.getElementById('analysis-module-chart');
+  if (payoutEl && VF.skeleton) payoutEl.innerHTML = VF.skeleton.block(true);
+  if (modEl && VF.skeleton) modEl.innerHTML = VF.skeleton.block(true);
+
   try {
     const [sessions, claims, tutorsRaw] = await Promise.all([
       VF.apiFetch('/sessions'),
@@ -1296,11 +1320,15 @@ function renderSupportTicketTable(tickets) {
 }
 
 async function loadSupportTickets() {
+  const tbody = document.getElementById('support-tbody');
+  const cards = document.getElementById('support-cards');
+  if (tbody && VF.skeleton) tbody.innerHTML = VF.skeleton.tbody(7, 5);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.claimCards(4);
+
   try {
     const tickets = await VF.apiFetch('/support/tickets');
     renderSupportTicketTable(tickets);
   } catch (err) {
-    const tbody = document.getElementById('support-tbody');
     if (tbody) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Could not load support tickets.</td></tr>';
     }
@@ -1586,18 +1614,21 @@ function getManagedUser(role, id) {
 }
 
 async function loadLecturers() {
+  const body = document.getElementById('lecturers-body');
+  const cards = document.getElementById('lecturers-cards');
+  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(5, 5);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
+
   try {
     const lecturers = await VF.apiFetch('/users/lecturers');
     window.LECTURERS = {};
     lecturers.forEach((l) => { window.LECTURERS[l.id] = l; });
 
-    const body = document.getElementById('lecturers-body');
     if (body) {
       body.innerHTML = lecturers.length
         ? lecturers.map(renderLecturerRow).join('')
         : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No lecturers yet.</td></tr>';
     }
-    const cards = document.getElementById('lecturers-cards');
     if (cards) {
       if (!lecturers.length) {
         cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No lecturers yet</h3><p>Add a lecturer to get started.</p></div></div>`;
@@ -1658,18 +1689,21 @@ function renderLecturerRow(l) {
 }
 
 async function loadTutors() {
+  const body = document.getElementById('tutors-body');
+  const cards = document.getElementById('tutors-cards');
+  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(6, 5);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
+
   try {
     const tutors = await VF.apiFetch('/users/tutors');
     window.TUTORS = {};
     tutors.forEach((t) => { window.TUTORS[t.id] = t; });
 
-    const body = document.getElementById('tutors-body');
     if (body) {
       body.innerHTML = tutors.length
         ? tutors.map(renderTutorRow).join('')
         : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
     }
-    const cards = document.getElementById('tutors-cards');
     if (cards) {
       if (!tutors.length) {
         cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No tutors yet</h3><p>Approved tutors will appear here.</p></div></div>`;

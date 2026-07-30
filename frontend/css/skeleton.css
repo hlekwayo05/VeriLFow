@@ -1,0 +1,184 @@
+/* ============================================================
+   VeriFlow — shared skeleton screens
+   Slow left → right shimmer wave (not pulse)
+   ============================================================ */
+
+@keyframes vfShimmerWave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.vf-skel {
+  --vf-skel-base: rgba(0, 0, 0, 0.06);
+  --vf-skel-shine: rgba(255, 255, 255, 0.55);
+  background: linear-gradient(
+    100deg,
+    var(--vf-skel-base) 0%,
+    var(--vf-skel-base) 35%,
+    var(--vf-skel-shine) 50%,
+    var(--vf-skel-base) 65%,
+    var(--vf-skel-base) 100%
+  );
+  background-size: 200% 100%;
+  animation: vfShimmerWave 2.4s ease-in-out infinite;
+  border-radius: 8px;
+  display: block;
+}
+
+.vf-skel-card {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e4e8e3);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vf-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vf-skel-av {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.vf-skel-av.sm {
+  width: 36px;
+  height: 36px;
+}
+
+.vf-skel-lines {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vf-skel-line {
+  height: 12px;
+  width: 100%;
+}
+
+.vf-skel-line.short { width: 55%; }
+.vf-skel-line.mid { width: 72%; }
+.vf-skel-line.tiny { width: 36%; height: 10px; }
+.vf-skel-line.btn {
+  height: 40px;
+  margin-top: 4px;
+  border-radius: 10px;
+}
+.vf-skel-line.chip {
+  height: 22px;
+  width: 88px;
+  border-radius: 999px;
+}
+
+.vf-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.vf-skel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vf-skel-list-row {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e4e8e3);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 120px 1fr 140px 100px;
+  gap: 14px;
+  align-items: center;
+}
+
+.vf-skel-inbox-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border, #e4e8e3);
+}
+
+.vf-skel-panel {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vf-skel-stat-strip {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.vf-skel-stat {
+  flex: 1;
+  min-width: 120px;
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e4e8e3);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vf-skel-table-wrap {
+  width: 100%;
+}
+
+.vf-skel-tr {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border, #e4e8e3);
+}
+
+.vf-skel-bubble {
+  max-width: 70%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.vf-skel-bubble.out { margin-left: auto; }
+.vf-skel-bubble.in { margin-right: auto; }
+
+.vf-skel-block {
+  width: 100%;
+  min-height: 120px;
+  border-radius: 12px;
+}
+
+.vf-skel-block.tall { min-height: 180px; }
+.vf-skel-block.hero { min-height: 96px; border-radius: 18px; }
+
+@media (max-width: 900px) {
+  .vf-skel-list-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .vf-skel-stat-strip {
+    flex-direction: column;
+  }
+  .vf-skel-tr {
+    gap: 8px;
+  }
+}

@@ -8,8 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=5"/>
-<link rel="stylesheet" href="../css/tutor-dashboard.css?v=54"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=56"/>
 </head>
 <body class="tutor-dash td-on-hub">
 <div class="app">
@@ -317,7 +318,9 @@
         <table class="data-table">
           <thead><tr><th>Date</th><th>Time</th><th>Topic</th><th>Venue</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
           <tbody id="sessions-table-body">
-            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+            <tr class="vf-skel-tr-native" aria-hidden="true"><td colspan="7" style="padding:14px 12px"><div class="vf-skel-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div></div></td></tr>
+            <tr class="vf-skel-tr-native" aria-hidden="true"><td colspan="7" style="padding:14px 12px"><div class="vf-skel-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div></div></td></tr>
+            <tr class="vf-skel-tr-native" aria-hidden="true"><td colspan="7" style="padding:14px 12px"><div class="vf-skel-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -349,9 +352,11 @@
           <button class="inbox-filter" onclick="setInboxFilter('unread',this)">Unread</button>
         </div>
         <div class="tm-msg-recent-label">Recent</div>
-        <div class="inbox-list" id="inbox-list">
-          <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
-        </div>
+          <div class="inbox-list" id="inbox-list">
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          </div>
       </div>
       <div class="msg-thread" id="msg-thread">
         <div class="thread-empty" id="thread-empty">
@@ -486,6 +491,7 @@
             <div class="leg-item"><div class="leg-dot leg-dot--upcoming"></div>Upcoming</div>
             <div class="leg-item"><div class="leg-dot leg-dot--confirmed"></div>Confirmed</div>
             <div class="leg-item"><div class="leg-dot leg-dot--flagged"></div>Flagged</div>
+            <div class="leg-item"><div class="leg-dot leg-dot--cancelled"></div>Cancelled</div>
           </div>
         </div>
         <div class="cal-detail" id="cal-detail">
@@ -525,7 +531,14 @@
         <p id="claims-hero-sub">Loading…</p>
       </div>
       <div id="claims-list-wrap">
-        <div style="padding:24px;text-align:center;color:var(--muted)">Loading claims…</div>
+        <div class="vf-skel-card" aria-hidden="true" style="margin-bottom:12px">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
+        <div class="vf-skel-card" aria-hidden="true">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -553,7 +566,11 @@
           <span class="st-tickets-count" id="st-tickets-count"></span>
         </div>
         <div id="tutor-tickets-list" class="st-tickets-list">
-          <div class="st-tickets-loading">Loading tickets…</div>
+          <div class="vf-skel-panel" aria-hidden="true">
+            <div class="vf-skel-row"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-row"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-row"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          </div>
         </div>
       </div>
 
@@ -684,20 +701,25 @@
 <!-- ═══════ QR MODAL ═══════ -->
 <div class="modal-overlay" id="qrModal">
   <div class="modal qr-modal">
-    <h3>Attendance Register</h3>
-    <p id="qrDesc">Loading session…</p>
+    <div class="qr-modal-close-row">
+      <button type="button" class="qr-modal-x" onclick="closeQR()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <h3 class="qr-title">Attendance Register</h3>
+    <p class="qr-sub" id="qrDesc">Loading session…</p>
     <div class="qr-box">
       <img id="qr-image" alt="Attendance QR code" width="220" height="220" style="display:block;border-radius:8px;"/>
     </div>
     <div class="qr-countdown-wrap" id="qr-countdown-wrap">
       <div class="qr-countdown-label">Code changes in</div>
       <div class="qr-countdown-seconds" id="qr-countdown-seconds">10</div>
-      <div class="qr-countdown-sub" id="qr-countdown">seconds — scan now</div>
+      <div class="qr-countdown-sub" id="qr-countdown">seconds left — scan now</div>
       <div class="qr-countdown-track"><div class="qr-countdown-fill" id="qr-countdown-fill"></div></div>
     </div>
     <p class="qr-hint-desktop">Students scan this QR on the same Wi‑Fi as this computer. The link uses your network IP, not localhost.</p>
     <p class="qr-hint-mobile">Students scan this QR on the same Wi‑Fi network.</p>
-    <p id="qr-network-hint" class="qr-network-hint" style="display:none;"></p>
+    <p id="qr-network-hint" class="qr-network-hint qr-url" style="display:none;"></p>
     <button type="button" class="view-reg-btn qr-view-signins" onclick="viewCurrentQrRegister()">View who has signed in</button>
     <button type="button" class="qr-close-btn" onclick="closeQR()">Close Register</button>
   </div>
@@ -706,12 +728,18 @@
 <!-- ═══════ STUDENT REGISTER MODAL ═══════ -->
 <div class="reg-overlay" id="regModal" onclick="regCloseOutside(event)">
   <div class="reg-modal">
+    <div class="reg-modal-close-row">
+      <button type="button" class="reg-modal-close" onclick="closeRegister()" aria-label="Close">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
     <div class="reg-modal-header">
-      <div>
-        <div class="reg-modal-eyebrow" id="reg-eyebrow">IS211 · Information Systems 211</div>
+      <div class="reg-modal-heading">
         <div class="reg-modal-title" id="reg-title">Attendance Register</div>
+        <div class="reg-modal-eyebrow" id="reg-eyebrow">IS211 · Information Systems 211</div>
       </div>
-      <button class="reg-modal-close" onclick="closeRegister()">
+      <div class="reg-head-count" id="reg-head-count" aria-hidden="true">—</div>
+      <button type="button" class="reg-modal-close reg-modal-close--desktop" onclick="closeRegister()" aria-label="Close">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -729,7 +757,7 @@
       </table>
     </div>
     <div class="reg-modal-footer">
-      <span class="reg-footer-note">Read-only · Locked after session end<br>Linked to your timesheet claim</span>
+      <span class="reg-footer-note" id="reg-footer-note">Read-only · Locked after session end<br>Linked to your timesheet claim</span>
       <button class="reg-dl-btn" onclick="downloadRegister()">
         <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export Register
@@ -775,9 +803,9 @@
   </button>
 </nav>
 
-<script src="../js/app.js?v=13"></script>
-<script src="../js/messaging.js?v=11"></script>
-<script src="../js/tutor-dashboard.js?v=73"></script>
+<script src="../js/app.js?v=20"></script>
+<script src="../js/messaging.js?v=16"></script>
+<script src="../js/tutor-dashboard.js?v=76"></script>
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 

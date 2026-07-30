@@ -569,8 +569,10 @@ function renderInboxList() {
 
 async function loadMessageThreads(selectThreadId, selectThreadKind) {
   const list = document.getElementById('inbox-list');
-  if (list) {
-    list.innerHTML = '<div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>';
+  const people = document.getElementById('tm-msg-people');
+  if (list && VF.skeleton) list.innerHTML = VF.skeleton.inbox(6);
+  if (people && VF.skeleton && !people.children.length) {
+    people.innerHTML = VF.skeleton.people(4);
   }
 
   await msgEnsureCurrentUser();
@@ -667,6 +669,7 @@ async function openThread(kind, id) {
     `${summary.moduleCode || ''} · ${summary.subject || 'Conversation'}`.replace(/^ · /, '');
 
   document.getElementById('thread-messages').innerHTML =
+    (VF.skeleton && VF.skeleton.thread(4)) ||
     '<div style="padding:16px;color:var(--muted);font-size:12px">Loading…</div>';
 
   try {

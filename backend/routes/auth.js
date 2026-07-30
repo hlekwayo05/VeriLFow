@@ -6,6 +6,7 @@ const jwt     = require('jsonwebtoken');
 const pool    = require('../db');
 const { isApplicationsOpenFromDb } = require('./public');
 const { validateRegister, validateLogin, validateChangePassword } = require('../validators/authValidator');
+const { passwordErrorMessage } = require('../utils/passwordPolicy');
 
 const BCRYPT_COST = 12;
 
@@ -74,8 +75,11 @@ router.post('/register', validateRegister, async (req, res) => {
   if (!studentNumber || studentNumber.trim().length < 5) {
     errors.push({ field: 'studentNumber', message: 'Student number is required.' });
   }
-  if (!password      || password.length < 8) {
-    errors.push({ field: 'password', message: 'Password must be at least 8 characters.' });
+  {
+    const pwdMsg = passwordErrorMessage(password);
+    if (pwdMsg) {
+      errors.push({ field: 'password', message: pwdMsg });
+    }
   }
   if (password !== confirm) {
     errors.push({ field: 'confirm', message: 'Passwords do not match.' });
@@ -394,8 +398,11 @@ router.patch('/change-password', authenticate, validateChangePassword, async (re
   if (!confirmPassword || !String(confirmPassword).trim()) {
     errors.push({ field: 'confirmPassword', message: 'Confirm password is required.' });
   }
-  if (newPassword && newPassword.length < 8) {
-    errors.push({ field: 'newPassword', message: 'New password must be at least 8 characters.' });
+  if (newPassword) {
+    const pwdMsg = passwordErrorMessage(newPassword);
+    if (pwdMsg) {
+      errors.push({ field: 'newPassword', message: pwdMsg.replace(/^Password/, 'New password') });
+    }
   }
   if (newPassword !== confirmPassword) {
     errors.push({ field: 'confirmPassword', message: 'Passwords do not match.' });

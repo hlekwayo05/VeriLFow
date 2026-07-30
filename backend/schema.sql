@@ -66,7 +66,8 @@ CREATE TYPE session_status AS ENUM (
   'scheduled',
   'active',     -- session code is live
   'completed',
-  'flagged'     -- disputed or suspicious
+  'flagged',    -- disputed or suspicious
+  'cancelled'   -- lecturer cancelled / called off
 );
 
 CREATE TYPE claim_status AS ENUM (
@@ -336,6 +337,9 @@ CREATE INDEX idx_applications_status  ON applications (status);
 CREATE INDEX idx_applications_module  ON applications (module_name);
 CREATE INDEX idx_applications_module_code ON applications (module_code);
 CREATE INDEX idx_applications_user_id ON applications (user_id);
+CREATE INDEX IF NOT EXISTS idx_applications_assigned_lecturer
+  ON applications (assigned_lecturer_id)
+  WHERE assigned_lecturer_id IS NOT NULL;
 
 -- =============================================================
 --  REFERRALS (lecturer nominate, admin approve)
@@ -523,6 +527,8 @@ CREATE INDEX idx_sessions_lecturer    ON sessions (lecturer_id);
 CREATE INDEX idx_sessions_module      ON sessions (module_code);
 CREATE INDEX idx_sessions_date        ON sessions (session_date);
 CREATE INDEX idx_sessions_code        ON sessions (session_code);  -- used on every attendance POST
+CREATE INDEX IF NOT EXISTS idx_sessions_lecturer_module_date
+  ON sessions (lecturer_id, module_code, session_date DESC);
 
 -- =============================================================
 --  SESSION TUTORS

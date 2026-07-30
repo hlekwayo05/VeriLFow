@@ -11,9 +11,179 @@
   to { transform: rotate(360deg); }
 }
 
-/* Desktop: hide mobile-only sticky CTA */
+/* Claim detail field layout — shared desktop + mobile */
+body.lec-dash #cd-overlay .lec-cd-desk-only { display: none !important; }
+body.lec-dash #cd-overlay .lec-cd-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+body.lec-dash #cd-overlay .lec-cd-stat {
+  background: #fff;
+  border: 1px solid #e4e8e3;
+  border-radius: 14px;
+  padding: 14px;
+}
+body.lec-dash #cd-overlay .lec-cd-stat .l {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: #94a09c;
+  text-transform: uppercase;
+}
+body.lec-dash #cd-overlay .lec-cd-stat .v {
+  font-size: 14px;
+  font-weight: 700;
+  color: #182420;
+  margin-top: 6px;
+}
+body.lec-dash #cd-overlay .lec-cd-stat-total { margin-top: 10px; }
+body.lec-dash #cd-overlay .lec-cd-stat-total .v { font-size: 21px; }
+body.lec-dash #cd-overlay .lec-cd-stat-total .v.green { color: #3a7d72; }
+body.lec-dash #cd-overlay .lec-cd-timeline {
+  background: #fff;
+  border: 1px solid #e4e8e3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-left {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-icn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-icn.is-amber { background: #f6efe0; color: #c8862f; }
+body.lec-dash #cd-overlay .lec-cd-timeline-icn.is-muted {
+  background: #f2f4f1;
+  border: 1.5px solid #e4e8e3;
+  color: #94a09c;
+  font-size: 9px;
+  font-weight: 700;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-title { font-size: 12.5px; font-weight: 700; color: #182420; }
+body.lec-dash #cd-overlay .lec-cd-timeline-sub { font-size: 10.5px; color: #5b6864; margin-top: 1px; }
+body.lec-dash #cd-overlay .lec-cd-timeline-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  padding: 4px 9px;
+  border-radius: 20px;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-badge.is-amber { background: #f6efe0; color: #c8862f; }
+body.lec-dash #cd-overlay .lec-cd-timeline-badge.is-muted {
+  background: #f2f4f1;
+  color: #94a09c;
+  border: 1px solid #e4e8e3;
+}
+body.lec-dash #cd-overlay .lec-cd-timeline-connector {
+  width: 1.5px;
+  height: 18px;
+  background: #e4e8e3;
+  margin: 0 0 0 14.5px;
+}
+body.lec-dash #cd-overlay .lec-cd-breakdown-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  color: #94a09c;
+  text-transform: uppercase;
+  margin: 20px 0 8px;
+}
+body.lec-dash #cd-overlay .lec-cd-field-group {
+  background: #fff;
+  border: 1px solid #e4e8e3;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+body.lec-dash #cd-overlay .lec-cd-field-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 16px;
+  border-top: 1px solid #e4e8e3;
+  font-size: 12px;
+  width: 100%;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  cursor: default;
+}
+body.lec-dash #cd-overlay .lec-cd-field-row:first-child { border-top: none; }
+body.lec-dash #cd-overlay .lec-cd-field-row .k { color: #5b6864; flex-shrink: 0; }
+body.lec-dash #cd-overlay .lec-cd-field-row .v { color: #182420; font-weight: 600; text-align: right; }
+body.lec-dash #cd-overlay .lec-cd-att-btn { cursor: pointer; }
+body.lec-dash #cd-overlay .lec-cd-att-btn .v {
+  color: #c8862f;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+body.lec-dash #cd-overlay .lec-cd-type {
+  background: #f2f4f1;
+  border: 1px solid #e4e8e3;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+body.lec-dash #cd-overlay .lec-cd-footer-actions {
+  display: flex;
+  gap: 10px;
+}
+body.lec-dash #reg-mobile-list { display: none; }
+
+/* Desktop: sticky CTAs are mobile-only, except Support keeps an inline New Ticket */
 @media (min-width: 901px) {
   body.lec-dash .lec-mobile-cta {
+    display: none !important;
+  }
+  body.lec-dash #view-support .lec-mobile-cta {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    padding: 0 !important;
+    margin-top: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  body.lec-dash #view-support .lec-sup-new-btn.lec-btn-glow {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: 180px !important;
+    background: var(--accent) !important;
+  }
+  body.lec-dash #view-support .lec-sup-new-btn.lec-btn-glow::before,
+  body.lec-dash #view-support .lec-sup-new-btn.lec-btn-glow::after {
+    display: none !important;
+  }
+  body.lec-dash #reg-mobile-list,
+  body.lec-dash .lec-att-list {
+    display: none !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-desk-only {
     display: none !important;
   }
 }
@@ -171,7 +341,7 @@
     gap: 10px !important;
     width: 100% !important;
     flex: 1 1 auto !important;
-    padding-bottom: 100px !important;
+    padding-bottom: 120px !important;
   }
   body.lec-dash #view-sessions .vf-sess-empty,
   body.lec-dash #view-sessions .lec-sess-empty {
@@ -611,9 +781,12 @@
      ═══════════════════════════════════════════════════════════ */
   body.lec-dash #view-claims,
   body.lec-dash #view-classlist,
-  body.lec-dash #view-report,
-  body.lec-dash #view-support {
+  body.lec-dash #view-report {
     padding: 16px 20px calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    background: #f2f4f1 !important;
+  }
+  body.lec-dash #view-support {
+    padding: 16px 20px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
     background: #f2f4f1 !important;
   }
   body.lec-dash #view-calendar {
@@ -691,15 +864,32 @@
     display: none !important;
   }
 
-  /* Mock claims page has no HOME (bottom-nav page) */
+  /* Claims page — show HOME like other secondary pages */
   body.lec-dash #view-claims .lec-claims-home {
-    display: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    align-self: flex-start !important;
+    width: max-content !important;
+    max-width: max-content !important;
+    margin: 0 !important;
+    padding: max(16px, env(safe-area-inset-top, 0px)) 20px 8px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #5b6864 !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
   }
 
   body.lec-dash #view-claims .claims-header {
     display: block !important;
     flex-shrink: 0 !important;
-    padding: max(16px, env(safe-area-inset-top, 0px)) 20px 16px !important;
+    padding: 0 20px 16px !important;
     margin: 0 !important;
     animation: none !important;
   }
@@ -1635,65 +1825,178 @@
     display: none !important;
   }
 
-  /* Support */
-  body.lec-dash #view-support .support-page {
+  /* Support — lecturer mobile mock (#view-support) */
+  body.lec-dash #view-support .lec-sup-page {
     display: flex !important;
     flex-direction: column !important;
     gap: 0 !important;
-    min-height: calc(100dvh - 88px) !important;
-    padding-bottom: 24px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    max-width: none !important;
   }
-  body.lec-dash #view-support .page-hero {
-    margin-bottom: 14px !important;
+  body.lec-dash #view-support .lec-sup-back {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    width: max-content !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    color: #5b6864 !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
   }
-  body.lec-dash #view-support .page-hero h1 {
+  body.lec-dash #view-support .lec-sup-title {
     font-family: "Space Grotesk", sans-serif !important;
     font-size: 21px !important;
     font-weight: 700 !important;
     color: #182420 !important;
-    margin: 0 0 8px !important;
-  }
-  body.lec-dash #view-support .page-hero p {
-    font-size: 13px !important;
-    color: #5b6864 !important;
-    line-height: 1.45 !important;
+    letter-spacing: -0.01em !important;
+    line-height: 1.2 !important;
     margin: 0 !important;
   }
-  body.lec-dash #lecturer-tickets-list {
-    flex: 1 !important;
-    margin-bottom: 14px !important;
+  body.lec-dash #view-support .lec-sup-sub {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 12px !important;
+    color: #5b6864 !important;
+    line-height: 1.5 !important;
+    margin: 5px 0 20px !important;
   }
-  body.lec-dash #view-support .st-new-btn {
-    position: static !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: 100% !important;
-    justify-content: center !important;
+  body.lec-dash #view-support .lec-sup-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin: 0 0 16px !important;
+    padding-bottom: 100px !important;
+  }
+  body.lec-dash #view-support .lec-sup-card {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+  body.lec-dash #view-support .lec-sup-empty {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 38px 24px !important;
+    gap: 9px !important;
+  }
+  body.lec-dash #view-support .lec-sup-empty-ico {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    background: #eef3f1 !important;
+    color: #26534d !important;
     display: flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    padding: 14px 16px !important;
-    border-radius: 14px !important;
-    border: none !important;
-    background: #152e2c !important;
-    color: #eef4f1 !important;
+    justify-content: center !important;
+  }
+  body.lec-dash #view-support .lec-sup-empty h3 {
     font-family: "Space Grotesk", sans-serif !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    margin-top: auto !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+    margin: 0 !important;
+  }
+  body.lec-dash #view-support .lec-sup-empty p {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 11.5px !important;
+    color: #5b6864 !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
   }
 
-  /* ── Sessions: New Session sticky CTA at bottom ── */
+  /* Support: New Ticket sticky CTA at bottom (glow) */
+  body.lec-dash #view-support .lec-mobile-cta {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 78px !important;
+    z-index: 120 !important;
+    display: block !important;
+    padding: 10px 20px 12px !important;
+    background: rgba(242, 244, 241, 0.94) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-top: 1px solid #e4e8e3 !important;
+  }
+  body.lec-dash #view-support:not(.active) .lec-mobile-cta {
+    display: none !important;
+  }
+  body.lec-dash #view-support .lec-mobile-cta .lec-sup-new-btn.lec-btn-glow {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 14px 16px !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: #eef4f1 !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 0 !important;
+    isolation: isolate !important;
+  }
+  body.lec-dash #view-support .lec-mobile-cta .lec-sup-new-btn.lec-btn-glow::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -50% !important;
+    border-radius: 50% !important;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 230deg,
+      rgba(255, 255, 255, 0.2) 265deg,
+      rgba(255, 255, 255, 1) 300deg,
+      #9fd4c8 330deg,
+      transparent 360deg
+    ) !important;
+    z-index: 0 !important;
+    animation: lecBtnGlowSpin 2s linear infinite !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #view-support .lec-mobile-cta .lec-sup-new-btn.lec-btn-glow::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 2px !important;
+    border-radius: 8px !important;
+    background: #26534d !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #view-support .lec-mobile-cta .lec-btn-glow-label,
+  body.lec-dash #view-support .lec-mobile-cta .lec-sup-new-btn > svg {
+    position: relative !important;
+    z-index: 2 !important;
+  }
+
+  /* ── Sessions: New Session sticky CTA at bottom (glow) ── */
   body.lec-dash #view-sessions .lec-mobile-cta {
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 78px !important;
     z-index: 120 !important;
-    padding: 10px 20px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
-    background: rgba(242, 244, 241, 0.92) !important;
+    display: block !important;
+    padding: 10px 20px 12px !important;
+    background: rgba(242, 244, 241, 0.94) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     border-top: 1px solid #e4e8e3 !important;
@@ -1701,7 +2004,7 @@
   body.lec-dash #view-sessions:not(.active) .lec-mobile-cta {
     display: none !important;
   }
-  body.lec-dash #view-sessions .lec-mobile-cta .new-session-btn {
+  body.lec-dash #view-sessions .lec-mobile-cta .new-session-btn.lec-btn-glow {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
@@ -1709,14 +2012,51 @@
     justify-content: center !important;
     gap: 8px !important;
     padding: 14px 16px !important;
+    min-height: 48px !important;
     border-radius: 10px !important;
     border: none !important;
-    background: #26534d !important;
+    background: transparent !important;
     color: #eef4f1 !important;
     font-family: "Space Grotesk", sans-serif !important;
     font-size: 13px !important;
     font-weight: 600 !important;
     box-shadow: none !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 0 !important;
+    isolation: isolate !important;
+  }
+  body.lec-dash #view-sessions .lec-mobile-cta .new-session-btn.lec-btn-glow::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -50% !important;
+    border-radius: 50% !important;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 230deg,
+      rgba(255, 255, 255, 0.2) 265deg,
+      rgba(255, 255, 255, 1) 300deg,
+      #9fd4c8 330deg,
+      transparent 360deg
+    ) !important;
+    z-index: 0 !important;
+    animation: lecBtnGlowSpin 2s linear infinite !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #view-sessions .lec-mobile-cta .new-session-btn.lec-btn-glow::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 2px !important;
+    border-radius: 8px !important;
+    background: #26534d !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #view-sessions .lec-mobile-cta .lec-btn-glow-label,
+  body.lec-dash #view-sessions .lec-mobile-cta .new-session-btn > svg {
+    position: relative !important;
+    z-index: 2 !important;
   }
 
   /* ── New Session + Refer sheets (mock) ── */
@@ -2111,5 +2451,867 @@
     background: #26534d !important;
     z-index: 1 !important;
     pointer-events: none !important;
+  }
+
+  /* ── New Session date calendar + time panel (mock) ── */
+  body.lec-dash #ns-overlay .ns-date-wrap {
+    position: relative !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #ns-overlay .ns-cal-ico {
+    position: absolute !important;
+    right: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #94a09c !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #ns-overlay #ns-date-display {
+    padding-right: 40px !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #ns-overlay .ns-date-picker {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+    margin-top: 8px !important;
+  }
+  body.lec-dash #ns-overlay .ns-date-picker[hidden] {
+    display: none !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-head {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 12px !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-month {
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-nav {
+    display: flex !important;
+    gap: 6px !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-nav-btn {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 7px !important;
+    background: #f2f4f1 !important;
+    border: 1px solid #e4e8e3 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #5b6864 !important;
+    padding: 0 !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 2px !important;
+    text-align: center !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-dow {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9px !important;
+    color: #94a09c !important;
+    padding-bottom: 6px !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-day {
+    font-size: 12px !important;
+    padding: 8px 0 !important;
+    border-radius: 8px !important;
+    color: #182420 !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    font-family: "Space Grotesk", sans-serif !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-day.muted {
+    color: #94a09c !important;
+    cursor: default !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-day.selected {
+    background: #26534d !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid #e4e8e3 !important;
+  }
+  body.lec-dash #ns-overlay .ns-dp-link {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10.5px !important;
+    color: #26534d !important;
+    font-weight: 600 !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-trigger {
+    padding-left: 38px !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-icon {
+    position: absolute !important;
+    left: 13px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #94a09c !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-picker {
+    position: relative !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-panel {
+    position: static !important;
+    margin-top: 8px !important;
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+    box-shadow: none !important;
+    width: 100% !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-panel-head {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    letter-spacing: 0.06em !important;
+    color: #94a09c !important;
+    text-transform: uppercase !important;
+    margin-bottom: 12px !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-panel-actions {
+    display: flex !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-clear,
+  body.lec-dash #ns-overlay .ns-time-apply {
+    flex: 1 !important;
+    padding: 10px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-clear {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    color: #182420 !important;
+  }
+  body.lec-dash #ns-overlay .ns-time-apply {
+    background: #26534d !important;
+    border: none !important;
+    color: #eef4f1 !important;
+  }
+
+  /* ── Session cards (mock teal session-card) ── */
+  body.lec-dash #view-sessions .lec-session-card,
+  body.lec-dash #view-sessions .vf-sess-card.lec-sess-card {
+    background: linear-gradient(160deg, #1c3b38, #152e2c) !important;
+    border: none !important;
+    border-radius: 20px !important;
+    padding: 20px 18px !important;
+    color: #eef4f1 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+  body.lec-dash #view-sessions .lec-session-card::after {
+    content: "" !important;
+    position: absolute !important;
+    right: -40px !important;
+    top: -60px !important;
+    width: 180px !important;
+    height: 180px !important;
+    border-radius: 50% !important;
+    background: radial-gradient(circle, rgba(79, 156, 142, 0.35), transparent 70%) !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-card-title {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: #eef4f1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-card-desc {
+    font-size: 12px !important;
+    color: #c3d8d2 !important;
+    margin-top: 8px !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-confirm-label {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.08em !important;
+    color: #a9c4bd !important;
+    text-transform: uppercase !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-confirm-count {
+    color: #f4a9a0 !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-confirm-count:not(.warn) {
+    color: #9fd4c8 !important;
+  }
+  body.lec-dash #view-sessions .vf-sess-pill {
+    display: inline-block !important;
+    background: #eef4f1 !important;
+    color: #1c3b38 !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    padding: 7px 13px !important;
+    border-radius: 20px !important;
+    margin: 0 6px 6px 0 !important;
+    border: none !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  body.lec-dash #view-sessions .lec-session-activate,
+  body.lec-dash #view-sessions .sess-act-btn.activate,
+  body.lec-dash #view-sessions .sess-act-btn.end {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+    color: #eef4f1 !important;
+    background: transparent !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 9px 16px !important;
+    border-radius: 20px !important;
+    margin-top: 8px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    position: relative !important;
+    z-index: 1 !important;
+    width: auto !important;
+  }
+
+  /* ── Claim cards + View & Verify sheet ── */
+  body.lec-dash #view-claims .lec-rec-card {
+    border-left: 3px solid #3a7d72 !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #view-claims .claim-av {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 50% !important;
+    background: #eaf3f1 !important;
+    color: #26534d !important;
+    border: none !important;
+    font-weight: 600 !important;
+  }
+  body.lec-dash #view-claims .claim-actions {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  body.lec-dash #view-claims .claim-actions .cl-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+    padding: 11px !important;
+    font-size: 11.5px !important;
+  }
+  body.lec-dash #view-claims .claim-actions .cl-btn.reject {
+    color: #c85a3d !important;
+    border-color: #f0d5cc !important;
+    background: #f2f4f1 !important;
+  }
+  body.lec-dash #view-claims .claim-actions .cl-btn.approve {
+    color: #26534d !important;
+    border-color: #cfe6e0 !important;
+    background: #f2f4f1 !important;
+  }
+  body.lec-dash #view-claims .claim-footer {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  body.lec-dash #cd-overlay.open {
+    align-items: flex-end !important;
+    background: rgba(13, 26, 24, 0.55) !important;
+    backdrop-filter: none !important;
+  }
+  body.lec-dash #cd-overlay .claim-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    background: #f2f4f1 !important;
+    max-height: min(90dvh, 90%) !important;
+    padding: 18px 20px 26px !important;
+  }
+  body.lec-dash #cd-overlay .modal-to {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    color: #94a09c !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+  }
+  body.lec-dash #cd-overlay .modal-name {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+    margin-top: 4px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-desk-only {
+    display: none !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stats {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat .l {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9px !important;
+    letter-spacing: 0.05em !important;
+    color: #94a09c !important;
+    text-transform: uppercase !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat .v {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+    margin-top: 6px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat-total {
+    margin-top: 10px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat-total .v {
+    font-size: 21px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-stat-total .v.green {
+    color: #3a7d72 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+    margin-top: 16px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-left {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-icn {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-icn.is-amber {
+    background: #f6efe0 !important;
+    color: #c8862f !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-icn.is-muted {
+    background: #f2f4f1 !important;
+    border: 1.5px solid #e4e8e3 !important;
+    color: #94a09c !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-title {
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-sub {
+    font-size: 10.5px !important;
+    color: #5b6864 !important;
+    margin-top: 1px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-badge {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9px !important;
+    padding: 4px 9px !important;
+    border-radius: 20px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-badge.is-amber {
+    background: #f6efe0 !important;
+    color: #c8862f !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-badge.is-muted {
+    background: #f2f4f1 !important;
+    color: #94a09c !important;
+    border: 1px solid #e4e8e3 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-timeline-connector {
+    width: 1.5px !important;
+    height: 18px !important;
+    background: #e4e8e3 !important;
+    margin: 0 0 0 14.5px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-breakdown-label {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.05em !important;
+    color: #94a09c !important;
+    text-transform: uppercase !important;
+    margin: 20px 0 8px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-field-group {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    margin-bottom: 10px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-field-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    padding: 10px 16px !important;
+    border-top: 1px solid #e4e8e3 !important;
+    font-size: 12px !important;
+    width: 100% !important;
+    background: transparent !important;
+    text-align: left !important;
+    font-family: inherit !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-field-row:first-child {
+    border-top: none !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-field-row .k {
+    color: #5b6864 !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-field-row .v {
+    color: #182420 !important;
+    font-weight: 600 !important;
+    text-align: right !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-venue {
+    max-width: 170px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-type {
+    background: #f2f4f1 !important;
+    border: 1px solid #e4e8e3 !important;
+    padding: 3px 9px !important;
+    border-radius: 6px !important;
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-att-btn .v {
+    color: #c8862f !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-att-btn.att-good .v {
+    color: #3a7d72 !important;
+  }
+  body.lec-dash #cd-overlay .ns-divider {
+    display: none !important;
+  }
+  body.lec-dash #cd-overlay .ns-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 22px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-footer-actions {
+    display: flex !important;
+    gap: 10px !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-footer-actions .cl-btn.reject {
+    flex: 1 !important;
+  }
+  body.lec-dash #cd-overlay .lec-cd-footer-actions .ns-create {
+    flex: 2 !important;
+  }
+
+  /* Attendance register mobile list */
+  body.lec-dash #regModal .lec-att-list {
+    display: none !important;
+  }
+  body.lec-dash #regModal.open {
+    align-items: flex-end !important;
+    background: rgba(13, 26, 24, 0.55) !important;
+  }
+  body.lec-dash #regModal .reg-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 22px 22px 0 0 !important;
+    background: #f2f4f1 !important;
+    padding: 18px 20px 26px !important;
+  }
+  body.lec-dash #regModal .reg-table-wrap {
+    display: none !important;
+  }
+  body.lec-dash #regModal .lec-att-list {
+    display: block !important;
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 2px 14px !important;
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    margin-top: 8px !important;
+  }
+  body.lec-dash #regModal .lec-att-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 11px 2px !important;
+    border-top: 1px solid #e4e8e3 !important;
+  }
+  body.lec-dash #regModal .lec-att-row:first-child {
+    border-top: none !important;
+  }
+  body.lec-dash #regModal .lec-att-row .num {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    color: #94a09c !important;
+    width: 18px !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #regModal .lec-att-row .ainfo {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 0 8px !important;
+  }
+  body.lec-dash #regModal .lec-att-row .nm {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #182420 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  body.lec-dash #regModal .lec-att-row .sid {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    color: #94a09c !important;
+    margin-top: 1px !important;
+  }
+  body.lec-dash #regModal .status-tag {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9px !important;
+    padding: 3px 9px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #regModal .status-tag.absent {
+    background: #fde9e5 !important;
+    color: #c85a3d !important;
+  }
+  body.lec-dash #regModal .status-tag.present {
+    background: #e7f3ee !important;
+    color: #26534d !important;
+  }
+  body.lec-dash #regModal .reg-summary-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+  body.lec-dash #regModal .reg-stat {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 10px !important;
+  }
+
+  /* Support tickets list */
+  body.lec-dash #view-support .lec-ticket-card {
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+  }
+  body.lec-dash #view-support .lec-ticket-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  body.lec-dash #view-support .lec-ticket-title {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+  }
+  body.lec-dash #view-support .lec-ticket-sub {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    color: #5b6864 !important;
+    margin-top: 4px !important;
+  }
+  body.lec-dash #view-support .lec-ticket-status {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    padding: 4px 9px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #view-support .lec-ticket-status.is-open {
+    background: #e7f3ee !important;
+    color: #26534d !important;
+  }
+  body.lec-dash #view-support .lec-ticket-status.is-progress {
+    background: #f6efe0 !important;
+    color: #c8862f !important;
+  }
+  body.lec-dash #view-support .lec-ticket-status.is-resolved {
+    background: #eaf3f1 !important;
+    color: #3a7d72 !important;
+  }
+  body.lec-dash #view-support .lec-ticket-body {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 11.5px !important;
+    color: #5b6864 !important;
+    margin-top: 10px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Raise Support Ticket sheet — lecturer mock #ticketModal */
+  body.lec-dash #lec-ticket-overlay.open {
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    background: rgba(13, 26, 24, 0.55) !important;
+    backdrop-filter: none !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+    background: #f2f4f1 !important;
+    border: none !important;
+    box-shadow: none !important;
+    max-height: 90% !important;
+    max-height: min(90dvh, 90%) !important;
+    overflow-y: auto !important;
+    padding: 18px 20px calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-head {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 4px !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-intro {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-ico {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 10px !important;
+    background: #eaf3f1 !important;
+    color: #26534d !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-eyebrow {
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 10px !important;
+    color: #94a09c !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-title {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: #182420 !important;
+    margin-top: 4px !important;
+    line-height: 1.25 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-close {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #5b6864 !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-sheet-hint {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 12px !important;
+    color: #5b6864 !important;
+    margin: 8px 0 0 !important;
+    line-height: 1.5 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-label {
+    display: block !important;
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.05em !important;
+    color: #94a09c !important;
+    text-transform: uppercase !important;
+    margin: 16px 0 6px !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px 14px !important;
+    border: 2px solid transparent !important;
+    border-radius: 10px !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 13px !important;
+    color: #182420 !important;
+    background-color: #fff !important;
+    background-image:
+      linear-gradient(#fff, #fff),
+      conic-gradient(
+        from var(--lec-field-glow, 0deg),
+        #c8ddd8 0%,
+        #c8ddd8 58%,
+        rgba(159, 212, 200, 0.45) 72%,
+        #ffffff 86%,
+        #9fd4c8 93%,
+        #c8ddd8 100%
+      ) !important;
+    background-origin: border-box !important;
+    background-clip: padding-box, border-box !important;
+    animation: lecFieldGlowSpin 2.2s linear infinite !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-input::placeholder {
+    color: #94a09c !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-textarea {
+    resize: vertical !important;
+    min-height: 96px !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-select-wrap {
+    position: relative !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    padding-right: 38px !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-select-wrap > svg {
+    position: absolute !important;
+    right: 14px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    color: #94a09c !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-field-hint {
+    font-family: "Space Grotesk", sans-serif !important;
+    font-size: 10.5px !important;
+    color: #94a09c !important;
+    margin-top: 8px !important;
+    line-height: 1.5 !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-actions {
+    display: flex !important;
+    gap: 10px !important;
+    margin-top: 22px !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-cancel {
+    flex: 1 !important;
+    padding: 13px !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    border: 1px solid #e4e8e3 !important;
+    color: #182420 !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-submit.lec-btn-glow {
+    flex: 2 !important;
+    padding: 13px !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+    border: none !important;
+    background: transparent !important;
+    color: #eef4f1 !important;
+    font-family: "Space Grotesk", sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    position: relative !important;
+    z-index: 0 !important;
+    isolation: isolate !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-submit.lec-btn-glow::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: -50% !important;
+    border-radius: 50% !important;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 230deg,
+      rgba(255, 255, 255, 0.2) 265deg,
+      rgba(255, 255, 255, 1) 300deg,
+      #9fd4c8 330deg,
+      transparent 360deg
+    ) !important;
+    z-index: 0 !important;
+    animation: lecBtnGlowSpin 2s linear infinite !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-submit.lec-btn-glow::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 2px !important;
+    border-radius: 8px !important;
+    background: #26534d !important;
+    z-index: 1 !important;
+    pointer-events: none !important;
+  }
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-submit .lec-btn-glow-label,
+  body.lec-dash #lec-ticket-overlay .lec-sup-btn-submit > svg {
+    position: relative !important;
+    z-index: 2 !important;
   }
 }

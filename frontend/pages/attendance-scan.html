@@ -6,98 +6,420 @@
 <title>VeriFlow — Confirm Attendance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #F7F9F8; --surface: #ffffff; --card: #ffffff;
-  --border: rgba(43,82,89,0.09); --border-hi: rgba(43,82,89,0.16);
-  --text: #2B5259; --muted: #6B8289; --faint: #EDF2F0;
-  --accent: #3D6B73; --green: #7BAF6E; --green-light: rgba(123,175,110,0.08);
-  --green-border: rgba(123,175,110,0.2); --red: #c45c5c; --radius: 14px;
+  --teal-900: #152e2c;
+  --teal-800: #1c3b38;
+  --teal-700: #26534d;
+  --teal-500: #3a7d72;
+  --teal-400: #4f9c8e;
+  --mist: #f2f4f1;
+  --mist-card: #ffffff;
+  --ink: #182420;
+  --ink-soft: #5b6864;
+  --ink-faint: #94a09c;
+  --line: #e4e8e3;
+  --clay: #d97757;
+  --red: #c85a3d;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
 }
-html, body { min-height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text); -webkit-font-smoothing: antialiased; }
-body { display: flex; flex-direction: column; align-items: center; padding-bottom: 40px; }
-.top-bar { width: 100%; background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 10; }
-.top-bar img { height: 30px; width: auto; display: block; }
-.wrapper { width: 100%; max-width: 480px; padding: 32px 20px 0; }
-.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px 32px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06); animation: fadeUp .35s ease both; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.session-bar { background: var(--faint); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 13px 15px; margin-bottom: 26px; }
-.session-module { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-.session-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.8; }
-.form-label { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-.form-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
-.student-input { width: 100%; border: 2px solid var(--border-hi); border-radius: 10px; padding: 14px 16px; font-size: 20px; font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); letter-spacing: 3px; outline: none; background: var(--surface); transition: border-color .2s, box-shadow .2s; margin-bottom: 6px; -webkit-appearance: none; }
-.student-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.07); }
-.student-input::placeholder { color: #ccc; letter-spacing: 1px; font-weight: 400; font-size: 16px; }
-.input-hint { font-size: 11px; color: var(--muted); margin-bottom: 22px; font-family: 'DM Mono', monospace; }
-.error-msg { font-size: 12px; color: var(--red); background: rgba(192,57,43,0.07); border: 1px solid rgba(192,57,43,0.2); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; display: none; line-height: 1.5; }
+html, body {
+  min-height: 100%;
+  background: var(--mist);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+}
+.wrapper {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 20px 0;
+}
+.card {
+  background: var(--mist-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 20px 18px 22px;
+  animation: fadeUp .35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Teal session hero */
+.hero {
+  background: linear-gradient(160deg, var(--teal-800), var(--teal-900));
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  color: #eef4f1;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -60px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,156,142,.35), transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #a9c4bd;
+  position: relative;
+  z-index: 1;
+}
+.hero-headline {
+  font-size: 19px;
+  font-weight: 700;
+  margin-top: 6px;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+.hero-desc {
+  font-size: 12px;
+  color: #c3d8d2;
+  margin-top: 8px;
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+}
+.hero.hero--error {
+  background: linear-gradient(160deg, #5a3a34, #3d2420);
+}
+.hero.hero--error .hero-label { color: #e8b4a6; }
+.hero.hero--error .hero-desc { color: #f0cfc6; }
+.hero.hero--error::after {
+  background: radial-gradient(circle, rgba(200,90,61,.35), transparent 70%);
+}
+
+.form-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.form-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.student-input {
+  width: 100%;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--ink);
+  letter-spacing: 2px;
+  outline: none;
+  background: var(--mist-card);
+  margin-bottom: 6px;
+  -webkit-appearance: none;
+}
+@property --scan-field-glow {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes scanFieldGlowSpin {
+  to { --scan-field-glow: 360deg; }
+}
+.student-input:focus {
+  border: 2px solid transparent;
+  box-shadow: none;
+  outline: none;
+  background-color: var(--mist-card);
+  background-image:
+    linear-gradient(var(--mist-card), var(--mist-card)),
+    conic-gradient(
+      from var(--scan-field-glow),
+      var(--line) 0%,
+      var(--line) 58%,
+      rgba(159, 212, 200, 0.45) 72%,
+      #ffffff 86%,
+      #9fd4c8 93%,
+      var(--line) 100%
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: scanFieldGlowSpin 2.2s linear infinite;
+}
+.student-input::placeholder {
+  color: var(--ink-faint);
+  letter-spacing: 1px;
+  font-weight: 400;
+  font-size: 14px;
+}
+.input-hint {
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.error-msg {
+  font-size: 12px;
+  color: var(--red);
+  background: #fbeae5;
+  border: 1px solid #f0d0c4;
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  margin-bottom: 14px;
+  display: none;
+  line-height: 1.5;
+}
 .error-msg.show { display: block; }
-.confirm-btn { width: 100%; background: var(--accent); color: #ffffff; border: none; border-radius: 10px; padding: 15px; font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity .2s, transform .15s; }
-.confirm-btn:hover { opacity: .85; }
+@keyframes scanBtnGlowSpin {
+  to { transform: rotate(360deg); }
+}
+.confirm-btn {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  background: transparent;
+  color: #eef4f1;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+  cursor: pointer;
+  transition: transform .15s;
+}
+.confirm-btn > * {
+  position: relative;
+  z-index: 2;
+}
+.confirm-btn::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 230deg,
+    rgba(255, 255, 255, 0.2) 265deg,
+    rgba(255, 255, 255, 1) 300deg,
+    #9fd4c8 330deg,
+    transparent 360deg
+  );
+  z-index: 0;
+  animation: scanBtnGlowSpin 2s linear infinite;
+  pointer-events: none;
+}
+.confirm-btn::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 8px;
+  background: var(--teal-700);
+  z-index: 1;
+  pointer-events: none;
+}
 .confirm-btn:active { transform: scale(.99); }
-.confirm-btn:disabled { opacity: .35; cursor: not-allowed; }
-.spinner { width: 15px; height: 15px; border: 2.5px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+.confirm-btn:disabled {
+  color: #93a09b;
+  cursor: not-allowed;
+}
+.confirm-btn:disabled::before {
+  animation: none;
+  background: #d3dbd7;
+}
+.confirm-btn:disabled::after {
+  background: #d3dbd7;
+}
+.spinner {
+  width: 15px;
+  height: 15px;
+  border: 2.5px solid rgba(238,244,241,.35);
+  border-top-color: #eef4f1;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
-#state-confirm, #state-error, #state-loading { display: none; animation: fadeUp .4s ease both; }
-#state-loading { text-align: center; padding: 40px 0; color: var(--muted); font-size: 14px; }
-.tick-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
-.tick-circle { width: 64px; height: 64px; background: var(--green-light); border-radius: 50%; border: 1px solid var(--green-border); display: flex; align-items: center; justify-content: center; animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both; }
-@keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.success-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--green); text-align: center; margin-bottom: 4px; }
-.success-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
-.detail-card { background: var(--faint); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 22px; }
-.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-.detail-row:last-child { border-bottom: none; }
-.detail-label { font-size: 12px; color: var(--muted); }
-.detail-value { font-size: 12px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
-.detail-value.accent { color: var(--accent); }
-.close-note { font-size: 12px; color: #bbb; text-align: center; font-family: 'DM Mono', monospace; line-height: 1.6; }
-.page-footer { margin-top: 28px; text-align: center; font-size: 11px; color: #ccc; font-family: 'DM Mono', monospace; line-height: 1.6; }
+
+#state-confirm,
+#state-error,
+#state-loading { display: none; animation: fadeUp .4s ease both; }
+#state-loading {
+  text-align: center;
+  padding: 36px 12px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+.loading-ico {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eef3f1;
+  color: var(--teal-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.tick-wrap { display: flex; justify-content: center; margin-bottom: 14px; }
+.tick-circle {
+  width: 56px;
+  height: 56px;
+  background: #e7f3ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes popIn {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.success-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--teal-700);
+  text-align: center;
+  margin-bottom: 4px;
+  letter-spacing: -.01em;
+}
+.success-sub {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+.field-group {
+  background: var(--mist-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.field-group-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: .06em;
+  color: var(--teal-700);
+  text-transform: uppercase;
+  padding: 12px 14px 6px;
+  font-weight: 600;
+}
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.field-row .k { color: var(--ink-soft); flex-shrink: 0; }
+.field-row .v {
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  word-break: break-all;
+}
+.field-row .v.accent { color: var(--teal-700); }
+.close-note {
+  font-size: 11px;
+  color: var(--ink-faint);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+}
+.page-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--ink-faint);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.6;
+}
 </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <img src="../images/veriflo-brand.png" alt="VeriFlow"/>
-</div>
-
 <div class="wrapper">
   <div class="card">
 
-    <div id="state-loading">Loading session…</div>
+    <div id="state-loading">
+      <div class="loading-ico" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      Loading session…
+    </div>
 
     <div id="state-error">
-      <div class="session-bar" style="border-left-color:var(--red);">
-        <div class="session-module">Unable to join session</div>
-        <div class="session-meta" id="error-text">Please scan the QR code shown by your tutor.</div>
+      <div class="hero hero--error">
+        <div class="hero-label">Attendance</div>
+        <div class="hero-headline">Unable to join session</div>
+        <div class="hero-desc" id="error-text">Please scan the QR code shown by your tutor.</div>
       </div>
     </div>
 
     <div id="state-form">
-      <div class="session-bar">
-        <div class="session-module" id="sess-module">—</div>
-        <div class="session-meta" id="sess-meta">—</div>
+      <div class="hero">
+        <div class="hero-label">Sign in</div>
+        <div class="hero-headline" id="sess-module">—</div>
+        <div class="hero-desc" id="sess-meta">—</div>
       </div>
       <div class="form-label">Enter your student number</div>
       <div class="form-sub">Your number must appear on the class list for this module</div>
       <input class="student-input" id="student-input" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="e.g. 220401234" autocomplete="off" oninput="onInputChange(this)" onkeydown="onKeyDown(event)"/>
       <div class="input-hint">Numbers only</div>
       <div class="error-msg" id="error-msg"></div>
-      <button class="confirm-btn" id="confirm-btn" onclick="submitAttendance()">Confirm Attendance</button>
+      <button class="confirm-btn" id="confirm-btn" onclick="submitAttendance()"><span class="confirm-btn-label">Confirm Attendance</span></button>
     </div>
 
     <div id="state-confirm">
-      <div class="tick-wrap"><div class="tick-circle"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><polyline points="4,14 11,21 24,8" stroke="#1a7a52" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+      <div class="tick-wrap">
+        <div class="tick-circle">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><polyline points="4,14 11,21 24,8" stroke="#26534d" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
       <div class="success-title">Attendance Recorded</div>
       <div class="success-sub">You have been signed in successfully</div>
-      <div class="detail-card">
-        <div class="detail-row"><span class="detail-label">Student</span><span class="detail-value" id="ok-name">—</span></div>
-        <div class="detail-row"><span class="detail-label">Student No.</span><span class="detail-value" id="ok-number">—</span></div>
-        <div class="detail-row"><span class="detail-label">Module</span><span class="detail-value" id="ok-module">—</span></div>
-        <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value" id="ok-date">—</span></div>
-        <div class="detail-row"><span class="detail-label">Signed in</span><span class="detail-value accent" id="signed-in-time">—</span></div>
+      <div class="field-group">
+        <div class="field-group-title">Sign-in details</div>
+        <div class="field-row"><span class="k">Student</span><span class="v" id="ok-name">—</span></div>
+        <div class="field-row"><span class="k">Student No.</span><span class="v" id="ok-number">—</span></div>
+        <div class="field-row"><span class="k">Module</span><span class="v" id="ok-module">—</span></div>
+        <div class="field-row"><span class="k">Date</span><span class="v" id="ok-date">—</span></div>
+        <div class="field-row"><span class="k">Signed in</span><span class="v accent" id="signed-in-time">—</span></div>
       </div>
       <div class="close-note">You may now close this page</div>
     </div>
@@ -125,6 +447,7 @@ const API_BASE = (() => {
   return PRODUCTION_API;
 })();
 const PASS_KEY = 'vf_attendance_pass';
+const DONE_KEY = 'vf_attendance_done';
 
 let passToken = null;
 let sessionInfo = null;
@@ -149,14 +472,79 @@ function formatTime(t) {
   return String(t).slice(0, 5);
 }
 
+function getDoneMap() {
+  try {
+    const raw = localStorage.getItem(DONE_KEY);
+    const map = raw ? JSON.parse(raw) : {};
+    return map && typeof map === 'object' ? map : {};
+  } catch {
+    return {};
+  }
+}
+
+function getSessionDone(sessionId) {
+  if (sessionId == null || sessionId === '') return null;
+  return getDoneMap()[String(sessionId)] || null;
+}
+
+function markSessionDone(sessionId, receipt) {
+  if (sessionId == null || sessionId === '') return;
+  const map = getDoneMap();
+  map[String(sessionId)] = {
+    fullName: receipt.fullName || '—',
+    studentNumber: receipt.studentNumber || '—',
+    module: receipt.module || '—',
+    sessionDate: receipt.sessionDate || null,
+    recordedAt: receipt.recordedAt || new Date().toISOString(),
+  };
+  try {
+    localStorage.setItem(DONE_KEY, JSON.stringify(map));
+  } catch (_) { /* private mode / quota */ }
+}
+
+function fillConfirmDetails(receipt) {
+  document.getElementById('ok-name').textContent = receipt.fullName || '—';
+  document.getElementById('ok-number').textContent = receipt.studentNumber || '—';
+  document.getElementById('ok-module').textContent = receipt.module || '—';
+  document.getElementById('ok-date').textContent = formatDate(receipt.sessionDate);
+  const recorded = receipt.recordedAt ? new Date(receipt.recordedAt) : new Date();
+  document.getElementById('signed-in-time').textContent = recorded.toLocaleTimeString('en-ZA', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const sub = document.querySelector('.success-sub');
+  if (sub) {
+    sub.textContent = receipt.alreadyOnDevice
+      ? 'This phone already signed in for this session'
+      : 'You have been signed in successfully';
+  }
+}
+
+function showAlreadyConfirmed(receipt) {
+  fillConfirmDetails({ ...receipt, alreadyOnDevice: true });
+  showState('confirm');
+}
+
 function renderSession(session) {
   sessionInfo = session;
+  const done = getSessionDone(session.sessionId);
+  if (done) {
+    showAlreadyConfirmed({
+      ...done,
+      module: done.module || session.moduleCode,
+      sessionDate: done.sessionDate || session.sessionDate,
+    });
+    return;
+  }
+
   const typeLabel = { tutorial:'Tutorial', practical:'Practical', online:'Online', revision:'Revision', lecture:'Lecture' }[session.sessionType] || session.sessionType || '';
   document.getElementById('sess-module').textContent = `${session.moduleCode}${session.topic ? ' — ' + session.topic : ''}`;
-  document.getElementById('sess-meta').innerHTML =
-    `${formatDate(session.sessionDate)}${session.startTime ? ' &nbsp;|&nbsp; ' + formatTime(session.startTime) : ''}` +
-    (session.venue ? `<br>${session.venue}` : '') +
-    (typeLabel ? `<br>${typeLabel}` : '');
+  const lines = [
+    [formatDate(session.sessionDate), session.startTime ? formatTime(session.startTime) : null].filter(Boolean).join(' · '),
+    session.venue || null,
+    typeLabel || null,
+  ].filter(Boolean);
+  document.getElementById('sess-meta').textContent = lines.join(' · ');
   showState('form');
 }
 
@@ -172,7 +560,11 @@ async function apiPost(path, body) {
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data.errors && data.errors[0]) || data.error || 'Request failed');
+  if (!res.ok) {
+    const err = new Error((data.errors && data.errors[0]) || data.error || 'Request failed');
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 
@@ -189,6 +581,19 @@ async function initPage() {
   const qrToken = params.get('t');
 
   try {
+    // Fresh QR scan always wins — allows a different session on the same phone
+    if (qrToken) {
+      const data = await apiPost('/attendance/enter', { qrToken });
+      passToken = data.passToken;
+      sessionStorage.setItem(PASS_KEY, passToken);
+      renderSession(data.session);
+
+      if (window.history.replaceState) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+      return;
+    }
+
     const stored = sessionStorage.getItem(PASS_KEY);
     if (stored) {
       const data = await apiGet(`/attendance/pass/${encodeURIComponent(stored)}`);
@@ -197,21 +602,13 @@ async function initPage() {
       return;
     }
 
-    if (!qrToken) {
-      showError('Scan the QR code displayed by your tutor to open this session.');
-      return;
-    }
-
-    const data = await apiPost('/attendance/enter', { qrToken });
-    passToken = data.passToken;
-    sessionStorage.setItem(PASS_KEY, passToken);
-    renderSession(data.session);
-
-    if (window.history.replaceState) {
-      window.history.replaceState({}, '', window.location.pathname);
-    }
+    showError('Scan the QR code displayed by your tutor to open this session.');
   } catch (err) {
-    showError(err.message || 'Could not join this session.');
+    const raw = err && err.message ? err.message : '';
+    const msg = raw === 'Failed to fetch'
+      ? 'Cannot reach the VeriFlow server. Stay on the same Wi‑Fi as your tutor and try scanning again.'
+      : (raw || 'Could not join this session.');
+    showError(msg);
   }
 }
 
@@ -226,6 +623,11 @@ function onKeyDown(e) {
 
 async function submitAttendance() {
   if (lockedOut) return;
+
+  if (sessionInfo && getSessionDone(sessionInfo.sessionId)) {
+    showAlreadyConfirmed(getSessionDone(sessionInfo.sessionId));
+    return;
+  }
 
   const now = Date.now();
   if (now < cooldownUntil) {
@@ -248,7 +650,7 @@ async function submitAttendance() {
 
   const btn = document.getElementById('confirm-btn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Confirming…';
+  btn.innerHTML = '<span class="confirm-btn-label"><span class="spinner"></span>Confirming…</span>';
 
   try {
     const result = await apiPost('/attendance', { passToken, studentNumber: val });
@@ -256,29 +658,49 @@ async function submitAttendance() {
     failedAttempts = 0;
     cooldownUntil = 0;
 
-    document.getElementById('ok-name').textContent = result.fullName || '—';
-    document.getElementById('ok-number').textContent = result.studentNumber;
-    document.getElementById('ok-module').textContent = result.module;
-    document.getElementById('ok-date').textContent = formatDate(result.sessionDate);
+    const receipt = {
+      fullName: result.fullName || '—',
+      studentNumber: result.studentNumber,
+      module: result.module,
+      sessionDate: result.sessionDate,
+      recordedAt: result.recordedAt || new Date().toISOString(),
+    };
 
-    const recorded = result.recordedAt ? new Date(result.recordedAt) : new Date();
-    document.getElementById('signed-in-time').textContent = recorded.toLocaleTimeString('en-ZA', { hour: 'numeric', minute: '2-digit' });
+    if (sessionInfo && sessionInfo.sessionId != null) {
+      markSessionDone(sessionInfo.sessionId, receipt);
+    }
 
+    fillConfirmDetails(receipt);
     showState('confirm');
   } catch (err) {
     failedAttempts += 1;
 
     const errEl = document.getElementById('error-msg');
+    const already = /already been recorded/i.test(err.message || '');
+
+    if (already && sessionInfo && sessionInfo.sessionId != null) {
+      const receipt = {
+        fullName: '—',
+        studentNumber: val,
+        module: sessionInfo.moduleCode,
+        sessionDate: sessionInfo.sessionDate,
+        recordedAt: new Date().toISOString(),
+      };
+      markSessionDone(sessionInfo.sessionId, receipt);
+      showAlreadyConfirmed(receipt);
+      return;
+    }
+
     if (failedAttempts >= 3) {
       lockedOut = true;
       errEl.textContent = 'Too many attempts. Please ask your tutor for assistance.';
       btn.disabled = true;
-      btn.textContent = 'Try again later';
+      btn.innerHTML = '<span class="confirm-btn-label">Try again later</span>';
     } else {
       errEl.textContent = err.message || 'Could not record attendance.';
       cooldownUntil = Date.now() + 3000;
       btn.disabled = false;
-      btn.textContent = 'Confirm Attendance';
+      btn.innerHTML = '<span class="confirm-btn-label">Confirm Attendance</span>';
     }
     errEl.classList.add('show');
   }

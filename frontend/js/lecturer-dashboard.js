@@ -15,6 +15,37 @@ function setText(selector, value) {
   if (el) el.textContent = value;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function skeletonTutorCards(count = 6) {
+  return (VF.skeleton && VF.skeleton.cards(count)) || '';
+}
+
+function skeletonReferralRows(count = 3) {
+  return (VF.skeleton && VF.skeleton.referralRows(count)) || '';
+}
+
+function skeletonSessionRows(count = 5) {
+  return (VF.skeleton && VF.skeleton.sessionRows(count)) || '';
+}
+
+function skeletonClaimCards(count = 4) {
+  return (VF.skeleton && VF.skeleton.claimCards(count)) || '';
+}
+
+function asListPayload(data) {
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.data)) return data.data;
+  return [];
+}
+
 function sessionDateKey(sessionDate) {
   if (!sessionDate) return null;
   if (typeof sessionDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(sessionDate.trim())) {
@@ -165,7 +196,7 @@ function updateLecMobileHubNext(sessions) {
       : (s.topic || sessionTypeLabel(s.session_type) || 'Up next');
     const time = s.start_time ? String(s.start_time).slice(0, 5) : '—';
     const venue = s.venue || 'Venue TBA';
-    const label = mode === 'live' ? 'Live now' : 'Up next';
+    const label = mode === 'live' ? 'Live now' : mode === 'due' ? 'Due now' : 'Up next';
     metaEl.textContent = `${label} · ${time} · ${venue}`;
     aria = `${titleEl.textContent}. ${metaEl.textContent}`;
   }
@@ -209,6 +240,7 @@ function dashboardStatusChip(status) {
   if (status === 'active')    return '<span class="status-chip live">Live</span>';
   if (status === 'completed') return '<span class="status-chip confirmed">Confirmed</span>';
   if (status === 'flagged')   return '<span class="status-chip flagged">Flagged</span>';
+  if (status === 'cancelled') return '<span class="status-chip" style="background:rgba(0,0,0,.06);color:var(--muted);">Cancelled</span>';
   return '<span class="status-chip awaiting">Scheduled</span>';
 }
 
@@ -287,32 +319,46 @@ function findNextSessionToday(sessions) {
   const todayStr = localTodayKey();
   const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
 
-  const upcoming = (sessions || [])
+  const candidates = (sessions || [])
     .filter((s) => {
       if (sessionDateKey(s.session_date) !== todayStr) return false;
       if (s.status === 'completed' || s.status === 'flagged') return false;
-      if (s.status === 'active') return false;
+      if (s.status === 'cancelled') return false;
+      if (s.status === 'active') return false; // handled by findLiveSessionToday
       return true;
     })
-    .filter((s) => {
-      if (!s.start_time) return true;
-      return nsTimeToMinutes(String(s.start_time).slice(0, 5)) >= nowMins;
+    .map((s) => {
+      const startMins = s.start_time
+        ? nsTimeToMinutes(String(s.start_time).slice(0, 5))
+        : null;
+      return { session: s, startMins };
     })
     .sort((a, b) => {
-      const aMins = a.start_time ? nsTimeToMinutes(String(a.start_time).slice(0, 5)) : 9999;
-      const bMins = b.start_time ? nsTimeToMinutes(String(b.start_time).slice(0, 5)) : 9999;
-      return aMins - bMins;
+      // Prefer sessions that haven't started yet, then soonest start, then overdue
+      const aUpcoming = a.startMins == null || a.startMins >= nowMins;
+      const bUpcoming = b.startMins == null || b.startMins >= nowMins;
+      if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+      const aMins = a.startMins == null ? 9999 : a.startMins;
+      const bMins = b.startMins == null ? 9999 : b.startMins;
+      if (aUpcoming) return aMins - bMins;
+      return bMins - aMins; // most recently due overdue first
     });
 
-  return upcoming[0] || null;
+  return candidates[0]?.session || null;
 }
 
 function findTodayCardSession(sessions) {
   const live = findLiveSessionToday(sessions);
   if (live) return { session: live, mode: 'live' };
   const next = findNextSessionToday(sessions);
-  if (next) return { session: next, mode: 'upcoming' };
-  return null;
+  if (!next) return null;
+
+  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+  const startMins = next.start_time
+    ? nsTimeToMinutes(String(next.start_time).slice(0, 5))
+    : null;
+  const mode = startMins != null && startMins < nowMins ? 'due' : 'upcoming';
+  return { session: next, mode };
 }
 
 function renderTodayCardTutorAvatars(namesStr) {
@@ -344,11 +390,20 @@ function renderTodayCard(sessions) {
   card.style.display = 'block';
 
   const tagEl = card.querySelector('.tag');
-  if (tagEl) tagEl.textContent = mode === 'live' ? 'Live now' : 'Up next';
+  if (tagEl) {
+    tagEl.textContent =
+      mode === 'live' ? 'Live now' :
+      mode === 'due' ? 'Due now' :
+      'Up next';
+  }
 
   const dotEl = card.querySelector('.status-dot');
   if (dotEl) {
-    dotEl.className = mode === 'live' ? 'status-dot live-pulse' : 'status-dot awaiting';
+    dotEl.className = mode === 'live'
+      ? 'status-dot live-pulse'
+      : mode === 'due'
+        ? 'status-dot awaiting'
+        : 'status-dot awaiting';
   }
 
   setText('#today-card-title', `${todaySession.module_code} — ${sessionTypeLabel(todaySession.session_type)}`);
@@ -358,11 +413,11 @@ function renderTodayCard(sessions) {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
-    const tutorLabel = mode === 'upcoming' ? 'Available:' : 'Tutor:';
-    const tutorNames = mode === 'upcoming'
-      ? todaySession.tutor_confirmed_names
-      : todaySession.tutor_names;
-    const tutorHtml = mode === 'upcoming' && !tutorNames
+    const tutorLabel = mode === 'live' ? 'Tutor:' : 'Available:';
+    const tutorNames = mode === 'live'
+      ? todaySession.tutor_names
+      : todaySession.tutor_confirmed_names;
+    const tutorHtml = mode !== 'live' && !tutorNames
       ? '<span class="card-desc-tba">None yet</span>'
       : renderTodayCardTutorAvatars(tutorNames);
     descEl.innerHTML = `<span class="card-desc-topic">${topic} · ${tutorLabel}</span>${tutorHtml}`;
@@ -582,12 +637,11 @@ function renderClaimsList(claims) {
     const uiStatus = claimUiStatus(c.status);
     const initials = VF.initials(c.tutor_first_names, c.tutor_surname);
     const pendingReview = c.status === 'pending_lecturer';
-    const readOnly = c.status === 'pending_coordinator' || c.status === 'approved';
     const hoursLabel = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
     return `
-      <div class="claim-card ${uiStatus}" id="claim-${c.id}" data-status="${uiStatus}">
+      <div class="claim-card lec-rec-card ${uiStatus}" id="claim-${c.id}" data-status="${uiStatus}" onclick="openClaimDetail(${c.id})">
         <div class="claim-top">
-          <div class="claim-av" style="color:var(--green);border-color:rgba(92,200,138,.3);">${initials}</div>
+          <div class="claim-av">${initials}</div>
           <div class="claim-info">
             <div class="claim-name">${c.tutor_first_names || ''} ${c.tutor_surname || ''}</div>
             <div class="claim-meta">${c.module_code || currentModuleCode || '—'} · ${formatClaimPeriod(c)}</div>
@@ -596,26 +650,24 @@ function renderClaimsList(claims) {
             <div class="claim-amt-val">${formatClaimAmount(c.total_amount)}</div>
             <div class="claim-amt-sub">${hoursLabel}</div>
           </div>
-          ${claimStatusTag(c.status)}
         </div>
+        ${claimStatusTag(c.status)}
         <div class="claim-breakdown">
-          <div class="cb-item"><div class="cb-label">Sessions</div><div class="cb-val">${c.session_count || 0}</div></div>
-          <div class="cb-item"><div class="cb-label">Period</div><div class="cb-val">${formatClaimPeriod(c)}</div></div>
-          <div class="cb-item"><div class="cb-label">Module</div><div class="cb-val">${c.module_code || '—'}</div></div>
+          <div class="cb-item"><div class="cb-val">${c.session_count || 0}</div><div class="cb-label">Sessions</div></div>
+          <div class="cb-item"><div class="cb-val">${formatClaimPeriod(c)}</div><div class="cb-label">Period</div></div>
+          <div class="cb-item"><div class="cb-val">${c.module_code || '—'}</div><div class="cb-label">Module</div></div>
         </div>
         ${lecClaimCardFeedback(c)}
         <div class="claim-footer">
           <div class="claim-footer-left">
             <span class="claim-submitted">Submitted: ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-ZA') : '—'}</span>
           </div>
-          <div class="claim-actions">
+          <div class="claim-actions" onclick="event.stopPropagation()">
             ${pendingReview ? `
-              <button class="cl-btn reject" onclick="returnClaimToTutor(${c.id})">Return</button>
-              <button class="cl-btn approve" onclick="openClaimDetail(${c.id})">View & Verify</button>
-            ` : readOnly ? `
-              <button class="cl-btn" onclick="openClaimDetail(${c.id})">View Details</button>
+              <button type="button" class="cl-btn reject" onclick="returnClaimToTutor(${c.id})">Return</button>
+              <button type="button" class="cl-btn approve" onclick="openClaimDetail(${c.id})">View &amp; Verify</button>
             ` : `
-              <button class="cl-btn" onclick="openClaimDetail(${c.id})">View Details</button>
+              <button type="button" class="cl-btn" onclick="openClaimDetail(${c.id})">View Details</button>
             `}
           </div>
         </div>
@@ -668,15 +720,18 @@ function updateClaimsStats(claims) {
 }
 
 async function loadLecturerClaims() {
+  const list = document.getElementById('claims-list');
+  if (list) list.innerHTML = skeletonClaimCards(4);
   try {
     const qs = moduleQuerySuffix();
-    const claims = await VF.apiFetch(`/claims/lecturer${qs}`);
+    const claims = asListPayload(await VF.apiFetch(`/claims/lecturer${qs}`));
     LECTURER_CLAIMS = claims;
     renderDashboardClaimApprovals(claims);
     renderClaimsList(claims);
     updateClaimsStats(claims);
     updatePendingCount();
   } catch (err) {
+    if (list) list.innerHTML = '<div class="lec-empty-card"><p>Could not load claims.</p></div>';
     showToast('Could not load claims');
   }
 }
@@ -687,8 +742,12 @@ async function loadClaims() {
 
 /* ── SESSION LOADING ── */
 async function loadSessions() {
+  const container = document.getElementById('sessions-list');
+  if (container && !Object.keys(SESSIONS).length) {
+    container.innerHTML = skeletonSessionRows(5);
+  }
   try {
-    const sessions = await VF.apiFetch(`/sessions${moduleQuerySuffix()}`);
+    const sessions = asListPayload(await VF.apiFetch(`/sessions${moduleQuerySuffix()}`));
     SESSIONS = {};
     sessions.forEach(s => { SESSIONS[s.id] = s; });
 
@@ -698,6 +757,9 @@ async function loadSessions() {
     updateSessionsHeroStats(sessions);
     rebuildCalendarFromSessions(sessions);
   } catch (err) {
+    if (container) {
+      container.innerHTML = '<div class="vf-sess-empty lec-sess-empty"><h3>Could not load sessions</h3><p>Please try again.</p></div>';
+    }
     showToast('Could not load sessions');
   }
 }
@@ -772,6 +834,7 @@ function getTutorMetrics(s) {
 function sessionStatusBadge(s) {
   const { assignedCount, confirmedCount } = getTutorMetrics(s);
   if (s.status === 'completed') return { cls: 'confirmed', text: 'Completed' };
+  if (s.status === 'cancelled') return { cls: 'awaiting', text: 'Cancelled' };
   if (s.status === 'active') {
     return { cls: 'today-live', text: isSessionToday(s) ? 'Today · Live' : 'Live' };
   }
@@ -785,19 +848,24 @@ function sessionStatusBadge(s) {
 }
 
 function sessionFilterType(status) {
-  if (status === 'completed') return 'past';
+  if (status === 'completed' || status === 'cancelled') return 'past';
   if (status === 'flagged') return 'flagged';
   return 'upcoming';
 }
 
 function sessionActionButton(s) {
+  const actions = [];
   if (s.status === 'scheduled') {
-    return `<button class="sess-act-btn activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); activateSession(${s.id})">▷ Activate</button>`;
+    actions.push(`<button type="button" class="sess-act-btn activate lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); activateSession(${s.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg> Activate</button>`);
   }
   if (s.status === 'active') {
-    return `<button class="sess-act-btn end" id="sess-${s.id}-act" onclick="event.stopPropagation(); endSession(${s.id})">■ End Session</button>`;
+    actions.push(`<button type="button" class="sess-act-btn end lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); endSession(${s.id})">■ End Session</button>`);
   }
-  return '';
+  if (s.status === 'scheduled' || s.status === 'active') {
+    actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openPostponeSession(${s.id})">Postpone</button>`);
+    actions.push(`<button type="button" class="sess-act-btn end" onclick="event.stopPropagation(); cancelSession(${s.id})">Cancel</button>`);
+  }
+  return actions.join('');
 }
 
 function renderSessionRows(sessions) {
@@ -832,6 +900,12 @@ function renderSessionRows(sessions) {
     const title = (s.topic || `${s.module_code} — ${sessionTypeDisplay(s.session_type)}`).replace(/</g, '&lt;');
     const desc = `${date} · ${time}`.replace(/</g, '&lt;');
     const due = (time || '—').replace(/</g, '&lt;');
+    const typeLabel = `${sessionTypeDisplay(s.session_type)} Session`.replace(/</g, '&lt;');
+    const awaitLabel = metrics.assignedCount
+      ? (metrics.confirmedCount < metrics.assignedCount
+          ? `Awaiting ${metrics.assignedCount - metrics.confirmedCount}`
+          : 'Confirmed')
+      : 'No tutors';
 
     return `
       <div class="session-row${liveClass}" id="sess-${s.id}" data-type="${sessionFilterType(s.status)}" onclick="openSessionDetail(${s.id})">
@@ -858,7 +932,7 @@ function renderSessionRows(sessions) {
           <div><span class="status-chip ${badge.cls}" id="sess-${s.id}-status">${badge.text}</span></div>
           <div class="sess-actions">${sessionActionButton(s)}</div>
         </div>
-        <article class="vf-sess-card lec-sess-card${s.status === 'active' ? ' vf-sess-card--live' : ''}${s.status === 'completed' || s.status === 'flagged' ? ' vf-sess-card--muted' : ''}">
+        <article class="vf-sess-card lec-sess-card lec-session-card${s.status === 'active' ? ' vf-sess-card--live' : ''}${s.status === 'completed' || s.status === 'flagged' || s.status === 'cancelled' ? ' vf-sess-card--muted' : ''}">
           <div class="vf-sess-card-top">
             <div class="vf-sess-card-copy">
               <h3 class="vf-sess-card-title">${title}</h3>
@@ -871,9 +945,9 @@ function renderSessionRows(sessions) {
             </div>
           </div>
           <div class="vf-sess-card-tags">
-            <span class="vf-sess-pill">${sessionTypeDisplay(s.session_type)}</span>
-            <span class="vf-sess-pill vf-sess-pill--due">Due : ${due}</span>
-            <span class="vf-sess-pill">${badge.text}</span>
+            <span class="vf-sess-pill">${typeLabel}</span>
+            <span class="vf-sess-pill vf-sess-pill--due">Due: ${due}</span>
+            <span class="vf-sess-pill">${awaitLabel}</span>
           </div>
           <div class="vf-sess-card-actions">${sessionActionButton(s)}</div>
         </article>
@@ -881,15 +955,16 @@ function renderSessionRows(sessions) {
   }).join('');
 }
 
-/* ── ACTIVATE / END SESSION ── */
+/* ── ACTIVATE / END / CANCEL / POSTPONE SESSION ── */
 async function activateSession(id) {
   try {
     const result = await VF.apiFetch(`/sessions/${id}/activate`, { method: 'PATCH' });
     SESSIONS[id] = { ...SESSIONS[id], status: 'active', session_code: result.sessionCode };
     showToast('Session activated — code: ' + result.sessionCode);
     renderSessionRows(Object.values(SESSIONS));
+    renderTodayCard(Object.values(SESSIONS));
   } catch (err) {
-    showToast('Could not activate session');
+    showToast(err.errors ? err.errors[0] : 'Could not activate session');
   }
 }
 
@@ -899,10 +974,141 @@ async function endSession(id) {
     SESSIONS[id] = { ...SESSIONS[id], status: 'completed', session_code: null };
     showToast('Session ended — moved to Past');
     renderSessionRows(Object.values(SESSIONS));
+    renderTodayCard(Object.values(SESSIONS));
   } catch (err) {
-    showToast('Could not end session');
+    showToast(err.errors ? err.errors[0] : 'Could not end session');
   }
 }
+
+async function cancelSession(id) {
+  const s = SESSIONS[id];
+  if (!s) return;
+  const label = s.topic || s.module_code || 'this session';
+  if (!window.confirm(`Cancel "${label}"?\n\nTutors will no longer see it as upcoming. This cannot be undone.`)) {
+    return;
+  }
+  try {
+    await VF.apiFetch(`/sessions/${id}/cancel`, { method: 'PATCH' });
+    SESSIONS[id] = { ...SESSIONS[id], status: 'cancelled', session_code: null };
+    showToast('Session cancelled');
+    renderSessionRows(Object.values(SESSIONS));
+    renderTodayCard(Object.values(SESSIONS));
+    renderDashboardRecent(Object.values(SESSIONS));
+    rebuildCalendarFromSessions(Object.values(SESSIONS));
+  } catch (err) {
+    showToast(err.errors ? err.errors[0] : 'Could not cancel session');
+  }
+}
+
+let postponeSessionId = null;
+
+function ppDefaultDurationHours(session) {
+  return session && session.session_type === 'practical' ? 3 : 2;
+}
+
+function ppCapEndFromStart(startHHMM, hours) {
+  if (!startHHMM || !/^\d{2}:\d{2}$/.test(startHHMM)) return '';
+  const [h, m] = startHHMM.split(':').map(Number);
+  const total = Math.min(h * 60 + m + hours * 60, 20 * 60);
+  const eh = Math.floor(total / 60);
+  const em = total % 60;
+  return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
+}
+
+function syncPostponeEndFromStart() {
+  const s = postponeSessionId != null ? SESSIONS[postponeSessionId] : null;
+  const startEl = document.getElementById('pp-start');
+  const endEl = document.getElementById('pp-end');
+  if (!startEl || !endEl || !startEl.value) return;
+  endEl.value = ppCapEndFromStart(startEl.value, ppDefaultDurationHours(s));
+}
+
+function openPostponeSession(id) {
+  const s = SESSIONS[id];
+  if (!s) return;
+  postponeSessionId = id;
+
+  const title = document.getElementById('pp-modal-title');
+  if (title) title.textContent = s.topic || `${s.module_code} — ${sessionTypeLabel(s.session_type)}`;
+
+  const dateEl = document.getElementById('pp-date');
+  const startEl = document.getElementById('pp-start');
+  const endEl = document.getElementById('pp-end');
+  const venueEl = document.getElementById('pp-venue');
+
+  const dateKey = sessionDateKey(s.session_date) || '';
+  const start = s.start_time ? String(s.start_time).slice(0, 5) : '';
+  let end = s.end_time ? String(s.end_time).slice(0, 5) : '';
+  if (start) {
+    const startMins = nsTimeToMinutes(start);
+    const endMins = end ? nsTimeToMinutes(end) : null;
+    if (endMins == null || endMins <= startMins || endMins > 20 * 60) {
+      end = ppCapEndFromStart(start, ppDefaultDurationHours(s));
+    }
+  }
+
+  if (dateEl) dateEl.value = dateKey;
+  if (startEl) startEl.value = start;
+  if (endEl) endEl.value = end;
+  if (venueEl) venueEl.value = s.venue || '';
+
+  if (startEl && !startEl._ppBound) {
+    startEl.addEventListener('change', syncPostponeEndFromStart);
+    startEl.addEventListener('input', syncPostponeEndFromStart);
+    startEl._ppBound = true;
+  }
+
+  document.getElementById('pp-overlay')?.classList.add('open');
+}
+
+function closePostponeSession(e) {
+  if (e && e.target !== document.getElementById('pp-overlay')) return;
+  document.getElementById('pp-overlay')?.classList.remove('open');
+  postponeSessionId = null;
+}
+
+async function submitPostponeSession() {
+  if (!postponeSessionId) return;
+  const sessionDate = document.getElementById('pp-date')?.value;
+  const startTime = document.getElementById('pp-start')?.value || null;
+  const endTime = document.getElementById('pp-end')?.value || null;
+  const venue = document.getElementById('pp-venue')?.value?.trim() || null;
+
+  if (!sessionDate) {
+    document.getElementById('pp-date')?.focus();
+    showToast('Choose a new session date');
+    return;
+  }
+
+  try {
+    await VF.apiFetch(`/sessions/${postponeSessionId}/postpone`, {
+      method: 'PATCH',
+      body: { sessionDate, startTime, endTime, venue },
+    });
+    const id = postponeSessionId;
+    SESSIONS[id] = {
+      ...SESSIONS[id],
+      session_date: sessionDate,
+      start_time: startTime,
+      end_time: endTime,
+      venue: venue || SESSIONS[id].venue,
+      status: 'scheduled',
+      session_code: null,
+      tutor_confirmed_names: null,
+      tutors_confirmed: 0,
+    };
+    closePostponeSession();
+    showToast('Session postponed — tutors will need to re-confirm');
+    await loadSessions();
+  } catch (err) {
+    showToast(err.errors ? err.errors[0] : 'Could not postpone session');
+  }
+}
+
+window.cancelSession = cancelSession;
+window.openPostponeSession = openPostponeSession;
+window.closePostponeSession = closePostponeSession;
+window.submitPostponeSession = submitPostponeSession;
 
 /* ── SESSION FILTER TABS ── */
 function filterSessions(type, btn) {
@@ -912,7 +1118,7 @@ function filterSessions(type, btn) {
   let filtered;
   if (type === 'all')      { filtered = all; }
   else if (type === 'upcoming') { filtered = all.filter(s => s.status === 'scheduled' || s.status === 'active'); }
-  else if (type === 'past')     { filtered = all.filter(s => s.status === 'completed'); }
+  else if (type === 'past')     { filtered = all.filter(s => s.status === 'completed' || s.status === 'cancelled'); }
   else if (type === 'flagged')  { filtered = all.filter(s => s.status === 'flagged'); }
   else { filtered = all; }
   renderSessionRows(filtered);
@@ -1023,6 +1229,7 @@ function initNsTimePickers() {
     }
 
     function openPanel() {
+      if (typeof closeNsDatePicker === 'function') closeNsDatePicker();
       document.querySelectorAll('.ns-time-panel.open').forEach((p) => {
         if (p !== panel) {
           p.classList.remove('open');
@@ -1088,16 +1295,23 @@ function openNewSession(prefillDate) {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  const dateDisplay = document.getElementById('ns-date-display');
+  if (dateDisplay) dateDisplay.value = '';
+  closeNsDatePicker();
   resetNsTimePickers();
   document.getElementById('ns-type-value').value = '';
   document.querySelectorAll('.ns-type-pill').forEach(p => p.classList.remove('selected'));
-  document.querySelectorAll('.ns-tutor-row').forEach(r => r.classList.remove('checked'));
+  document.querySelectorAll('.ns-tutor-row').forEach(r => {
+    r.classList.remove('checked');
+    const check = r.querySelector('.ns-tutor-check');
+    if (check) check.innerHTML = '';
+  });
   const indicator = document.getElementById('ns-claim-indicator');
   if (indicator) indicator.style.display = 'none';
   document.getElementById('ns-modal-module-label').textContent =
     currentModuleCode ? currentModuleCode + ' · ' + currentModuleName : 'Select a module tab first';
   if (prefillDate) {
-    document.getElementById('ns-date').value = prefillDate;
+    setNsDateValue(prefillDate);
     nsPrefilledDate = prefillDate;
   } else {
     nsPrefilledDate = null;
@@ -1107,13 +1321,135 @@ function openNewSession(prefillDate) {
   setTimeout(() => {
     const focusEl = prefillDate
       ? document.querySelector('[data-hidden-id="ns-time-start"] .ns-time-trigger')
-      : document.getElementById('ns-date');
+      : document.getElementById('ns-date-display');
     focusEl?.focus();
   }, 300);
 }
 
-function closeNewSession() { document.getElementById('ns-overlay').classList.remove('open'); }
+function closeNewSession() {
+  closeNsDatePicker();
+  document.getElementById('ns-overlay').classList.remove('open');
+}
 function nsCloseOutside(e) { if (e.target === document.getElementById('ns-overlay')) closeNewSession(); }
+
+/* ── New Session date picker (desktop + mobile) ── */
+let nsDpCursor = new Date();
+const NS_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function isoToDisplayDate(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+  const [y, m, d] = iso.split('-');
+  return `${m}/${d}/${y}`;
+}
+function setNsDateValue(iso) {
+  const hidden = document.getElementById('ns-date');
+  const display = document.getElementById('ns-date-display');
+  const wrap = document.getElementById('ns-date-wrap');
+  if (hidden) hidden.value = iso || '';
+  if (display) display.value = iso ? isoToDisplayDate(iso) : '';
+  wrap?.classList.remove('ns-error');
+  if (iso) {
+    const [y, m] = iso.split('-').map(Number);
+    nsDpCursor = new Date(y, m - 1, 1);
+  }
+}
+function closeNsDatePicker() {
+  const picker = document.getElementById('ns-date-picker');
+  if (picker) {
+    picker.hidden = true;
+    picker.classList.remove('open');
+  }
+}
+function openNsDatePicker() {
+  document.querySelectorAll('.ns-time-panel.open').forEach((p) => {
+    p.classList.remove('open');
+    p.closest('.ns-time-picker')?.querySelector('.ns-time-trigger')?.setAttribute('aria-expanded', 'false');
+  });
+  const picker = document.getElementById('ns-date-picker');
+  if (!picker) return;
+  const current = document.getElementById('ns-date')?.value;
+  if (current) {
+    const [y, m] = current.split('-').map(Number);
+    nsDpCursor = new Date(y, m - 1, 1);
+  } else {
+    const now = new Date();
+    nsDpCursor = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  buildNsCalendar();
+  picker.hidden = false;
+  picker.classList.add('open');
+}
+function toggleNsDatePicker(e) {
+  e?.preventDefault?.();
+  e?.stopPropagation?.();
+  const picker = document.getElementById('ns-date-picker');
+  if (!picker) return;
+  if (picker.hidden) openNsDatePicker();
+  else closeNsDatePicker();
+}
+function nsDateShift(delta) {
+  nsDpCursor = new Date(nsDpCursor.getFullYear(), nsDpCursor.getMonth() + delta, 1);
+  buildNsCalendar();
+}
+function buildNsCalendar() {
+  const grid = document.getElementById('ns-dp-grid');
+  const monthEl = document.getElementById('ns-dp-month');
+  if (!grid || !monthEl) return;
+  const y = nsDpCursor.getFullYear();
+  const m = nsDpCursor.getMonth();
+  monthEl.textContent = `${NS_MONTHS[m]} ${y}`;
+  const firstDow = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const prevDays = new Date(y, m, 0).getDate();
+  const selected = document.getElementById('ns-date')?.value || '';
+  const dows = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = dows.map(d => `<div class="ns-dp-dow">${d}</div>`).join('');
+  for (let i = firstDow - 1; i >= 0; i--) {
+    html += `<div class="ns-dp-day muted">${prevDays - i}</div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const sel = iso === selected ? ' selected' : '';
+    html += `<button type="button" class="ns-dp-day${sel}" data-iso="${iso}" onclick="event.stopPropagation(); selectNsDay('${iso}')">${d}</button>`;
+  }
+  const cellsUsed = firstDow + daysInMonth;
+  const trailing = (7 - (cellsUsed % 7)) % 7;
+  for (let d = 1; d <= trailing; d++) {
+    html += `<div class="ns-dp-day muted">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+function selectNsDay(iso) {
+  setNsDateValue(iso);
+  closeNsDatePicker();
+}
+function clearNsDate() {
+  setNsDateValue('');
+  buildNsCalendar();
+}
+function selectNsToday() {
+  const now = new Date();
+  const iso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  selectNsDay(iso);
+}
+window.toggleNsDatePicker = toggleNsDatePicker;
+window.openNsDatePicker = openNsDatePicker;
+window.nsDateShift = nsDateShift;
+window.selectNsDay = selectNsDay;
+window.clearNsDate = clearNsDate;
+window.selectNsToday = selectNsToday;
+
+document.addEventListener('click', (e) => {
+  const field = document.querySelector('#ns-overlay .ns-field-date');
+  const picker = document.getElementById('ns-date-picker');
+  if (!field || !picker || picker.hidden) return;
+  if (!field.contains(e.target)) closeNsDatePicker();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const picker = document.getElementById('ns-date-picker');
+  if (picker && !picker.hidden) closeNsDatePicker();
+});
 
 const CLAIM_TYPE_MAP = {
   'tutorial': 'Tutorial (3h claim)',  'online':   'Tutorial (3h claim)',
@@ -1149,7 +1485,7 @@ async function createSession() {
 
   if (!topic) { hlt('ns-topic'); return; }
   if (!type)  { shakePills(); return; }
-  if (!date)  { hlt('ns-date'); return; }
+  if (!date)  { hlt('ns-date-display'); document.getElementById('ns-date-wrap')?.classList.add('ns-error'); return; }
   if (!currentModuleCode) { showToast('Select a module tab before creating a session'); return; }
 
   const timeError = nsValidateSessionTimes(startTime, endTime, type);
@@ -1314,10 +1650,39 @@ async function submitReferral() {
 }
 
 /* MESSAGE ALL */
-function openMsgAll() { document.getElementById('ma-subject').value=''; document.getElementById('ma-body').value=''; document.getElementById('ma-overlay').classList.add('open'); setTimeout(()=>document.getElementById('ma-subject').focus(),300); }
+function openMsgAll() {
+  const tutors = Array.isArray(moduleTutorPool) ? moduleTutorPool : [];
+  const chips = document.getElementById('ma-chips');
+  const hint = document.getElementById('ma-hint');
+  if (chips) {
+    if (!tutors.length) {
+      chips.innerHTML = '<span class="ma-chip ma-chip-empty">No tutors on this module</span>';
+    } else {
+      chips.innerHTML = tutors.map(t => {
+        const initials = VF.initials(t.first_names, t.surname);
+        const name = `${t.first_names || ''} ${t.surname || ''}`.trim();
+        return `<span class="ma-chip">${escapeHtml(initials)} · ${escapeHtml(name)}</span>`;
+      }).join('');
+    }
+  }
+  if (hint) {
+    hint.textContent = tutors.length
+      ? `Sent to ${tutors.length} tutor${tutors.length === 1 ? '' : 's'} via VeriFlow`
+      : 'No tutors to message';
+  }
+  document.getElementById('ma-subject').value = '';
+  document.getElementById('ma-body').value = '';
+  document.getElementById('ma-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('ma-subject').focus(), 300);
+}
 function closeMsgAll() { document.getElementById('ma-overlay').classList.remove('open'); }
 function maCloseOutside(e) { if(e.target===document.getElementById('ma-overlay')) closeMsgAll(); }
 function sendMsgAll() {
+  const tutors = Array.isArray(moduleTutorPool) ? moduleTutorPool : [];
+  if (!tutors.length) {
+    showToast('No tutors on this module');
+    return;
+  }
   const subject = document.getElementById('ma-subject').value.trim();
   const body = document.getElementById('ma-body').value.trim();
   if (!body) {
@@ -1440,60 +1805,88 @@ async function openClaimDetail(id) {
     const rate = d.pay_rate != null ? `R${Number(d.pay_rate).toFixed(2)}/hr` : '—';
     const totalHours = Number(d.total_hours || 0);
 
-    const rows = sessions.filter(s => s.included !== false).map(s => {
+    const sessionBlocks = sessions.filter(s => s.included !== false).map(s => {
       const date = s.session_date
         ? new Date(String(s.session_date).slice(0, 10)).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
         : '—';
       const time = s.start_time ? String(s.start_time).slice(0, 5) : '—';
-      const flagged = s.session_status === 'flagged';
       const present = s.attendance_count ?? 0;
       const enrolled = s.enrolled_count ?? 0;
       const attCls = enrolled && (present / enrolled) >= 0.75 ? 'att-good' : (enrolled ? 'att-low' : '');
       const sessionId = s.session_id || s.id;
       const att = `${present} / ${enrolled || '—'}`;
-      return `<tr class="${flagged ? 'flagged-row' : ''}">
-        <td style="font-weight:600;color:${flagged ? 'var(--red)' : 'var(--text)'}">${date}</td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${time}</td>
-        <td style="color:var(--muted);">${s.venue || '—'}</td>
-        <td style="color:var(--muted);">${s.topic || '—'}</td>
-        <td><span class="type-chip">${s.session_type || '—'}</span></td>
-        <td><button type="button" class="att-reg-link ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})" title="View attendance register">${att}</button></td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${s.claimed_hours || '—'} hrs</td>
-      </tr>`;
+      return `
+        <div class="lec-cd-field-group">
+          <div class="lec-cd-field-row"><span class="k">Date</span><span class="v">${date}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Time</span><span class="v">${time}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Venue</span><span class="v lec-cd-venue">${(s.venue || '—').replace(/</g, '&lt;')}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Topic</span><span class="v">${(s.topic || '—').replace(/</g, '&lt;')}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Type</span><span class="v"><span class="lec-cd-type">${(s.session_type || '—').replace(/</g, '&lt;')}</span></span></div>
+          <button type="button" class="lec-cd-field-row lec-cd-att-btn ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})">
+            <span class="k">Attendance</span>
+            <span class="v">${att} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+          </button>
+          <div class="lec-cd-field-row"><span class="k">Hours</span><span class="v">${s.claimed_hours || '—'} hrs</span></div>
+        </div>`;
     }).join('');
 
+    const pending = d.status === 'pending_lecturer';
+    const timeline = `
+      <div class="lec-cd-timeline">
+        <div class="lec-cd-timeline-row">
+          <div class="lec-cd-timeline-left">
+            <div class="lec-cd-timeline-icn ${pending ? 'is-amber' : 'is-done'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div>
+              <div class="lec-cd-timeline-title">Your review</div>
+              <div class="lec-cd-timeline-sub">${pending ? 'Awaiting your action' : 'Completed'}</div>
+            </div>
+          </div>
+          <span class="lec-cd-timeline-badge ${pending ? 'is-amber' : 'is-done'}">${pending ? 'IN REVIEW' : 'DONE'}</span>
+        </div>
+        <div class="lec-cd-timeline-connector"></div>
+        <div class="lec-cd-timeline-row">
+          <div class="lec-cd-timeline-left">
+            <div class="lec-cd-timeline-icn is-muted">•</div>
+            <div>
+              <div class="lec-cd-timeline-title">Coordinator</div>
+              <div class="lec-cd-timeline-sub">FYE Office</div>
+            </div>
+          </div>
+          <span class="lec-cd-timeline-badge is-muted">${d.status === 'pending_coordinator' || d.status === 'approved' ? String(d.status).replace('_', ' ').toUpperCase() : 'UPCOMING'}</span>
+        </div>
+      </div>`;
+
     document.getElementById('cd-body').innerHTML = `
-      <div class="claims-strip cd-verify-strip">
+      <div class="lec-cd-stats">
+        <div class="lec-cd-stat"><span class="l">Qualification level</span><div class="v">${qual}</div></div>
+        <div class="lec-cd-stat"><span class="l">Responsibility level</span><div class="v">${resp}</div></div>
+        <div class="lec-cd-stat"><span class="l">Claimed rate</span><div class="v">${rate}</div></div>
+        <div class="lec-cd-stat"><span class="l">Total hours</span><div class="v">${totalHours} hrs</div></div>
+      </div>
+      <div class="lec-cd-stat lec-cd-stat-total"><span class="l">Total amount</span><div class="v green">${formatClaimAmount(d.total_amount)}</div></div>
+      ${timeline}
+      ${lecCoordinatorFeedbackBar(d)}
+      <div class="lec-cd-breakdown-label">Session breakdown · ${sessions.length} session(s)</div>
+      ${sessionBlocks || '<div class="lec-empty-card"><p>No sessions</p></div>'}
+      <div class="lec-cd-desk-only claims-strip cd-verify-strip">
         <div class="cl-stat"><div class="cl-stat-label">Qualification Level</div><div class="cl-stat-val">${qual}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Responsibility Level</div><div class="cl-stat-val">${resp}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Claimed Rate</div><div class="cl-stat-val">${rate}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Total Hours</div><div class="cl-stat-val">${totalHours} hrs</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Total Amount</div><div class="cl-stat-val green">${formatClaimAmount(d.total_amount)}</div></div>
-      </div>
-      ${lecCoordinatorFeedbackBar(d)}
-      <div class="ts-modal-wrap">
-        <div class="ts-modal-head">
-          <div>
-            <div class="ts-modal-head-title">${tutor} — ${period}</div>
-            <div class="ts-modal-head-sub">${d.module_code || '—'} · ${sessions.length} session(s)</div>
-          </div>
-          ${claimStatusTag(d.status)}
-        </div>
-        <table class="ts-modal-table">
-          <thead><tr><th>Date</th><th>Time</th><th>Venue</th><th>Topic</th><th>Type</th><th>Attendance</th><th>Hours</th></tr></thead>
-          <tbody>${rows || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">No sessions</td></tr>'}</tbody>
-        </table>
       </div>`;
 
     const footer = document.getElementById('cd-footer');
-    if (d.status === 'pending_lecturer') {
-      footer.innerHTML = `<button class="ns-cancel" onclick="closeClaimDetail()">Close</button>
-        <div style="display:flex;gap:8px;">
-          <button class="cl-btn reject" style="padding:10px 18px;" onclick="returnClaimToTutor(${id})">Return</button>
-          <button class="ns-create" onclick="verifyAndForwardClaim(${id})">Verify & Forward</button>
+    if (pending) {
+      footer.innerHTML = `<button type="button" class="ns-cancel" onclick="closeClaimDetail()">Close</button>
+        <div class="lec-cd-footer-actions">
+          <button type="button" class="cl-btn reject" onclick="returnClaimToTutor(${id})">Return</button>
+          <button type="button" class="ns-create lec-btn-glow" onclick="verifyAndForwardClaim(${id})"><span class="lec-btn-glow-label">Verify &amp; Forward</span></button>
         </div>`;
     } else {
-      footer.innerHTML = `<div></div><button class="ns-cancel" onclick="closeClaimDetail()">Close</button>`;
+      footer.innerHTML = `<button type="button" class="ns-cancel" style="width:100%" onclick="closeClaimDetail()">Close</button>`;
     }
     document.getElementById('cd-overlay').classList.add('open');
   } catch (err) {
@@ -1550,6 +1943,8 @@ function renderLecturerRegisterModal(data) {
 
   if (!students.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No students on the class list for this module.</td></tr>';
+    const mobileList = document.getElementById('reg-mobile-list');
+    if (mobileList) mobileList.innerHTML = '<div class="lec-empty-card"><p>No students on the class list for this module.</p></div>';
     return;
   }
 
@@ -1561,6 +1956,19 @@ function renderLecturerRegisterModal(data) {
       <td class="reg-time">${formatRegisterSignInTime(s.recorded_at)}</td>
       <td><span class="reg-badge ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span></td>
     </tr>`).join('');
+
+  const mobileList = document.getElementById('reg-mobile-list');
+  if (mobileList) {
+    mobileList.innerHTML = students.map((s, i) => `
+      <div class="lec-att-row">
+        <span class="num">${String(i + 1).padStart(2, '0')}</span>
+        <div class="ainfo">
+          <div class="nm">${(s.full_name || '—').replace(/</g, '&lt;')}</div>
+          <div class="sid">${s.student_number || '—'}</div>
+        </div>
+        <span class="status-tag ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span>
+      </div>`).join('');
+  }
 }
 
 async function loadLecturerRegister(sessionId) {
@@ -1587,7 +1995,8 @@ async function openRegister(sessionId) {
 
   const tbody = document.getElementById('reg-tbody');
   if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Loading register…</td></tr>';
+    tbody.innerHTML = (VF.skeleton && VF.skeleton.tbody(5, 6)) ||
+      '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">Loading register…</td></tr>';
   }
   modal.classList.add('open');
 
@@ -1718,6 +2127,7 @@ window.syncLecHubModules = syncLecHubModules;
 
 async function loadLecturerTickets() {
   const wrap = document.getElementById('lecturer-tickets-list');
+  if (wrap && VF.skeleton) wrap.innerHTML = VF.skeleton.listRows(4);
   try {
     const tickets = await VF.apiFetch('/support/tickets');
     renderLecturerTickets(tickets);
@@ -1735,42 +2145,40 @@ function renderLecturerTickets(tickets) {
 
   if (!tickets.length) {
     wrap.innerHTML = `
-      <div class="lec-empty-card">
-        <div class="lec-empty-ico" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+      <div class="lec-sup-card">
+        <div class="lec-sup-empty">
+          <div class="lec-sup-empty-ico" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <h3>No tickets yet</h3>
+          <p>Tap New Ticket below if you need help.</p>
         </div>
-        <h3>No tickets yet</h3>
-        <p>Tap New Ticket below if you need help.</p>
       </div>`;
     return;
   }
 
   wrap.innerHTML = tickets.map((t) => {
-    const statusColor =
-      t.status === 'resolved' ? 'var(--green)' :
-      t.status === 'in_progress' ? 'var(--yellow)' :
-      'var(--muted)';
     const statusLabel =
       t.status === 'resolved' ? 'Resolved' :
       t.status === 'in_progress' ? 'In progress' : 'Open';
+    const statusCls =
+      t.status === 'resolved' ? 'is-resolved' :
+      t.status === 'in_progress' ? 'is-progress' : 'is-open';
     const date = t.created_at
       ? new Date(t.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
       : '—';
-    return '<div class="ts-table-wrap" style="margin-bottom:10px;">' +
-      '<div class="ts-table-header">' +
-      '<div>' +
-      '<div class="ts-table-title">#' + t.id + ' · ' + t.subject + '</div>' +
-      '<div class="ts-table-sub">' +
-        t.priority + ' priority · ' + date +
-        (t.reply_count ? ' · ' + t.reply_count + ' repl' + (t.reply_count === 1 ? 'y' : 'ies') : '') +
-      '</div>' +
-      '</div>' +
-      '<span style="font-size:11px;font-weight:600;color:' + statusColor + ';">' +
-        statusLabel +
-      '</span>' +
-      '</div>' +
-      '<div style="padding:12px 18px;font-size:12px;color:var(--muted);">' + t.details + '</div>' +
-      '</div>';
+    const details = String(t.details || '—').replace(/</g, '&lt;');
+    const subject = String(t.subject || '—').replace(/</g, '&lt;');
+    return `<div class="lec-ticket-card">
+      <div class="lec-ticket-top">
+        <div>
+          <div class="lec-ticket-title">#${t.id} · ${subject}</div>
+          <div class="lec-ticket-sub">${t.priority} priority · ${date}</div>
+        </div>
+        <span class="lec-ticket-status ${statusCls}">${statusLabel}</span>
+      </div>
+      <div class="lec-ticket-body">${details}</div>
+    </div>`;
   }).join('');
 }
 
@@ -2176,7 +2584,9 @@ function renderClassList(data) {
 async function loadClassList() {
   if (!currentModuleCode) return;
   const wrap = document.getElementById('classlist-module-wrap');
-  if (wrap) {
+  if (wrap && VF.skeleton) {
+    wrap.innerHTML = VF.skeleton.stats(3) + VF.skeleton.sessionRows(5);
+  } else if (wrap) {
     wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">Loading class list…</div>';
   }
   try {
@@ -2346,6 +2756,7 @@ function sessionToCalType(status) {
   if (status === 'active') return 'today';
   if (status === 'flagged') return 'flagged';
   if (status === 'completed') return 'confirmed';
+  if (status === 'cancelled') return 'confirmed';
   return 'upcoming';
 }
 
@@ -2592,14 +3003,15 @@ const QUAL_DISPLAY = {
 };
 
 async function loadMyReferrals() {
+  const wrap = document.getElementById('my-referrals-list');
+  if (wrap) wrap.innerHTML = skeletonReferralRows(3);
   try {
-    let referrals = await VF.apiFetch('/referrals' + moduleQuerySuffix());
+    let referrals = asListPayload(await VF.apiFetch('/referrals' + moduleQuerySuffix()));
     if (currentModuleCode) {
       referrals = referrals.filter(r =>
         String(r.module_code || '').toUpperCase() === currentModuleCode.toUpperCase()
       );
     }
-    const wrap = document.getElementById('my-referrals-list');
     if (!wrap) return;
 
     if (!referrals.length) {
@@ -2616,28 +3028,29 @@ async function loadMyReferrals() {
         r.status === 'approved' ? 'Approved' :
         r.status === 'rejected' ? 'Rejected' :
         'Pending';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">' +
-        '<div>' +
-        '<div style="font-size:13px;font-weight:600;color:var(--text);">' +
-        (r.first_names || '') + ' ' + (r.surname || '') + '</div>' +
-        '<div style="font-size:11px;color:var(--muted);font-family:\'DM Mono\',monospace;margin-top:2px;">' +
-        (r.module_code || '—') + ' · ' +
-        (r.qualification_level || '—') + '</div>' +
-        '</div>' +
-        '<span style="font-size:11px;font-weight:600;color:' + statusColor + ';">' +
-        statusLabel + '</span>' +
-        '</div>';
+      const fullName = `${r.first_names || ''} ${r.surname || ''}`.trim() || '—';
+      return `<div class="lec-ref-row">
+        <div>
+          <div class="lec-ref-name">${escapeHtml(fullName)}</div>
+          <div class="lec-ref-meta">${escapeHtml(r.module_code || '—')} · ${escapeHtml(r.qualification_level || '—')}</div>
+        </div>
+        <span class="lec-ref-status" style="color:${statusColor}">${statusLabel}</span>
+      </div>`;
     }).join('');
   } catch (err) {
-    /* optional — referrals section is not critical */
+    if (wrap) {
+      wrap.innerHTML = '<div class="lec-referrals-empty">Could not load referrals.</div>';
+    }
   }
 }
 
 async function loadMyTutors() {
+  const grid = document.getElementById('tutors-grid');
+  if (grid) grid.innerHTML = skeletonTutorCards(6);
+
   try {
-    const tutors = await VF.apiFetch(`/users/tutors${moduleQuerySuffix()}`);
+    const tutors = asListPayload(await VF.apiFetch(`/users/tutors${moduleQuerySuffix()}`));
     moduleTutorPool = tutors;
-    const grid   = document.getElementById('tutors-grid');
     const count  = document.getElementById('tutors-count');
     const appr   = document.getElementById('tutors-approved');
     if (count) count.textContent = tutors.length;
@@ -2660,7 +3073,7 @@ async function loadMyTutors() {
       return;
     }
     if (!tutors.length) {
-      grid.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);grid-column:1/-1">No tutors on this module yet.</div>';
+      grid.innerHTML = '<div class="lec-tutors-loading">No tutors on this module yet.</div>';
       loadMyReferrals();
       return;
     }
@@ -2671,24 +3084,24 @@ async function loadMyTutors() {
       const resp     = t.responsibility_level
         ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1) + ' Tutor'
         : '—';
-      const safeName = String(t.first_names + ' ' + t.surname).replace(/'/g, "\\'");
+      const fullName = `${t.first_names || ''} ${t.surname || ''}`.trim();
       return `
         <div class="tutor-card">
           <div class="tc-top">
-            <div class="tc-av">${initials}</div>
+            <div class="tc-av">${escapeHtml(initials)}</div>
             <div class="tc-who">
-              <div class="tc-name">${t.first_names} ${t.surname}</div>
-              <div class="tc-module">${t.module_name || currentModuleName || '—'}</div>
+              <div class="tc-name">${escapeHtml(fullName)}</div>
+              <div class="tc-module">${escapeHtml(t.module_name || currentModuleName || '—')}</div>
             </div>
           </div>
           <div class="tc-chips">
-            <span class="tc-chip attend">${t.student_number || '—'}</span>
+            <span class="tc-chip attend">${escapeHtml(t.student_number || '—')}</span>
           </div>
           <div class="tc-qual">
-            <div class="tc-qual-item"><strong>${qual}</strong>Qualification Level</div>
-            <div class="tc-qual-item"><strong>${resp}</strong>Responsibility Level</div>
+            <div class="tc-qual-item"><strong>${escapeHtml(qual)}</strong>Qualification Level</div>
+            <div class="tc-qual-item"><strong>${escapeHtml(resp)}</strong>Responsibility Level</div>
           </div>
-          <button type="button" class="msg-btn" onclick="openMsg(${t.id}, '${safeName}')">
+          <button type="button" class="msg-btn" data-msg-tutor="${Number(t.id)}" data-msg-name="${escapeHtml(fullName)}">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
             </svg>
@@ -2696,8 +3109,17 @@ async function loadMyTutors() {
           </button>
         </div>`;
     }).join('');
+
+    grid.querySelectorAll('[data-msg-tutor]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        openMsg(btn.getAttribute('data-msg-tutor'), btn.getAttribute('data-msg-name'));
+      });
+    });
     loadMyReferrals();
   } catch (err) {
+    if (grid) grid.innerHTML = '<div class="lec-tutors-loading">Could not load tutors.</div>';
+    const wrap = document.getElementById('my-referrals-list');
+    if (wrap) wrap.innerHTML = '<div class="lec-referrals-empty">Could not load referrals.</div>';
     showToast('Could not load tutors');
   }
 }

@@ -673,6 +673,208 @@ const VF = (() => {
     mq.addEventListener('change', sync);
   }
 
+  /* ─── Skeleton screens (shared shimmer) ─── */
+  const skeleton = {
+    cards(count = 4) {
+      return Array.from({ length: count }, () => `
+        <div class="vf-skel-card" aria-hidden="true">
+          <div class="vf-skel-row">
+            <div class="vf-skel vf-skel-av"></div>
+            <div class="vf-skel-lines">
+              <div class="vf-skel vf-skel-line mid"></div>
+              <div class="vf-skel vf-skel-line short"></div>
+            </div>
+          </div>
+          <div class="vf-skel vf-skel-line short"></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>`).join('');
+    },
+
+    claimCards(count = 4) {
+      return Array.from({ length: count }, () => `
+        <div class="vf-skel-card" aria-hidden="true" style="margin-bottom:12px">
+          <div class="vf-skel-row">
+            <div class="vf-skel vf-skel-av"></div>
+            <div class="vf-skel-lines">
+              <div class="vf-skel vf-skel-line mid"></div>
+              <div class="vf-skel vf-skel-line short"></div>
+            </div>
+            <div class="vf-skel vf-skel-line chip"></div>
+          </div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>`).join('');
+    },
+
+    sessionRows(count = 5) {
+      return `<div class="vf-skel-list" aria-hidden="true">${Array.from({ length: count }, () => `
+        <div class="vf-skel-list-row">
+          <div class="vf-skel vf-skel-line mid"></div>
+          <div class="vf-skel vf-skel-line"></div>
+          <div class="vf-skel vf-skel-line short"></div>
+          <div class="vf-skel vf-skel-line" style="height:28px;border-radius:8px"></div>
+        </div>`).join('')}</div>`;
+    },
+
+    listRows(count = 4) {
+      return `<div class="vf-skel-list" aria-hidden="true">${Array.from({ length: count }, () => `
+        <div class="vf-skel-row" style="padding:10px 0">
+          <div class="vf-skel vf-skel-av sm"></div>
+          <div class="vf-skel-lines">
+            <div class="vf-skel vf-skel-line mid"></div>
+            <div class="vf-skel vf-skel-line short"></div>
+          </div>
+          <div class="vf-skel vf-skel-line chip"></div>
+        </div>`).join('')}</div>`;
+    },
+
+    referralRows(count = 3) {
+      return Array.from({ length: count }, () => `
+        <div class="lec-ref-row vf-skel-row" aria-hidden="true" style="padding:12px 0;justify-content:space-between">
+          <div class="vf-skel-lines" style="flex:1">
+            <div class="vf-skel vf-skel-line mid"></div>
+            <div class="vf-skel vf-skel-line short"></div>
+          </div>
+          <div class="vf-skel vf-skel-line" style="width:64px;height:14px;flex-shrink:0"></div>
+        </div>`).join('');
+    },
+
+    inbox(count = 6) {
+      return Array.from({ length: count }, () => `
+        <div class="vf-skel-inbox-item" aria-hidden="true">
+          <div class="vf-skel vf-skel-av sm"></div>
+          <div class="vf-skel-lines">
+            <div class="vf-skel vf-skel-line mid"></div>
+            <div class="vf-skel vf-skel-line short"></div>
+          </div>
+        </div>`).join('');
+    },
+
+    thread(count = 4) {
+      return Array.from({ length: count }, (_, i) => `
+        <div class="vf-skel-bubble ${i % 2 ? 'out' : 'in'}" aria-hidden="true">
+          <div class="vf-skel vf-skel-line tiny"></div>
+          <div class="vf-skel vf-skel-line ${i % 2 ? 'short' : 'mid'}"></div>
+        </div>`).join('');
+    },
+
+    people(count = 4) {
+      return Array.from({ length: count }, () => `
+        <div class="vf-skel-row" aria-hidden="true" style="padding:4px 0">
+          <div class="vf-skel vf-skel-av sm"></div>
+          <div class="vf-skel-lines">
+            <div class="vf-skel vf-skel-line mid"></div>
+            <div class="vf-skel vf-skel-line tiny"></div>
+          </div>
+        </div>`).join('');
+    },
+
+    panel(count = 3) {
+      return `<div class="vf-skel-panel" aria-hidden="true">${Array.from({ length: count }, () => `
+        <div class="vf-skel-row">
+          <div class="vf-skel vf-skel-av sm"></div>
+          <div class="vf-skel-lines">
+            <div class="vf-skel vf-skel-line mid"></div>
+            <div class="vf-skel vf-skel-line short"></div>
+          </div>
+        </div>`).join('')}</div>`;
+    },
+
+    stats(count = 4) {
+      return `<div class="vf-skel-stat-strip" aria-hidden="true">${Array.from({ length: count }, () => `
+        <div class="vf-skel-stat">
+          <div class="vf-skel vf-skel-line tiny"></div>
+          <div class="vf-skel vf-skel-line" style="height:28px;width:48%"></div>
+          <div class="vf-skel vf-skel-line short"></div>
+        </div>`).join('')}</div>`;
+    },
+
+    tableRows(cols = 5, count = 6) {
+      const cells = Array.from({ length: cols }, (_, i) =>
+        `<div class="vf-skel vf-skel-line ${i === 0 ? 'mid' : i === cols - 1 ? 'short' : ''}"></div>`
+      ).join('');
+      return Array.from({ length: count }, () =>
+        `<div class="vf-skel-tr" style="grid-template-columns:repeat(${cols},minmax(0,1fr))" aria-hidden="true">${cells}</div>`
+      ).join('');
+    },
+
+    /** For real <tbody> placeholders — uses <tr><td colspan> */
+    tbody(cols = 5, count = 6) {
+      return Array.from({ length: count }, () => `
+        <tr class="vf-skel-tr-native" aria-hidden="true">
+          <td colspan="${cols}" style="padding:14px 12px;border-bottom:1px solid var(--border,#e4e8e3)">
+            <div class="vf-skel-row">
+              <div class="vf-skel vf-skel-line mid"></div>
+              <div class="vf-skel vf-skel-line"></div>
+              <div class="vf-skel vf-skel-line short"></div>
+            </div>
+          </td>
+        </tr>`).join('');
+    },
+
+    block(tall = false) {
+      return `<div class="vf-skel vf-skel-block${tall ? ' tall' : ''}" aria-hidden="true"></div>`;
+    },
+
+    hero() {
+      return `<div class="vf-skel vf-skel-block hero" aria-hidden="true"></div>`;
+    },
+
+    fill(el, html) {
+      if (el) el.innerHTML = html;
+    },
+  };
+
+  /* ─── STRONG PASSWORD POLICY ─── */
+  const PASSWORD_MIN = 8;
+  const PASSWORD_MAX = 64;
+  const PASSWORD_SPECIAL_RE = /[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~]/;
+  const PASSWORD_HINT =
+    `At least ${PASSWORD_MIN} characters, with uppercase, lowercase, a number, and a special character.`;
+
+  function passwordChecks(password) {
+    const value = String(password ?? '');
+    return [
+      { id: 'length',  label: `${PASSWORD_MIN}+ characters`, ok: value.length >= PASSWORD_MIN && value.length <= PASSWORD_MAX },
+      { id: 'upper',   label: 'Uppercase letter',            ok: /[A-Z]/.test(value) },
+      { id: 'lower',   label: 'Lowercase letter',            ok: /[a-z]/.test(value) },
+      { id: 'number',  label: 'Number',                      ok: /[0-9]/.test(value) },
+      { id: 'special', label: 'Special character (!@#$%)',   ok: PASSWORD_SPECIAL_RE.test(value) },
+    ];
+  }
+
+  function isStrongPassword(password) {
+    return passwordChecks(password).every((c) => c.ok);
+  }
+
+  function passwordErrorMessage(password) {
+    const missing = passwordChecks(password).filter((c) => !c.ok).map((c) => c.label.toLowerCase());
+    if (!missing.length) return null;
+    if (missing.length === 1) return `Password must include ${missing[0]}.`;
+    const last = missing.pop();
+    return `Password must include ${missing.join(', ')}, and ${last}.`;
+  }
+
+  /** Live checklist under a password field. Call once after the input exists. */
+  function bindPasswordChecklist(inputId, listId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    if (!input || !list) return;
+
+    function render() {
+      const checks = passwordChecks(input.value);
+      list.innerHTML = checks.map((c) =>
+        `<li class="pwd-check${c.ok ? ' ok' : ''}" data-check="${c.id}">
+          <i class="ti ${c.ok ? 'ti-circle-check' : 'ti-circle'}" aria-hidden="true"></i>
+          <span>${c.label}</span>
+        </li>`
+      ).join('');
+    }
+
+    input.addEventListener('input', render);
+    input.addEventListener('focus', render);
+    render();
+  }
+
   return {
     getState, setState, clearState, navigate,
     getToken, setToken, clearToken, isAuthenticated, apiFetch,
@@ -681,11 +883,12 @@ const VF = (() => {
     logoSrc, logoHtml,
     requireAuth, renderNavbar, renderApplyProgress, mountApplyProgress,
     setApplyStepProgress, bindApplyFormProgress,
-    bindResponsiveBtnLabel, toast,
+    bindResponsiveBtnLabel, toast, skeleton,
     validateForm, initials, logout,
     syncApplicationState, routeTutor, routeTutorAsync, resumeTutorApplication,
     resolveTutorRoute, fetchTutorRouteState, tutorStateFromToken, onboardingCompleteFromApp, rejectionDetailFromApp,
     runEligibilityCheck, pageIn, gateApplicationWindow, homeUrl,
+    PASSWORD_HINT, isStrongPassword, passwordErrorMessage, passwordChecks, bindPasswordChecklist,
   };
 })();
 

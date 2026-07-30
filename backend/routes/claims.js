@@ -14,6 +14,12 @@ const {
   validateClaimNote,
   validateClaimIdParam,
 } = require('../validators/claimValidator');
+const { parsePagination, sendList } = require('../utils/pagination');
+const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
+
+function invalidateClaimCaches() {
+  cacheDelPrefix('claims:');
+}
 
 function claimTutorName(claim) {
   return `${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim() || 'Tutor';
@@ -477,8 +483,16 @@ router.get(
   async (req, res) => {
     const lecturerId = req.user.userId;
     const { status, moduleCode } = req.query;
+    const pagination = parsePagination(req.query);
+    const mod = moduleCode ? String(moduleCode).trim().toUpperCase() : '*';
+    const cacheKey = `claims:lecturer:${lecturerId}:${status || '*'}:${mod}:${pagination.enabled ? `${pagination.page}:${pagination.limit}` : 'all'}`;
 
     try {
+      const cached = cacheGet(cacheKey);
+      if (cached !== undefined) {
+        return sendList(res, cached.rows, pagination, cached.total);
+      }
+
       const params = [lecturerId];
       let query = `
         SELECT
@@ -517,8 +531,20 @@ router.get(
         GROUP BY c.id, ut.first_names, ut.surname, ut.student_number
         ORDER BY c.period_year DESC, c.period_month DESC, c.submitted_at DESC NULLS LAST`;
 
+      const countResult = await pool.query(
+        `SELECT COUNT(*)::int AS total FROM (${query}) AS claims_count`,
+        params
+      );
+      const total = countResult.rows[0]?.total || 0;
+
+      if (pagination.enabled) {
+        params.push(pagination.limit, pagination.offset);
+        query += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+      }
+
       const result = await pool.query(query, params);
-      return res.status(200).json(result.rows);
+      cacheSet(cacheKey, { rows: result.rows, total });
+      return sendList(res, result.rows, pagination, total);
     } catch (err) {
       console.error('Lecturer claims error:', err.message);
       return res.status(500).json({ error: 'Server error.' });
@@ -953,6 +979,7 @@ router.patch(
             console.error('Could not load admin emails for claim notify:', err.message);
           });
 
+        invalidateClaimCaches();
         return res.status(200).json({ message: 'Claim forwarded to coordinator.', ...updated });
       } catch (txErr) {
         await client.query('ROLLBACK').catch(() => {});
@@ -1013,6 +1040,7 @@ router.patch(
           `Your ${period} timesheet for ${moduleLabel} has been returned by your lecturer: ${returnNote}`,
       });
 
+      invalidateClaimCaches();
       return res.status(200).json({ message: 'Claim returned to tutor.', ...updated });
     } catch (err) {
       console.error('Lecturer return claim error:', err.message);
@@ -1129,6 +1157,7 @@ router.patch(
           `The coordinator returned ${tutor}'s claim for ${moduleLabel} with note: ${trimmed}`,
       });
 
+      invalidateClaimCaches();
       return res.status(200).json({ message: 'Claim returned to tutor.', ...updated });
     } catch (err) {
       console.error('Coordinator return claim error:', err.message);

@@ -15,6 +15,8 @@ const {
 
 const BCRYPT_COST = 12;
 const { generateTempPassword } = require('../utils/tempPassword');
+const { parsePagination, sendList } = require('../utils/pagination');
+const { cacheGet, cacheSet } = require('../services/cache');
 const {
   sendLecturerWelcomeEmail,
   sendPasswordResetEmail,
@@ -836,8 +838,15 @@ router.get(
     const moduleCode = req.query.moduleCode
       ? String(req.query.moduleCode).trim().toUpperCase()
       : null;
+    const pagination = parsePagination(req.query);
+    const cacheKey = `tutors:${role}:${userId}:${moduleCode || '*'}:${pagination.enabled ? `${pagination.page}:${pagination.limit}` : 'all'}`;
 
     try {
+      const cached = cacheGet(cacheKey);
+      if (cached !== undefined) {
+        return sendList(res, cached.rows, pagination, cached.total);
+      }
+
       let query = `
         SELECT
            u.id,
@@ -881,10 +890,22 @@ router.get(
             )`;
         }
       }
+
+      const countResult = await pool.query(
+        `SELECT COUNT(*)::int AS total FROM (${query}) AS tutors_count`,
+        params
+      );
+      const total = countResult.rows[0]?.total || 0;
+
       query += ' ORDER BY u.surname ASC';
+      if (pagination.enabled) {
+        params.push(pagination.limit, pagination.offset);
+        query += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+      }
 
       const result = await pool.query(query, params);
-      return res.status(200).json(result.rows);
+      cacheSet(cacheKey, { rows: result.rows, total });
+      return sendList(res, result.rows, pagination, total);
 
     } catch (err) {
       console.error('Get tutors error:', err.message);

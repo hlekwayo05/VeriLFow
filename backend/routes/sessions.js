@@ -12,6 +12,8 @@ const {
   resolveApiBase,
 } = require('../services/qrTokens');
 const QRCode = require('qrcode');
+const { parsePagination, sendList } = require('../utils/pagination');
+const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
 
 // =============================================================
 //  Helper — generate a 6-character alphanumeric session code
@@ -25,6 +27,10 @@ function generateSessionCode() {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
+}
+
+function invalidateSessionCaches() {
+  cacheDelPrefix('sessions:');
 }
 
 async function assertSessionAccess(req, res, sessionId) {
@@ -71,14 +77,13 @@ async function assertSessionAccess(req, res, sessionId) {
 }
 
 function computeEndTime(startTime, sessionType, endTime) {
-  if (endTime) return endTime;
+  if (endTime) return normalizeTime(endTime);
   if (!startTime) return null;
 
-  const parts = String(startTime).split(':').map(Number);
-  const h = parts[0] || 0;
-  const m = parts[1] || 0;
+  const startMins = timeToMinutes(startTime);
+  if (startMins == null) return null;
   const addHours = sessionType === 'practical' ? 3 : 2;
-  const totalMins = h * 60 + m + addHours * 60;
+  const totalMins = Math.min(startMins + addHours * 60, SESSION_HOUR_END * 60);
   const eh = Math.floor(totalMins / 60) % 24;
   const em = totalMins % 60;
   return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}:00`;
@@ -87,10 +92,22 @@ function computeEndTime(startTime, sessionType, endTime) {
 const SESSION_HOUR_START = 8;
 const SESSION_HOUR_END = 20;
 
+function normalizeTime(timeStr) {
+  if (timeStr == null || timeStr === '') return null;
+  const raw = String(timeStr).trim();
+  const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+  const h = Number(match[1]);
+  const m = Number(match[2]);
+  if (!Number.isFinite(h) || !Number.isFinite(m) || h > 23 || m > 59) return null;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 function timeToMinutes(timeStr) {
-  if (!timeStr) return null;
-  const parts = String(timeStr).split(':').map(Number);
-  return (parts[0] || 0) * 60 + (parts[1] || 0);
+  const normalized = normalizeTime(timeStr);
+  if (!normalized) return null;
+  const [h, m] = normalized.split(':').map(Number);
+  return h * 60 + m;
 }
 
 function isWithinSessionHours(timeStr) {
@@ -206,6 +223,7 @@ router.post(
 
         await client.query('COMMIT');
 
+        invalidateSessionCaches();
         return res.status(201).json({
           message: 'Session created successfully.',
           sessionId,
@@ -242,8 +260,15 @@ router.get(
     const moduleCode = req.query.moduleCode
       ? String(req.query.moduleCode).trim().toUpperCase()
       : null;
+    const pagination = parsePagination(req.query);
+    const cacheKey = `sessions:${role}:${userId}:${moduleCode || '*'}:${pagination.enabled ? `${pagination.page}:${pagination.limit}` : 'all'}`;
 
     try {
+      const cached = cacheGet(cacheKey);
+      if (cached !== undefined) {
+        return sendList(res, cached.rows, pagination, cached.total);
+      }
+
       let query;
       let params = [];
 
@@ -364,8 +389,20 @@ router.get(
         `;
       }
 
+      const countResult = await pool.query(
+        `SELECT COUNT(*)::int AS total FROM (${query}) AS sessions_count`,
+        params
+      );
+      const total = countResult.rows[0]?.total || 0;
+
+      if (pagination.enabled) {
+        params.push(pagination.limit, pagination.offset);
+        query += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+      }
+
       const result = await pool.query(query, params);
-      return res.status(200).json(result.rows);
+      cacheSet(cacheKey, { rows: result.rows, total });
+      return sendList(res, result.rows, pagination, total);
 
     } catch (err) {
       console.error('Get sessions error:', err.message);
@@ -610,6 +647,7 @@ router.patch(
         [code, expiresAt, sessionId]
       );
 
+      invalidateSessionCaches();
       return res.status(200).json({
         message:        'Session activated.',
         sessionCode:    code,
@@ -669,6 +707,7 @@ router.patch(
         console.log(`Session ${sessionId} flagged: no tutor confirmed availability.`);
       }
 
+      invalidateSessionCaches();
       return res.status(200).json({
         message: finalStatus === 'flagged'
           ? 'Session flagged — no tutor confirmed availability.'
@@ -678,6 +717,168 @@ router.patch(
 
     } catch (err) {
       console.error('Complete session error:', err.message);
+      return res.status(500).json({ errors: ['Server error.'] });
+    }
+  }
+);
+
+
+// =============================================================
+//  PATCH /api/sessions/:id/cancel
+//  Lecturer cancels a scheduled or active session.
+// =============================================================
+
+router.patch(
+  '/:id/cancel',
+  authenticate,
+  requireRole('lecturer'),
+  async (req, res) => {
+    const sessionId = parseInt(req.params.id, 10);
+
+    try {
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
+
+      if (s.status === 'cancelled') {
+        return res.status(409).json({ errors: ['Session is already cancelled.'] });
+      }
+      if (s.status === 'completed' || s.status === 'flagged') {
+        return res.status(409).json({ errors: ['Completed or flagged sessions cannot be cancelled.'] });
+      }
+
+      await pool.query(
+        `UPDATE sessions
+         SET status          = 'cancelled',
+             session_code    = NULL,
+             code_expires_at = NULL
+         WHERE id = $1`,
+        [sessionId]
+      );
+
+      invalidateSessionCaches();
+      return res.status(200).json({
+        message: 'Session cancelled.',
+        status: 'cancelled',
+      });
+    } catch (err) {
+      console.error('Cancel session error:', err.message);
+      return res.status(500).json({ errors: ['Server error.'] });
+    }
+  }
+);
+
+
+// =============================================================
+//  PATCH /api/sessions/:id/postpone
+//  Lecturer moves a session to a new date/time (stays scheduled).
+// =============================================================
+
+router.patch(
+  '/:id/postpone',
+  authenticate,
+  requireRole('lecturer'),
+  async (req, res) => {
+    const sessionId = parseInt(req.params.id, 10);
+    const { sessionDate, startTime, endTime, venue } = req.body || {};
+
+    try {
+      const s = await assertSessionAccess(req, res, sessionId);
+      if (!s) return;
+
+      if (s.status === 'cancelled') {
+        return res.status(409).json({ errors: ['Cancelled sessions cannot be postponed.'] });
+      }
+      if (s.status === 'completed' || s.status === 'flagged') {
+        return res.status(409).json({ errors: ['Completed or flagged sessions cannot be postponed.'] });
+      }
+      if (!sessionDate) {
+        return res.status(400).json({ errors: ['New session date is required.'] });
+      }
+
+      const errors = [];
+      const normalizedStart = normalizeTime(startTime) || normalizeTime(s.start_time);
+      let normalizedEnd = normalizeTime(endTime);
+
+      // If end is missing, before start, or outside hours, auto-calc from start (capped at 20:00)
+      if (normalizedStart) {
+        const startMins = timeToMinutes(normalizedStart);
+        const endMins = normalizedEnd ? timeToMinutes(normalizedEnd) : null;
+        const needsAutoEnd =
+          !normalizedEnd ||
+          endMins == null ||
+          endMins <= startMins ||
+          !isWithinSessionHours(normalizedEnd);
+        if (needsAutoEnd) {
+          normalizedEnd = normalizeTime(
+            computeEndTime(normalizedStart, s.session_type || 'tutorial', null)
+          );
+        }
+      }
+
+      if (normalizedStart && !isWithinSessionHours(normalizedStart)) {
+        errors.push('Start time must be between 08:00 and 20:00.');
+      }
+      if (normalizedEnd && !isWithinSessionHours(normalizedEnd)) {
+        errors.push('End time must be between 08:00 and 20:00.');
+      }
+      if (normalizedStart && normalizedEnd && timeToMinutes(normalizedEnd) <= timeToMinutes(normalizedStart)) {
+        errors.push('End time must be after start time.');
+      }
+      if (errors.length) return res.status(400).json({ errors });
+
+      const resolvedStart = normalizedStart || s.start_time || null;
+      const resolvedEndTime = normalizedEnd
+        ? `${normalizedEnd}:00`
+        : computeEndTime(resolvedStart, s.session_type || 'tutorial', null);
+
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
+        await client.query(
+          `UPDATE sessions
+           SET session_date    = $2,
+               start_time      = $3,
+               end_time        = $4,
+               venue           = COALESCE($5, venue),
+               status          = 'scheduled',
+               session_code    = NULL,
+               code_expires_at = NULL
+           WHERE id = $1`,
+          [
+            sessionId,
+            sessionDate,
+            resolvedStart,
+            resolvedEndTime,
+            venue != null && String(venue).trim() !== '' ? String(venue).trim() : null,
+          ]
+        );
+
+        // Tutors must re-confirm for the new date/time
+        await client.query(
+          `UPDATE session_tutors
+           SET confirmed_at = NULL,
+               declined_at  = NULL
+           WHERE session_id = $1`,
+          [sessionId]
+        );
+
+        await client.query('COMMIT');
+      } catch (txErr) {
+        await client.query('ROLLBACK');
+        throw txErr;
+      } finally {
+        client.release();
+      }
+
+      invalidateSessionCaches();
+      return res.status(200).json({
+        message: 'Session postponed.',
+        status: 'scheduled',
+        sessionDate,
+      });
+    } catch (err) {
+      console.error('Postpone session error:', err.message);
       return res.status(500).json({ errors: ['Server error.'] });
     }
   }

@@ -8,9 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=12"/>
-<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=43"/>
-<link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=22"/>
+<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=51"/>
+<link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=29"/>
 <style id="lec-session-card-css">
   #lecSessionCard {
     display: block !important;
@@ -267,9 +268,6 @@
         </div>
       </div>
 
-      <button type="button" class="lec-fab" onclick="openNewSession()" aria-label="New session" title="New session">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
     </div>
 
     <!-- ═══════════ DASHBOARD ═══════════ -->
@@ -364,12 +362,10 @@
         </button>
       </div>
       <div class="sessions-list" id="sessions-list">
-        <div class="vf-sess-empty lec-sess-empty">
-          <div class="vf-sess-empty-ico" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          </div>
-          <h3>No sessions yet</h3>
-          <p>Create one using the button below.</p>
+        <div class="vf-skel-list" aria-hidden="true">
+          <div class="vf-skel-list-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div><div class="vf-skel vf-skel-line" style="height:28px;border-radius:8px"></div></div>
+          <div class="vf-skel-list-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div><div class="vf-skel vf-skel-line" style="height:28px;border-radius:8px"></div></div>
+          <div class="vf-skel-list-row"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line"></div><div class="vf-skel vf-skel-line short"></div><div class="vf-skel vf-skel-line" style="height:28px;border-radius:8px"></div></div>
         </div>
       </div>
       <div class="lec-mobile-cta" id="lec-sessions-cta">
@@ -395,13 +391,33 @@
         <div class="stat-box"><div class="stat-label">Approved</div><div class="stat-val green" id="tutors-approved">—</div></div>
       </div>
       <div class="tutors-grid" id="tutors-grid">
-        <div class="lec-tutors-loading">Loading tutors…</div>
+        <div class="vf-skel-card" aria-hidden="true">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel vf-skel-line short"></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
+        <div class="vf-skel-card" aria-hidden="true">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel vf-skel-line short"></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
+        <div class="vf-skel-card" aria-hidden="true">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+          <div class="vf-skel vf-skel-line short"></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
       </div>
       <section class="lec-referrals" aria-label="My referrals">
         <h2 class="lec-referrals-title">My referrals</h2>
         <div class="lec-referrals-card">
           <div id="my-referrals-list">
-            <div class="lec-referrals-empty">Loading referrals…</div>
+            <div class="lec-ref-row" aria-hidden="true">
+              <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                <div class="vf-skel vf-skel-line mid"></div>
+                <div class="vf-skel vf-skel-line short"></div>
+              </div>
+              <div class="vf-skel vf-skel-line" style="width:64px;height:14px;flex-shrink:0"></div>
+            </div>
           </div>
           <div class="lec-referrals-actions">
             <button type="button" class="lec-ref-btn" onclick="openReferTutor()">
@@ -443,7 +459,9 @@
           </div>
           <div class="tm-msg-recent-label">Recent</div>
           <div class="inbox-list" id="inbox-list">
-            <div style="padding:24px 16px;font-size:13px;color:var(--muted);text-align:center">Loading messages…</div>
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel-inbox-item" aria-hidden="true"><div class="vf-skel vf-skel-av sm"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
           </div>
         </div>
         <div class="msg-thread" id="msg-thread">
@@ -640,7 +658,14 @@
         </div>
       </div>
       <div class="claims-list" id="claims-list">
-        <div class="lec-empty-card"><p>Loading claims…</p></div>
+        <div class="vf-skel-card" aria-hidden="true" style="margin-bottom:12px">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div><div class="vf-skel vf-skel-line chip"></div></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
+        <div class="vf-skel-card" aria-hidden="true" style="margin-bottom:12px">
+          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div><div class="vf-skel vf-skel-line chip"></div></div>
+          <div class="vf-skel vf-skel-line btn"></div>
+        </div>
       </div>
     </div>
 
@@ -746,30 +771,31 @@
 
     <!-- ═══════════ SUPPORT ═══════════ -->
     <div class="view" id="view-support">
-      <div class="support-page">
-        <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <div class="lec-sup-page">
+        <button type="button" class="lec-sup-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           HOME
         </button>
-        <div class="page-hero lec-page-hero">
-          <h1>Support</h1>
-          <p>Raise a ticket if you need help from the Student Employment Office.</p>
-        </div>
-        <div id="lecturer-tickets-list">
-          <div class="lec-empty-card">
-            <div class="lec-empty-ico" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        <div class="lec-sup-title">Support</div>
+        <div class="lec-sup-sub">Raise a ticket if you need help from the Student Employment Office.</div>
+
+        <div id="lecturer-tickets-list" class="lec-sup-list">
+          <div class="lec-sup-card">
+            <div class="lec-sup-empty">
+              <div class="lec-sup-empty-ico" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+              </div>
+              <h3>No tickets yet</h3>
+              <p>Tap New Ticket below if you need help.</p>
             </div>
-            <h3>No tickets yet</h3>
-            <p>Tap New Ticket below if you need help.</p>
           </div>
         </div>
-        <button type="button" class="st-new-btn" onclick="openLecturerTicketModal()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          New Ticket
+      </div>
+
+      <div class="lec-mobile-cta" id="lec-support-cta">
+        <button type="button" class="lec-sup-new-btn lec-btn-glow" onclick="openLecturerTicketModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="lec-btn-glow-label">New Ticket</span>
         </button>
       </div>
     </div>
@@ -807,65 +833,49 @@
   </div>
 </nav>
 
-<!-- LECTURER SUPPORT TICKET MODAL -->
+<!-- LECTURER SUPPORT TICKET MODAL — matches lecturer mobile mock -->
 <div class="modal-overlay" id="lec-ticket-overlay" onclick="closeLecturerTicketModal(event)">
-  <div class="modal st-modal" id="lec-ticket-modal">
-    <div class="modal-header">
-      <div class="st-modal-intro">
-        <div class="st-modal-icon" aria-hidden="true">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
+  <div class="lec-sup-sheet" id="lec-ticket-modal" onclick="event.stopPropagation()">
+    <div class="lec-sup-sheet-head">
+      <div class="lec-sup-sheet-intro">
+        <div class="lec-sup-sheet-ico" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
         </div>
         <div>
-          <div class="modal-to">Student Employment Office</div>
-          <div class="modal-name">Raise a Support Ticket</div>
-          <p class="st-modal-hint">Tell us what went wrong — a coordinator will review and reply here.</p>
+          <div class="lec-sup-sheet-eyebrow">Student Employment Office</div>
+          <div class="lec-sup-sheet-title">Raise a Support Ticket</div>
         </div>
       </div>
-      <button type="button" class="modal-close" onclick="closeLecturerTicketModal()" aria-label="Close">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+      <button type="button" class="lec-sup-sheet-close" onclick="closeLecturerTicketModal()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <div class="st-modal-body">
-      <div class="ns-field">
-        <label class="ns-label" for="lec-ticket-subject">Subject</label>
-        <input id="lec-ticket-subject" class="ns-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
-      </div>
-      <div class="ns-field">
-        <label class="ns-label" for="lec-ticket-priority">Priority</label>
-        <div class="ns-select-wrap">
-          <select id="lec-ticket-priority" class="ns-select">
-            <option value="low">Low — general question</option>
-            <option value="medium" selected>Medium — needs attention</option>
-            <option value="high">High — blocking my work</option>
-          </select>
-          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-      </div>
-      <div class="ns-field">
-        <label class="ns-label" for="lec-ticket-details">Details</label>
-        <textarea id="lec-ticket-details" class="ns-textarea st-textarea" rows="5" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
-      </div>
+    <p class="lec-sup-sheet-hint">Tell us what went wrong — a coordinator will review and reply here.</p>
+
+    <label class="lec-sup-label" for="lec-ticket-subject">Subject</label>
+    <input id="lec-ticket-subject" class="lec-sup-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
+
+    <label class="lec-sup-label" for="lec-ticket-priority">Priority</label>
+    <div class="lec-sup-select-wrap">
+      <select id="lec-ticket-priority" class="lec-sup-input lec-sup-select">
+        <option value="low">Low — general question</option>
+        <option value="medium" selected>Medium — needs attention</option>
+        <option value="high">High — blocking my work</option>
+      </select>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
     </div>
-    <div class="ns-divider"></div>
-    <div class="ns-footer st-modal-footer">
-      <span class="st-modal-footnote">Typical response within 1–2 business days</span>
-      <div class="st-modal-actions">
-        <button type="button" class="ns-cancel" onclick="closeLecturerTicketModal()">Cancel</button>
-        <button type="button" class="ns-create" onclick="submitLecturerTicket()">
-          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-          Submit Ticket
-        </button>
-      </div>
+
+    <label class="lec-sup-label" for="lec-ticket-details">Details</label>
+    <textarea id="lec-ticket-details" class="lec-sup-input lec-sup-textarea" rows="4" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
+
+    <div class="lec-sup-field-hint">Typical response within 1–2 business days</div>
+
+    <div class="lec-sup-actions">
+      <button type="button" class="lec-sup-btn-cancel" onclick="closeLecturerTicketModal()">Cancel</button>
+      <button type="button" class="lec-sup-btn-submit lec-btn-glow" onclick="submitLecturerTicket()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+        <span class="lec-btn-glow-label">Submit Ticket</span>
+      </button>
     </div>
   </div>
 </div>
@@ -914,6 +924,46 @@
   </div>
 </div>
 
+<!-- POSTPONE SESSION MODAL (desktop) -->
+<div class="modal-overlay" id="pp-overlay" onclick="closePostponeSession(event)">
+  <div class="modal pp-modal" id="pp-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="modal-to">Reschedule session</div>
+        <div class="modal-name" id="pp-modal-title">Postpone session</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closePostponeSession()" aria-label="Close">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="pp-hint">Choose a new date and time. Assigned tutors will need to confirm again.</p>
+    <div class="ns-field">
+      <label class="ns-label" for="pp-date">New session date</label>
+      <input class="ns-input" id="pp-date" type="date" required />
+    </div>
+    <div class="ns-time-range" style="margin-top:12px;">
+      <div class="ns-field">
+        <label class="ns-label" for="pp-start">Start</label>
+        <input class="ns-input" id="pp-start" type="time" min="08:00" max="20:00" />
+      </div>
+      <div class="ns-time-sep" aria-hidden="true">→</div>
+      <div class="ns-field">
+        <label class="ns-label" for="pp-end">End</label>
+        <input class="ns-input" id="pp-end" type="time" min="08:00" max="20:00" />
+      </div>
+    </div>
+    <div class="ns-field" style="margin-top:12px;">
+      <label class="ns-label" for="pp-venue">Venue (optional)</label>
+      <input class="ns-input" id="pp-venue" type="text" placeholder="e.g. Lab 2B, Lecture Hall A" />
+    </div>
+    <div class="ns-divider"></div>
+    <div class="ns-footer">
+      <button type="button" class="ns-cancel" onclick="closePostponeSession()">Back</button>
+      <button type="button" class="ns-create" onclick="submitPostponeSession()">Save new date</button>
+    </div>
+  </div>
+</div>
+
 <!-- NEW SESSION MODAL — FIX 2 (tutors) + FIX 3 (claim type) -->
 <div class="modal-overlay" id="ns-overlay" onclick="nsCloseOutside(event)">
   <div class="modal ns-modal" id="ns-modal">
@@ -922,10 +972,31 @@
       <button class="modal-close" onclick="closeNewSession()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="ns-modal-body">
-      <div class="ns-section-label">Date &amp; Time</div>
       <div class="ns-field ns-field-date">
         <label class="ns-label">Session date</label>
-        <input class="ns-input" id="ns-date" type="date" />
+        <input type="hidden" id="ns-date" value="" />
+        <div class="ns-date-wrap" id="ns-date-wrap" onclick="toggleNsDatePicker(event)">
+          <input class="ns-input" id="ns-date-display" type="text" placeholder="mm/dd/yyyy" readonly tabindex="0" aria-haspopup="dialog" aria-controls="ns-date-picker" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleNsDatePicker(event);}"/>
+          <svg class="ns-cal-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        </div>
+        <div class="ns-date-picker" id="ns-date-picker" hidden role="dialog" aria-label="Choose session date">
+          <div class="ns-dp-head">
+            <div class="ns-dp-month" id="ns-dp-month">—</div>
+            <div class="ns-dp-nav">
+              <button type="button" class="ns-dp-nav-btn" onclick="event.stopPropagation(); nsDateShift(-1)" aria-label="Previous month">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="ns-dp-nav-btn" onclick="event.stopPropagation(); nsDateShift(1)" aria-label="Next month">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="ns-dp-grid" id="ns-dp-grid"></div>
+          <div class="ns-dp-footer">
+            <button type="button" class="ns-dp-link" onclick="event.stopPropagation(); clearNsDate()">Clear</button>
+            <button type="button" class="ns-dp-link" onclick="event.stopPropagation(); selectNsToday()">Today</button>
+          </div>
+        </div>
       </div>
       <div class="ns-time-range">
         <div class="ns-field">
@@ -933,7 +1004,7 @@
           <input type="hidden" id="ns-time-start" value="" />
           <div class="ns-time-picker" data-hidden-id="ns-time-start" data-label="Start time">
             <button type="button" class="ns-time-trigger" aria-haspopup="dialog" aria-expanded="false">
-              <svg class="ns-time-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg class="ns-time-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
               <span class="ns-time-trigger-value is-placeholder">Select time</span>
             </button>
             <div class="ns-time-panel" role="dialog" aria-label="Start time">
@@ -962,7 +1033,7 @@
           <input type="hidden" id="ns-time-end" value="" />
           <div class="ns-time-picker" data-hidden-id="ns-time-end" data-label="End time">
             <button type="button" class="ns-time-trigger" aria-haspopup="dialog" aria-expanded="false">
-              <svg class="ns-time-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <svg class="ns-time-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
               <span class="ns-time-trigger-value is-placeholder">Optional</span>
             </button>
             <div class="ns-time-panel" role="dialog" aria-label="End time">
@@ -987,17 +1058,15 @@
         </div>
       </div>
       <p class="ns-time-hint">Sessions run between 08:00 and 20:00. Leave end blank to auto-calculate (2 hrs, or 3 hrs for practicals).</p>
-      <div class="ns-section-label">Venue</div>
-      <div class="ns-field"><label class="ns-label">Venue / Location</label><input class="ns-input" id="ns-venue" type="text" placeholder="e.g. Lab 2B, Online – Teams, Lecture Hall A…" /></div>
-      <div class="ns-section-label">Topic</div>
-      <div class="ns-field"><label class="ns-label">Session Topic</label><textarea class="ns-textarea" id="ns-topic" placeholder="e.g. Database Normalisation — 1NF to 3NF…"></textarea></div>
-      <div class="ns-section-label">Type of Session</div>
+      <div class="ns-field"><label class="ns-label">Venue / location</label><input class="ns-input" id="ns-venue" type="text" placeholder="e.g. Lab 2B, Online – Teams, Lecture Hall A" /></div>
+      <div class="ns-field"><label class="ns-label">Session topic</label><input class="ns-input" id="ns-topic" type="text" placeholder="e.g. Database Normalisation — 1NF to 3NF" /></div>
+      <div class="ns-section-label">Type of session</div>
       <div class="ns-type-grid" id="ns-type-grid">
-        <button class="ns-type-pill" onclick="selectType(this,'tutorial')">Tutorial</button>
-        <button class="ns-type-pill" onclick="selectType(this,'practical')">Practical</button>
-        <button class="ns-type-pill" onclick="selectType(this,'online')">Online</button>
-        <button class="ns-type-pill" onclick="selectType(this,'revision')">Revision</button>
-        <button class="ns-type-pill" onclick="selectType(this,'lecture')">Lecture</button>
+        <button type="button" class="ns-type-pill" onclick="selectType(this,'tutorial')">Tutorial</button>
+        <button type="button" class="ns-type-pill" onclick="selectType(this,'practical')">Practical</button>
+        <button type="button" class="ns-type-pill" onclick="selectType(this,'online')">Online</button>
+        <button type="button" class="ns-type-pill" onclick="selectType(this,'revision')">Revision</button>
+        <button type="button" class="ns-type-pill" onclick="selectType(this,'lecture')">Lecture</button>
       </div>
       <input type="hidden" id="ns-type-value" value="" />
       <div class="ns-claim-indicator" id="ns-claim-indicator" style="display:none;">
@@ -1005,25 +1074,11 @@
         Claim category: <strong id="ns-claim-category">—</strong> &nbsp;<span class="ns-claim-badge" id="ns-claim-badge">—</span>
       </div>
       <div class="ns-section-label" style="display:flex;align-items:center;justify-content:space-between;">
-        Assign Tutors
+        Assign tutors
         <span class="ns-select-all" onclick="toggleSelectAllTutors()">Select all</span>
       </div>
       <div class="ns-tutor-list" id="ns-tutor-list">
-        <div class="ns-tutor-row" data-tutor="CN" onclick="toggleTutor(this)">
-          <div class="ns-tutor-cb"><svg class="ns-tutor-cb-tick" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
-          <span class="ns-tutor-name">Carol Nkosi</span>
-          <span class="ns-tutor-meta">IS211 · APD301 · Senior Tutor</span>
-        </div>
-        <div class="ns-tutor-row" data-tutor="TD" onclick="toggleTutor(this)">
-          <div class="ns-tutor-cb"><svg class="ns-tutor-cb-tick" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
-          <span class="ns-tutor-name">Thabo Dlamini</span>
-          <span class="ns-tutor-meta">IS211 · Junior Tutor</span>
-        </div>
-        <div class="ns-tutor-row" data-tutor="BM" onclick="toggleTutor(this)">
-          <div class="ns-tutor-cb"><svg class="ns-tutor-cb-tick" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></div>
-          <span class="ns-tutor-name">Bongi Masondo</span>
-          <span class="ns-tutor-meta">IS310 · Senior Tutor</span>
-        </div>
+        <div class="ns-tutor-empty">Loading tutors…</div>
       </div>
     </div>
     <div class="ns-divider"></div>
@@ -1087,14 +1142,12 @@
 <div class="modal-overlay" id="ma-overlay" onclick="maCloseOutside(event)">
   <div class="modal" id="ma-modal" style="width:480px;">
     <div class="modal-header"><div><div class="modal-to">Broadcasting to</div><div class="modal-name">All Tutors</div></div><button class="modal-close" onclick="closeMsgAll()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;">
-      <span style="font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--green);padding:3px 10px;border-radius:5px;border:1px solid rgba(92,200,138,.2);">CN · Carol Nkosi</span>
-      <span style="font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--yellow);padding:3px 10px;border-radius:5px;border:1px solid rgba(200,168,75,.2);">TD · Thabo Dlamini</span>
-      <span style="font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--yellow);padding:3px 10px;border-radius:5px;border:1px solid rgba(200,168,75,.2);">BM · Bongi Masondo</span>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;" id="ma-chips">
+      <span class="ma-chip ma-chip-empty">Loading tutors…</span>
     </div>
     <input class="modal-subject" id="ma-subject" type="text" placeholder="Subject…" />
     <textarea class="modal-body" id="ma-body" placeholder="Write your broadcast message here…"></textarea>
-    <div class="modal-footer"><div class="modal-hint">Sent to 3 tutors via VeriFlow</div><button class="modal-send" onclick="sendMsgAll()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send to All</button></div>
+    <div class="modal-footer"><div class="modal-hint" id="ma-hint">Sent via VeriFlow</div><button class="modal-send" onclick="sendMsgAll()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send to All</button></div>
   </div>
 </div>
 
@@ -1135,6 +1188,7 @@
         <tbody id="reg-tbody"></tbody>
       </table>
     </div>
+    <div class="lec-att-list" id="reg-mobile-list" aria-label="Class list"></div>
     <div class="reg-modal-footer">
       <span class="reg-footer-note">Read-only · Full class list with present / absent status</span>
       <button type="button" class="reg-dl-btn" onclick="downloadRegister()">
@@ -1145,7 +1199,7 @@
   </div>
 </div>
 
-<script src="../js/app.js?v=13"></script>
+<script src="../js/app.js?v=20"></script>
 <script>
   if (!VF.requireRole('lecturer', 'login.html')) { throw new Error('Not authenticated'); }
   (function guardTempPassword() {
@@ -1162,8 +1216,8 @@
     }
   })();
 </script>
-<script src="../js/messaging.js?v=10"></script>
-<script src="../js/lecturer-dashboard.js?v=54"></script>
+<script src="../js/messaging.js?v=16"></script>
+<script src="../js/lecturer-dashboard.js?v=64"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';
