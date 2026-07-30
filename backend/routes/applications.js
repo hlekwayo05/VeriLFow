@@ -24,11 +24,6 @@ const { uploadFile } = require('../services/storage');
 const { validateUploadedFile } = require('../utils/fileValidation');
 const { validateAcademicSave, validateSubmitApplication } = require('../validators/applicationValidator');
 
-// =============================================================
-//  MULTER — file upload config
-//  Accepts CV and transcript PDFs only.
-//  Files saved to backend/uploads/ as userId_fieldname_timestamp.pdf
-// =============================================================
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -83,12 +78,6 @@ async function persistUploadToStorage(localPath, storagePath) {
   }
 }
 
-
-// =============================================================
-//  POST /api/applications/me/documents
-//  Draft-save CV / transcript while status is still incomplete.
-//  Survives page reloads — step 3 restores from these filenames.
-// =============================================================
 
 router.post(
   '/me/documents',
@@ -164,13 +153,6 @@ router.post(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/applications/me/academic
-//  Called when tutor clicks "Next" on apply-step2.html
-//  Saves academic info onto the existing (incomplete) application.
-//  Requires: tutor JWT
-// =============================================================
 
 router.patch(
   '/me/academic',
@@ -265,14 +247,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  POST /api/applications/me/submit
-//  Called when tutor clicks "Submit" on apply-step3.html
-//  Accepts CV and transcript uploads, runs eligibility check,
-//  sets application status to submitted or rejected.
-//  Requires: tutor JWT
-// =============================================================
 
 router.post(
   '/me/submit',
@@ -490,13 +464,6 @@ router.post(
 );
 
 
-// =============================================================
-//  GET /api/applications/me
-//  Returns the current tutor's application status and details.
-//  Used by tracker.html and dashboard.html.
-//  Requires: tutor JWT
-// =============================================================
-
 router.get(
   '/me',
   authenticate,
@@ -560,15 +527,6 @@ router.get(
   }
 );
 
-
-// =============================================================
-//  GET /api/applications
-//  Returns all applications. Admin only — admin is the sole
-//  reviewer of tutor applications in this system. Lecturers do
-//  not review applications; their role is limited to sessions,
-//  attendance, and claims.
-//  Requires: admin JWT
-// =============================================================
 
 router.get(
   '/',
@@ -636,14 +594,6 @@ router.get(
 );
 
 
-// =============================================================
-//  PATCH /api/applications/:id/under-review
-//  Admin marks an application as under review (opens the pool
-//  for this applicant). Optional intermediate step before
-//  approve/reject — purely a status marker for the tracker UI.
-//  Requires: admin JWT
-// =============================================================
-
 router.patch(
   '/:id/under-review',
   authenticate,
@@ -677,13 +627,6 @@ router.patch(
 );
 
 
-// =============================================================
-//  PATCH /api/applications/:id/shortlist
-//  Admin shortlists an application that is currently under review.
-//  This is an admin-only action — there is no lecturer review step.
-//  Requires: admin JWT
-// =============================================================
-
 router.patch(
   '/:id/shortlist',
   authenticate,
@@ -716,13 +659,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/applications/:id/approve
-//  Admin approves an application and sets responsibility level.
-//  This is the final step — tutor can now onboard.
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:id/approve',
@@ -830,12 +766,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/applications/:id/reject
-//  Admin rejects an application with a reason.
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:id/reject',

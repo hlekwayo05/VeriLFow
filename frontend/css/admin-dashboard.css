@@ -16,10 +16,8 @@ body.admin-dash {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── APP SHELL ── */
 body.admin-dash .app { display: flex; height: 100vh; }
 
-/* ── SIDEBAR ── */
 body.admin-dash .sidebar { width: var(--sidebar); background: var(--brand-bg); border-right: 1px solid rgba(255,255,255,.10); box-shadow: none; display: flex; flex-direction: column; padding: 24px 14px; flex-shrink: 0; overflow-y: auto; }
 body.admin-dash .sidebar::-webkit-scrollbar { width: 0; }
 body.admin-dash .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 26px; padding: 0 4px; }
@@ -36,14 +34,12 @@ body.admin-dash .nav-badge { margin-left: auto; background: rgba(255,255,255,.18
 body.admin-dash .nav-item.active .nav-badge { background: #fff; color: var(--brand-bg); }
 body.admin-dash .sidebar-footer { padding-top: 10px; border-top: 1px solid rgba(255,255,255,.12); margin-top: 4px; }
 
-/* ── MAIN ── */
 body.admin-dash .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 body.admin-dash .page { display: none; flex: 1; overflow: hidden; }
 body.admin-dash .page.active { display: flex; }
 body.admin-dash #page-dashboard { display: none; }
 body.admin-dash #page-dashboard.active { display: grid; grid-template-columns: 1fr 296px; flex: 1; overflow: hidden; }
 
-/* ── COLUMNS ── */
 body.admin-dash .left-col { overflow-y: auto; padding: 26px 28px; border-right: 1px solid var(--border); }
 body.admin-dash .left-col::-webkit-scrollbar { width: 4px; }
 body.admin-dash .left-col::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 4px; }
@@ -54,20 +50,17 @@ body.admin-dash .full-page { flex: 1; overflow-y: auto; padding: 32px 36px; flex
 body.admin-dash .full-page::-webkit-scrollbar { width: 4px; }
 body.admin-dash .full-page::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 4px; }
 
-/* ── HERO ── */
 body.admin-dash .hero { margin-bottom: 22px; animation: adFadeUp .4s ease .02s both; }
 body.admin-dash .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.05; letter-spacing: -1px; margin-bottom: 5px; }
 body.admin-dash .hero h1 em { font-style: normal; color: var(--muted); }
 body.admin-dash .hero p { color: var(--muted); font-size: 12px; }
 
-/* ── PAGE HERO ── */
 body.admin-dash .page-hero { margin-bottom: 22px; animation: adFadeUp .35s ease both; }
 body.admin-dash .page-hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: 1px; line-height: 1; margin-bottom: 5px; }
 body.admin-dash .page-hero h1 em { font-style: normal; color: var(--muted); }
 body.admin-dash .page-hero p { font-size: 12px; color: var(--muted); }
 body.admin-dash .page-hero-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; }
 
-/* ── STATS ROW ── */
 body.admin-dash .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; margin-bottom: 22px; }
 body.admin-dash .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; animation: adFadeUp .4s ease both; cursor: pointer; transition: border-color .2s; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
 body.admin-dash .stat-card:hover { border-color: var(--border-hi); }
@@ -80,12 +73,10 @@ body.admin-dash .stat-value.red { color: var(--red); }
 body.admin-dash .stat-value.blue { color: var(--blue); }
 body.admin-dash .stat-sub { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
 
-/* ── SECTION HEADER ── */
 body.admin-dash .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 body.admin-dash .section-title { font-size: 13px; font-weight: 600; color: var(--text); }
 body.admin-dash .section-sub { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
 
-/* ── DATA TABLES ── */
 body.admin-dash .data-table { width: 100%; border-collapse: collapse; margin-bottom: 26px; }
 body.admin-dash .data-table th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 0 10px 10px 0; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; }
 body.admin-dash .data-table td { padding: 12px 10px 12px 0; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
@@ -93,7 +84,6 @@ body.admin-dash .data-table tr:last-child td { border-bottom: none; }
 body.admin-dash .data-table tbody tr { transition: background .15s; }
 body.admin-dash .data-table tbody tr:hover td { background: rgba(0,0,0,.02); }
 
-/* ── TABS ── */
 body.admin-dash .tabs { display: flex; gap: 4px; margin-bottom: 18px; }
 body.admin-dash .tab-btn { padding: 6px 18px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: 'DM Sans', sans-serif; transition: all .2s; }
 body.admin-dash .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -101,7 +91,6 @@ body.admin-dash .tab-btn:not(.active):hover { border-color: var(--border-hi); co
 body.admin-dash .tab-pane { display: none; }
 body.admin-dash .tab-pane.active { display: block; }
 
-/* ── STATUS / QUAL CHIPS ── */
 body.admin-dash .qual-chip { display: inline-flex; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 500; background: var(--faint); color: var(--muted); border: 1px solid var(--border); }
 body.admin-dash .qual-chip.honours { border-color: var(--border-hi); color: var(--text); }
 body.admin-dash .pref-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
@@ -166,7 +155,6 @@ body.admin-dash .stag.review { background: rgba(200,168,75,.1); color: var(--yel
 body.admin-dash .stag.paid { background: rgba(26,122,82,.1); color: var(--green); }
 body.admin-dash .stag.open { background: var(--faint); color: var(--text); border: 1px solid var(--border-hi); }
 
-/* ── MESSAGES ── */
 body.admin-dash .msg-layout { display: grid; grid-template-columns: 300px 1fr; height: calc(100vh - 150px); min-height: 620px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: adFadeUp .35s ease both; }
 body.admin-dash .inbox-sidebar { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
 body.admin-dash .inbox-top { padding: 22px 18px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -514,7 +502,6 @@ body.admin-dash .modal-send { display: flex; align-items: center; gap: 8px; padd
 body.admin-dash .modal-send:hover { opacity: .85; }
 body.admin-dash .modal-send svg { width: 13px; height: 13px; }
 
-/* ── BUTTONS ── */
 body.admin-dash .btn-approve { padding: 5px 14px; border-radius: 6px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; margin-right: 5px; transition: opacity .2s; }
 body.admin-dash .btn-approve:hover { opacity: .82; }
 body.admin-dash .btn-decline { padding: 5px 10px; border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; border: 1px solid var(--border); font-family: 'DM Sans', sans-serif; transition: border-color .2s, color .2s; }
@@ -526,7 +513,6 @@ body.admin-dash .btn-sm.danger:hover { border-color: var(--red); background: rgb
 body.admin-dash .btn-primary { padding: 9px 22px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: opacity .2s; }
 body.admin-dash .btn-primary:hover { opacity: .85; }
 
-/* ── RIGHT PANELS ── */
 body.admin-dash .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04); }
 body.admin-dash .panel:nth-child(1){animation: adFadeUp .4s ease .1s both}
 body.admin-dash .panel:nth-child(2){animation: adFadeUp .4s ease .2s both}
@@ -534,7 +520,6 @@ body.admin-dash .panel:nth-child(3){animation: adFadeUp .4s ease .3s both}
 body.admin-dash .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; }
 body.admin-dash .panel-header h3 { font-size: 13px; font-weight: 600; color: var(--text); }
 
-/* ── NOTIFICATIONS ── */
 body.admin-dash .notif-item { display: flex; align-items: flex-start; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--border); }
 body.admin-dash .notif-item.notif-clickable { cursor: pointer; border-radius: 6px; margin: 0 -6px; padding: 9px 6px; transition: background .15s; }
 body.admin-dash .notif-item.notif-clickable:hover { background: rgba(0,0,0,.03); }
@@ -570,14 +555,12 @@ body.admin-dash .notif-title { font-size: 12px; font-weight: 600; color: var(--t
 body.admin-dash .notif-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
 body.admin-dash .notif-time { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; white-space: nowrap; flex-shrink: 0; }
 
-/* ── APPLICANT ITEMS (right panel) ── */
 body.admin-dash .app-item { display: flex; align-items: center; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 body.admin-dash .app-item:last-of-type { border-bottom: none; padding-bottom: 0; }
 body.admin-dash .app-av { width: 30px; height: 30px; border-radius: 50%; background: var(--faint); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--muted); flex-shrink: 0; border: 1px solid var(--border); }
 body.admin-dash .app-name { font-size: 12px; font-weight: 600; color: var(--text); }
 body.admin-dash .app-mod { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
 
-/* ── REPORTS / BAR ROWS ── */
 body.admin-dash .report-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 body.admin-dash .report-row:last-child { margin-bottom: 0; }
 body.admin-dash .report-label { font-size: 11px; color: var(--muted); width: 96px; flex-shrink: 0; }
@@ -588,7 +571,6 @@ body.admin-dash .report-val { font-size: 11px; color: var(--muted); font-family:
 body.admin-dash .bar-track { height: 5px; background: var(--faint); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
 body.admin-dash .bar-fill { height: 100%; background: var(--accent); border-radius: 3px; animation: adGrowBar 1.2s ease .5s both; }
 
-/* ── SETTINGS ── */
 body.admin-dash .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 body.admin-dash .field-group { display: flex; flex-direction: column; gap: 5px; }
 body.admin-dash .field-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-family: 'DM Mono', monospace; }
@@ -614,7 +596,6 @@ body.admin-dash details.ad-acc.settings-section .ad-acc-body { display: block !i
 body.admin-dash details.ad-acc.settings-section > summary { pointer-events: none; }
 body.admin-dash .ad-settings-stack { display: block; }
 
-/* ── ANALYSIS PAGE (coordinator mock) ── */
 body.admin-dash #page-analysis.active {
   background: #f2f4f1;
   overflow-y: auto;
@@ -907,7 +888,6 @@ body.admin-dash #page-analysis .ad-analysis-empty {
 body.admin-dash .analysis-grid { display: none; }
 body.admin-dash .chart-section { display: none; }
 
-/* ── TOGGLE ── */
 body.admin-dash .toggle-wrap { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 body.admin-dash .toggle-wrap:last-child { border-bottom: none; padding-bottom: 0; }
 body.admin-dash .toggle { width: 36px; height: 20px; border-radius: 10px; background: var(--faint); border: 1px solid var(--border-hi); cursor: pointer; position: relative; transition: background .2s, border-color .2s; flex-shrink: 0; }
@@ -916,7 +896,6 @@ body.admin-dash .toggle::after { content: ''; position: absolute; top: 2px; left
 body.admin-dash .toggle.on::after { transform: translateX(16px); }
 body.admin-dash .toggle-label { font-size: 12px; color: var(--muted); }
 
-/* ── PROFILE ── */
 body.admin-dash .profile-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; max-width: 480px; animation: adFadeUp .4s ease both; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 body.admin-dash .profile-av-wrap { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
 body.admin-dash .profile-av { width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0; }
@@ -927,7 +906,6 @@ body.admin-dash .profile-row:last-child { border-bottom: none; }
 body.admin-dash .profile-row-label { color: var(--muted); font-size: 12px; }
 body.admin-dash .profile-row-val { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text); }
 
-/* ── CLAIM DETAIL MODAL ── */
 body.admin-dash .claim-modal { width: 780px; max-width: 96vw; max-height: 90vh; display: flex; flex-direction: column; padding: 28px; }
 body.admin-dash .claim-modal #cd-body { flex: 1; min-height: 0; overflow-y: auto; padding-right: 2px; }
 body.admin-dash .claims-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
@@ -1023,7 +1001,6 @@ body.admin-dash .ts-modal-total-val { font-family: 'Bebas Neue', sans-serif; fon
 body.admin-dash .cm-note { margin-top: 10px; padding: 10px 14px; background: rgba(200,90,90,.06); border: 1px solid rgba(200,90,90,.15); border-radius: 8px; font-size: 12px; color: var(--red); line-height: 1.6; }
 body.admin-dash .cm-note.amber { background: rgba(200,168,75,.06); border-color: rgba(200,168,75,.2); color: var(--yellow); }
 
-/* ── USER MANAGEMENT MODALS ── */
 body.admin-dash .um-modal { width: 720px; max-width: 96vw; }
 body.admin-dash .um-modal.small { width: 480px; }
 body.admin-dash .um-modal.tiny { width: 420px; }
@@ -1234,20 +1211,16 @@ body.admin-dash .support-message-bubble { max-width: min(100%, 560px); padding: 
 body.admin-dash .support-message.out .support-message-bubble { background: rgba(41, 110, 180, .08); border-color: rgba(41, 110, 180, .16); }
 body.admin-dash .support-message-meta { font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: .04em; color: var(--muted); }
 
-/* ── TOAST ── */
 body.admin-dash .toast { position: fixed; bottom: 28px; right: 28px; background: var(--accent); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,.12); transform: translateY(80px); opacity: 0; transition: transform .35s ease, opacity .35s ease; z-index: 999; }
 body.admin-dash .toast.show { transform: translateY(0); opacity: 1; }
 
-/* ── SCROLLBARS ── */
 body.admin-dash ::-webkit-scrollbar { width: 4px; }
 body.admin-dash ::-webkit-scrollbar-track { background: transparent; }
 body.admin-dash ::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 4px; }
 
-/* ── KEYFRAMES ── */
 @keyframes adFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes adGrowBar { from { width: 0 !important; } }
 
-/* ── RETURN CLAIM MODAL ── */
 body.admin-dash .return-claim-overlay { z-index: 260; }
 body.admin-dash .return-claim-modal { width: min(520px, 96vw); max-width: 520px; padding: 0; text-align: left; overflow: hidden; }
 body.admin-dash .return-claim-header { display: flex; align-items: flex-start; gap: 14px; padding: 20px 22px 16px; border-bottom: 1px solid var(--border); }
@@ -1269,7 +1242,6 @@ body.admin-dash .return-claim-textarea::placeholder { color: var(--muted); }
 body.admin-dash .return-claim-submit { padding: 10px 20px !important; font-size: 13px !important; }
 body.admin-dash .return-claim-modal .ns-divider { margin: 0; }
 body.admin-dash .return-claim-modal .ns-footer { padding: 0 22px 20px; margin-top: 0; justify-content: flex-end; gap: 10px; }
-/* -- Mobile msg back (hidden on desktop) -- */
 body.admin-dash .tm-msg-back { display: none; }
 body.admin-dash .ad-mobile-hub { display: none; }
 body.admin-dash .ad-bottom-nav { display: none; }

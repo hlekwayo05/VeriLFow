@@ -165,7 +165,6 @@ function authenticateFileDownload(req, res, next) {
   return res.status(401).json({ errors: ['No token provided'] });
 }
 
-// GET /api/files/:filename/token — Supabase signed URL (Bearer auth)
 router.get('/:filename/token', authenticate, async (req, res) => {
   try {
     const basename = safeBasename(req.params.filename);
@@ -211,7 +210,6 @@ router.get('/:filename/token', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/files/:filename — Supabase signed redirect, else local disk
 router.get('/:filename', authenticateFileDownload, async (req, res) => {
   try {
     const basename = safeBasename(req.params.filename);

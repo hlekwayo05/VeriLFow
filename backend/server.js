@@ -100,7 +100,6 @@ app.set('env', process.env.NODE_ENV || 'development');
 app.set('trust proxy', parseTrustProxy(process.env.TRUST_PROXY));
 app.disable('x-powered-by');
 
-// ── Security headers ─────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
@@ -109,7 +108,6 @@ app.use(helmet({
   frameguard: false,
 }));
 
-// ── CORS (environment-configurable origins) ─────────────────
 const configuredOrigins = getConfiguredOrigins();
 const allowAllOriginsInDevelopment = configuredOrigins.length === 0 && process.env.NODE_ENV !== 'production';
 
@@ -135,7 +133,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// ── Rate limiting (before routes) ────────────────────────────
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -191,7 +188,6 @@ app.use('/api', generalLimiter);
 
 // Uploads are NOT publicly served — use GET /api/files/:filename (authenticated)
 
-// ── Routes ───────────────────────────────────────────────────
 app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/public',       require('./routes/public'));
 app.use('/api/settings',     require('./routes/settings'));
@@ -209,17 +205,14 @@ app.use('/api/messages',     require('./routes/messages'));
 app.use('/api/support',      require('./routes/support'));
 app.use('/api/files',        require('./routes/files'));
 
-// ── Health check ─────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', project: 'VeriFlow', time: new Date() });
 });
 
-// ── 404 handler ──────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// ── Global error handler ─────────────────────────────────────
 app.use((err, req, res, next) => {
   if (err && err.message === 'Not allowed by CORS') {
     return res.status(403).json({ errors: ['Not allowed by CORS'] });
@@ -228,7 +221,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// ── Start ────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 const { getLanIPv4, resolveFrontendBase } = require('./services/qrTokens');
 

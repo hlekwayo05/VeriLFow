@@ -22,11 +22,6 @@ function displayPositionType(value) {
 }
 
 
-// =============================================================
-//  GET /api/postings
-//  Admin lists all postings with live application counts.
-// =============================================================
-
 router.get(
   '/',
   authenticate,
@@ -71,11 +66,6 @@ router.get(
 );
 
 
-// =============================================================
-//  GET /api/postings/open
-//  Authenticated tutors — verify a posting exists for apply flow.
-// =============================================================
-
 router.get(
   '/open',
   authenticate,
@@ -118,10 +108,6 @@ router.get(
   }
 );
 
-
-// =============================================================
-//  POST /api/postings
-// =============================================================
 
 router.post(
   '/',
@@ -214,10 +200,6 @@ router.post(
 );
 
 
-// =============================================================
-//  PATCH /api/postings/:id
-// =============================================================
-
 router.patch(
   '/:id',
   adminActionLimiter,
@@ -303,10 +285,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  DELETE /api/postings/:id
-// =============================================================
 
 router.delete(
   '/:id',

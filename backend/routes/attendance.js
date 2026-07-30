@@ -39,11 +39,6 @@ function formatSessionType(type) {
   return map[type] || type;
 }
 
-// =============================================================
-//  POST /api/attendance/enter
-//  Student scanned QR — exchange short-lived token for session pass.
-//  OPEN ROUTE
-// =============================================================
 
 router.post('/enter', async (req, res) => {
   const qrToken = String(req.body.qrToken || req.body.token || '').trim();
@@ -80,12 +75,6 @@ router.post('/enter', async (req, res) => {
 });
 
 
-// =============================================================
-//  GET /api/attendance/pass/:passToken
-//  Rehydrate session details for a student already on the page.
-//  OPEN ROUTE
-// =============================================================
-
 router.get('/pass/:passToken', async (req, res) => {
   const passToken = String(req.params.passToken || '').trim();
 
@@ -120,13 +109,6 @@ router.get('/pass/:passToken', async (req, res) => {
   }
 });
 
-
-// =============================================================
-//  POST /api/attendance
-//  Student confirms attendance with pass token + student number.
-//  Validates against lecturer class list.
-//  OPEN ROUTE
-// =============================================================
 
 router.post('/', async (req, res) => {
   const passToken     = String(req.body.passToken || '').trim();
@@ -286,12 +268,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-// =============================================================
-//  GET /api/attendance/:sessionId
-//  Attendance log for a session.
-//  Requires: lecturer, admin, or assigned tutor JWT
-// =============================================================
 
 router.get(
   '/:sessionId',

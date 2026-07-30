@@ -21,7 +21,6 @@ const ALLOWED_FIELDS = [
   'max_hours_per_semester',
 ];
 
-// GET /api/settings — admin only
 router.get('/', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const settings = await getAppSettings();
@@ -32,7 +31,6 @@ router.get('/', authenticate, requireRole('admin'), async (req, res) => {
   }
 });
 
-// PATCH /api/settings — admin only
 router.patch('/', authenticate, requireRole('admin'), async (req, res) => {
   const updates = {};
   for (const field of ALLOWED_FIELDS) {

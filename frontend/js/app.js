@@ -1,10 +1,6 @@
-/* ============================================================
-   VERIFLOW — APP STATE & UTILITIES
-   ============================================================ */
 
 const VF = (() => {
 
-  /* ─── API CONFIG ─── */
   const PRODUCTION_API = "https://veriflow-backend.onrender.com/api";
 
   const API_BASE = (() => {
@@ -83,7 +79,6 @@ const VF = (() => {
     }
   }
 
-  /* ─── TOKEN (session-based auth) ─── */
   function getToken() {
     return sessionStorage.getItem(TOKEN_KEY);
   }
@@ -130,7 +125,6 @@ const VF = (() => {
     return data;
   }
 
-  /* ─── STATE ─── */
   const STATE_KEY = 'vf_state';
 
   function getState() {
@@ -174,7 +168,6 @@ const VF = (() => {
     localStorage.removeItem(STATE_KEY);
   }
 
-  /* ─── ROUTING ─── */
   function inPagesDir() {
     const href = window.location.href;
     return href.includes('/pages/') || href.includes('\\pages\\');
@@ -208,7 +201,6 @@ const VF = (() => {
     return 'frontend/pages/login.html';
   }
 
-  /* ─── AUTH GUARD ─── */
   function requireAuth(redirect = 'login.html') {
     if (!isAuthenticated()) {
       navigate(redirect);
@@ -262,7 +254,6 @@ const VF = (() => {
     return user;
   }
 
-  /* ─── NAVBAR ─── */
   function renderNavbar(opts = {}) {
     const s = getState();
     const { showSteps = false, currentStep = 0 } = opts;
@@ -315,7 +306,6 @@ const VF = (() => {
     `;
   }
 
-  /* ─── TOAST ─── */
   function toast(msg, type = 'default', duration = 3200) {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -335,7 +325,6 @@ const VF = (() => {
     }, duration);
   }
 
-  /* ─── VALIDATE ─── */
   function validateForm(fields) {
     let valid = true;
     fields.forEach(({ id, check, msg }) => {
@@ -350,7 +339,6 @@ const VF = (() => {
     return valid;
   }
 
-  /* ─── HELPERS ─── */
   function initials(first, last) {
     const f = (first || '').trim().charAt(0).toUpperCase();
     const l = (last  || '').trim().charAt(0).toUpperCase();
@@ -363,7 +351,6 @@ const VF = (() => {
     window.location.assign(homeUrl());
   }
 
-  /* ─── APPLICATION HELPERS ─── */
   const QUALIFICATION_LABELS = {
     '3rd_year':         '3rd year student',
     '4th_year_honours': '4th year or Honours student',
@@ -518,7 +505,6 @@ const VF = (() => {
     return { pass: true };
   }
 
-  /* ─── PAGE ENTER ANIMATION ─── */
   function pageIn() {
     document.body.style.opacity = '0';
     requestAnimationFrame(() => {
@@ -673,7 +659,6 @@ const VF = (() => {
     mq.addEventListener('change', sync);
   }
 
-  /* ─── Skeleton screens (shared shimmer) ─── */
   const skeleton = {
     cards(count = 4) {
       return Array.from({ length: count }, () => `
@@ -824,7 +809,6 @@ const VF = (() => {
     },
   };
 
-  /* ─── STRONG PASSWORD POLICY ─── */
   const PASSWORD_MIN = 8;
   const PASSWORD_MAX = 64;
   const PASSWORD_SPECIAL_RE = /[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?`~]/;

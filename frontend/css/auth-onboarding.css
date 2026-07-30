@@ -112,7 +112,6 @@ body.tracker-page .tracker-title {
     letter-spacing: -0.01em !important;
   }
 
-  /* ── Login ── */
   body.login-flow {
     background: #f2f4f1 !important;
   }
@@ -360,7 +359,6 @@ body.tracker-page .tracker-title {
     color: #26534d !important;
   }
 
-  /* ── Apply flow ── */
   body.apply-flow {
     background: #f2f4f1 !important;
   }
@@ -627,7 +625,6 @@ body.tracker-page .tracker-title {
     background: #fff !important;
   }
 
-  /* ── Onboarding ── */
   body.ob-page {
     background: #f2f4f1 !important;
   }
@@ -753,7 +750,6 @@ body.tracker-page .tracker-title {
     background: #3a7d72 !important;
   }
 
-  /* ── Tracker ── */
   body.tracker-page {
     background: #f2f4f1 !important;
   }

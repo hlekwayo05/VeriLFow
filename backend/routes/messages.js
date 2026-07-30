@@ -99,7 +99,6 @@ function mapPeerContact(row, type) {
   };
 }
 
-// GET /api/messages/peers — people the current user can start chats with
 router.get(
   '/peers',
   authenticate,
@@ -344,7 +343,6 @@ function mapThreadRow(row, userId) {
   };
 }
 
-// GET /api/messages/threads
 router.get(
   '/threads',
   authenticate,
@@ -433,7 +431,6 @@ router.get(
   }
 );
 
-// GET /api/messages/unread-count
 router.get(
   '/unread-count',
   authenticate,
@@ -487,7 +484,6 @@ router.get(
   }
 );
 
-// GET /api/messages/threads/:id
 router.get(
   '/threads/:id',
   authenticate,
@@ -634,7 +630,6 @@ router.get(
   }
 );
 
-// POST /api/messages/threads — start or continue a conversation
 router.post(
   '/threads',
   messageLimiter,
@@ -762,7 +757,6 @@ router.post(
   }
 );
 
-// POST /api/messages/threads/:id/messages — reply
 router.post(
   '/threads/:id/messages',
   messageLimiter,
@@ -834,7 +828,6 @@ router.post(
   }
 );
 
-// POST /api/messages/broadcast — lecturer message all tutors on module
 router.post(
   '/broadcast',
   broadcastLimiter,

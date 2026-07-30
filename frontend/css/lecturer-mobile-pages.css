@@ -2059,7 +2059,6 @@ body.lec-dash #reg-mobile-list { display: none; }
     z-index: 2 !important;
   }
 
-  /* ── New Session + Refer sheets (mock) ── */
   body.lec-dash #ns-overlay.open,
   body.lec-dash #rt-overlay.open {
     align-items: flex-end !important;
@@ -2453,7 +2452,6 @@ body.lec-dash #reg-mobile-list { display: none; }
     pointer-events: none !important;
   }
 
-  /* ── New Session date calendar + time panel (mock) ── */
   body.lec-dash #ns-overlay .ns-date-wrap {
     position: relative !important;
     cursor: pointer !important;
@@ -2610,7 +2608,6 @@ body.lec-dash #reg-mobile-list { display: none; }
     color: #eef4f1 !important;
   }
 
-  /* ── Session cards (mock teal session-card) ── */
   body.lec-dash #view-sessions .lec-session-card,
   body.lec-dash #view-sessions .vf-sess-card.lec-sess-card {
     background: linear-gradient(160deg, #1c3b38, #152e2c) !important;
@@ -2696,7 +2693,6 @@ body.lec-dash #reg-mobile-list { display: none; }
     width: auto !important;
   }
 
-  /* ── Claim cards + View & Verify sheet ── */
   body.lec-dash #view-claims .lec-rec-card {
     border-left: 3px solid #3a7d72 !important;
     cursor: pointer !important;

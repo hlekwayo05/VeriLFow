@@ -16,10 +16,12 @@ Versions follow chronological project milestones.
 - Shared shimmer **skeleton loaders** (`skeleton.css` + `VF.skeleton`) across lecturer, tutor, and admin dashboards and messaging
 - DB performance migration (`019`): indexes, optional pagination, short TTL response cache, `attendance_logs` partitioning
 - `backend/scripts/wipe-data.js` to truncate all public tables (dev/reset helper)
+- Project documentation: expanded `README.md` plus `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/OPERATIONS.md`
 
 ### Changed
 - Admin Analysis desktop layout uses full-width grid (payout/module charts side-by-side); mobile Analysis kept on original compact sizing
 - Lecturer Tutors page desktop view restored to card grid (was broken against 6-column table CSS)
+- Reduced decorative comment wallpaper across backend routes, frontend JS/CSS, and dashboard HTML (kept non-obvious “why” notes and useful JSDoc)
 
 ### Fixed
 - Tutor dashboard treated cancelled sessions as Upcoming; cancelled sessions now show correctly with clear status/actions

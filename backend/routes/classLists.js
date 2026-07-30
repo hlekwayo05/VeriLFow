@@ -41,7 +41,6 @@ function normalizeEntry(row) {
   return { studentNumber, fullName, yearLevel, email };
 }
 
-// GET /api/class-lists?moduleCode=DICT111
 router.get(
   '/',
   authenticate,
@@ -97,7 +96,6 @@ router.get(
   }
 );
 
-// POST /api/class-lists/import
 router.post(
   '/import',
   authenticate,

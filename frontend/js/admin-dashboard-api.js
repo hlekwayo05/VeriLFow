@@ -560,7 +560,6 @@ function cdCloseOutside(e) {
   if (e.target === document.getElementById('cd-overlay')) closeClaimDetail();
 }
 
-/* ── ATTENDANCE REGISTER (claim detail) ── */
 let adminRegisterData = null;
 let adminRegisterRefreshTimer = null;
 
@@ -1596,7 +1595,6 @@ function updateAdminMobileHub(counts) {
 
 window.updateAdminMobileHub = updateAdminMobileHub;
 
-// ── User Management (lecturers & tutors) ─────────────────────
 window.LECTURERS = window.LECTURERS || {};
 window.TUTORS = window.TUTORS || {};
 let activeConfirmAction = null;

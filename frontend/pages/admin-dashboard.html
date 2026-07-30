@@ -16,7 +16,6 @@
 <body class="admin-dash ad-on-hub">
 <div class="app">
 
-<!-- ═══════ SIDEBAR ═══════ -->
 <aside class="sidebar">
   <div class="logo">
     <img src="../images/veriflo-brand.png" alt="VeriFlow" class="lec-logo-img" width="140" height="40"/>
@@ -168,7 +167,6 @@
   </div>
 </div>
 
-<!-- ══ 1. DASHBOARD ══ -->
 <div id="page-dashboard" class="page active">
   <div class="left-col">
     <div class="hero">
@@ -243,7 +241,6 @@
   </div>
 </div>
 
-<!-- ══ 2. JOB POSTINGS ══ -->
 <div id="page-postings" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -272,7 +269,6 @@
   </div>
 </div>
 
-<!-- ══ 3. APPLICATIONS ══ -->
 <div id="page-applications" class="page">
   <div class="full-page ad-apps-page">
     <div class="ad-page-head">
@@ -327,7 +323,6 @@
   </div>
 </div>
 
-<!-- ══ 3b. APPLICATION DETAIL (mobile) ══ -->
 <div id="page-application-detail" class="page">
   <div class="full-page ad-appd-page">
     <div class="ad-page-head ad-appd-head">
@@ -397,7 +392,6 @@
   </div>
 </div>
 
-<!-- ══ 4. REFERRAL APPROVALS ══ -->
 <div id="page-referrals" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -417,7 +411,6 @@
   </div>
 </div>
 
-<!-- ══ 5. CLAIMS QUEUE ══ -->
 <div id="page-claims" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -437,7 +430,6 @@
   </div>
 </div>
 
-<!-- ══ 6. FLAGGED SESSIONS ══ -->
 <div id="page-flagged" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -457,7 +449,6 @@
   </div>
 </div>
 
-<!-- ══ 7. MESSAGES ══ -->
 <div id="page-messages" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -510,7 +501,6 @@
   </div>
 </div>
 
-<!-- ══ 8. USER MANAGEMENT ══ -->
 <div id="page-users" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -612,7 +602,6 @@
   </div>
 </div>
 
-<!-- ══ 9. SUPPORT ══ -->
 <div id="page-support" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -632,7 +621,6 @@
   </div>
 </div>
 
-<!-- ══ 10. ANALYSIS ══ -->
 <div id="page-analysis" class="page">
   <div class="full-page ad-analysis-page">
     <div class="ad-page-head">
@@ -703,7 +691,6 @@
   </div>
 </div>
 
-<!-- ══ 11. SYSTEM SETTINGS ══ -->
 <div id="page-settings" class="page">
   <div class="full-page">
     <div class="ad-page-head">
@@ -2267,7 +2254,6 @@ async function shortlistApplication(id) {
   }
 }
 
-// ── Reject modal ──────────────────────────────────────────────
 function openRejectModal(id) {
   const app = APPLICATIONS[id];
   if (!app) return;
@@ -2326,7 +2312,6 @@ async function confirmRejectApplication() {
   }
 }
 
-// ── Approval modal ───────────────────────────────────────────
 function openApprovalModal(id) {
   const app = APPLICATIONS[id];
   if (!app || app.status !== 'shortlisted') return;
@@ -2453,7 +2438,6 @@ async function finalizeApplicationApproval() {
   }
 }
 
-// ── Application detail modal / mobile page ───────────────────
 function isAdminMobileView() {
   return window.matchMedia('(max-width: 900px)').matches;
 }
@@ -2874,7 +2858,6 @@ function getModuleOptions() {
   return parseSubjectOptions();
 }
 
-// ── Add Lecturer modal ───────────────────────────────────────
 function openAddLecturerModal() {
   document.getElementById('lecturer-first-name').value = '';
   document.getElementById('lecturer-surname').value = '';

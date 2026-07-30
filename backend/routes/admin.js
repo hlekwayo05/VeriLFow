@@ -5,7 +5,6 @@ const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
 
-// GET /api/admin/claims — coordinator queue
 router.get(
   '/claims',
   authenticate,

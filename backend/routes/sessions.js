@@ -15,10 +15,6 @@ const QRCode = require('qrcode');
 const { parsePagination, sendList } = require('../utils/pagination');
 const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
 
-// =============================================================
-//  Helper — generate a 6-character alphanumeric session code
-//  e.g. "A3K9TZ"
-// =============================================================
 
 function generateSessionCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -130,12 +126,6 @@ async function shouldAutoFlagNoConfirmation() {
 }
 
 
-// =============================================================
-//  POST /api/sessions
-//  Lecturer creates a new session.
-//  Requires: lecturer JWT
-// =============================================================
-
 router.post(
   '/',
   authenticate,
@@ -243,14 +233,6 @@ router.post(
   }
 );
 
-
-// =============================================================
-//  GET /api/sessions
-//  Lecturer sees their own sessions.
-//  Admin sees all sessions.
-//  Tutor sees sessions they are assigned to.
-//  Requires: any authenticated user
-// =============================================================
 
 router.get(
   '/',
@@ -412,12 +394,6 @@ router.get(
 );
 
 
-// =============================================================
-//  GET /api/sessions/:id/qr
-//  Returns a rotating QR token for an active session.
-//  Requires: lecturer (owner) or assigned tutor JWT
-// =============================================================
-
 router.get(
   '/:id/qr',
   authenticate,
@@ -482,13 +458,6 @@ router.get(
 );
 
 
-// =============================================================
-//  GET /api/sessions/:id
-//  Returns full detail for one session including assigned tutors
-//  and attendance log.
-//  Requires: lecturer or admin JWT
-// =============================================================
-
 router.get(
   '/:id',
   authenticate,
@@ -545,12 +514,6 @@ router.get(
 );
 
 
-// =============================================================
-//  PATCH /api/sessions/:id/availability
-//  Tutor confirms or declines availability for an assigned session.
-//  Requires: tutor JWT
-// =============================================================
-
 router.patch(
   '/:id/availability',
   authenticate,
@@ -599,13 +562,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/sessions/:id/activate
-//  Lecturer activates a session — generates a session code.
-//  Code expires when the lecturer completes the session.
-//  Requires: lecturer JWT
-// =============================================================
 
 router.patch(
   '/:id/activate',
@@ -662,13 +618,6 @@ router.patch(
 );
 
 
-// =============================================================
-//  PATCH /api/sessions/:id/complete
-//  Lecturer marks a session as completed.
-//  Clears the session code so it can no longer be used.
-//  Requires: lecturer JWT
-// =============================================================
-
 router.patch(
   '/:id/complete',
   authenticate,
@@ -723,11 +672,6 @@ router.patch(
 );
 
 
-// =============================================================
-//  PATCH /api/sessions/:id/cancel
-//  Lecturer cancels a scheduled or active session.
-// =============================================================
-
 router.patch(
   '/:id/cancel',
   authenticate,
@@ -767,11 +711,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/sessions/:id/postpone
-//  Lecturer moves a session to a new date/time (stays scheduled).
-// =============================================================
 
 router.patch(
   '/:id/postpone',
@@ -884,12 +823,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/sessions/:id/resolve-flag
-//  Admin clears a flagged session (marks completed).
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:id/resolve-flag',

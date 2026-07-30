@@ -49,7 +49,6 @@ async function isApplicationsOpenFromDb() {
   return !!settings.applications_open;
 }
 
-// GET /api/public/settings — no authentication required
 router.get('/settings', async (req, res) => {
   try {
     const settings = await readPublicSettingsFromDb();
@@ -60,7 +59,6 @@ router.get('/settings', async (req, res) => {
   }
 });
 
-// GET /api/public/settings-extended — pay rates and semester cap (no auth)
 router.get('/settings-extended', async (req, res) => {
   try {
     const { getAppSettings } = require('../services/settings');

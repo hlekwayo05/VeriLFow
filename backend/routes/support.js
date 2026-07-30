@@ -52,7 +52,6 @@ async function fetchTicketReplies(ticketId) {
   return result.rows;
 }
 
-// GET /api/support/tickets
 router.get(
   '/tickets',
   authenticate,
@@ -98,7 +97,6 @@ router.get(
   }
 );
 
-// POST /api/support/tickets
 router.post(
   '/tickets',
   supportLimiter,
@@ -159,7 +157,6 @@ router.post(
   }
 );
 
-// GET /api/support/tickets/:id
 router.get(
   '/tickets/:id',
   authenticate,
@@ -196,7 +193,6 @@ router.get(
   }
 );
 
-// POST /api/support/tickets/:id/reply
 router.post(
   '/tickets/:id/reply',
   supportLimiter,
@@ -251,7 +247,6 @@ router.post(
   }
 );
 
-// PATCH /api/support/tickets/:id/resolve
 router.patch(
   '/tickets/:id/resolve',
   authenticate,
@@ -304,7 +299,6 @@ router.patch(
   }
 );
 
-// PATCH /api/support/tickets/:id/status
 router.patch(
   '/tickets/:id/status',
   authenticate,

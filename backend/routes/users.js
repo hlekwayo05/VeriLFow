@@ -217,10 +217,6 @@ async function applyOnboardingDocumentUploads(userId, files) {
   return result.rows[0] || null;
 }
 
-// =============================================================
-//  GET /api/users/me/tutor-profile
-//  Returns onboarding progress + saved fields for the logged-in tutor.
-// =============================================================
 
 router.get(
   '/me/tutor-profile',
@@ -253,10 +249,6 @@ router.get(
   }
 );
 
-// =============================================================
-//  PATCH /api/users/me/onboarding/step1
-//  Saves personal/address details and marks step 1 complete.
-// =============================================================
 
 router.patch(
   '/me/onboarding/step1',
@@ -339,10 +331,6 @@ router.patch(
   }
 );
 
-// =============================================================
-//  PATCH /api/users/me/onboarding/step2
-//  Saves banking/tax details, marks onboarding complete, returns fresh JWT.
-// =============================================================
 
 router.patch(
   '/me/onboarding/step2',
@@ -431,10 +419,6 @@ router.patch(
   }
 );
 
-// =============================================================
-//  POST /api/users/me/onboarding/documents
-//  Upload onboarding documents (optional; partial updates allowed).
-// =============================================================
 
 router.post(
   '/me/onboarding/documents',
@@ -475,10 +459,6 @@ router.post(
   }
 );
 
-// =============================================================
-//  GET /api/users/me
-//  Returns the logged-in user's profile (name, email, role).
-// =============================================================
 
 router.get(
   '/me',
@@ -506,13 +486,6 @@ router.get(
   }
 );
 
-// =============================================================
-//  GET /api/users/me/modules
-//  Returns the logged-in lecturer's own assigned modules.
-//  Used by the lecturer dashboard's module switcher and the
-//  New Session modal's module label.
-//  Requires: lecturer JWT
-// =============================================================
 
 router.get(
   '/me/modules',
@@ -606,10 +579,6 @@ router.get(
   }
 );
 
-// =============================================================
-//  PATCH /api/users/me/profile
-//  Tutor updates student number and cell phone.
-// =============================================================
 
 router.patch(
   '/me/profile',
@@ -667,13 +636,6 @@ router.patch(
   }
 );
 
-// =============================================================
-//  POST /api/users/lecturer
-//  Admin creates a lecturer account.
-//  Generates a temp password shown once in the response.
-//  Lecturer is forced to reset on first login (tempFlag = true).
-//  Requires: admin JWT
-// =============================================================
 
 router.post(
   '/lecturer',
@@ -686,7 +648,6 @@ router.post(
     // modules: array of { code, name } e.g. [{ code: 'IS211', name: 'Information Systems 211' }]
 
     try {
-      // ── Check for duplicate email ────────────────────────
       const existing = await pool.query(
         'SELECT id FROM users WHERE email = $1',
         [email.toLowerCase().trim()]
@@ -697,11 +658,9 @@ router.post(
         });
       }
 
-      // ── Generate and hash temp password ──────────────────
       const tempPassword = generateTempPassword();
       const passwordHash = await bcrypt.hash(tempPassword, BCRYPT_COST);
 
-      // ── Insert user + modules in one transaction ─────────
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
@@ -776,13 +735,6 @@ router.post(
 );
 
 
-// =============================================================
-//  GET /api/users/lecturers
-//  Returns all lecturer accounts with their assigned modules.
-//  Used by admin dashboard to manage lecturers.
-//  Requires: admin JWT
-// =============================================================
-
 router.get(
   '/lecturers',
   authenticate,
@@ -820,14 +772,6 @@ router.get(
   }
 );
 
-
-// =============================================================
-//  GET /api/users/tutors
-//  Returns approved tutors.
-//  Admin sees all. Lecturer sees only tutors assigned to them
-//  via assigned_lecturer_id (set at approval time).
-//  Requires: admin or lecturer JWT
-// =============================================================
 
 router.get(
   '/tutors',
@@ -915,13 +859,6 @@ router.get(
 );
 
 
-// =============================================================
-//  DELETE /api/users/lecturer/:id
-//  Admin removes a lecturer account.
-//  Cascades to lecturer_modules (ON DELETE CASCADE in schema).
-//  Requires: admin JWT
-// =============================================================
-
 router.delete(
   '/lecturer/:id',
   adminActionLimiter,
@@ -956,14 +893,6 @@ router.delete(
 );
 
 
-// =============================================================
-//  DELETE /api/users/tutor/:id
-//  Admin removes a tutor account.
-//  Cascades to applications, tutor_profiles, session_tutors,
-//  claims, etc. via ON DELETE CASCADE in schema.
-//  Requires: admin JWT
-// =============================================================
-
 router.delete(
   '/tutor/:id',
   adminActionLimiter,
@@ -997,15 +926,6 @@ router.delete(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/users/:role/:id/reset-password
-//  Admin resets a lecturer's or tutor's password.
-//  Generates a new temp password, shown once in the response.
-//  Sets temp_password_flag = TRUE so the user must reset on
-//  their next login, same flow as a newly created lecturer.
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:role/:id/reset-password',
@@ -1067,13 +987,6 @@ router.patch(
 );
 
 
-// =============================================================
-//  POST /api/users/lecturer/:id/modules
-//  Admin adds a module to a lecturer's assignment list.
-//  A lecturer can have any number of modules.
-//  Requires: admin JWT
-// =============================================================
-
 router.post(
   '/lecturer/:id/modules',
   adminActionLimiter,
@@ -1109,12 +1022,6 @@ router.post(
   }
 );
 
-
-// =============================================================
-//  DELETE /api/users/lecturer/:id/modules/:moduleCode
-//  Admin removes a module from a lecturer's assignment list.
-//  Requires: admin JWT
-// =============================================================
 
 router.delete(
   '/lecturer/:id/modules/:moduleCode',

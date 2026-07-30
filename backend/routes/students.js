@@ -14,7 +14,6 @@ function normalizeProgramme(value) {
 }
 
 
-// GET /api/students
 router.get(
   '/',
   authenticate,
@@ -35,7 +34,6 @@ router.get(
 );
 
 
-// POST /api/students
 router.post(
   '/',
   authenticate,
@@ -81,7 +79,6 @@ router.post(
 );
 
 
-// POST /api/students/import
 router.post(
   '/import',
   studentImportLimiter,
@@ -133,7 +130,6 @@ router.post(
 );
 
 
-// DELETE /api/students/:id
 router.delete(
   '/:id',
   authenticate,

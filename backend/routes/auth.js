@@ -36,12 +36,6 @@ function signAuthToken({
   );
 }
 
-// =============================================================
-//  POST /api/auth/register
-//  Called when tutor clicks "Next" on apply-step1.html
-//  Creates the user account and a blank application record.
-//  Returns a JWT so the tutor is immediately logged in for step 2.
-// =============================================================
 
 router.post('/register', validateRegister, async (req, res) => {
   const {
@@ -49,7 +43,6 @@ router.post('/register', validateRegister, async (req, res) => {
     email, cell, studentNumber, password, confirm,
   } = req.body;
 
-  // ── Server-side validation ───────────────────────────────
   const errors = [];
 
   if (!surname       || surname.trim().length === 0) {
@@ -97,7 +90,6 @@ router.post('/register', validateRegister, async (req, res) => {
     const emailNorm   = email.toLowerCase().trim();
     const studentNorm = studentNumber.trim();
 
-    // ── Must appear on the admin-uploaded student list ──
     const onStudentList = await pool.query(
       `SELECT id, student_number
        FROM students
@@ -123,7 +115,6 @@ router.post('/register', validateRegister, async (req, res) => {
       });
     }
 
-    // ── Existing account with same email ─────────────────
     const existingEmail = await pool.query(
       `SELECT u.id, u.role, u.student_number,
               a.status AS app_status
@@ -191,7 +182,6 @@ router.post('/register', validateRegister, async (req, res) => {
       });
     }
 
-    // ── Student number already taken by another account ──
     const existingStudent = await pool.query(
       `SELECT u.id, u.email, a.status AS app_status
        FROM users u
@@ -205,10 +195,8 @@ router.post('/register', validateRegister, async (req, res) => {
       });
     }
 
-    // ── Hash password ────────────────────────────────────
     const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
 
-    // ── Insert user + blank application in one transaction
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
@@ -233,7 +221,6 @@ router.post('/register', validateRegister, async (req, res) => {
 
       const userId = userResult.rows[0].id;
 
-      // Create a blank application record (status = incomplete)
       await client.query(
         `INSERT INTO applications (user_id, status)
          VALUES ($1, 'incomplete')`,
@@ -242,7 +229,6 @@ router.post('/register', validateRegister, async (req, res) => {
 
       await client.query('COMMIT');
 
-      // ── Issue JWT ────────────────────────────────────
       const token = signAuthToken({
         userId,
         role: 'tutor',
@@ -275,12 +261,6 @@ router.post('/register', validateRegister, async (req, res) => {
 });
 
 
-// =============================================================
-//  POST /api/auth/login
-//  Called from login.html handleLogin()
-//  Returns JWT + enough info for the frontend to route correctly.
-// =============================================================
-
 router.post('/login', validateLogin, async (req, res) => {
   const { email, password } = req.body;
 
@@ -297,7 +277,6 @@ router.post('/login', validateLogin, async (req, res) => {
   }
 
   try {
-    // ── Find user ────────────────────────────────────────
     const userResult = await pool.query(
       `SELECT
          u.id,
@@ -323,13 +302,11 @@ router.post('/login', validateLogin, async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // ── Verify password ──────────────────────────────────
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
       return res.status(401).json({ errors: ['Invalid email or password.'] });
     }
 
-    // ── Get application state (tutors only) ──────────────
     let applicationStatus = null;
     let onboardingComplete = false;
 
@@ -347,7 +324,6 @@ router.post('/login', validateLogin, async (req, res) => {
       }
     }
 
-    // ── Sign JWT ─────────────────────────────────────────
     const token = signAuthToken({
       userId:            user.id,
       role:              user.role,
@@ -375,12 +351,6 @@ router.post('/login', validateLogin, async (req, res) => {
   }
 });
 
-
-// =============================================================
-//  PATCH /api/auth/change-password
-//  Called on first login when temp_password_flag = true (lecturers).
-//  Requires a valid JWT.
-// =============================================================
 
 const authenticate = require('../middleware/authenticate');
 

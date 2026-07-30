@@ -413,7 +413,6 @@
     animation: obFieldGlowSpin 2.2s linear infinite !important;
   }
 
-  /* ---- Tutor hub = veriflow-mobile-suite.html home ---- */
   body.tutor-dash .td-mobile-hub {
     background: var(--vf-mist) !important;
     padding: 0 0 96px !important;

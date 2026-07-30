@@ -16,9 +16,6 @@ const {
 } = require('../services/mailer');
 
 const BCRYPT_COST = 12;
-// =============================================================
-//  Course + qualification maps (mirror frontend select values)
-// =============================================================
 
 const COURSE_MAP = {
   BICT: 'BICT — Bachelor of ICT',
@@ -33,12 +30,6 @@ const QUALIFICATION_MAP = {
   'PhD Candidate or Holder':     'phd',
 };
 
-
-// =============================================================
-//  POST /api/referrals
-//  Lecturer nominates a tutor candidate for one of their modules.
-//  Requires: lecturer JWT
-// =============================================================
 
 router.post(
   '/',
@@ -56,7 +47,6 @@ router.post(
 
     const lecturerId = req.user.userId;
 
-    // ── Validation ───────────────────────────────────────────
     const errors = [];
 
     if (!firstName || firstName.trim().length === 0) errors.push('First name is required.');
@@ -82,7 +72,6 @@ router.post(
     const normalisedModule = moduleCode.trim().toUpperCase();
 
     try {
-      // ── Lecturer must own this module ─────────────────────
       const modResult = await pool.query(
         `SELECT module_name
          FROM lecturer_modules
@@ -100,7 +89,6 @@ router.post(
 
       const moduleName = modResult.rows[0].module_name;
 
-      // ── Block duplicate pending referral ────────────────────
       const pending = await pool.query(
         `SELECT id FROM referrals
          WHERE LOWER(email) = $1
@@ -114,7 +102,6 @@ router.post(
         });
       }
 
-      // ── Block if already an approved tutor for this module ─
       const approved = await pool.query(
         `SELECT u.id
          FROM users u
@@ -181,13 +168,6 @@ router.post(
   }
 );
 
-
-// =============================================================
-//  GET /api/referrals
-//  Admin: all referrals (optional ?status=pending).
-//  Lecturer: own referrals only.
-//  Requires: admin or lecturer JWT
-// =============================================================
 
 router.get(
   '/',
@@ -267,14 +247,6 @@ router.get(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/referrals/:id/approve
-//  Admin countersigns a referral and sets responsibility level.
-//  If the referred person already has a matching application in
-//  an approvable state, that application is approved too.
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:id/approve',
@@ -470,7 +442,6 @@ router.patch(
         accountCreated: isNewAccount,
         emailSent,
         // tempPassword intentionally omitted from response
-        // Admin credential modal handles display on creation
         // Email failure does not expose credentials via API
       });
 
@@ -481,12 +452,6 @@ router.patch(
   }
 );
 
-
-// =============================================================
-//  PATCH /api/referrals/:id/reject
-//  Admin declines a referral with a reason.
-//  Requires: admin JWT
-// =============================================================
 
 router.patch(
   '/:id/reject',

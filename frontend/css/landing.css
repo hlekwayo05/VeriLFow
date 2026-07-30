@@ -43,7 +43,6 @@
   background: var(--mist);
 }
 
-/* ─── Logo hero (matches login wave panel) ─── */
 .landing-hero {
   position: relative;
   flex: 0 0 min(46vh, 380px);
@@ -133,7 +132,6 @@
   object-fit: contain;
 }
 
-/* ─── Mist bottom panel (matches login form panel) ─── */
 .landing-light {
   flex: 1 1 auto;
   min-height: 0;
@@ -318,7 +316,6 @@
   }
 }
 
-/* ─── Mobile welcome entrance (≤900px) ─── */
 @media (max-width: 900px) {
   .vf-mobile-home.landing-page.is-ready .landing-badge {
     animation: landingBadgeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;

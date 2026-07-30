@@ -17,7 +17,6 @@
 
 <div class="td-sidebar-backdrop" id="tdSidebarBackdrop" onclick="closeTutorSidebar()" hidden></div>
 
-<!-- ═══════ SIDEBAR ═══════ -->
 <aside class="sidebar" id="tutorSidebar">
   <div class="logo">
     <img src="../images/veriflo-brand.png" alt="VeriFlow" class="lec-logo-img" width="140" height="40"/>
@@ -77,7 +76,6 @@
 
 <div class="main">
 
-  <!-- ═══════ DASHBOARD ═══════ -->
   <div id="page-dashboard" class="page active">
 
     <!-- Mobile home hub — matches veriflow-mobile-suite.html -->
@@ -296,7 +294,6 @@
     </div>
   </div>
 
-  <!-- ═══════ SESSIONS ═══════ -->
   <div id="page-sessions" class="page">
     <div class="full-page tm-sess-page">
       <button type="button" class="st-back tm-sess-home" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
@@ -327,7 +324,6 @@
     </div>
   </div>
 
-  <!-- ═══════ MESSAGES ═══════ -->
   <div id="page-messages" class="page">
     <div class="msg-layout">
       <div class="inbox-sidebar" id="msg-inbox-pane">
@@ -392,7 +388,6 @@
     </div>
   </div>
 
-  <!-- ═══════ HOUR LOG ═══════ -->
   <div id="page-hourlog" class="page">
     <div class="full-page hl-suite">
       <div class="st-page-head hl-page-head">
@@ -457,7 +452,6 @@
     </div>
   </div>
 
-  <!-- ═══════ CALENDAR ═══════ -->
   <div id="page-calendar" class="page">
     <div class="full-page tm-cal-page">
       <div class="st-page-head tm-cal-back-head">
@@ -519,7 +513,6 @@
     </div>
   </div>
 
-  <!-- ═══════ CLAIMS ═══════ -->
   <div id="page-claims" class="page">
     <div class="full-page ts-suite">
       <div class="page-hero ts-page-head">
@@ -543,7 +536,6 @@
     </div>
   </div>
 
-  <!-- ═══════ SUPPORT ═══════ -->
   <div id="page-support" class="page">
     <div class="full-page st-suite">
       <div class="st-page-head">
@@ -581,7 +573,6 @@
     </div>
   </div>
 
-  <!-- ═══════ PROFILE ═══════ -->
   <div id="page-profile" class="page">
     <div class="full-page pf-suite">
       <div class="page-hero" id="profile-hero">
@@ -603,7 +594,6 @@
 </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- ═══════ MESSAGE LECTURER MODAL ═══════ -->
 <div class="modal-overlay" id="tutor-message-overlay" onclick="closeTutorLecturerMessage(event)">
   <div class="modal um-modal small" id="tutor-message-modal">
     <div class="modal-header">
@@ -635,7 +625,6 @@
   </div>
 </div>
 
-<!-- ═══════ NEW SUPPORT TICKET MODAL ═══════ -->
 <div class="modal-overlay" id="new-ticket-overlay" onclick="closeNewTicketModal(event)">
   <div class="modal st-modal" id="new-ticket-modal">
     <div class="modal-header">
@@ -698,7 +687,6 @@
   </div>
 </div>
 
-<!-- ═══════ QR MODAL ═══════ -->
 <div class="modal-overlay" id="qrModal">
   <div class="modal qr-modal">
     <div class="qr-modal-close-row">
@@ -725,7 +713,6 @@
   </div>
 </div>
 
-<!-- ═══════ STUDENT REGISTER MODAL ═══════ -->
 <div class="reg-overlay" id="regModal" onclick="regCloseOutside(event)">
   <div class="reg-modal">
     <div class="reg-modal-close-row">
@@ -809,7 +796,6 @@
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 
-/* ── CHART BARS ── */
 document.querySelectorAll('.chart-bar').forEach(bar => {
   bar.addEventListener('click', () => { document.querySelectorAll('.chart-bar').forEach(b=>b.classList.remove('active')); bar.classList.add('active'); });
 });

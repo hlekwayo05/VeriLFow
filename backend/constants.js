@@ -1,28 +1,10 @@
 /**
- * VeriFlow — Server-side constants
- *
- * Two sources of truth:
- *   1. CURRICULUM  — valid modules per course and year level
- *   2. RATE_TABLE  — 2026 tutor payment rates
- *
- * These values are used by:
- *   - The eligibility check (POST /api/applications/me/submit)
- *   - The claims calculator (POST /api/claims)
- *   - Validation on academic info save (PATCH /api/applications/me/academic)
- *
- * Do NOT modify these unless the client provides an updated rate table
- * or curriculum change. These must stay in sync with apply-step2.html.
+ * Curriculum and 2026 tutor rates — keep in sync with apply-step2.html.
+ * Used by eligibility, academic validation, and claims calculation.
  */
 
 'use strict';
 
-// =============================================================
-//  1. CURRICULUM
-//  Structure: CURRICULUM[course][yearSemester] = { code, name }[]
-//
-//  Used to validate that the module submitted in step 2
-//  actually exists for the selected course and year level.
-// =============================================================
 
 const CURRICULUM = {
 
@@ -258,34 +240,6 @@ function getModuleTranscriptPattern(moduleName) {
 }
 
 
-// =============================================================
-//  2. RATE TABLE (2026)
-//
-//  Structure:
-//    RATE_TABLE[qualificationLevel][responsibilityLevel] = {
-//      hourlyRate,
-//      tutorialPay,   // 45-min tutorial → claims 3 hours
-//      practicalPay,  // 3-hour practical → claims 5 hours
-//    }
-//
-//  Qualification levels map to the qualification_level ENUM in schema.sql:
-//    '3rd_year'          → 3rd year student
-//    '4th_year_honours'  → 4th year / Honours student
-//    'masters'           → Masters student
-//    'masters_holder'    → Masters Holder
-//    'phd'               → PhD Candidates or Holder
-//
-//  Responsibility levels map to the responsibility_level ENUM:
-//    'standard' → Low
-//    'senior'   → Medium
-//    'lead'     → High
-//
-//  Note: Only Masters Holder and PhD have Medium and High rates.
-//  3rd year, 4th year/Honours, and Masters student only have Low.
-//  Attempting to assign senior/lead to those levels is a logic error
-//  — the API must reject it (see getRateEntry validation below).
-// =============================================================
-
 const RATE_TABLE = {
 
   '3rd_year': {
@@ -341,18 +295,6 @@ function getRateEntry(qualificationLevel, responsibilityLevel) {
 }
 
 
-// =============================================================
-//  3. SESSION CLAIMING HOURS
-//
-//  Regardless of actual session duration, the number of
-//  claimable hours is fixed by session type per the 2026 rules.
-//
-//  Types that claim 3 hours (tutorial rate):
-//    tutorial, online, revision, lecture
-//  Types that claim 5 hours (practical rate):
-//    practical
-// =============================================================
-
 const CLAIM_HOURS = {
   tutorial: 3,
   online:   3,
@@ -378,23 +320,12 @@ function getClaimHours(sessionType) {
 }
 
 
-// =============================================================
-//  4. TUTOR HOURS ESTIMATES (informational — section 4.1)
-//
-//  Used for display purposes in the tutor dashboard.
-//  Not used in any calculation.
-// =============================================================
-
 const TUTOR_HOURS_ESTIMATE = {
   perDay:   3,
   perWeek:  15,   // 5 working days × 3
   perMonth: 60,   // 4 weeks × 15
 };
 
-
-// =============================================================
-//  5. QUALIFICATION RANKING (job posting eligibility)
-// =============================================================
 
 const QUALIFICATION_RANK = {
   '3rd_year':         1,
@@ -434,10 +365,6 @@ function meetsMinimumQualification(applicantLevel, requiredLevel) {
   return applicant >= required && required > 0;
 }
 
-
-// =============================================================
-//  EXPORTS
-// =============================================================
 
 module.exports = {
   CURRICULUM,

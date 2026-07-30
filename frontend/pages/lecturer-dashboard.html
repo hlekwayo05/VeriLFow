@@ -89,7 +89,6 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo"><img src="../images/veriflo-brand.png" alt="veriflo" class="lec-logo-img" width="140" height="40"/></div>
-    <!-- FIX 11 — active module chip -->
     <div class="sidebar-module-chip" id="sidebar-module-chip">
       <strong id="sidebar-mod-code">—</strong>
       <span id="sidebar-mod-name">Loading…</span>
@@ -130,7 +129,6 @@
         </svg>
         Support
       </div>
-      <!-- FIX 9 — class list nav item -->
       <div class="nav-item" id="nav-classlist" onclick="goView('classlist',this)">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/><polyline points="17 3 17 8 12 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
         Class Lists
@@ -270,7 +268,6 @@
 
     </div>
 
-    <!-- ═══════════ DASHBOARD ═══════════ -->
     <div class="view active" id="view-dashboard">
       <div class="left-col">
         <div class="hero">
@@ -339,7 +336,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ SESSIONS ═══════════ -->
     <div class="view" id="view-sessions">
       <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -376,7 +372,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ TUTORS ═══════════ -->
     <div class="view" id="view-tutors">
       <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -433,7 +428,6 @@
       </section>
     </div>
 
-    <!-- ═══════════ MESSAGES ═══════════ -->
     <div class="view" id="view-messages">
       <div class="msg-layout">
         <div class="inbox-sidebar">
@@ -498,7 +492,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ MODULE REPORT ═══════════ -->
     <div class="view" id="view-report">
       <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -579,7 +572,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ CLAIMS ═══════════ -->
     <div class="view" id="view-claims">
       <button type="button" class="lec-page-back lec-claims-home" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -669,7 +661,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ CALENDAR ═══════════ -->
     <div class="view" id="view-calendar">
       <button type="button" class="lec-page-back lec-cal-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -734,7 +725,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ CLASS LIST ═══════════ -->
     <div class="view" id="view-classlist">
       <button type="button" class="lec-page-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -769,7 +759,6 @@
       </div>
     </div>
 
-    <!-- ═══════════ SUPPORT ═══════════ -->
     <div class="view" id="view-support">
       <div class="lec-sup-page">
         <button type="button" class="lec-sup-back" onclick="goView('dashboard',document.getElementById('nav-dashboard'))">
@@ -964,7 +953,6 @@
   </div>
 </div>
 
-<!-- NEW SESSION MODAL — FIX 2 (tutors) + FIX 3 (claim type) -->
 <div class="modal-overlay" id="ns-overlay" onclick="nsCloseOutside(event)">
   <div class="modal ns-modal" id="ns-modal">
     <div class="modal-header">
@@ -1092,7 +1080,6 @@
   </div>
 </div>
 
-<!-- REFER A TUTOR MODAL — FIX 10 -->
 <div class="modal-overlay" id="rt-overlay" onclick="rtCloseOutside(event)">
   <div class="modal ns-modal" id="rt-modal">
     <div class="modal-header"><div><div class="modal-to">VeriFlow · Tutor Referral</div><div class="modal-name">Refer a Tutor</div></div><button class="modal-close" onclick="closeReferTutor()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>

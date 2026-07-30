@@ -34,7 +34,6 @@
     background: var(--ad-mist);
   }
 
-  /* ── Shared page head ── */
   body.admin-dash .ad-page-back {
     display: inline-flex !important;
     align-items: center !important;
@@ -360,7 +359,6 @@
     display: block !important;
   }
 
-  /* ── Applications ── */
   body.admin-dash #page-applications .ad-apps-page {
     padding: 12px 0 28px !important;
   }
@@ -578,7 +576,6 @@
     font-size: 20px !important;
   }
 
-  /* ── Hub icon c5 (flagged red) ── */
   body.admin-dash .ad-hub-ico.c5 {
     background: #fde9e5;
     color: var(--ad-red);
@@ -589,7 +586,6 @@
     color: var(--ad-amber);
   }
 
-  /* ── Postings ── */
   body.admin-dash #page-postings .page-hero-row {
     flex-direction: column;
     align-items: stretch;
@@ -651,7 +647,6 @@
     text-transform: uppercase;
   }
 
-  /* ── Users ── */
   body.admin-dash #page-users .full-page > .tabs {
     display: none !important;
   }
@@ -1002,7 +997,6 @@
 
   /* legacy user-card styles unused on mobile compact rows */
 
-  /* ── Messages ── */
   body.admin-dash #page-messages.active,
   body.admin-dash #page-messages .full-page {
     background: var(--ad-mist) !important;
@@ -1263,7 +1257,6 @@
     min-width: 48px !important;
   }
 
-  /* ── Settings accordion ── */
   body.admin-dash #page-settings .page-hero-row {
     flex-direction: column;
     align-items: stretch;
@@ -1385,7 +1378,6 @@
     flex: 1;
   }
 
-  /* ── Application detail (mobile page) ── */
   body.admin-dash #page-application-detail.active {
     display: flex !important;
     flex-direction: column;
@@ -1867,7 +1859,6 @@
     min-height: 0;
   }
 
-  /* ── Add Lecturer bottom sheet (mock-aligned) ── */
   body.admin-dash #add-lecturer-overlay.modal-overlay {
     background: rgba(13, 26, 24, 0.55);
     backdrop-filter: none;

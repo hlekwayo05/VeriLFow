@@ -1,6 +1,5 @@
 'use strict';
 
-/* ── TOAST (shared with inline dashboard script) ── */
 let toastT;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -11,7 +10,6 @@ function showToast(msg) {
   toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-/* ── TUTOR + MODULE STATE ── */
 let tutorModules = [];
 let currentModuleCode = null;
 let currentModuleName = '';
@@ -225,7 +223,6 @@ function isScheduled(status) {
   return status === 'scheduled';
 }
 
-/* ── QR ATTENDANCE REGISTER ── */
 let qrCountdownTimer = null;
 let qrCurrentSessionId = null;
 let qrRotationSeconds = 10;
@@ -330,7 +327,6 @@ window.openQR = openQR;
 window.closeQR = closeQR;
 window.viewCurrentQrRegister = viewCurrentQrRegister;
 
-/* ── VIEW ATTENDANCE REGISTER ── */
 let currentRegisterSessionId = null;
 let currentRegisterData = null;
 let registerRefreshTimer = null;
@@ -1867,7 +1863,6 @@ async function loadClaims() {
   await Promise.all([loadClaimsList(), loadTimesheet()]);
 }
 
-/* ── CALENDAR ── */
 let calEventData = {};
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth();
@@ -2109,7 +2104,6 @@ function lockCalToCurrentMonth() {
   calMonth = now.getMonth();
 }
 
-/* ── PAGE SWITCHING ── */
 function showPage(id, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + id);
@@ -2739,7 +2733,6 @@ function isApprovedAndOnboarded(app, tokenState) {
   return status === 'approved' && (fromApp || fromToken);
 }
 
-/* ── INIT ── */
 async function initTutorDashboard() {
   if (typeof VF === 'undefined') {
     console.error('VeriFlow app.js failed to load');

@@ -1,4 +1,3 @@
-/* ── LECTURER + MODULE STATE ── */
 let lecturerModules = [];
 let currentModuleCode = null;
 let currentModuleName = '';
@@ -740,7 +739,6 @@ async function loadClaims() {
   return loadLecturerClaims();
 }
 
-/* ── SESSION LOADING ── */
 async function loadSessions() {
   const container = document.getElementById('sessions-list');
   if (container && !Object.keys(SESSIONS).length) {
@@ -955,7 +953,6 @@ function renderSessionRows(sessions) {
   }).join('');
 }
 
-/* ── ACTIVATE / END / CANCEL / POSTPONE SESSION ── */
 async function activateSession(id) {
   try {
     const result = await VF.apiFetch(`/sessions/${id}/activate`, { method: 'PATCH' });
@@ -1110,7 +1107,6 @@ window.openPostponeSession = openPostponeSession;
 window.closePostponeSession = closePostponeSession;
 window.submitPostponeSession = submitPostponeSession;
 
-/* ── SESSION FILTER TABS ── */
 function filterSessions(type, btn) {
   document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1124,7 +1120,6 @@ function filterSessions(type, btn) {
   renderSessionRows(filtered);
 }
 
-/* ── SESSION DETAIL ── */
 function openSessionDetail(id) {
   const s = SESSIONS[id];
   if (!s) return;
@@ -1132,7 +1127,6 @@ function openSessionDetail(id) {
   // Full detail modal can be built later — for now just a toast
 }
 
-/* ── NEW SESSION MODAL ── */
 let nsPrefilledDate = null;
 
 const NS_SESSION_HOUR_START = 8;
@@ -1332,7 +1326,6 @@ function closeNewSession() {
 }
 function nsCloseOutside(e) { if (e.target === document.getElementById('ns-overlay')) closeNewSession(); }
 
-/* ── New Session date picker (desktop + mobile) ── */
 let nsDpCursor = new Date();
 const NS_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -1533,13 +1526,11 @@ function hlt(id) {
   setTimeout(() => el.style.borderColor = '', 1800);
 }
 
-/* ── CALENDAR DATE CLICK ── */
 let calEmptyDateValue = null;
 function openNewSessionOnDate() {
   if (calEmptyDateValue) openNewSession(calEmptyDateValue);
 }
 
-/* ── TUTOR TOGGLES ── */
 function toggleTutor(row) {
   row.classList.toggle('checked');
   const check = row.querySelector('.ns-tutor-check');
@@ -1561,7 +1552,6 @@ function toggleSelectAllTutors() {
   });
 }
 
-/* ── LOAD TUTORS INTO NEW SESSION MODAL ── */
 function renderNsTutorList(tutors) {
   const wrap = document.getElementById('ns-tutor-list');
   if (!wrap) return;
@@ -1896,7 +1886,6 @@ async function openClaimDetail(id) {
 function closeClaimDetail(){document.getElementById('cd-overlay').classList.remove('open');}
 function cdCloseOutside(e){if(e.target===document.getElementById('cd-overlay'))closeClaimDetail();}
 
-/* ── ATTENDANCE REGISTER (claim detail + sessions) ── */
 let lecRegisterSessionId = null;
 let lecRegisterData = null;
 let lecRegisterRefreshTimer = null;
@@ -2996,7 +2985,6 @@ window.openNewSessionOnDate = openNewSessionOnDate;
 window.openNewSession = openNewSession;
 window.renderLecCalSession = renderLecCalSession;
 window.showLecCalSessionById = showLecCalSessionById;
-/* ── MY TUTORS VIEW ── */
 const QUAL_DISPLAY = {
   '3rd_year': '3rd Year Student', '4th_year_honours': '4th Year / Honours',
   'masters': 'Masters Student', 'masters_holder': 'Masters Holder', 'phd': 'PhD',
