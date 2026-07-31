@@ -25,6 +25,7 @@ Versions follow chronological project milestones.
 
 ### Fixed
 - Tutor dashboard treated cancelled sessions as Upcoming; cancelled sessions now show correctly with clear status/actions
+- Submitted page stuck on “Loading your application…” because a top-level `return` made the inline script illegal in the browser
 
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
