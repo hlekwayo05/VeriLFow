@@ -176,8 +176,9 @@
     </div>
   </div>
 </main>
-<script src="../js/app.js?v=18"></script>
+<script src="../js/app.js?v=20"></script>
 <script>
+(async function initSubmittedPage() {
   VF.pageIn();
   if (!VF.requireAuth('login.html')) return;
   if (!VF.requireRole('tutor', 'login.html')) return;
@@ -193,32 +194,41 @@
     metaEl.textContent = faculty ? `${course} · ${faculty}` : course;
   }
 
-  (async function renderSubmitted() {
-    try {
-      const app = await VF.apiFetch('/applications/me');
-      VF.syncApplicationState(app);
+  // Optimistic paint from local apply state while the API loads
+  const local = VF.getState();
+  if (local.academic?.module || local.academic?.course) {
+    renderAppCard({
+      module_name: local.academic.module || '',
+      course: local.academic.course || '',
+      faculty: local.academic.faculty || '',
+    });
+  }
 
-      if (app.status === 'incomplete') {
-        VF.toast('Your application is still incomplete. Please upload your documents and submit again.', 'err');
-        VF.navigate('apply-step3.html');
-        return;
-      }
-      if (app.status === 'rejected') {
-        VF.navigate('rejected.html');
-        return;
-      }
+  try {
+    const app = await VF.apiFetch('/applications/me');
+    VF.syncApplicationState(app);
 
-      renderAppCard(app);
-    } catch (err) {
-      const s = VF.getState();
-      renderAppCard({
-        module_name: s.academic?.module || 'Unknown module',
-        course: s.academic?.course || 'Unknown course',
-        faculty: s.academic?.faculty || '',
-      });
-      VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
+    if (app.status === 'incomplete') {
+      VF.toast('Your application is still incomplete. Please upload your documents and submit again.', 'err');
+      VF.navigate('apply-step3.html');
+      return;
     }
-  })();
+    if (app.status === 'rejected') {
+      VF.navigate('rejected.html');
+      return;
+    }
+
+    renderAppCard(app);
+  } catch (err) {
+    const s = VF.getState();
+    renderAppCard({
+      module_name: s.academic?.module || 'Unknown module',
+      course: s.academic?.course || 'Unknown course',
+      faculty: s.academic?.faculty || '',
+    });
+    VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
+  }
+})();
 </script>
 </body>
 </html>
