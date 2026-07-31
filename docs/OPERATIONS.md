@@ -78,16 +78,23 @@ npm run db:migrate-pending
 
 When you add a migration that older environments need, append it to that list **and** fold the change into `schema.sql` for greenfield installs.
 
-### Empty all data (keep schema)
+### Empty user accounts (keep curriculum / roster / settings)
 
 ```bash
 cd backend
-node scripts/wipe-data.js
+node scripts/wipe-data.js   # users + operational data only; keeps modules, students, settings, postings
 node seed.js                # restore admin
-npm run db:modules          # restore modules if required
 ```
 
-`wipe-data.js` truncates every `public` table with `RESTART IDENTITY CASCADE`. Irreversible. Do not run against production unless that is explicitly intended.
+Full wipe of **every** public table (including modules) — only when intentional:
+
+```bash
+node scripts/wipe-data.js --all
+npm run db:modules
+node seed.js
+```
+
+`wipe-data.js` without `--all` truncates account-related tables and resets identities. Irreversible for those rows. Do not run against production unless that is explicitly intended.
 
 ### Seeded admin
 

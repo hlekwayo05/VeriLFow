@@ -15,7 +15,7 @@ Versions follow chronological project milestones.
 ### Added
 - Shared shimmer **skeleton loaders** (`skeleton.css` + `VF.skeleton`) across lecturer, tutor, and admin dashboards and messaging
 - DB performance migration (`019`): indexes, optional pagination, short TTL response cache, `attendance_logs` partitioning
-- `backend/scripts/wipe-data.js` to truncate all public tables (dev/reset helper)
+- `backend/scripts/wipe-data.js` — remove users + related operational data; preserves modules, students, settings, postings (`--all` for full truncate)
 - Project documentation: expanded `README.md` plus `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/OPERATIONS.md`
 
 ### Changed

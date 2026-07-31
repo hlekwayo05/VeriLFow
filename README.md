@@ -166,7 +166,8 @@ Production checklist and env requirements: [docs/OPERATIONS.md](docs/OPERATIONS.
 | `npm run db:modules` | Seed module catalogue |
 | `npm run storage:setup` | Ensure Storage bucket |
 | `node seed.js` | Upsert admin account |
-| `node scripts/wipe-data.js` | Truncate all public tables (dev reset) |
+| `node scripts/wipe-data.js` | Remove users + related data (keeps modules/students/settings/postings) |
+| `node scripts/wipe-data.js --all` | Truncate all public tables (then re-run `db:modules` + `seed.js`) |
 
 ---
 
