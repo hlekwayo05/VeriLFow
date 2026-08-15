@@ -412,10 +412,14 @@ router.patch(
         applicationStatus:   'approved',
         documents,
       });
-    } catch (err) {
+    } /*catch (err) {
       console.error('Onboarding step2 error:', err.message);
       return res.status(500).json({ errors: ['Server error.'] });
-    }
+    }*/ catch (err) {
+  console.error('Onboarding step2 error:', err.message);
+  console.error('  → column:', err.column, '| table:', err.table, '| detail:', err.detail);
+  return res.status(500).json({ errors: ['Server error.'] });
+}
   }
 );
 

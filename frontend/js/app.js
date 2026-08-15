@@ -108,10 +108,10 @@ const VF = (() => {
     if (!isFormData) headers['Content-Type'] = 'application/json';
 
     const res = await fetch(`${API_BASE}${path}`, {
-      method,
-      headers,
-      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
-    });
+        method,
+        headers,
+        body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+      });
 
     let data = {};
     try { data = await res.json(); } catch { /* no JSON body */ }
