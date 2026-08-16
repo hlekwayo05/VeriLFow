@@ -2372,8 +2372,12 @@ async function initAdminApiDashboard() {
   window.currentModuleCode = null;
 
   try {
-    // Hub-only bootstrap. Other pages fetch on first open via showPage().
-    await Promise.all([hydrateAdminHero(), loadDashboardOverview()]);
+    await Promise.all([
+      hydrateAdminHero(),
+      loadDashboardOverview(),
+      loadReferrals(),
+      loadFlaggedSessions(),
+    ]);
     if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
   } catch (err) {
     console.error(err);
