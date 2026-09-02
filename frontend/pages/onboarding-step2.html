@@ -224,6 +224,7 @@
         </div>
 
         <div class="sub-section" style="font-family:'Bebas Neue', sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin:22px 0 14px;">Supporting documents</div>
+        <p class="form-hint" style="margin:-6px 0 14px">Already uploaded with your application. Re-upload only if you need to replace a file.</p>
         <div class="upload-box" id="idBox" onclick="document.getElementById('idFile').click()">
           <input type="file" class="file-input-hidden" id="idFile" accept=".pdf,.jpg,.jpeg,.png" onchange="markFileSelected(this,'idBox','idIcon','idName','idSub','Identity document')"/>
           <i class="ti ti-id upload-icon" id="idIcon"></i>
@@ -241,6 +242,17 @@
           <i class="ti ti-building-bank upload-icon" id="bankProofIcon"></i>
           <div class="upload-title" id="bankProofName">Proof of bank account</div>
           <div class="upload-sub" id="bankProofSub">Bank statement or letter · PDF or image · Max 5MB</div>
+        </div>
+
+        <div class="sub-section" style="font-family:'Bebas Neue', sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin:28px 0 14px;">HR appointment forms</div>
+        <p class="form-hint" style="margin:-6px 0 14px">Download these forms pre-filled from your application and profile. Print, sign where required, and submit to HR with your ID, tax, and banking proofs.</p>
+        <div class="ob-hr-forms" style="display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+          <button type="button" class="btn btn-ghost" id="btnFormD" onclick="downloadHrForm('appointment-form-d')" style="justify-content:flex-start;gap:10px;">
+            <i class="ti ti-file-type-pdf"></i> Download Appointment Form D
+          </button>
+          <button type="button" class="btn btn-ghost" id="btnConfirmForm" onclick="downloadHrForm('confirmation-form')" style="justify-content:flex-start;gap:10px;">
+            <i class="ti ti-file-type-pdf"></i> Download Confirmation Form
+          </button>
         </div>
 
         <div class="form-actions">
@@ -311,10 +323,60 @@
       if (profile.account_number) document.getElementById('accnum').value = profile.account_number;
       if (profile.account_holder) document.getElementById('accholder').value = profile.account_holder;
       if (profile.tax_number) document.getElementById('taxnum').value = profile.tax_number;
+
+      function markExisting(boxId, iconId, nameId, subId, label, filename) {
+        if (!filename) return;
+        document.getElementById(boxId).classList.add('uploaded');
+        document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
+        document.getElementById(nameId).textContent = label + ' on file';
+        document.getElementById(subId).textContent = String(filename).split('/').pop() + ' · from application';
+      }
+      markExisting('idBox', 'idIcon', 'idName', 'idSub', 'Identity document',
+        profile.id_document_filename || app.id_copy_filename);
+      markExisting('taxBox', 'taxIcon', 'taxName', 'taxSub', 'Tax number proof',
+        profile.tax_proof_filename || app.tax_proof_filename);
+      markExisting('bankProofBox', 'bankProofIcon', 'bankProofName', 'bankProofSub', 'Bank account proof',
+        profile.bank_proof_filename || app.bank_proof_filename);
     } catch (err) {
       VF.toast(err.errors ? err.errors[0] : 'Could not load your profile.', 'err');
     }
   })();
+
+  window.downloadHrForm = async function downloadHrForm(kind) {
+    const token = VF.getToken();
+    if (!token) {
+      VF.toast('Please log in again.', 'err');
+      return;
+    }
+    try {
+      const res = await fetch(
+        VF.API_BASE + '/users/me/hr-forms/' + encodeURIComponent(kind),
+        { headers: { Authorization: 'Bearer ' + token } }
+      );
+      if (!res.ok) {
+        let msg = 'Could not download form.';
+        try {
+          const data = await res.json();
+          if (data.errors && data.errors[0]) msg = data.errors[0];
+        } catch (_) { /* ignore */ }
+        throw new Error(msg);
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="?([^"]+)"?/i);
+      const filename = match ? match[1] : (kind + '.pdf');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      VF.toast('Download started.', 'ok');
+    } catch (err) {
+      VF.toast(err.message || 'Could not download form.', 'err');
+    }
+  };
 
   function markFileSelected(input, boxId, iconId, nameId, subId, label) {
     const file = input.files[0];

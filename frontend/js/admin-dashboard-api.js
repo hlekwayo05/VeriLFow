@@ -1773,7 +1773,7 @@ function renderLecturerRow(l) {
 async function loadTutors() {
   const body = document.getElementById('tutors-body');
   const cards = document.getElementById('tutors-cards');
-  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(6, 5);
+  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(7, 5);
   if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
 
   try {
@@ -1784,7 +1784,7 @@ async function loadTutors() {
     if (body) {
       body.innerHTML = tutors.length
         ? tutors.map((t) => renderTutorRow(t, 'tutor')).join('')
-        : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
+        : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
     }
     if (cards) {
       if (!tutors.length) {
@@ -1918,6 +1918,7 @@ function renderTutorRow(t, role = 'tutor') {
     <tr data-user-id="${t.id}">
       <td style="font-weight:600;color:var(--text)">${adEscapeHtml(name)}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.student_number || '—')}</td>
+      <td style="font-family:'DM Mono',monospace;color:${t.staff_number ? 'var(--text)' : 'var(--red)'}">${adEscapeHtml(t.staff_number || 'Not assigned')}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.module_name || '—')}</td>
       <td style="color:var(--text)">${lecturerName}</td>
       <td>${adEscapeHtml(respLabel)}</td>

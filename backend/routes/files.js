@@ -22,7 +22,16 @@ setInterval(() => {
 }, 60 * 1000);
 
 function buildStoragePath(filename) {
-  if (filename.includes('_cvFile_') || filename.includes('_transcriptFile_')) {
+  if (
+    filename.includes('_cvFile_') ||
+    filename.includes('_transcriptFile_') ||
+    filename.includes('_idCopyFile_') ||
+    filename.includes('_taxProofFile_') ||
+    filename.includes('_bankProofFile_') ||
+    filename.includes('_idFile_') ||
+    filename.includes('_taxFile_') ||
+    filename.includes('_bankFile_')
+  ) {
     return 'applications/' + filename;
   }
   if (
@@ -80,6 +89,12 @@ async function userOwnsFilename(userId, basename, storagePath) {
          OR ${fileMatchSql('u.bank_proof_filename', 1)}
          OR ${fileMatchSql('a.cv_filename', 1)}
          OR ${fileMatchSql('a.transcript_filename', 1)}
+         OR ${fileMatchSql('a.id_copy_filename', 1)}
+         OR ${fileMatchSql('a.tax_proof_filename', 1)}
+         OR ${fileMatchSql('a.bank_proof_filename', 1)}
+         OR ${fileMatchSql('a.id_filename', 1)}
+         OR ${fileMatchSql('a.tax_filename', 1)}
+         OR ${fileMatchSql('a.bank_filename', 1)}
        )
      LIMIT 1`,
     [basename, storagePath, userId]
@@ -94,6 +109,12 @@ async function lecturerCanAccessFilename(lecturerId, basename, storagePath) {
      WHERE (
          ${fileMatchSql('a.cv_filename', 1)}
          OR ${fileMatchSql('a.transcript_filename', 1)}
+         OR ${fileMatchSql('a.id_copy_filename', 1)}
+         OR ${fileMatchSql('a.tax_proof_filename', 1)}
+         OR ${fileMatchSql('a.bank_proof_filename', 1)}
+         OR ${fileMatchSql('a.id_filename', 1)}
+         OR ${fileMatchSql('a.tax_filename', 1)}
+         OR ${fileMatchSql('a.bank_filename', 1)}
        )
        AND (
          a.assigned_lecturer_id = $3

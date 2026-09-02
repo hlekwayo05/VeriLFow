@@ -127,6 +127,15 @@ University of Mpumalanga',
   rate_honours            NUMERIC(8,2) DEFAULT 73.87,
   rate_masters            NUMERIC(8,2) DEFAULT 90.92,
   max_hours_per_semester  INTEGER DEFAULT 160,
+  appointment_period_start DATE,
+  appointment_period_end   DATE,
+  appointment_start_date   DATE DEFAULT '2026-02-01',
+  appointment_end_date     DATE DEFAULT '2026-12-31',
+  director_name            TEXT DEFAULT 'Dr M Madiope',
+  director_title           TEXT DEFAULT 'Director: Academic Support Services Division',
+  director_email           TEXT DEFAULT 'Mabizweni.machava@ump.ac.za',
+  school_approver_name     TEXT DEFAULT 'Prof. Wayi',
+  ucdg_approver_name       TEXT DEFAULT 'Mr. Machava',
   created_at            TIMESTAMPTZ DEFAULT NOW(),
   updated_at            TIMESTAMPTZ DEFAULT NOW(),
 
@@ -151,6 +160,15 @@ UPDATE settings SET
   rate_masters = 90.92
 WHERE id = 1;
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS max_hours_per_semester INTEGER DEFAULT 160;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS appointment_period_start DATE;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS appointment_period_end DATE;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS appointment_start_date DATE DEFAULT '2026-02-01';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS appointment_end_date DATE DEFAULT '2026-12-31';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS director_name TEXT DEFAULT 'Dr M Madiope';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS director_title TEXT DEFAULT 'Director: Academic Support Services Division';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS director_email TEXT DEFAULT 'Mabizweni.machava@ump.ac.za';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS school_approver_name TEXT DEFAULT 'Prof. Wayi';
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS ucdg_approver_name TEXT DEFAULT 'Mr. Machava';
 
 -- =============================================================
 --  STUDENTS (announcement email list)
@@ -225,6 +243,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS residential_same_as_postal BOOLEAN DE
 ALTER TABLE users ADD COLUMN IF NOT EXISTS id_document_filename TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS tax_proof_filename TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bank_proof_filename TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_number VARCHAR(20);
 
 -- Fast lookup by email (used on every login)
 CREATE INDEX idx_users_email ON users (email);
@@ -324,6 +343,15 @@ CREATE TABLE applications (
   cv_original_name      VARCHAR(255),
   transcript_filename   VARCHAR(255),
   transcript_original_name VARCHAR(255),
+  id_copy_filename      VARCHAR(255),
+  id_copy_original_name VARCHAR(255),
+  tax_proof_filename    VARCHAR(255),
+  tax_proof_original_name VARCHAR(255),
+  bank_proof_filename   VARCHAR(255),
+  bank_proof_original_name VARCHAR(255),
+  id_filename           TEXT,
+  tax_filename          TEXT,
+  bank_filename         TEXT,
   declared              BOOLEAN      NOT NULL DEFAULT FALSE,
 
   -- Automated screening (step 3 submit)
@@ -354,6 +382,15 @@ ALTER TABLE applications ADD COLUMN IF NOT EXISTS position_type VARCHAR(20) DEFA
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS cost_centre VARCHAR(50);
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS cv_original_name VARCHAR(255);
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS transcript_original_name VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS id_copy_filename VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS id_copy_original_name VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS tax_proof_filename VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS tax_proof_original_name VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_proof_filename VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_proof_original_name VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS id_filename TEXT;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS tax_filename TEXT;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_filename TEXT;
 CREATE INDEX IF NOT EXISTS idx_applications_assigned_lecturer
   ON applications (assigned_lecturer_id)
   WHERE assigned_lecturer_id IS NOT NULL;

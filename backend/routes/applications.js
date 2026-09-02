@@ -42,13 +42,23 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname || '').toLowerCase();
-  const mime = (file.mimetype || '').toLowerCase();
-  // Mobile browsers often send application/octet-stream for PDFs
-  if (mime === 'application/pdf' || ext === '.pdf') {
-    cb(null, true);
+  const pdfOnlyFields = ['cvFile', 'transcriptFile'];
+  const anyDocFields = ['idFile', 'taxFile', 'bankFile'];
+
+  if (pdfOnlyFields.includes(file.fieldname)) {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('CV and transcript must be PDF.'), false);
+    }
+  } else if (anyDocFields.includes(file.fieldname)) {
+    if (['application/pdf', 'image/jpeg', 'image/png'].includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Documents must be PDF, JPG, or PNG.'), false);
+    }
   } else {
-    cb(new Error('Only PDF files are accepted.'), false);
+    cb(null, true);
   }
 };
 
@@ -64,16 +74,23 @@ function multerFields(fields) {
     run(req, res, (err) => {
       if (!err) return next();
       const msg = err.code === 'LIMIT_FILE_SIZE'
-        ? 'Each PDF must be under 5MB.'
+        ? 'Each file must be under 5MB.'
         : (err.message || 'File upload failed.');
       return res.status(400).json({ errors: [msg] });
     });
   };
 }
 
+function contentTypeForUpload(filename) {
+  const ext = path.extname(filename || '').toLowerCase();
+  if (ext === '.png') return 'image/png';
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  return 'application/pdf';
+}
+
 async function persistUploadToStorage(localPath, storagePath) {
   try {
-    await uploadFile(localPath, storagePath, 'application/pdf');
+    await uploadFile(localPath, storagePath, contentTypeForUpload(storagePath));
     console.log('Uploaded to Supabase Storage:', storagePath);
     return storagePath;
   } catch (storageErr) {
@@ -88,15 +105,20 @@ function safeOriginalFilename(originalname) {
   return base ? base.slice(0, 255) : null;
 }
 
+const DOC_FIELDS = [
+  { form: 'cvFile', column: 'cv_filename', original: 'cv_original_name', userCol: null },
+  { form: 'transcriptFile', column: 'transcript_filename', original: 'transcript_original_name', userCol: null },
+  { form: 'idFile', column: 'id_filename', original: null, userCol: 'id_document_filename', legacyColumn: 'id_copy_filename' },
+  { form: 'taxFile', column: 'tax_filename', original: null, userCol: 'tax_proof_filename', legacyColumn: 'tax_proof_filename' },
+  { form: 'bankFile', column: 'bank_filename', original: null, userCol: 'bank_proof_filename', legacyColumn: 'bank_proof_filename' },
+];
+
 
 router.post(
   '/me/documents',
   authenticate,
   requireRole('tutor'),
-  multerFields([
-    { name: 'cvFile',         maxCount: 1 },
-    { name: 'transcriptFile', maxCount: 1 },
-  ]),
+  multerFields(DOC_FIELDS.map((d) => ({ name: d.form, maxCount: 1 }))),
   async (req, res) => {
     const userId = req.user.userId;
 
@@ -104,16 +126,21 @@ router.post(
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
 
-    const hasCv = !!(req.files && req.files.cvFile && req.files.cvFile[0]);
-    const hasTranscript = !!(req.files && req.files.transcriptFile && req.files.transcriptFile[0]);
-    if (!hasCv && !hasTranscript) {
-      return res.status(400).json({ errors: ['Please choose a PDF to upload.'] });
+    const uploaded = DOC_FIELDS.filter(
+      (d) => req.files && req.files[d.form] && req.files[d.form][0]
+    );
+    if (!uploaded.length) {
+      return res.status(400).json({ errors: ['Please choose a file to upload.'] });
     }
 
     try {
       const appResult = await pool.query(
-        `SELECT id, status, cv_filename, transcript_filename,
-                cv_original_name, transcript_original_name
+        `SELECT id, status,
+                cv_filename, transcript_filename,
+                cv_original_name, transcript_original_name,
+                COALESCE(id_filename, id_copy_filename) AS id_filename,
+                COALESCE(tax_filename, tax_proof_filename) AS tax_filename,
+                COALESCE(bank_filename, bank_proof_filename) AS bank_filename
          FROM applications WHERE user_id = $1`,
         [userId]
       );
@@ -125,45 +152,77 @@ router.post(
         return res.status(409).json({ errors: ['Application has already been submitted.'] });
       }
 
-      let cvStoragePath = app.cv_filename || null;
-      let transcriptStoragePath = app.transcript_filename || null;
-      let cvOriginalName = app.cv_original_name || null;
-      let transcriptOriginalName = app.transcript_original_name || null;
+      const next = {
+        cv_filename: app.cv_filename || null,
+        transcript_filename: app.transcript_filename || null,
+        cv_original_name: app.cv_original_name || null,
+        transcript_original_name: app.transcript_original_name || null,
+        id_filename: app.id_filename || null,
+        tax_filename: app.tax_filename || null,
+        bank_filename: app.bank_filename || null,
+      };
 
-      if (hasCv) {
-        const file = req.files.cvFile[0];
-        cvStoragePath = await persistUploadToStorage(
+      const userSync = {};
+
+      for (const d of uploaded) {
+        const file = req.files[d.form][0];
+        const storagePath = await persistUploadToStorage(
           file.path,
           'applications/' + file.filename
         );
-        cvOriginalName = safeOriginalFilename(file.originalname);
-      }
-      if (hasTranscript) {
-        const file = req.files.transcriptFile[0];
-        transcriptStoragePath = await persistUploadToStorage(
-          file.path,
-          'applications/' + file.filename
-        );
-        transcriptOriginalName = safeOriginalFilename(file.originalname);
+        next[d.column] = storagePath;
+        if (d.original) next[d.original] = safeOriginalFilename(file.originalname);
+        if (d.userCol) userSync[d.userCol] = storagePath;
       }
 
       await pool.query(
         `UPDATE applications
-         SET cv_filename = COALESCE($1, cv_filename),
-             transcript_filename = COALESCE($2, transcript_filename),
-             cv_original_name = COALESCE($3, cv_original_name),
-             transcript_original_name = COALESCE($4, transcript_original_name)
-         WHERE user_id = $5 AND status = 'incomplete'`,
-        [cvStoragePath, transcriptStoragePath, cvOriginalName, transcriptOriginalName, userId]
+         SET cv_filename = $1,
+             transcript_filename = $2,
+             cv_original_name = $3,
+             transcript_original_name = $4,
+             id_filename = $5,
+             tax_filename = $6,
+             bank_filename = $7,
+             id_copy_filename = COALESCE($5, id_copy_filename),
+             tax_proof_filename = COALESCE($6, tax_proof_filename),
+             bank_proof_filename = COALESCE($7, bank_proof_filename)
+         WHERE user_id = $8 AND status = 'incomplete'`,
+        [
+          next.cv_filename,
+          next.transcript_filename,
+          next.cv_original_name,
+          next.transcript_original_name,
+          next.id_filename,
+          next.tax_filename,
+          next.bank_filename,
+          userId,
+        ]
       );
 
+      if (Object.keys(userSync).length) {
+        const cols = Object.keys(userSync);
+        const vals = Object.values(userSync);
+        await pool.query(
+          `UPDATE users SET ${cols.map((c, i) => `${c} = $${i + 1}`).join(', ')}, updated_at = NOW()
+           WHERE id = $${cols.length + 1}`,
+          [...vals, userId]
+        );
+      }
+
       return res.json({
-        cv: !!cvStoragePath,
-        transcript: !!transcriptStoragePath,
-        cv_filename: cvStoragePath,
-        transcript_filename: transcriptStoragePath,
-        cv_original_name: cvOriginalName,
-        transcript_original_name: transcriptOriginalName,
+        cv: !!next.cv_filename,
+        transcript: !!next.transcript_filename,
+        idCopy: !!next.id_filename,
+        taxProof: !!next.tax_filename,
+        bankProof: !!next.bank_filename,
+        cv_filename: next.cv_filename,
+        transcript_filename: next.transcript_filename,
+        cv_original_name: next.cv_original_name,
+        transcript_original_name: next.transcript_original_name,
+        id_filename: next.id_filename,
+        tax_filename: next.tax_filename,
+        bank_filename: next.bank_filename,
       });
     } catch (err) {
       console.error('Draft document upload error:', err.message);
@@ -278,10 +337,7 @@ router.post(
   uploadLimiter,
   authenticate,
   requireRole('tutor'),
-  multerFields([
-    { name: 'cvFile',         maxCount: 1 },
-    { name: 'transcriptFile', maxCount: 1 },
-  ]),
+  multerFields(DOC_FIELDS.map((d) => ({ name: d.form, maxCount: 1 }))),
   validateSubmitApplication,
   async (req, res) => {
     const userId  = req.user.userId;
@@ -296,6 +352,9 @@ router.post(
       const appResult = await pool.query(
         `SELECT id, status, qualification_level, module_year_level, module_name, gpa, course,
                 cv_filename, transcript_filename, cv_original_name, transcript_original_name,
+                COALESCE(id_filename, id_copy_filename) AS id_filename,
+                COALESCE(tax_filename, tax_proof_filename) AS tax_filename,
+                COALESCE(bank_filename, bank_proof_filename) AS bank_filename,
                 position_type
          FROM applications
          WHERE user_id = $1`,
@@ -321,60 +380,69 @@ router.post(
       }
 
       const uploadsDir = path.join(__dirname, '../uploads');
-      const freshCv = req.files && req.files.cvFile && req.files.cvFile[0];
-      const freshTranscript = req.files && req.files.transcriptFile && req.files.transcriptFile[0];
 
-      let cvPath;
-      let transcriptPath;
-      let cvStoragePath;
-      let transcriptStoragePath;
-
-      let cvOriginalName = app.cv_original_name || null;
-      let transcriptOriginalName = app.transcript_original_name || null;
-
-      if (freshCv) {
-        cvPath = freshCv.path;
-        cvStoragePath = await persistUploadToStorage(cvPath, 'applications/' + freshCv.filename);
-        cvOriginalName = safeOriginalFilename(freshCv.originalname);
-      } else if (app.cv_filename) {
-        cvStoragePath = app.cv_filename;
-        cvPath = path.join(uploadsDir, path.basename(app.cv_filename));
+      async function resolveDoc(formName, storedPath, storedOriginal) {
+        const fresh = req.files && req.files[formName] && req.files[formName][0];
+        if (fresh) {
+          const storagePath = await persistUploadToStorage(
+            fresh.path,
+            'applications/' + fresh.filename
+          );
+          return {
+            localPath: fresh.path,
+            storagePath,
+            originalName: safeOriginalFilename(fresh.originalname),
+            fresh,
+          };
+        }
+        if (storedPath) {
+          return {
+            localPath: path.join(uploadsDir, path.basename(storedPath)),
+            storagePath: storedPath,
+            originalName: storedOriginal || null,
+            fresh: null,
+          };
+        }
+        return { localPath: null, storagePath: null, originalName: null, fresh: null };
       }
 
-      if (freshTranscript) {
-        transcriptPath = freshTranscript.path;
-        transcriptStoragePath = await persistUploadToStorage(
-          transcriptPath,
-          'applications/' + freshTranscript.filename
-        );
-        transcriptOriginalName = safeOriginalFilename(freshTranscript.originalname);
-      } else if (app.transcript_filename) {
-        transcriptStoragePath = app.transcript_filename;
-        transcriptPath = path.join(uploadsDir, path.basename(app.transcript_filename));
-      }
+      const cv = await resolveDoc('cvFile', app.cv_filename, app.cv_original_name);
+      const transcript = await resolveDoc(
+        'transcriptFile',
+        app.transcript_filename,
+        app.transcript_original_name
+      );
+      const idCopy = await resolveDoc('idFile', app.id_filename, null);
+      const taxProof = await resolveDoc('taxFile', app.tax_filename, null);
+      const bankProof = await resolveDoc('bankFile', app.bank_filename, null);
 
       const errors = [];
-      if (!cvPath) errors.push('CV (PDF) is required.');
-      if (!transcriptPath) errors.push('Academic transcript (PDF) is required.');
+      if (!cv.storagePath) errors.push('CV (PDF) is required.');
+      if (!transcript.storagePath) errors.push('Academic transcript (PDF) is required.');
+      if (!idCopy.storagePath) errors.push('ID copy is required.');
+      if (!taxProof.storagePath) errors.push('Tax number proof is required.');
+      if (!bankProof.storagePath) errors.push('Proof of banking details is required.');
       if (!declared || declared !== 'true') {
         errors.push('You must accept the declaration before submitting.');
       }
       if (errors.length > 0) return res.status(400).json({ errors });
 
-      if (!fs.existsSync(cvPath) || !fs.existsSync(transcriptPath)) {
+      // Screening only needs CV + transcript locally
+      if (!cv.localPath || !transcript.localPath ||
+          !fs.existsSync(cv.localPath) || !fs.existsSync(transcript.localPath)) {
         return res.status(400).json({
           errors: ['Uploaded documents are missing on the server. Please upload your PDFs again.'],
         });
       }
 
-      if (freshCv) {
-        const cvValidation = await validateUploadedFile(freshCv, ['application/pdf']);
+      if (cv.fresh) {
+        const cvValidation = await validateUploadedFile(cv.fresh, ['application/pdf']);
         if (!cvValidation.valid) {
           return res.status(400).json({ error: 'Invalid file type.' });
         }
       }
-      if (freshTranscript) {
-        const transcriptValidation = await validateUploadedFile(freshTranscript, ['application/pdf']);
+      if (transcript.fresh) {
+        const transcriptValidation = await validateUploadedFile(transcript.fresh, ['application/pdf']);
         if (!transcriptValidation.valid) {
           return res.status(400).json({ error: 'Invalid file type.' });
         }
@@ -420,8 +488,8 @@ router.post(
           const settings = await getSettings();
           const positionType = app.position_type || 'tutor';
           const scanResult = await screenApplication({
-            cvPath,
-            transcriptPath,
+            cvPath: cv.localPath,
+            transcriptPath: transcript.localPath,
             claimedAverage:  parseFloat(app.gpa),
             tutorModuleName: app.module_name,
             settings,
@@ -452,28 +520,47 @@ router.post(
 
       await pool.query(
         `UPDATE applications
-         SET cv_filename         = $1,
-             transcript_filename = $2,
-             cv_original_name    = $3,
+         SET cv_filename              = $1,
+             transcript_filename      = $2,
+             cv_original_name         = $3,
              transcript_original_name = $4,
-             declared            = TRUE,
-             status              = $5,
-             rejection_reason    = $6,
-             cv_keyword_score    = $7,
-             screening_result    = $8,
-             submitted_at        = NOW()
-         WHERE user_id = $9`,
+             id_filename              = $5,
+             tax_filename             = $6,
+             bank_filename            = $7,
+             id_copy_filename         = COALESCE($5, id_copy_filename),
+             tax_proof_filename       = COALESCE($6, tax_proof_filename),
+             bank_proof_filename      = COALESCE($7, bank_proof_filename),
+             declared                 = TRUE,
+             status                   = $8,
+             rejection_reason         = $9,
+             cv_keyword_score         = $10,
+             screening_result         = $11,
+             submitted_at             = NOW()
+         WHERE user_id = $12`,
         [
-          cvStoragePath,
-          transcriptStoragePath,
-          cvOriginalName,
-          transcriptOriginalName,
+          cv.storagePath,
+          transcript.storagePath,
+          cv.originalName,
+          transcript.originalName,
+          idCopy.storagePath,
+          taxProof.storagePath,
+          bankProof.storagePath,
           newStatus,
           rejectionReason,
           cvKeywordScore,
           screeningPayload ? JSON.stringify(screeningPayload) : null,
           userId,
         ]
+      );
+
+      await pool.query(
+        `UPDATE users
+         SET id_document_filename = COALESCE($1, id_document_filename),
+             tax_proof_filename   = COALESCE($2, tax_proof_filename),
+             bank_proof_filename  = COALESCE($3, bank_proof_filename),
+             updated_at           = NOW()
+         WHERE id = $4`,
+        [idCopy.storagePath, taxProof.storagePath, bankProof.storagePath, userId]
       );
 
       if (!eligibilityPass) {
@@ -528,6 +615,15 @@ router.get(
            a.screening_result,
            a.transcript_filename,
            a.transcript_original_name,
+           a.id_copy_filename,
+           a.id_copy_original_name,
+           a.tax_proof_filename,
+           a.tax_proof_original_name,
+           a.bank_proof_filename,
+           a.bank_proof_original_name,
+           COALESCE(a.id_filename, a.id_copy_filename) AS id_filename,
+           COALESCE(a.tax_filename, a.tax_proof_filename) AS tax_filename,
+           COALESCE(a.bank_filename, a.bank_proof_filename) AS bank_filename,
            a.declared,
            a.rejection_reason,
            a.responsibility_level,
@@ -539,6 +635,7 @@ router.get(
            u.title,
            u.initials,
            u.email,
+           u.staff_number,
            lec.first_names AS lecturer_first_names,
            lec.surname     AS lecturer_surname,
            lm.module_code AS lecturer_module_code,
@@ -598,6 +695,15 @@ router.get(
           a.screening_result,
           a.transcript_filename,
           a.transcript_original_name,
+          a.id_copy_filename,
+          a.id_copy_original_name,
+          a.tax_proof_filename,
+          a.tax_proof_original_name,
+          a.bank_proof_filename,
+          a.bank_proof_original_name,
+          COALESCE(a.id_filename, a.id_copy_filename) AS id_filename,
+          COALESCE(a.tax_filename, a.tax_proof_filename) AS tax_filename,
+          COALESCE(a.bank_filename, a.bank_proof_filename) AS bank_filename,
           a.rejection_reason,
           a.responsibility_level,
           a.assigned_lecturer_id,

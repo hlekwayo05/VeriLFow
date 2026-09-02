@@ -64,7 +64,7 @@
       <div class="form-header">
         <div class="form-eyebrow">Application · Step 3 of 3</div>
         <div class="form-title">Documents &amp;<br>declaration</div>
-        <p class="form-subtitle">Upload your CV and academic record as PDF files, then read and accept the declaration to submit your application.</p>
+        <p class="form-subtitle">Upload all required documents for HR staff-number processing, then read and accept the declaration to submit.</p>
       </div>
 
       <div id="step3Form" style="display:none">
@@ -72,7 +72,7 @@
 
       <!-- CV UPLOAD -->
       <div class="upload-box" id="cvBox">
-        <input type="file" class="file-input-overlay" id="cvInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV')"/>
+        <input type="file" class="file-input-overlay" id="cvInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'cv')"/>
         <i class="ti ti-file-cv upload-icon" id="cvIcon"></i>
         <div class="upload-title" id="cvName">Curriculum Vitae (PDF)</div>
         <div class="upload-sub" id="cvSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
@@ -80,10 +80,34 @@
 
       <!-- ACADEMIC RECORD UPLOAD -->
       <div class="upload-box" id="acadBox">
-        <input type="file" class="file-input-overlay" id="acadInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record')"/>
+        <input type="file" class="file-input-overlay" id="acadInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'acad')"/>
         <i class="ti ti-school upload-icon" id="acadIcon"></i>
         <div class="upload-title" id="acadName">Academic Record (PDF)</div>
         <div class="upload-sub" id="acadSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
+      </div>
+
+      <!-- ID COPY -->
+      <div class="upload-box" id="idBox">
+        <input type="file" class="file-input-overlay" id="idInput" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" onchange="handleFile(this, 'id')"/>
+        <i class="ti ti-id upload-icon" id="idIcon"></i>
+        <div class="upload-title" id="idName">ID Copy</div>
+        <div class="upload-sub" id="idSub">Upload a clear copy of your South African ID document (PDF or image)</div>
+      </div>
+
+      <!-- SARS TAX PROOF -->
+      <div class="upload-box" id="taxBox">
+        <input type="file" class="file-input-overlay" id="taxInput" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" onchange="handleFile(this, 'tax')"/>
+        <i class="ti ti-receipt-tax upload-icon" id="taxIcon"></i>
+        <div class="upload-title" id="taxName">Tax Number Proof</div>
+        <div class="upload-sub" id="taxSub">Upload your SARS income tax number confirmation (PDF or image)</div>
+      </div>
+
+      <!-- BANKING PROOF -->
+      <div class="upload-box" id="bankBox">
+        <input type="file" class="file-input-overlay" id="bankInput" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" onchange="handleFile(this, 'bank')"/>
+        <i class="ti ti-building-bank upload-icon" id="bankIcon"></i>
+        <div class="upload-title" id="bankName">Proof of Banking Details</div>
+        <div class="upload-sub" id="bankSub">Upload a bank statement or bank-printed proof of your account details (PDF or image)</div>
       </div>
 
       <div class="divider"></div>
@@ -103,7 +127,7 @@
         </button>
         <div class="lock-notice" id="lockNotice">
           <i class="ti ti-lock"></i>
-          <span id="lockText">Upload both documents and tick the declaration to unlock submission.</span>
+          <span id="lockText">Upload all required documents and tick the declaration to unlock submission.</span>
         </div>
         <button type="button" class="btn btn-ghost" onclick="VF.navigate('apply-step2.html')">
           <i class="ti ti-arrow-left"></i> Back to academic info
@@ -127,48 +151,80 @@
         <div class="checklist" id="checklist">
           <div class="check-item pending" id="chk-cv"><i class="ti ti-circle"></i> CV uploaded</div>
           <div class="check-item pending" id="chk-acad"><i class="ti ti-circle"></i> Academic record uploaded</div>
+          <div class="check-item pending" id="chk-id"><i class="ti ti-circle"></i> ID copy uploaded</div>
+          <div class="check-item pending" id="chk-tax"><i class="ti ti-circle"></i> SARS tax proof uploaded</div>
+          <div class="check-item pending" id="chk-bank"><i class="ti ti-circle"></i> Banking proof uploaded</div>
           <div class="check-item pending" id="chk-decl"><i class="ti ti-circle"></i> Declaration accepted</div>
         </div>
       </div>
       <div class="info-sidebar-card">
         <div class="info-sidebar-title">What happens next</div>
         <div class="info-row"><i class="ti ti-bolt"></i>The eligibility check runs instantly when you submit. You'll know immediately if you qualify.</div>
-        <div class="info-row"><i class="ti ti-star"></i>Your CV is automatically scored based on relevance and experience.</div>
+        <div class="info-row"><i class="ti ti-id"></i>ID, tax and banking documents are used by HR to assign your staff number.</div>
         <div class="info-row"><i class="ti ti-clock"></i>If you pass, your application enters the pool and waits for the lecturer's review period to open.</div>
       </div>
     </aside>
   </div>
 </main>
 
-<script src="../js/app.js?v=19"></script>
+<script src="../js/app.js?v=20"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) throw new Error('Not authenticated');
 
+  const DOC_META = {
+    cv: {
+      key: 'cv', field: 'cvFile', box: 'cvBox', icon: 'cvIcon', name: 'cvName', sub: 'cvSub',
+      chk: 'chk-cv', input: 'cvInput', iconClass: 'ti ti-file-cv',
+      title: 'Curriculum Vitae (PDF)', hint: 'Click to browse or drag and drop · PDF only · Max 5MB',
+      label: 'CV', savedCol: 'cv_filename', originalCol: 'cv_original_name', pdfOnly: true,
+    },
+    acad: {
+      key: 'acad', field: 'transcriptFile', box: 'acadBox', icon: 'acadIcon', name: 'acadName', sub: 'acadSub',
+      chk: 'chk-acad', input: 'acadInput', iconClass: 'ti ti-school',
+      title: 'Academic Record (PDF)', hint: 'Click to browse or drag and drop · PDF only · Max 5MB',
+      label: 'Academic record', savedCol: 'transcript_filename', originalCol: 'transcript_original_name', pdfOnly: true,
+    },
+    id: {
+      key: 'id', field: 'idFile', box: 'idBox', icon: 'idIcon', name: 'idName', sub: 'idSub',
+      chk: 'chk-id', input: 'idInput', iconClass: 'ti ti-id',
+      title: 'ID Copy', hint: 'Upload a clear copy of your South African ID document (PDF or image)',
+      label: 'ID Copy', savedCol: 'id_filename', originalCol: null, pdfOnly: false,
+    },
+    tax: {
+      key: 'tax', field: 'taxFile', box: 'taxBox', icon: 'taxIcon', name: 'taxName', sub: 'taxSub',
+      chk: 'chk-tax', input: 'taxInput', iconClass: 'ti ti-receipt-tax',
+      title: 'Tax Number Proof', hint: 'Upload your SARS income tax number confirmation (PDF or image)',
+      label: 'Tax Number Proof', savedCol: 'tax_filename', originalCol: null, pdfOnly: false,
+    },
+    bank: {
+      key: 'bank', field: 'bankFile', box: 'bankBox', icon: 'bankIcon', name: 'bankName', sub: 'bankSub',
+      chk: 'chk-bank', input: 'bankInput', iconClass: 'ti ti-building-bank',
+      title: 'Proof of Banking Details', hint: 'Upload a bank statement or bank-printed proof of your account details (PDF or image)',
+      label: 'Proof of Banking Details', savedCol: 'bank_filename', originalCol: null, pdfOnly: false,
+    },
+  };
+
   let state = {
-    cv: false,
-    acad: false,
-    decl: false,
-    cvFileObj: null,
-    acadFileObj: null,
-    cvSaved: false,
-    acadSaved: false,
+    cv: false, acad: false, id: false, tax: false, bank: false, decl: false,
+    cvSaved: false, acadSaved: false, idSaved: false, taxSaved: false, bankSaved: false,
+    fileObjs: {},
   };
   let submitting = false;
   let uploading = false;
 
-  function resetUploadBox(boxId, iconId, nameId, subId, iconClass, title, sub) {
-    document.getElementById(boxId).classList.remove('uploaded');
-    document.getElementById(iconId).className = iconClass + ' upload-icon';
-    document.getElementById(nameId).textContent = title;
-    document.getElementById(subId).textContent = sub;
+  function resetUploadBox(meta) {
+    document.getElementById(meta.box).classList.remove('uploaded');
+    document.getElementById(meta.icon).className = meta.iconClass + ' upload-icon';
+    document.getElementById(meta.name).textContent = meta.title;
+    document.getElementById(meta.sub).textContent = meta.hint;
   }
 
-  function markUploaded(boxId, iconId, nameId, subId, label, fileName) {
-    document.getElementById(boxId).classList.add('uploaded');
-    document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
-    document.getElementById(nameId).textContent = label + ' uploaded';
-    document.getElementById(subId).textContent = fileName
+  function markUploaded(meta, fileName) {
+    document.getElementById(meta.box).classList.add('uploaded');
+    document.getElementById(meta.icon).className = 'ti ti-circle-check upload-icon';
+    document.getElementById(meta.name).textContent = meta.label + ' uploaded';
+    document.getElementById(meta.sub).textContent = fileName
       ? (fileName + ' · saved')
       : 'Saved on server — ready to submit';
   }
@@ -179,37 +235,43 @@
     return storagePath.split('/').pop();
   }
 
+  function setChecklistDone(which, done) {
+    const el = document.getElementById(DOC_META[which]?.chk || (which === 'decl' ? 'chk-decl' : null));
+    if (!el) return;
+    if (done) {
+      el.classList.remove('pending');
+      el.classList.add('done');
+      el.querySelector('i').className = 'ti ti-circle-check';
+    } else {
+      el.classList.add('pending');
+      el.classList.remove('done');
+      el.querySelector('i').className = 'ti ti-circle';
+    }
+  }
+
   function restoreSavedDocs(app) {
-    if (app.cv_filename) {
-      state.cv = true;
-      state.cvSaved = true;
-      state.cvFile = documentDisplayName(app.cv_original_name, app.cv_filename);
-      markUploaded('cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV', state.cvFile);
-      updateChecklist('cv');
-    }
-    if (app.transcript_filename) {
-      state.acad = true;
-      state.acadSaved = true;
-      state.acadFile = documentDisplayName(app.transcript_original_name, app.transcript_filename);
-      markUploaded('acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record', state.acadFile);
-      updateChecklist('acad');
-    }
+    Object.values(DOC_META).forEach((meta) => {
+      const path = app[meta.savedCol]
+        || (meta.key === 'id' ? (app.id_copy_filename || null) : null)
+        || (meta.key === 'tax' ? (app.tax_proof_filename || null) : null)
+        || (meta.key === 'bank' ? (app.bank_proof_filename || null) : null);
+      if (!path) return;
+      state[meta.key] = true;
+      state[meta.key + 'Saved'] = true;
+      markUploaded(meta, documentDisplayName(meta.originalCol ? app[meta.originalCol] : null, path));
+      setChecklistDone(meta.key, true);
+    });
     updateSubmit();
   }
 
-  function updateChecklist(which) {
-    const map = { cv: 'chk-cv', acad: 'chk-acad', decl: 'chk-decl' };
-    const el = document.getElementById(map[which]);
-    el.classList.remove('pending');
-    el.classList.add('done');
-    el.querySelector('i').className = 'ti ti-circle-check';
+  function docsReady() {
+    return Object.keys(DOC_META).every((k) => state[k + 'Saved'] || state[k]);
   }
 
   function updateSubmit() {
     const btn    = document.getElementById('submitBtn');
     const notice = document.getElementById('lockNotice');
-    const docsReady = (state.cvSaved || state.cv) && (state.acadSaved || state.acad);
-    const ready  = docsReady && state.decl && !submitting;
+    const ready  = docsReady() && state.decl && !submitting;
 
     if (ready) {
       btn.classList.remove('btn-disabled');
@@ -221,8 +283,9 @@
       notice.style.display = 'flex';
       if (!submitting) {
         const missing = [];
-        if (!(state.cvSaved || state.cv))   missing.push('CV');
-        if (!(state.acadSaved || state.acad)) missing.push('academic record');
+        Object.values(DOC_META).forEach((m) => {
+          if (!(state[m.key + 'Saved'] || state[m.key])) missing.push(m.label);
+        });
         if (!state.decl) missing.push('declaration');
         document.getElementById('lockText').textContent =
           'Still needed: ' + missing.join(', ') + '.';
@@ -232,18 +295,22 @@
   }
 
   function syncStep3Progress() {
-    const parts = [
-      (state.cvSaved || state.cv) ? 1 : 0,
-      (state.acadSaved || state.acad) ? 1 : 0,
-      state.decl ? 1 : 0,
-    ];
-    VF.setApplyStepProgress(parts.reduce((a, b) => a + b, 0) / 3);
+    const keys = Object.keys(DOC_META);
+    const parts = keys.map((k) => (state[k + 'Saved'] || state[k]) ? 1 : 0);
+    parts.push(state.decl ? 1 : 0);
+    VF.setApplyStepProgress(parts.reduce((a, b) => a + b, 0) / parts.length);
   }
 
-  function isPdfFile(file) {
+  function isAllowedFile(file, pdfOnly) {
     const name = (file.name || '').toLowerCase();
     const mime = (file.type || '').toLowerCase();
-    return mime === 'application/pdf' || name.endsWith('.pdf') || mime === 'application/octet-stream';
+    if (pdfOnly) {
+      return mime === 'application/pdf' || name.endsWith('.pdf') || mime === 'application/octet-stream';
+    }
+    return (
+      mime === 'application/pdf' || name.endsWith('.pdf') || mime === 'application/octet-stream' ||
+      mime.startsWith('image/') || /\.(jpg|jpeg|png)$/.test(name)
+    );
   }
 
   async function saveDraftDocument(fieldName, file) {
@@ -256,11 +323,12 @@
     });
   }
 
-  async function handleFile(input, boxId, iconId, nameId, subId, label) {
+  async function handleFile(input, key) {
+    const meta = DOC_META[key];
     const file = input.files[0];
     if (!file || uploading) return;
-    if (!isPdfFile(file)) {
-      VF.toast('Only PDF files are accepted.', 'err');
+    if (!isAllowedFile(file, meta.pdfOnly)) {
+      VF.toast(meta.pdfOnly ? 'Only PDF files are accepted.' : 'Only PDF or image files are accepted.', 'err');
       input.value = '';
       return;
     }
@@ -270,52 +338,25 @@
       return;
     }
 
-    const fieldName = boxId === 'cvBox' ? 'cvFile' : 'transcriptFile';
-    const isCv = boxId === 'cvBox';
-    markUploaded(boxId, iconId, nameId, subId, label, file.name + ' · saving…');
-    document.getElementById(subId).textContent = file.name + ' · saving…';
+    markUploaded(meta, file.name + ' · saving…');
+    document.getElementById(meta.sub).textContent = file.name + ' · saving…';
     uploading = true;
 
     try {
-      await saveDraftDocument(fieldName, file);
+      await saveDraftDocument(meta.field, file);
       const app = await VF.apiFetch('/applications/me');
       VF.syncApplicationState(app);
       restoreSavedDocs(app);
-      if (isCv) state.cvFileObj = file;
-      else state.acadFileObj = file;
-      VF.toast(label + ' saved.', 'ok');
+      state.fileObjs[key] = file;
+      VF.toast(meta.label + ' saved.', 'ok');
     } catch (err) {
       input.value = '';
-      if (isCv) {
-        resetUploadBox(
-          boxId, iconId, nameId, subId,
-          'ti ti-file-cv',
-          'Curriculum Vitae (PDF)',
-          'Click to browse or drag and drop · PDF only · Max 5MB'
-        );
-        state.cv = false;
-        state.cvSaved = false;
-        state.cvFileObj = null;
-        const el = document.getElementById('chk-cv');
-        el.classList.add('pending');
-        el.classList.remove('done');
-        el.querySelector('i').className = 'ti ti-circle';
-      } else {
-        resetUploadBox(
-          boxId, iconId, nameId, subId,
-          'ti ti-school',
-          'Academic Record (PDF)',
-          'Click to browse or drag and drop · PDF only · Max 5MB'
-        );
-        state.acad = false;
-        state.acadSaved = false;
-        state.acadFileObj = null;
-        const el = document.getElementById('chk-acad');
-        el.classList.add('pending');
-        el.classList.remove('done');
-        el.querySelector('i').className = 'ti ti-circle';
-      }
-      VF.toast(err.errors ? err.errors[0] : ('Could not save ' + label + '.'), 'err');
+      resetUploadBox(meta);
+      state[key] = false;
+      state[key + 'Saved'] = false;
+      state.fileObjs[key] = null;
+      setChecklistDone(key, false);
+      VF.toast(err.errors ? err.errors[0] : ('Could not save ' + meta.label + '.'), 'err');
       updateSubmit();
     } finally {
       uploading = false;
@@ -324,12 +365,7 @@
 
   document.getElementById('declChk').addEventListener('change', function() {
     state.decl = this.checked;
-    if (this.checked) updateChecklist('decl');
-    else {
-      const el = document.getElementById('chk-decl');
-      el.classList.add('pending'); el.classList.remove('done');
-      el.querySelector('i').className = 'ti ti-circle';
-    }
+    setChecklistDone('decl', this.checked);
     updateSubmit();
   });
 
@@ -341,15 +377,10 @@
     if (submitting) return;
 
     const declared = document.getElementById('declChk').checked;
-    const cvFile = document.getElementById('cvInput').files[0] || state.cvFileObj;
-    const acadFile = document.getElementById('acadInput').files[0] || state.acadFileObj;
-    const hasCv = state.cvSaved || !!cvFile;
-    const hasAcad = state.acadSaved || !!acadFile;
-
-    if (!hasCv || !hasAcad || !declared) {
+    if (!docsReady() || !declared) {
       state.decl = declared;
       updateSubmit();
-      VF.toast('Please upload both PDFs and accept the declaration before submitting.', 'err');
+      VF.toast('Please upload all required documents and accept the declaration before submitting.', 'err');
       return;
     }
 
@@ -362,9 +393,10 @@
 
     const formData = new FormData();
     formData.append('declared', 'true');
-    // Re-send local files if present; otherwise server uses draft-saved files
-    if (cvFile) formData.append('cvFile', cvFile, cvFile.name || 'cv.pdf');
-    if (acadFile) formData.append('transcriptFile', acadFile, acadFile.name || 'transcript.pdf');
+    Object.values(DOC_META).forEach((meta) => {
+      const file = document.getElementById(meta.input).files[0] || state.fileObjs[meta.key];
+      if (file) formData.append(meta.field, file, file.name || 'document.pdf');
+    });
 
     try {
       const result = await VF.apiFetch('/applications/me/submit', {
@@ -373,7 +405,6 @@
         isFormData: true,
       });
 
-      // Confirm the status actually changed before leaving this page
       let confirmed = null;
       try {
         confirmed = await VF.apiFetch('/applications/me');
@@ -402,12 +433,12 @@
       submitting = false;
       btn.innerHTML = originalHTML;
       updateSubmit();
-      VF.toast('Submission did not complete. Your PDFs are still saved — try Submit again.', 'err');
+      VF.toast('Submission did not complete. Your files are still saved — try Submit again.', 'err');
     } catch (err) {
       submitting = false;
       btn.innerHTML = originalHTML;
       updateSubmit();
-      VF.toast(err.errors ? err.errors[0] : 'Could not submit. Your PDFs are still saved — try again.', 'err');
+      VF.toast(err.errors ? err.errors[0] : 'Could not submit. Your files are still saved — try again.', 'err');
     }
   }
 

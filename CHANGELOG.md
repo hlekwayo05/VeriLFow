@@ -9,6 +9,12 @@ Versions follow chronological project milestones.
 
 ## [Unreleased]
 
+### Added
+- Apply Step 3 required HR documents — ID copy, tax number proof, banking proof (`idFile` / `taxFile` / `bankFile`)
+- System Settings **Appointment Configuration** — appointment dates, director name/title/email, School of Computing and UCDG approvers
+- Admin PDF downloads for approved applications — Appointment Form D and Confirmation Form via Puppeteer (`GET /api/appointments/:id/form-d|confirmation`)
+- HR staff-number workflow — `users.staff_number`, Export for HR CSV, Upload HR Staff Numbers CSV, tutors table column, claim submit gated until staff number assigned, tutor profile status
+
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Production hardening follow-ups (stronger JWT secrets, email routing)

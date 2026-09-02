@@ -192,6 +192,7 @@ app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/public',       require('./routes/public'));
 app.use('/api/settings',     require('./routes/settings'));
 app.use('/api/applications', require('./routes/applications'));
+app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/users',        require('./routes/users'));
 app.use('/api/sessions',     require('./routes/sessions'));
 app.use('/api/claims',       require('./routes/claims'));

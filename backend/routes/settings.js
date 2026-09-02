@@ -19,6 +19,15 @@ const ALLOWED_FIELDS = [
   'rate_honours',
   'rate_masters',
   'max_hours_per_semester',
+  'appointment_period_start',
+  'appointment_period_end',
+  'appointment_start_date',
+  'appointment_end_date',
+  'director_name',
+  'director_title',
+  'director_email',
+  'school_approver_name',
+  'ucdg_approver_name',
 ];
 
 router.get('/', authenticate, requireRole('admin'), async (req, res) => {

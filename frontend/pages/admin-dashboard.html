@@ -548,10 +548,17 @@
       </table>
     </div>
     <div id="tab-tutors-u" class="tab-pane">
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="btn-sm" onclick="exportTutorsForHR()">Export for HR (CSV)</button>
+        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;">
+          Upload HR Staff Numbers (CSV)
+          <input type="file" accept=".csv" style="display:none;" onchange="importStaffNumbers(this)"/>
+        </label>
+      </div>
       <div class="ad-rec-list ad-mobile-only" id="tutors-cards"></div>
       <table class="data-table">
-        <thead><tr><th>Name</th><th>Student no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
-        <tbody id="tutors-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
+        <thead><tr><th>Name</th><th>Student no.</th><th>Staff no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
+        <tbody id="tutors-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-demonstrators-u" class="tab-pane">
@@ -821,6 +828,21 @@
           <div class="field-hint" style="font-size:11px;color:var(--muted);margin:12px 0 20px">Rates set by UMP 2026 Tariffs Handbook. Contact HR to update.</div>
           <div class="settings-grid">
             <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" value="160"/></div>
+          </div>
+        </div>
+      </details>
+      <details class="ad-acc settings-section" open style="animation-delay:.08s">
+        <summary>Appointment Configuration <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="ad-acc-body">
+          <div class="field-hint" style="font-size:11px;color:var(--muted);margin:0 0 14px">Used on Appointment Form D and Confirmation Form downloads for HR staff-number processing.</div>
+          <div class="settings-grid">
+            <div class="field-group"><div class="field-label">Appointment Start Date</div><input class="field-input" id="setting-appointment-start" type="date"/></div>
+            <div class="field-group"><div class="field-label">Appointment End Date</div><input class="field-input" id="setting-appointment-end" type="date"/></div>
+            <div class="field-group"><div class="field-label">Director Name</div><input class="field-input" id="setting-director-name" type="text" placeholder="e.g. Dr M Madiope"/></div>
+            <div class="field-group"><div class="field-label">Director Title</div><input class="field-input" id="setting-director-title" type="text" placeholder="e.g. Director: Academic Support Services Division"/></div>
+            <div class="field-group"><div class="field-label">Director Email</div><input class="field-input" id="setting-director-email" type="email" placeholder="e.g. name@ump.ac.za"/></div>
+            <div class="field-group"><div class="field-label">School of Computing Approver</div><input class="field-input" id="setting-school-approver" type="text" placeholder="e.g. Prof. Wayi"/></div>
+            <div class="field-group"><div class="field-label">UCDG Approver</div><input class="field-input" id="setting-ucdg-approver" type="text" placeholder="e.g. Mr. Machava"/></div>
           </div>
         </div>
       </details>
@@ -1444,7 +1466,7 @@
 <script src="../js/app.js?v=20"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=34"></script>
+<script src="../js/admin-dashboard-api.js?v=35"></script>
 <script>
   if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
   if (!VF.requireRole('admin', 'login.html')) { /* stop — requireRole already redirected */ }
@@ -2093,6 +2115,22 @@ async function loadSettings() {
     if (body) body.value = s.announcement_body || '';
     const maxHrs = document.getElementById('setting-max-hours');
     if (maxHrs) maxHrs.value = s.max_hours_per_semester ?? 160;
+    const apStart = document.getElementById('setting-appointment-start');
+    if (apStart) apStart.value = (s.appointment_start_date || s.appointment_period_start)
+      ? String(s.appointment_start_date || s.appointment_period_start).slice(0, 10) : '';
+    const apEnd = document.getElementById('setting-appointment-end');
+    if (apEnd) apEnd.value = (s.appointment_end_date || s.appointment_period_end)
+      ? String(s.appointment_end_date || s.appointment_period_end).slice(0, 10) : '';
+    const dirName = document.getElementById('setting-director-name');
+    if (dirName) dirName.value = s.director_name || '';
+    const dirTitle = document.getElementById('setting-director-title');
+    if (dirTitle) dirTitle.value = s.director_title || 'Director: Academic Support Services Division';
+    const dirEmail = document.getElementById('setting-director-email');
+    if (dirEmail) dirEmail.value = s.director_email || '';
+    const schoolAppr = document.getElementById('setting-school-approver');
+    if (schoolAppr) schoolAppr.value = s.school_approver_name || '';
+    const ucdgAppr = document.getElementById('setting-ucdg-approver');
+    if (ucdgAppr) ucdgAppr.value = s.ucdg_approver_name || '';
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not load settings.', 'err');
   }
@@ -2151,6 +2189,13 @@ async function saveSettings() {
         announcement_subject:  document.getElementById('setting-announcement-subject').value,
         announcement_body:     document.getElementById('setting-announcement-body').value,
         max_hours_per_semester: document.getElementById('setting-max-hours')?.value,
+        appointment_start_date: document.getElementById('setting-appointment-start')?.value || null,
+        appointment_end_date: document.getElementById('setting-appointment-end')?.value || null,
+        director_name: document.getElementById('setting-director-name')?.value || '',
+        director_title: document.getElementById('setting-director-title')?.value || '',
+        director_email: document.getElementById('setting-director-email')?.value || '',
+        school_approver_name: document.getElementById('setting-school-approver')?.value || '',
+        ucdg_approver_name: document.getElementById('setting-ucdg-approver')?.value || '',
       },
     });
     const appsOpen = document.getElementById('setting-applications-open');
@@ -2265,6 +2310,146 @@ async function removeStudent(id) {
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not remove student.', 'err');
   }
+}
+
+async function downloadAppointmentForm(applicationId, kind) {
+  const token = VF.getToken();
+  if (!token) {
+    VF.toast('Please log in again.', 'err');
+    return;
+  }
+  const path = kind === 'confirmation'
+    ? `/appointments/${applicationId}/confirmation`
+    : `/appointments/${applicationId}/form-d`;
+  try {
+    const res = await fetch(VF.API_BASE + path, {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!res.ok) {
+      let msg = 'Could not download form.';
+      try {
+        const data = await res.json();
+        if (data.errors && data.errors[0]) msg = data.errors[0];
+      } catch (_) { /* ignore */ }
+      throw new Error(msg);
+    }
+    const blob = await res.blob();
+    const cd = res.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="?([^"]+)"?/i);
+    const filename = match ? match[1] : `${kind}.pdf`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    VF.toast('Download started.', 'ok');
+  } catch (err) {
+    VF.toast(err.message || 'Could not download form.', 'err');
+  }
+}
+
+async function exportTutorsForHR() {
+  try {
+    const tutors = await VF.apiFetch('/users/tutors');
+    const noStaffNumber = tutors.filter((t) => !t.staff_number);
+
+    if (!noStaffNumber.length) {
+      VF.toast('All tutors already have staff numbers', 'ok');
+      return;
+    }
+
+    const headers = [
+      'student_number',
+      'first_names',
+      'surname',
+      'email',
+      'qualification_level',
+      'module_name',
+      'cost_centre',
+      'staff_number',
+    ].join(',');
+
+    const rows = noStaffNumber.map((t) =>
+      [
+        t.student_number || '',
+        t.first_names || '',
+        t.surname || '',
+        t.email || '',
+        t.qualification_level || '',
+        t.module_name || '',
+        t.cost_centre || '',
+        '',
+      ]
+        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+        .join(',')
+    );
+
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'VeriFlow_HR_Export_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    VF.toast(noStaffNumber.length + ' tutors exported for HR');
+  } catch (err) {
+    VF.toast('Could not export tutors', 'err');
+  }
+}
+
+async function importStaffNumbers(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: async (results) => {
+      try {
+        const rows = results.data || [];
+        const updates = [];
+        for (const row of rows) {
+          const studentNumber = String(
+            row.student_number || row.studentNumber || ''
+          ).trim();
+          const staffNumber = String(
+            row.staff_number || row.staffNumber || ''
+          ).trim();
+          if (studentNumber && staffNumber) {
+            updates.push({ studentNumber, staffNumber });
+          }
+        }
+
+        if (!updates.length) {
+          VF.toast('No staff numbers found in CSV', 'err');
+          input.value = '';
+          return;
+        }
+
+        const result = await VF.apiFetch('/users/staff-numbers/import', {
+          method: 'POST',
+          body: { updates },
+        });
+        VF.toast(result.updated + ' staff numbers imported', 'ok');
+        loadTutors();
+      } catch (err) {
+        VF.toast(
+          err.errors ? err.errors[0] : 'Could not import staff numbers',
+          'err'
+        );
+      }
+      input.value = '';
+    },
+    error: () => {
+      VF.toast('Could not parse CSV', 'err');
+      input.value = '';
+    },
+  });
 }
 
 function importStudentsCSV(file) {
@@ -2742,27 +2927,27 @@ function fillMobileApplicationDetail(app) {
   const recSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg>';
   const cvName = app.cv_original_name || app.cv_filename || 'Not uploaded';
   const trName = app.transcript_original_name || app.transcript_filename || 'Not uploaded';
-  document.getElementById('ad-appd-docs').innerHTML = `
+  const idName = app.id_filename || 'Not uploaded';
+  const taxName = app.tax_filename || 'Not uploaded';
+  const bankName = app.bank_filename || 'Not uploaded';
+  const escFn = (f) => String(f || '').replace(/'/g, "\\'");
+  const docRow = (label, fileLabel, filename, ico) => `
     <div class="ad-appd-doc-row">
       <div class="ad-appd-doc-left">
-        <div class="ad-appd-doc-ico">${docSvg}</div>
+        <div class="ad-appd-doc-ico">${ico}</div>
         <div>
-          <div class="ad-appd-doc-name">CV</div>
-          <div class="ad-appd-doc-file">${cvName}</div>
+          <div class="ad-appd-doc-name">${label}</div>
+          <div class="ad-appd-doc-file">${fileLabel}</div>
         </div>
       </div>
-      ${app.cv_filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('CV', '${String(app.cv_filename).replace(/'/g, "\\'")}')">Review</button>` : ''}
-    </div>
-    <div class="ad-appd-doc-row">
-      <div class="ad-appd-doc-left">
-        <div class="ad-appd-doc-ico">${recSvg}</div>
-        <div>
-          <div class="ad-appd-doc-name">Academic record</div>
-          <div class="ad-appd-doc-file">${trName}</div>
-        </div>
-      </div>
-      ${app.transcript_filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('Academic record', '${String(app.transcript_filename).replace(/'/g, "\\'")}')">Review</button>` : ''}
+      ${filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('${label}', '${escFn(filename)}')">Review</button>` : ''}
     </div>`;
+  document.getElementById('ad-appd-docs').innerHTML = `
+    ${docRow('CV', cvName, app.cv_filename, docSvg)}
+    ${docRow('Academic record', trName, app.transcript_filename, recSvg)}
+    ${docRow('ID copy', idName, app.id_filename, docSvg)}
+    ${docRow('Tax number proof', taxName, app.tax_filename, docSvg)}
+    ${docRow('Proof of banking', bankName, app.bank_filename, docSvg)}`;
 
   const actionsHtml = mobileApplicationActions(app.id, app.status);
   const actionsEl = document.getElementById('ad-appd-actions');
@@ -2936,7 +3121,50 @@ function openApplicationDetail(id) {
       </div>
       ${app.transcript_filename ? `<button class="btn-sm" onclick="openDocPanel('Academic record', '${app.transcript_filename}')">Review</button>` : ''}
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">ID copy</div>
+        <div style="font-size:11px;color:var(--muted);">${app.id_filename || 'Not uploaded'}</div>
+      </div>
+      ${app.id_filename ? `<button class="btn-sm" onclick="openDocPanel('ID copy', '${app.id_filename}')">Review</button>` : ''}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Tax number proof</div>
+        <div style="font-size:11px;color:var(--muted);">${app.tax_filename || 'Not uploaded'}</div>
+      </div>
+      ${app.tax_filename ? `<button class="btn-sm" onclick="openDocPanel('Tax number proof', '${app.tax_filename}')">Review</button>` : ''}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Proof of banking</div>
+        <div style="font-size:11px;color:var(--muted);">${app.bank_filename || 'Not uploaded'}</div>
+      </div>
+      ${app.bank_filename ? `<button class="btn-sm" onclick="openDocPanel('Proof of banking', '${app.bank_filename}')">Review</button>` : ''}
+    </div>
   `;
+
+  if (app.status === 'approved') {
+    document.getElementById('app-modal-body').innerHTML += `
+      <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;grid-column:1 / -1;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">
+          Generated Forms (Download &amp; Print)
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button type="button" class="btn-sm" onclick="downloadAppointmentForm(${app.id}, 'form-d')">
+            Download Appointment Form D
+          </button>
+          <button type="button" class="btn-sm" onclick="downloadAppointmentForm(${app.id}, 'confirmation')">
+            Download Confirmation Form
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">
+          Print these forms, obtain the tutor's signature, and submit the complete package to HR.
+        </div>
+      </div>
+    `;
+  }
+
   document.getElementById('application-modal').style.display = 'flex';
   document.body.classList.add('admin-modal-open');
 }

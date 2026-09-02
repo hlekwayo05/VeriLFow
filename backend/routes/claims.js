@@ -620,6 +620,18 @@ router.post(
         });
       }
 
+      const userResult = await pool.query(
+        'SELECT staff_number FROM users WHERE id = $1',
+        [tutorId]
+      );
+      if (!userResult.rows[0]?.staff_number) {
+        return res.status(403).json({
+          errors: [
+            'You cannot submit claims until HR has assigned your staff number. Please contact the Student Employment Office.',
+          ],
+        });
+      }
+
       const app = await loadTutorApplication(tutorId);
       if (!app) {
         return res.status(403).json({ errors: ['Only approved tutors can submit claims.'] });

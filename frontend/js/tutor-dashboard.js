@@ -2351,6 +2351,9 @@ function renderProfile() {
       ['Bank letter', profileDocHtml(bankDoc)],
       ['Declaration', app?.declared ? 'Yes' : 'No'],
       ['Application status', esc(dash(app?.status || s.applicationStatus))],
+      ['HR Staff Number', user?.staff_number || app?.staff_number
+        ? esc(user?.staff_number || app?.staff_number)
+        : '<span style="color:var(--yellow)">Not yet assigned — contact the Student Employment Office</span>'],
     ], 'profile-card--docs')}
     ${(!idDoc || !taxDoc || !bankDoc) ? `
     <div class="profile-card profile-card--upload" id="profile-doc-upload-card">

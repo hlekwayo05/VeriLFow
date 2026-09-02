@@ -282,6 +282,32 @@ router.get(
 );
 
 
+router.get(
+  '/me/hr-forms/:kind',
+  authenticate,
+  requireRole('tutor'),
+  async (req, res) => {
+    const kind = String(req.params.kind || '').trim();
+    try {
+      const { generateHrFormPdf } = require('../services/hrForms');
+      const file = await generateHrFormPdf(pool, req.user.userId, kind);
+      res.setHeader('Content-Type', file.contentType);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${file.filename}"`
+      );
+      return res.status(200).send(file.buffer);
+    } catch (err) {
+      const status = err.status || 500;
+      if (status >= 500) console.error('HR form download error:', err.message);
+      return res.status(status).json({
+        errors: [err.message || 'Could not generate form.'],
+      });
+    }
+  }
+);
+
+
 router.patch(
   '/me/onboarding/step1',
   authenticate,
@@ -505,7 +531,8 @@ router.get(
         `SELECT id, first_names, surname, email, cell, student_number, role, title, initials,
                 residential_street, residential_city, residential_postal_code,
                 residential_same_as_postal,
-                id_document_filename, tax_proof_filename, bank_proof_filename
+                id_document_filename, tax_proof_filename, bank_proof_filename,
+                staff_number
          FROM users WHERE id = $1`,
         [req.user.userId]
       );
@@ -952,10 +979,12 @@ router.get(
            u.email,
            u.cell,
            u.student_number,
+           u.staff_number,
            a.qualification_level,
            a.module_name,
            a.responsibility_level,
            a.position_type,
+           a.cost_centre,
            a.assigned_lecturer_id,
            a.gpa,
            lec.first_names AS lecturer_first_names,
@@ -1216,6 +1245,49 @@ router.delete(
     } catch (err) {
       console.error('Remove module error:', err.message);
       return res.status(500).json({ errors: ['Server error.'] });
+    }
+  }
+);
+
+
+router.post(
+  '/staff-numbers/import',
+  adminActionLimiter,
+  authenticate,
+  requireRole('admin'),
+  async (req, res) => {
+    const updates = Array.isArray(req.body?.updates) ? req.body.updates : [];
+    if (!updates.length) {
+      return res.status(400).json({ errors: ['No staff number updates provided.'] });
+    }
+
+    try {
+      let updated = 0;
+      const notFound = [];
+
+      for (const row of updates) {
+        const studentNumber = String(row.studentNumber || '').trim();
+        const staffNumber = String(row.staffNumber || '').trim();
+        if (!studentNumber || !staffNumber) continue;
+
+        const result = await pool.query(
+          `UPDATE users
+           SET staff_number = $1, updated_at = NOW()
+           WHERE student_number = $2 AND role = 'tutor'
+           RETURNING id`,
+          [staffNumber, studentNumber]
+        );
+        if (result.rows.length === 0) {
+          notFound.push(studentNumber);
+        } else {
+          updated += 1;
+        }
+      }
+
+      return res.status(200).json({ updated, notFound });
+    } catch (err) {
+      console.error('Staff number import error:', err.message);
+      return res.status(500).json({ errors: ['Could not import staff numbers.'] });
     }
   }
 );

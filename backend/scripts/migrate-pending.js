@@ -23,6 +23,8 @@ const FILES = [
   '021_position_type_cost_centre.sql',
   '022_document_original_names.sql',
   '023_password_reset_tokens.sql',
+  '024_hr_docs_appointment_settings.sql',
+  '025_hr_appointment_staff_number.sql',
 ];
 
 async function main() {

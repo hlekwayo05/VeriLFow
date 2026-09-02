@@ -31,6 +31,15 @@ University of Mpumalanga`,
   rate_honours:           73.87,
   rate_masters:           90.92,
   max_hours_per_semester: 160,
+  appointment_period_start: null,
+  appointment_period_end:   null,
+  appointment_start_date:   '2026-02-01',
+  appointment_end_date:     '2026-12-31',
+  director_name:            'Dr M Madiope',
+  director_title:           'Director: Academic Support Services Division',
+  director_email:           'Mabizweni.machava@ump.ac.za',
+  school_approver_name:     'Prof. Wayi',
+  ucdg_approver_name:       'Mr. Machava',
 };
 
 let cache     = null;
@@ -101,6 +110,15 @@ async function updateSettings(updates) {
     'rate_honours',
     'rate_masters',
     'max_hours_per_semester',
+    'appointment_period_start',
+    'appointment_period_end',
+    'appointment_start_date',
+    'appointment_end_date',
+    'director_name',
+    'director_title',
+    'director_email',
+    'school_approver_name',
+    'ucdg_approver_name',
   ];
 
   const entries = Object.entries(updates).filter(([k]) => allowed.includes(k));
@@ -114,7 +132,13 @@ async function updateSettings(updates) {
     setClauses.push(`${key} = $${idx}`);
     if (key === 'applications_open') {
       values.push(value === true || value === 'true');
-    } else if (key === 'closing_date') {
+    } else if (
+      key === 'closing_date' ||
+      key === 'appointment_period_start' ||
+      key === 'appointment_period_end' ||
+      key === 'appointment_start_date' ||
+      key === 'appointment_end_date'
+    ) {
       values.push(value || null);
     } else if (key === 'min_cv_keywords') {
       values.push(parseInt(value, 10));
