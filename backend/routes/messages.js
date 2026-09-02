@@ -67,7 +67,7 @@ async function getTutorAssignedLecturer(tutorId, moduleCode) {
 
 async function listLecturerModuleTutors(lecturerId, moduleCode) {
   const r = await pool.query(
-    `SELECT u.id, u.first_names, u.surname, u.role
+    `SELECT u.id, u.first_names, u.surname, u.role, a.position_type
      FROM users u
      JOIN applications a ON a.user_id = u.id
      WHERE u.role = 'tutor'
@@ -88,7 +88,11 @@ async function listLecturerModuleTutors(lecturerId, moduleCode) {
   return r.rows;
 }
 
-function mapPeerContact(row, type) {
+function mapPeerContact(row, defaultType) {
+  let type = defaultType;
+  if (defaultType === 'tutor') {
+    type = row?.position_type === 'demonstrator' ? 'demonstrator' : 'tutor';
+  }
   return {
     type,
     id: row?.id || null,
@@ -96,6 +100,7 @@ function mapPeerContact(row, type) {
     surname: row?.surname || null,
     name: row ? `${row.first_names || ''} ${row.surname || ''}`.trim() : null,
     initials: row ? initials(row.first_names, row.surname) : null,
+    positionType: row?.position_type || null,
   };
 }
 

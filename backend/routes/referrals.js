@@ -255,12 +255,18 @@ router.patch(
   requireRole('admin'),
   async (req, res) => {
     const referralId = parseInt(req.params.id);
-    const { responsibilityLevel } = req.body;
+    const { responsibilityLevel, costCentre } = req.body;
     const adminId = req.user.userId;
 
     if (!['standard', 'senior', 'lead'].includes(responsibilityLevel)) {
       return res.status(400).json({
         errors: ['Responsibility level must be standard, senior, or lead.'],
+      });
+    }
+
+    if (!['school_of_computing', 'ucdg'].includes(costCentre)) {
+      return res.status(400).json({
+        errors: ['Cost centre must be school_of_computing or ucdg.'],
       });
     }
 
@@ -356,10 +362,11 @@ router.patch(
                  module_code          = $4,
                  module_name          = $5,
                  qualification_level  = $6,
+                 cost_centre          = $7,
                  rejection_reason     = NULL,
                  reviewed_at          = NOW(),
                  submitted_at         = COALESCE(submitted_at, NOW())
-             WHERE id = $7`,
+             WHERE id = $8`,
             [
               responsibilityLevel,
               referral.lecturer_id,
@@ -367,6 +374,7 @@ router.patch(
               referral.module_code,
               referral.module_name,
               referral.qualification_level,
+              costCentre,
               appResult.rows[0].id,
             ]
           );
@@ -375,9 +383,9 @@ router.patch(
           await client.query(
             `INSERT INTO applications
                (user_id, course, module_code, module_name, qualification_level,
-                status, responsibility_level, assigned_lecturer_id,
+                status, responsibility_level, assigned_lecturer_id, cost_centre,
                 submitted_at, reviewed_at)
-             VALUES ($1, $2, $3, $4, $5, 'approved', $6, $7, NOW(), NOW())`,
+             VALUES ($1, $2, $3, $4, $5, 'approved', $6, $7, $8, NOW(), NOW())`,
             [
               userId,
               referral.course,
@@ -386,6 +394,7 @@ router.patch(
               referral.qualification_level,
               responsibilityLevel,
               referral.lecturer_id,
+              costCentre,
             ]
           );
           applicationApproved = true;

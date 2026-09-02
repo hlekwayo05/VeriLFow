@@ -17,19 +17,19 @@ const ROW_DEFAULTS = {
   min_cv_keywords:      0,
   applications_open:    false,
   closing_date:         null,
-  announcement_subject: 'Tutor Applications Now Open — 2026 Academic Year',
+  announcement_subject: 'Tutor & Demonstrator Applications Now Open — 2026 Academic Year',
   announcement_body:    `Dear Students,
 
-Applications are now open for tutor positions for the 2026 academic year. To apply click the link below.
+Applications are now open for tutor and demonstrator positions for the 2026 academic year. To apply click the link below.
 
 Closing date: {closing_date}
 
 Kind regards,
 Student Employment Office
 University of Mpumalanga`,
-  rate_undergrad:         70,
-  rate_honours:           85,
-  rate_masters:           100,
+  rate_undergrad:         59.66,
+  rate_honours:           73.87,
+  rate_masters:           90.92,
   max_hours_per_semester: 160,
 };
 

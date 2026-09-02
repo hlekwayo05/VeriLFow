@@ -92,6 +92,25 @@
       text-underline-offset: 3px;
     }
 
+    .auth-forgot {
+      display: flex;
+      justify-content: flex-end;
+      margin: -8px 0 16px;
+    }
+
+    .auth-forgot a {
+      font-size: 12px;
+      color: var(--ink-3);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', 'DM Mono', monospace;
+    }
+
+    .auth-forgot a:hover {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
     .login-flow label {
       font-family: 'JetBrains Mono', 'DM Mono', monospace;
     }
@@ -273,6 +292,9 @@
             <label for="password">Password</label>
             <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
             <div class="form-error">Please enter your password.</div>
+          </div>
+          <div class="auth-forgot">
+            <a href="forgot-password.html">Forgot password?</a>
           </div>
           <button type="submit" class="btn btn-ink btn-full auth-login-btn" id="loginBtn">
             <span class="auth-login-btn-label">Log in <i class="ti ti-arrow-right"></i></span>

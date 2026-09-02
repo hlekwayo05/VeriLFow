@@ -105,7 +105,7 @@
       </div>
       <div class="nav-item" id="nav-tutors" onclick="goView('tutors',this)">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Tutors
+        Team
       </div>
       <div class="nav-item" id="nav-messages" onclick="goView('messages',this)">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -135,7 +135,7 @@
       </div>
       <div class="nav-item" onclick="openReferTutor()">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Refer a Tutor
+        Refer
       </div>
       <div class="nav-item" id="nav-report" onclick="goView('report',this)">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -206,8 +206,8 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </span>
             <span class="lec-hub-tile-body">
-              <span class="lec-hub-tile-title">Tutors</span>
-              <span class="lec-hub-tile-sub" id="lec-hub-tutors-sub">Manage this module's tutors</span>
+              <span class="lec-hub-tile-title">Team</span>
+              <span class="lec-hub-tile-sub" id="lec-hub-tutors-sub">Tutors &amp; demonstrators</span>
             </span>
             <span class="lec-hub-meta" id="lec-hub-tutors-badge">0</span>
             <svg class="lec-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
@@ -320,7 +320,7 @@
             <div style="font-size:12px;color:var(--muted);padding:8px 0">Loading tutors…</div>
           </div>
           <div style="display:flex;gap:7px;margin-top:12px;">
-            <button onclick="openReferTutor()" style="flex:1;padding:7px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--border-hi)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Refer a tutor</button>
+            <button onclick="openReferTutor()" style="flex:1;padding:7px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--border-hi)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">+ Refer</button>
             <button onclick="openMsgAll()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--faint);color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;" onmouseover="this.style.background='var(--accent)';this.style.color='#fff';this.style.borderColor='var(--accent)'" onmouseout="this.style.background='var(--faint)';this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Message All
             </button>
@@ -378,28 +378,55 @@
         HOME
       </button>
       <div class="page-hero lec-page-hero">
-        <h1>My Tutors</h1>
+        <h1>My Team</h1>
         <p id="tutors-hero-sub">Loading…</p>
       </div>
-      <div class="stats-strip">
-        <div class="stat-box"><div class="stat-label">Total Tutors</div><div class="stat-val" id="tutors-count">—</div></div>
-        <div class="stat-box"><div class="stat-label">Approved</div><div class="stat-val green" id="tutors-approved">—</div></div>
+      <div class="stats-strip lec-team-stats">
+        <div class="stat-box"><div class="stat-label">Tutors</div><div class="stat-val" id="team-tutors-count">—</div></div>
+        <div class="stat-box"><div class="stat-label">Demonstrators</div><div class="stat-val" id="team-demos-count">—</div></div>
+        <div class="stat-box"><div class="stat-label">Total</div><div class="stat-val green" id="team-total-count">—</div></div>
       </div>
-      <div class="tutors-grid" id="tutors-grid">
-        <div class="vf-skel-card" aria-hidden="true">
-          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
-          <div class="vf-skel vf-skel-line short"></div>
-          <div class="vf-skel vf-skel-line btn"></div>
+      <div class="lec-team-toolbar">
+        <div class="filter-tabs" id="team-filter-tabs">
+          <button type="button" class="filter-tab active" data-filter="all" onclick="setTeamFilter('all',this)">All</button>
+          <button type="button" class="filter-tab" data-filter="tutor" onclick="setTeamFilter('tutor',this)">Tutors</button>
+          <button type="button" class="filter-tab" data-filter="demonstrator" onclick="setTeamFilter('demonstrator',this)">Demonstrators</button>
         </div>
-        <div class="vf-skel-card" aria-hidden="true">
-          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
-          <div class="vf-skel vf-skel-line short"></div>
-          <div class="vf-skel vf-skel-line btn"></div>
+        <div class="lec-team-actions">
+          <button type="button" class="lec-ref-btn" onclick="openReferTutor()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Refer
+          </button>
+          <button type="button" class="lec-ref-btn" onclick="openMsgAll()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Message all
+          </button>
         </div>
-        <div class="vf-skel-card" aria-hidden="true">
-          <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
-          <div class="vf-skel vf-skel-line short"></div>
-          <div class="vf-skel vf-skel-line btn"></div>
+      </div>
+      <div class="lec-team-panel">
+        <div class="lec-team-table-wrap">
+          <table class="lec-team-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Student no.</th>
+                <th>Qualification</th>
+                <th>Responsibility</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="team-table-body">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="lec-team-cards tutors-grid" id="tutors-grid">
+          <div class="vf-skel-card" aria-hidden="true">
+            <div class="vf-skel-row"><div class="vf-skel vf-skel-av"></div><div class="vf-skel-lines"><div class="vf-skel vf-skel-line mid"></div><div class="vf-skel vf-skel-line short"></div></div></div>
+            <div class="vf-skel vf-skel-line short"></div>
+            <div class="vf-skel vf-skel-line btn"></div>
+          </div>
         </div>
       </div>
       <section class="lec-referrals" aria-label="My referrals">
@@ -413,16 +440,6 @@
               </div>
               <div class="vf-skel vf-skel-line" style="width:64px;height:14px;flex-shrink:0"></div>
             </div>
-          </div>
-          <div class="lec-referrals-actions">
-            <button type="button" class="lec-ref-btn" onclick="openReferTutor()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-              Refer a tutor
-            </button>
-            <button type="button" class="lec-ref-btn" onclick="openMsgAll()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-              Message all
-            </button>
           </div>
         </div>
       </section>
@@ -448,6 +465,7 @@
           <div class="inbox-filters">
             <button class="inbox-filter active" onclick="setInboxFilter('all',this)">All</button>
             <button class="inbox-filter" onclick="setInboxFilter('tutor',this)">Tutors</button>
+            <button class="inbox-filter" onclick="setInboxFilter('demonstrator',this)">Demonstrators</button>
             <button class="inbox-filter" onclick="setInboxFilter('admin',this)">Admin</button>
             <button class="inbox-filter" onclick="setInboxFilter('unread',this)">Unread</button>
           </div>
@@ -561,7 +579,7 @@
           </div>
         </div>
         <div class="rpt-card" style="margin-bottom:14px;">
-          <div class="rpt-card-header"><span class="rpt-card-title">Tutor Performance</span><span class="rpt-card-badge" id="report-tutor-badge">—</span></div>
+          <div class="rpt-card-header"><span class="rpt-card-title">Team Performance</span><span class="rpt-card-badge" id="report-tutor-badge">—</span></div>
           <table class="perf-table">
             <thead><tr><th style="width:36px;"></th><th>Name</th><th>Module(s)</th><th>Sessions Attended</th><th>Rate</th><th>Missed</th><th>Grade</th></tr></thead>
             <tbody id="report-tutor-tbody">
@@ -806,7 +824,7 @@
     </button>
     <button type="button" class="lec-bnav-item" data-bnav="tutors" onclick="goView('tutors',document.getElementById('nav-tutors'))">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      <span class="lec-bnav-label">TUTORS</span>
+      <span class="lec-bnav-label">TEAM</span>
       <span class="lec-bnav-dot" aria-hidden="true"></span>
     </button>
     <button type="button" class="lec-bnav-item" data-bnav="claims" onclick="goView('claims',document.getElementById('nav-claims'))">

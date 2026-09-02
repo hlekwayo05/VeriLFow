@@ -859,6 +859,65 @@ const VF = (() => {
     render();
   }
 
+  /** Extract numeric student number from a UMP email (e.g. 230383025@ump.ac.za → 230383025). */
+  function studentNumberFromUmpEmail(email) {
+    const m = String(email || '').trim().match(/^(\d+)@ump\.ac\.za$/i);
+    return m ? m[1] : null;
+  }
+
+  /** Normalise SA cell to +27XXXXXXXXX (10-digit local 0… → +27…). */
+  function formatSaCellPhone(value) {
+    const digits = String(value || '').replace(/\D/g, '');
+    if (digits.length === 10 && digits.startsWith('0')) {
+      return '+27' + digits.slice(1);
+    }
+    if (digits.length === 11 && digits.startsWith('27')) {
+      return '+' + digits;
+    }
+    if (digits.length === 9) {
+      return '+27' + digits;
+    }
+    return String(value || '').trim();
+  }
+
+  function isValidSaCellPhone(value) {
+    const digits = formatSaCellPhone(value).replace(/\D/g, '');
+    return digits.length === 11 && digits.startsWith('27');
+  }
+
+  /** Auto-fill student number from UMP email; format cell as +27 on apply step 1. */
+  function bindApplyStep1AutoFields() {
+    const emailEl = document.getElementById('email');
+    const cellEl = document.getElementById('cell');
+    const snEl = document.getElementById('studentNumber');
+    if (!emailEl || !cellEl || !snEl) return;
+
+    function syncStudentNumberFromEmail() {
+      const num = studentNumberFromUmpEmail(emailEl.value);
+      if (num) snEl.value = num;
+    }
+
+    emailEl.addEventListener('input', syncStudentNumberFromEmail);
+    emailEl.addEventListener('blur', syncStudentNumberFromEmail);
+
+    function syncCellFormat() {
+      const formatted = formatSaCellPhone(cellEl.value);
+      if (formatted && formatted !== cellEl.value) {
+        cellEl.value = formatted;
+      }
+    }
+
+    cellEl.addEventListener('blur', syncCellFormat);
+    cellEl.addEventListener('input', () => {
+      const digits = cellEl.value.replace(/\D/g, '');
+      if (digits.length === 10 && digits.startsWith('0')) {
+        cellEl.value = formatSaCellPhone(cellEl.value);
+      }
+    });
+
+    syncStudentNumberFromEmail();
+  }
+
   return {
     getState, setState, clearState, navigate,
     getToken, setToken, clearToken, isAuthenticated, apiFetch,
@@ -873,6 +932,7 @@ const VF = (() => {
     resolveTutorRoute, fetchTutorRouteState, tutorStateFromToken, onboardingCompleteFromApp, rejectionDetailFromApp,
     runEligibilityCheck, pageIn, gateApplicationWindow, homeUrl,
     PASSWORD_HINT, isStrongPassword, passwordErrorMessage, passwordChecks, bindPasswordChecklist,
+    studentNumberFromUmpEmail, formatSaCellPhone, isValidSaCellPhone, bindApplyStep1AutoFields,
   };
 })();
 

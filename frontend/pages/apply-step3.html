@@ -155,6 +155,14 @@
     acadSaved: false,
   };
   let submitting = false;
+  let uploading = false;
+
+  function resetUploadBox(boxId, iconId, nameId, subId, iconClass, title, sub) {
+    document.getElementById(boxId).classList.remove('uploaded');
+    document.getElementById(iconId).className = iconClass + ' upload-icon';
+    document.getElementById(nameId).textContent = title;
+    document.getElementById(subId).textContent = sub;
+  }
 
   function markUploaded(boxId, iconId, nameId, subId, label, fileName) {
     document.getElementById(boxId).classList.add('uploaded');
@@ -163,6 +171,30 @@
     document.getElementById(subId).textContent = fileName
       ? (fileName + ' · saved')
       : 'Saved on server — ready to submit';
+  }
+
+  function documentDisplayName(originalName, storagePath) {
+    if (originalName) return originalName;
+    if (!storagePath) return '';
+    return storagePath.split('/').pop();
+  }
+
+  function restoreSavedDocs(app) {
+    if (app.cv_filename) {
+      state.cv = true;
+      state.cvSaved = true;
+      state.cvFile = documentDisplayName(app.cv_original_name, app.cv_filename);
+      markUploaded('cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV', state.cvFile);
+      updateChecklist('cv');
+    }
+    if (app.transcript_filename) {
+      state.acad = true;
+      state.acadSaved = true;
+      state.acadFile = documentDisplayName(app.transcript_original_name, app.transcript_filename);
+      markUploaded('acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record', state.acadFile);
+      updateChecklist('acad');
+    }
+    updateSubmit();
   }
 
   function updateChecklist(which) {
@@ -208,24 +240,6 @@
     VF.setApplyStepProgress(parts.reduce((a, b) => a + b, 0) / 3);
   }
 
-  function restoreSavedDocs(app) {
-    if (app.cv_filename) {
-      state.cv = true;
-      state.cvSaved = true;
-      state.cvFile = app.cv_filename.split('/').pop();
-      markUploaded('cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV', state.cvFile);
-      updateChecklist('cv');
-    }
-    if (app.transcript_filename) {
-      state.acad = true;
-      state.acadSaved = true;
-      state.acadFile = app.transcript_filename.split('/').pop();
-      markUploaded('acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record', state.acadFile);
-      updateChecklist('acad');
-    }
-    updateSubmit();
-  }
-
   function isPdfFile(file) {
     const name = (file.name || '').toLowerCase();
     const mime = (file.type || '').toLowerCase();
@@ -244,7 +258,7 @@
 
   async function handleFile(input, boxId, iconId, nameId, subId, label) {
     const file = input.files[0];
-    if (!file) return;
+    if (!file || uploading) return;
     if (!isPdfFile(file)) {
       VF.toast('Only PDF files are accepted.', 'err');
       input.value = '';
@@ -257,32 +271,54 @@
     }
 
     const fieldName = boxId === 'cvBox' ? 'cvFile' : 'transcriptFile';
+    const isCv = boxId === 'cvBox';
     markUploaded(boxId, iconId, nameId, subId, label, file.name + ' · saving…');
     document.getElementById(subId).textContent = file.name + ' · saving…';
+    uploading = true;
 
     try {
       await saveDraftDocument(fieldName, file);
-      if (boxId === 'cvBox') {
-        state.cv = true;
-        state.cvSaved = true;
-        state.cvFile = file.name;
-        state.cvFileObj = file;
-        updateChecklist('cv');
-      } else {
-        state.acad = true;
-        state.acadSaved = true;
-        state.acadFile = file.name;
-        state.acadFileObj = file;
-        updateChecklist('acad');
-      }
-      markUploaded(boxId, iconId, nameId, subId, label, file.name);
-      updateSubmit();
+      const app = await VF.apiFetch('/applications/me');
+      VF.syncApplicationState(app);
+      restoreSavedDocs(app);
+      if (isCv) state.cvFileObj = file;
+      else state.acadFileObj = file;
       VF.toast(label + ' saved.', 'ok');
     } catch (err) {
       input.value = '';
-      document.getElementById(boxId).classList.remove('uploaded');
+      if (isCv) {
+        resetUploadBox(
+          boxId, iconId, nameId, subId,
+          'ti ti-file-cv',
+          'Curriculum Vitae (PDF)',
+          'Click to browse or drag and drop · PDF only · Max 5MB'
+        );
+        state.cv = false;
+        state.cvSaved = false;
+        state.cvFileObj = null;
+        const el = document.getElementById('chk-cv');
+        el.classList.add('pending');
+        el.classList.remove('done');
+        el.querySelector('i').className = 'ti ti-circle';
+      } else {
+        resetUploadBox(
+          boxId, iconId, nameId, subId,
+          'ti ti-school',
+          'Academic Record (PDF)',
+          'Click to browse or drag and drop · PDF only · Max 5MB'
+        );
+        state.acad = false;
+        state.acadSaved = false;
+        state.acadFileObj = null;
+        const el = document.getElementById('chk-acad');
+        el.classList.add('pending');
+        el.classList.remove('done');
+        el.querySelector('i').className = 'ti ti-circle';
+      }
       VF.toast(err.errors ? err.errors[0] : ('Could not save ' + label + '.'), 'err');
       updateSubmit();
+    } finally {
+      uploading = false;
     }
   }
 

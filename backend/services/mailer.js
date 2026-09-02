@@ -98,7 +98,7 @@ function buildAnnouncementHtml({
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Tutor Applications Open — VeriFlow</title>
+<title>Tutor &amp; Demonstrator Applications Open — VeriFlow</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -125,8 +125,8 @@ function buildAnnouncementHtml({
     <tr>
       <td style="background:${DARK};padding:0 40px 36px;">
         <h1 style="margin:0;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">
-          Tutor Applications<br/>
-          <span style="color:${GREEN};">Now Open</span>
+          Tutor &amp; Demonstrator<br/>
+          <span style="color:${GREEN};">Applications Now Open</span>
         </h1>
         <p style="margin:12px 0 0;font-size:14px;color:#aaaaaa;line-height:1.5;">
           2026 Academic Year &nbsp;·&nbsp; DICT &amp; BICT Programmes
@@ -138,7 +138,7 @@ function buildAnnouncementHtml({
       <td style="padding:32px 40px 8px;">
         <p style="margin:0;font-size:16px;color:${DARK};font-weight:600;">Dear ${safeName},</p>
         <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:#444444;">
-          Applications are now open for <strong>Tutor positions</strong> for the 2026 academic year at the
+          Applications are now open for <strong>Tutor and Demonstrator positions</strong> for the 2026 academic year at the
           University of Mpumalanga. We are looking for senior students to support their peers
           across DICT and BICT programmes.
         </p>
@@ -180,7 +180,8 @@ function buildAnnouncementHtml({
         <table cellpadding="0" cellspacing="0" width="100%">
           ${[
             'Minimum 75% academic average',
-            'Must have passed the module you want to tutor',
+            'Tutors: must have passed the module you want to tutor',
+            'Demonstrators: assessed on academic average only (no module pass required)',
             'Good communication and interpersonal skills',
             'Ability to work independently and in a team',
             'Highly motivated and committed to student success',
@@ -280,6 +281,30 @@ function createResendClient() {
 function referralLoginLink() {
   const base = (process.env.FRONTEND_URL || 'http://localhost:5500/frontend').replace(/\/$/, '');
   return `${base}/pages/login.html`;
+}
+
+function passwordResetLink(token) {
+  const base = (process.env.FRONTEND_URL || 'http://localhost:5500/frontend').replace(/\/$/, '');
+  return `${base}/pages/reset-password.html?token=${encodeURIComponent(token)}`;
+}
+
+/** Apply link for announcement emails — always targets apply-step1.html. */
+function applyPortalLink() {
+  const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5500/frontend').replace(/\/$/, '');
+  const defaultLink = `${frontendBase}/pages/apply-step1.html`;
+
+  const portal = (process.env.PORTAL_URL || '').trim();
+  if (!portal) return defaultLink;
+
+  // Legacy / misconfigured values (e.g. …/apply.html) — use FRONTEND_URL instead.
+  if (/\/apply\.html$/i.test(portal) && !portal.includes('/pages/apply-step1.html')) {
+    console.warn(`PORTAL_URL (${portal}) is outdated — using ${defaultLink}`);
+    return defaultLink;
+  }
+
+  if (portal.includes('/pages/apply-step1.html')) return portal;
+
+  return defaultLink;
 }
 
 function escapeHtml(str) {
@@ -577,6 +602,53 @@ function buildPasswordResetHtml({
   return heroEmailShell(heroHtml, bodyHtml);
 }
 
+function buildForgotPasswordHtml({ userFirstName, resetLink }) {
+  const heroHtml = `
+    <div style="font-size:26px;font-weight:700;color:#ffffff;margin-bottom:6px;">Reset Password</div>
+    <div style="font-size:15px;color:${GREEN};">VeriFlow account recovery</div>`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 16px;">Dear ${escapeHtml(userFirstName)},</p>
+    <p style="margin:0 0 16px;">
+      We received a request to reset your VeriFlow password.
+    </p>
+    <p style="margin:0 0 20px;">
+      Click the button below to choose a new password. This link expires in one hour.
+    </p>
+    ${loginButtonHtml(resetLink).replace('LOG IN TO VERIFLOW →', 'RESET PASSWORD →')}
+    <p style="margin:0;font-size:12px;line-height:1.6;color:${MUTED};">
+      If you did not request this, you can ignore this email. Your password will not change.
+    </p>`;
+
+  return heroEmailShell(heroHtml, bodyHtml);
+}
+
+async function sendForgotPasswordEmail({ userEmail, userFirstName, resetLink }) {
+  const text = `
+Dear ${userFirstName},
+
+We received a request to reset your VeriFlow password.
+
+Reset your password using this link (expires in one hour):
+${resetLink}
+
+If you did not request this, you can ignore this email.
+
+Kind regards,
+Student Employment Office
+University of Mpumalanga
+  `.trim();
+
+  const html = buildForgotPasswordHtml({ userFirstName, resetLink });
+
+  await sendResendEmail({
+    to: userEmail,
+    subject: 'Reset Your VeriFlow Password — UMP',
+    html,
+    text,
+  });
+}
+
 async function sendResendEmail({ to, subject, html, text }) {
   if (!to) {
     throw new Error(`Email skipped — no recipient (${subject})`);
@@ -626,8 +698,7 @@ async function sendAnnouncementEmail(presetSettings) {
     return { sent: 0, failed: 0, skipped: true };
   }
 
-  const portalLink = process.env.PORTAL_URL ||
-    'http://localhost:5500/frontend/pages/apply-step1.html';
+  const portalLink = applyPortalLink();
 
   let settings = presetSettings;
   if (!settings) {
@@ -660,7 +731,7 @@ async function sendAnnouncementEmail(presetSettings) {
   }
 
   const subject = settings.announcement_subject ||
-    'Tutor Applications Now Open — 2026 Academic Year';
+    'Tutor & Demonstrator Applications Now Open — 2026 Academic Year';
   const closingLabel = formatAnnouncementClosingDate(settings.closing_date);
 
   let customMessageHtml = null;
@@ -1079,10 +1150,13 @@ module.exports = {
   sendReferralApprovalNoPasswordEmail,
   sendLecturerWelcomeEmail,
   sendPasswordResetEmail,
+  sendForgotPasswordEmail,
   referralLoginLink,
+  passwordResetLink,
   buildAnnouncementHtml,
   buildReferralNotificationHtml,
   buildReferralApprovalHtml,
   buildLecturerWelcomeHtml,
   buildPasswordResetHtml,
+  buildForgotPasswordHtml,
 };

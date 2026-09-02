@@ -199,6 +199,12 @@ const validateAddLecturerModule = [
   handleValidationErrors,
 ];
 
+const validateImportLecturers = [
+  body('lecturers')
+    .isArray({ min: 1 }).withMessage('Provide an array of lecturers.'),
+  handleValidationErrors,
+];
+
 const validateResetPassword = [
   param('role')
     .isIn(['lecturer', 'tutor']).withMessage('Role must be lecturer or tutor.'),
@@ -214,6 +220,7 @@ module.exports = {
   validateOnboardingDocuments,
   validateProfileUpdate,
   validateCreateLecturer,
+  validateImportLecturers,
   validateAddLecturerModule,
   validateResetPassword,
 };

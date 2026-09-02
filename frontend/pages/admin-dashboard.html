@@ -457,7 +457,7 @@
         HOME
       </button>
       <div class="page-hero-row">
-        <div class="page-hero" style="margin-bottom:0"><h1>Messages</h1><p>Communications with tutors and lecturers</p></div>
+        <div class="page-hero" style="margin-bottom:0"><h1>Messages</h1><p>Communications with tutors, demonstrators, and lecturers</p></div>
         <button class="btn-primary" onclick="openMsgAll()">+ New Message</button>
       </div>
     </div>
@@ -472,6 +472,7 @@
           <button class="inbox-filter active" onclick="setInboxFilter('all',this)">All</button>
           <button class="inbox-filter" onclick="setInboxFilter('unread',this)">Unread</button>
           <button class="inbox-filter" onclick="setInboxFilter('tutor',this)">Tutors</button>
+          <button class="inbox-filter" onclick="setInboxFilter('demonstrator',this)">Demonstrators</button>
           <button class="inbox-filter" onclick="setInboxFilter('lecturer',this)">Lecturers</button>
         </div>
         <div class="tm-msg-people" id="tm-msg-people" aria-label="Message contacts"></div>
@@ -508,28 +509,36 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         HOME
       </button>
-      <div class="page-hero"><h1>User Management</h1><p id="users-summary">Lecturers and tutors only — create accounts, reset passwords, manage modules</p></div>
+      <div class="page-hero"><h1>User Management</h1><p id="users-summary">Lecturers, tutors, demonstrators, and students — create accounts, reset passwords, manage modules</p></div>
     </div>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('lecturers',this,'users')">Lecturers</button>
       <button class="tab-btn" onclick="switchTab('tutors-u',this,'users')">Tutors</button>
+      <button class="tab-btn" onclick="switchTab('demonstrators-u',this,'users')">Demonstrators</button>
       <button class="tab-btn" onclick="switchTab('students-u',this,'users')">Students</button>
     </div>
     <div class="ad-filter-wrap ad-mobile-only">
       <div class="ad-filter-tabs tabs">
         <button class="tab-btn active" onclick="switchTab('lecturers',this,'users')">Lecturers</button>
         <button class="tab-btn" onclick="switchTab('tutors-u',this,'users')">Tutors</button>
+        <button class="tab-btn" onclick="switchTab('demonstrators-u',this,'users')">Demonstrators</button>
         <button class="tab-btn" onclick="switchTab('students-u',this,'users')">Students</button>
       </div>
     </div>
     <div id="tab-lecturers" class="tab-pane active">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;">
         <button class="btn-primary" onclick="openAddLecturerModal()">+ Add Lecturer</button>
+        <button class="btn-sm" onclick="document.getElementById('lecturers-csv-input').click()">Import CSV</button>
+        <input id="lecturers-csv-input" type="file" accept=".csv" style="display:none" onchange="importLecturersCSV(this.files[0])" />
       </div>
       <div class="ad-mobile-cta ad-mobile-only">
         <button type="button" class="ad-btn-primary ad-btn-glow" onclick="openAddLecturerModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           <span class="ad-btn-glow-label">Add Lecturer</span>
+        </button>
+        <button type="button" class="ad-btn-outline ad-import-btn" onclick="document.getElementById('lecturers-csv-input').click()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          Import
         </button>
       </div>
       <div class="ad-rec-list ad-mobile-only" id="lecturers-cards"></div>
@@ -543,6 +552,13 @@
       <table class="data-table">
         <thead><tr><th>Name</th><th>Student no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
         <tbody id="tutors-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="tab-demonstrators-u" class="tab-pane">
+      <div class="ad-rec-list ad-mobile-only" id="demonstrators-cards"></div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Student no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
+        <tbody id="demonstrators-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-students-u" class="tab-pane">
@@ -622,7 +638,74 @@
 </div>
 
 <div id="page-analysis" class="page">
-  <div class="full-page ad-analysis-page">
+  <div class="ad-analysis-desktop">
+    <div class="left-col">
+      <div class="hero">
+        <h1>Analysis <em>Overview</em></h1>
+        <p id="analysis-d-sub">Session totals, active tutors and payout summaries</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card" onclick="showPage('flagged',document.getElementById('nav-flagged'))">
+          <div class="stat-label">Flagged Sessions</div>
+          <div class="stat-value red" id="analysis-d-flagged">0</div>
+          <div class="stat-sub" id="analysis-d-flagged-sub">0% of sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-value hi" id="analysis-d-sessions">0</div>
+          <div class="stat-sub">scheduled &amp; completed</div>
+        </div>
+        <div class="stat-card" onclick="showPage('claims',document.getElementById('nav-claims'))">
+          <div class="stat-label">Pending Claims</div>
+          <div class="stat-value amber" id="analysis-d-pending">R0</div>
+          <div class="stat-sub">awaiting approval</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Payouts</div>
+          <div class="stat-value hi" id="analysis-d-payouts">R0</div>
+          <div class="stat-sub">approved claims</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Payout by tutor</span>
+        <span class="section-sub" id="analysis-d-payout-sub">Top approved claims</span>
+      </div>
+      <div class="panel" style="margin-bottom:22px;padding:14px 18px">
+        <div id="analysis-d-payout-chart">
+          <div class="analysis-chart-empty">Loading…</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <span class="section-title">Sessions by module</span>
+        <span class="section-sub" id="analysis-d-module-sub">This period</span>
+      </div>
+      <div class="panel" style="margin-bottom:22px;padding:14px 18px">
+        <div id="analysis-d-module-chart">
+          <div class="analysis-chart-empty">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div><h3>Reports</h3><div style="font-size:11px;color:var(--muted);margin-top:2px" id="analysis-d-sem">—</div></div>
+        </div>
+        <div id="analysis-d-summary-panel">
+          <div style="padding:8px 0;font-size:12px;color:var(--muted);text-align:center">Loading…</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>Active team</h3></div>
+        <div class="stat-value hi" id="analysis-d-tutors" style="font-size:42px;margin-bottom:4px">0</div>
+        <div class="stat-sub">approved tutors &amp; demonstrators</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-page ad-analysis-page ad-mobile-only">
     <div class="ad-page-head">
       <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
@@ -711,12 +794,32 @@
     </div>
     <div class="ad-settings-stack">
       <details class="ad-acc settings-section" open style="animation-delay:.05s">
-        <summary>Pay Rates <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <summary>Pay Rate Reference (2026 Official Tariffs) <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="ad-acc-body">
+          <table class="data-table" id="pay-rate-reference-table">
+            <thead>
+              <tr>
+                <th>Qualification</th>
+                <th>Responsibility</th>
+                <th>Hourly Rate</th>
+                <th>Tutorial (3hrs)</th>
+                <th>Practical (5hrs)</th>
+              </tr>
+            </thead>
+            <tbody id="pay-rate-reference-body">
+              <tr><td>3rd year student</td><td>Low</td><td>R59.66</td><td>R178.99</td><td>R298.32</td></tr>
+              <tr><td>4th year or Honours student</td><td>Low</td><td>R73.87</td><td>R221.61</td><td>R369.35</td></tr>
+              <tr><td>Masters student</td><td>Low</td><td>R90.92</td><td>R272.76</td><td>R454.59</td></tr>
+              <tr><td>Masters Holder</td><td>Low</td><td>R102.28</td><td>R306.84</td><td>R511.40</td></tr>
+              <tr><td>Masters Holder</td><td>Medium</td><td>R110.80</td><td>R332.40</td><td>R553.99</td></tr>
+              <tr><td>Masters Holder</td><td>High</td><td>R119.33</td><td>R357.98</td><td>R596.64</td></tr>
+              <tr><td>PhD Candidate or Holder</td><td>Low</td><td>R110.80</td><td>R332.40</td><td>R553.99</td></tr>
+              <tr><td>PhD Candidate or Holder</td><td>Medium</td><td>R119.33</td><td>R357.98</td><td>R596.64</td></tr>
+              <tr><td>PhD Candidate or Holder</td><td>High</td><td>R127.84</td><td>R383.53</td><td>R639.24</td></tr>
+            </tbody>
+          </table>
+          <div class="field-hint" style="font-size:11px;color:var(--muted);margin:12px 0 20px">Rates set by UMP 2026 Tariffs Handbook. Contact HR to update.</div>
           <div class="settings-grid">
-            <div class="field-group"><div class="field-label">Undergrad rate (R/hr)</div><input class="field-input" id="setting-rate-undergrad" value="70"/></div>
-            <div class="field-group"><div class="field-label">Honours rate (R/hr)</div><input class="field-input" id="setting-rate-honours" value="85"/></div>
-            <div class="field-group"><div class="field-label">Masters rate (R/hr)</div><input class="field-input" id="setting-rate-masters" value="100"/></div>
             <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" value="160"/></div>
           </div>
         </div>
@@ -903,6 +1006,18 @@
           <option value="high">High</option>
         </select>
       </div>
+      <div class="field-group" id="approval-cost-centre-group" style="grid-column:1 / -1;">
+        <div class="field-label">Cost Centre</div>
+        <select id="approval-cost-centre" class="field-input" style="width:100%;height:42px;padding:0 12px;" onchange="updateApprovalPayRate()">
+          <option value="">Select cost centre…</option>
+          <option value="school_of_computing">School of Computing</option>
+          <option value="ucdg">UCDG</option>
+        </select>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">
+          School of Computing — funded from school budget, approved by Head of School.<br/>
+          UCDG — university-wide fund managed by Mr. Machava (Building 10).
+        </div>
+      </div>
       <div style="grid-column:1 / -1;background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;display:grid;gap:10px;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
           <div>
@@ -1068,7 +1183,7 @@
 <!-- MESSAGE ALL MODAL -->
 <div class="modal-overlay" id="ma-overlay" onclick="maCloseOutside(event)">
   <div class="modal" id="ma-modal" style="width:540px;max-width:94vw;">
-    <div class="modal-header"><div><div class="modal-to">Broadcasting to</div><div class="modal-name">All Tutors and Lecturers</div></div><button class="modal-close" onclick="closeMsgAll()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><div><div class="modal-to">Broadcasting to</div><div class="modal-name">All Tutors, Demonstrators, and Lecturers</div></div><button class="modal-close" onclick="closeMsgAll()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div id="ma-recipients" style="display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;"></div>
     <input class="modal-subject" id="ma-subject" type="text" placeholder="Subject…" />
     <textarea class="modal-body" id="ma-body" placeholder="Write your broadcast message here…"></textarea>
@@ -1381,7 +1496,7 @@
     if (id === 'flagged') loadFlaggedSessions();
     if (id === 'messages') loadMessageThreads();
     if (id === 'postings') loadPostings();
-    if (id === 'users') { loadLecturers(); loadTutors(); }
+    if (id === 'users') { loadLecturers(); loadTutors(); loadDemonstrators(); }
     if (id === 'support') loadSupportTickets();
     if (id === 'analysis') loadAnalysis();
     if (id === 'settings') { loadSettings(); renderCurriculumModuleList('curriculum-module-list'); }
@@ -1644,6 +1759,17 @@ function qualificationChip(level) {
   return '<span class="qual-chip">Undergrad</span>';
 }
 
+function positionTypeChip(positionType) {
+  const label = positionType === 'demonstrator' ? 'Demo' : 'Tutor';
+  return ' <span class="qual-chip honours" style="font-size:10px;margin-left:6px">' + label + '</span>';
+}
+
+function formatCostCentre(costCentre) {
+  if (costCentre === 'ucdg') return 'UCDG (Mr. Machava, Building 10)';
+  if (costCentre === 'school_of_computing') return 'School of Computing (Head of School)';
+  return '';
+}
+
 function getPreferenceTier(gpa) {
   const score = Number(gpa) || 0;
   if (score >= 85) return { dotClass: 'med' };
@@ -1836,7 +1962,7 @@ function renderApplicationCard(app, opts) {
     col3Val = formatDate(app.created_at);
     col3Lab = 'STARTED';
   } else if (withReason) {
-    module = app.module_name || '—';
+    module = (app.module_name || '—') + positionTypeChip(app.position_type);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -1844,7 +1970,7 @@ function renderApplicationCard(app, opts) {
     col3Val = app.rejection_reason || 'Did not meet eligibility';
     col3Lab = 'REASON';
   } else {
-    module = app.module_name || '—';
+    module = (app.module_name || '—') + positionTypeChip(app.position_type);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -1898,7 +2024,7 @@ function renderApplicationRow(app, withReason) {
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot ${pref.dotClass}"></span></td>
       <td style="font-weight:600;color:var(--text)">${app.first_names} ${app.surname}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.module_name || '—'}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.module_name || '—'}${positionTypeChip(app.position_type)}</td>
       <td>${qualificationChip(app.qualification_level)}</td>
       <td style="font-family:'DM Mono',monospace;color:${gpaCell === '—' ? 'var(--muted)' : gpaColor}">${gpaCell}</td>
       ${dateCell}
@@ -1965,13 +2091,7 @@ async function loadSettings() {
     }
     if (subject) subject.value = s.announcement_subject || '';
     if (body) body.value = s.announcement_body || '';
-    const rateUg = document.getElementById('setting-rate-undergrad');
-    const rateHon = document.getElementById('setting-rate-honours');
-    const rateMas = document.getElementById('setting-rate-masters');
     const maxHrs = document.getElementById('setting-max-hours');
-    if (rateUg) rateUg.value = s.rate_undergrad ?? 70;
-    if (rateHon) rateHon.value = s.rate_honours ?? 85;
-    if (rateMas) rateMas.value = s.rate_masters ?? 100;
     if (maxHrs) maxHrs.value = s.max_hours_per_semester ?? 160;
   } catch (err) {
     VF.toast(err.errors ? err.errors[0] : 'Could not load settings.', 'err');
@@ -2030,9 +2150,6 @@ async function saveSettings() {
         closing_date:          document.getElementById('setting-closing-date').value || null,
         announcement_subject:  document.getElementById('setting-announcement-subject').value,
         announcement_body:     document.getElementById('setting-announcement-body').value,
-        rate_undergrad:        document.getElementById('setting-rate-undergrad')?.value,
-        rate_honours:          document.getElementById('setting-rate-honours')?.value,
-        rate_masters:          document.getElementById('setting-rate-masters')?.value,
         max_hours_per_semester: document.getElementById('setting-max-hours')?.value,
       },
     });
@@ -2171,6 +2288,32 @@ function importStudentsCSV(file) {
     error: () => {
       VF.toast('Could not parse CSV file.', 'err');
       document.getElementById('students-csv-input').value = '';
+    },
+  });
+}
+
+function importLecturersCSV(file) {
+  if (!file) return;
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: async (results) => {
+      try {
+        const res = await VF.apiFetch('/users/lecturers/import', {
+          method: 'POST',
+          body: { lecturers: results.data },
+        });
+        const skippedNote = res.skipped ? ` (${res.skipped} skipped)` : '';
+        showToast(`${res.imported} lecturer row${res.imported === 1 ? '' : 's'} imported${skippedNote}`);
+        loadLecturers();
+      } catch (err) {
+        VF.toast(err.errors ? err.errors[0] : 'CSV import failed.', 'err');
+      }
+      document.getElementById('lecturers-csv-input').value = '';
+    },
+    error: () => {
+      VF.toast('Could not parse CSV file.', 'err');
+      document.getElementById('lecturers-csv-input').value = '';
     },
   });
 }
@@ -2321,6 +2464,9 @@ function openApprovalModal(id) {
   document.getElementById('approval-module').textContent = app.module_name || '—';
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level;
   document.getElementById('approval-responsibility').value = '';
+  document.getElementById('approval-cost-centre').value = '';
+  const costCentreGroup = document.getElementById('approval-cost-centre-group');
+  if (costCentreGroup) costCentreGroup.style.display = '';
   document.getElementById('approval-pay-rate').textContent = 'Select a responsibility level';
   document.getElementById('approval-pay-breakdown').textContent = 'No responsibility level selected yet.';
   document.getElementById('approval-confirm-btn').disabled = true;
@@ -2336,6 +2482,9 @@ function openReferralApprovalModal(id) {
   document.getElementById('approval-module').textContent = ref.module_code + ' · ' + (ref.module_name || '—');
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[ref.qualification_level] || ref.qualification_level;
   document.getElementById('approval-responsibility').value = '';
+  document.getElementById('approval-cost-centre').value = '';
+  const costCentreGroup = document.getElementById('approval-cost-centre-group');
+  if (costCentreGroup) costCentreGroup.style.display = '';
   document.getElementById('approval-pay-rate').textContent = 'Select a responsibility level';
   document.getElementById('approval-pay-breakdown').textContent = 'No responsibility level selected yet.';
   document.getElementById('approval-confirm-btn').disabled = true;
@@ -2386,20 +2535,30 @@ function updateApprovalPayRate() {
   }
 
   rateBox.textContent = 'R' + rateEntry.toFixed(2) + '/hr';
-  breakdown.textContent = friendlyLevel.charAt(0).toUpperCase() + friendlyLevel.slice(1) + ' responsibility selected · rate set by the 2026 tutor pay table.';
-  button.disabled = false;
+  breakdown.textContent =
+    friendlyLevel.charAt(0).toUpperCase() + friendlyLevel.slice(1) +
+    ' responsibility · Tutorial (3 hrs): R' + (rateEntry * 3).toFixed(2) +
+    ' · Practical (5 hrs): R' + (rateEntry * 5).toFixed(2);
+  const costCentre = document.getElementById('approval-cost-centre')?.value;
+  const costCentreOk = !!costCentre;
+  button.disabled = !(friendlyLevel && costCentreOk);
 }
 
 async function finalizeApplicationApproval() {
   const friendlyLevel = document.getElementById('approval-responsibility').value;
   if (!friendlyLevel) { VF.toast('Select a responsibility level before approving', 'err'); return; }
   const responsibilityLevel = RESPONSIBILITY_CODE_MAP[friendlyLevel];
+  const costCentre = document.getElementById('approval-cost-centre')?.value;
 
   try {
     if (pendingReferralApprovalId) {
+      if (!costCentre) {
+        VF.toast('Please select a cost centre before approving', 'err');
+        return;
+      }
       const result = await VF.apiFetch(`/referrals/${pendingReferralApprovalId}/approve`, {
         method: 'PATCH',
-        body: { responsibilityLevel },
+        body: { responsibilityLevel, costCentre },
       });
       closeApprovalModal();
       loadReferrals();
@@ -2425,9 +2584,14 @@ async function finalizeApplicationApproval() {
 
     if (!pendingApprovalId) return;
 
+    if (!costCentre) {
+      VF.toast('Please select a cost centre before approving', 'err');
+      return;
+    }
+
     await VF.apiFetch(`/applications/${pendingApprovalId}/approve`, {
       method: 'PATCH',
-      body: { responsibilityLevel },
+      body: { responsibilityLevel, costCentre },
     });
     VF.toast('Application approved', 'ok');
     closeApprovalModal();
@@ -2526,6 +2690,7 @@ function fillMobileApplicationDetail(app) {
     ${adAppdFieldRow('Faculty', app.faculty || '—')}
     ${adAppdFieldRow('Course', app.course || '—')}
     ${adAppdFieldRow('Qualification level', QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '—')}
+    ${adAppdFieldRow('Position type', app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor')}
     ${adAppdFieldRow('Module year level', app.module_year_level || '—')}
     ${adAppdFieldRow('Module to tutor', app.module_name || '—')}
     ${adAppdFieldRow('Current average', formatGpaDisplay(app.gpa))}`;
@@ -2563,17 +2728,20 @@ function fillMobileApplicationDetail(app) {
   const outcomeExtra = app.responsibility_level
     ? `<div class="ad-appd-decl-extra">Approved responsibility: ${String(app.responsibility_level).charAt(0).toUpperCase() + String(app.responsibility_level).slice(1)}</div>`
     : '';
+  const costCentreExtra = app.cost_centre
+    ? `<div class="ad-appd-decl-extra">Cost centre: ${formatCostCentre(app.cost_centre)}</div>`
+    : '';
   document.getElementById('ad-appd-declaration').innerHTML = `
     <div class="ad-appd-decl-row">
       <span class="ad-appd-decl-label">Declaration</span>
       ${declChip}
     </div>
-    ${outcomeExtra}`;
+    ${outcomeExtra}${costCentreExtra}`;
 
   const docSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
   const recSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg>';
-  const cvName = app.cv_filename || 'Not uploaded';
-  const trName = app.transcript_filename || 'Not uploaded';
+  const cvName = app.cv_original_name || app.cv_filename || 'Not uploaded';
+  const trName = app.transcript_original_name || app.transcript_filename || 'Not uploaded';
   document.getElementById('ad-appd-docs').innerHTML = `
     <div class="ad-appd-doc-row">
       <div class="ad-appd-doc-left">
@@ -2733,6 +2901,7 @@ function openApplicationDetail(id) {
         <div><strong>Faculty:</strong> ${app.faculty || '—'}</div>
         <div><strong>Course:</strong> ${app.course || '—'}</div>
         <div><strong>Qualification level:</strong> ${QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '—'}</div>
+        <div><strong>Position type:</strong> ${app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'}</div>
         <div><strong>Module year level:</strong> ${app.module_year_level || '—'}</div>
         <div><strong>Module to tutor:</strong> ${app.module_name || '—'}</div>
         <div><strong>Current average:</strong> ${app.gpa}%</div>
@@ -2745,6 +2914,7 @@ function openApplicationDetail(id) {
       <div style="display:grid;gap:8px;font-size:12px;">
         <div><strong>Declaration:</strong> Accepted</div>
         ${app.responsibility_level ? `<div><strong>Approved responsibility:</strong> ${app.responsibility_level.charAt(0).toUpperCase() + app.responsibility_level.slice(1)}</div>` : ''}
+        ${app.cost_centre ? `<div><strong>Cost centre:</strong> ${formatCostCentre(app.cost_centre)}</div>` : ''}
       </div>
     </div>
   `;
@@ -2755,14 +2925,14 @@ function openApplicationDetail(id) {
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--text);">CV</div>
-        <div style="font-size:11px;color:var(--muted);">${app.cv_filename || 'Not uploaded'}</div>
+        <div style="font-size:11px;color:var(--muted);">${app.cv_original_name || app.cv_filename || 'Not uploaded'}</div>
       </div>
       ${app.cv_filename ? `<button class="btn-sm" onclick="openDocPanel('CV', '${app.cv_filename}')">Review</button>` : ''}
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--text);">Academic record</div>
-        <div style="font-size:11px;color:var(--muted);">${app.transcript_filename || 'Not uploaded'}</div>
+        <div style="font-size:11px;color:var(--muted);">${app.transcript_original_name || app.transcript_filename || 'Not uploaded'}</div>
       </div>
       ${app.transcript_filename ? `<button class="btn-sm" onclick="openDocPanel('Academic record', '${app.transcript_filename}')">Review</button>` : ''}
     </div>
@@ -3014,6 +3184,7 @@ function switchTab(id, btn, pageId) {
     b.classList.toggle('active', onclick.includes(`'${id}'`) || onclick.includes(`"${id}"`));
   });
   if (pageId === 'users' && id === 'students-u') loadStudents();
+  if (pageId === 'users' && id === 'demonstrators-u') loadDemonstrators();
 }
 </script>
 </body>

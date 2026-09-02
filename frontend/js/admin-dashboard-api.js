@@ -1109,11 +1109,50 @@ function renderDashboardReports(sessions, claims, tutors, flagged) {
     <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace">Pending claims: ${adFormatMoney(pendingTotal)} · Flagged rate: ${flaggedPct}%</div>`;
 }
 
+function renderAnalysisSummaryPanel(sessions, claims, tutors, flagged) {
+  const wrap = document.getElementById('analysis-d-summary-panel');
+  if (!wrap) return;
+
+  const completed = sessions.filter((s) => s.status === 'completed').length;
+  const totalSessions = sessions.length;
+  const approvedClaims = claims.filter((c) => c.status === 'approved');
+  const pendingClaims = claims.filter((c) =>
+    ['pending_lecturer', 'pending_coordinator'].includes(c.status)
+  );
+  const paidTotal = approvedClaims.reduce((s, c) => s + Number(c.total_amount || 0), 0);
+  const pendingTotal = pendingClaims.reduce((s, c) => s + Number(c.total_amount || 0), 0);
+  const hoursLogged = approvedClaims.reduce((s, c) => s + Number(c.total_hours || 0), 0);
+  const processedPct = claims.length
+    ? Math.round((approvedClaims.length / claims.length) * 100)
+    : 0;
+  const flaggedPct = totalSessions ? ((flagged.length / totalSessions) * 100).toFixed(1) : '0';
+
+  const maxSessions = Math.max(totalSessions, 1);
+  const maxHours = Math.max(hoursLogged, 1);
+  const maxMoney = Math.max(paidTotal, pendingTotal, 1);
+  const maxTeam = Math.max(tutors.length, 1);
+
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;color:var(--muted)">Claims processed</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text)">${processedPct}%</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${processedPct}%"></div></div>
+    <div class="report-row"><span class="report-label">Sessions</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${adBarWidth(completed, maxSessions)}%"></div></div><span class="report-val">${totalSessions}</span></div>
+    <div class="report-row"><span class="report-label">Hours logged</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${adBarWidth(hoursLogged, maxHours)}%"></div></div><span class="report-val">${Math.round(hoursLogged)}</span></div>
+    <div class="report-row"><span class="report-label">Claims paid</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${adBarWidth(paidTotal, maxMoney)}%"></div></div><span class="report-val">${adFormatMoney(paidTotal)}</span></div>
+    <div class="report-row"><span class="report-label">Active team</span><div class="report-bar-wrap"><div class="report-bar-fill" style="width:${adBarWidth(tutors.length, maxTeam)}%"></div></div><span class="report-val">${tutors.length}</span></div>
+    <div class="report-row"><span class="report-label">Flagged</span><div class="report-bar-wrap"><div class="report-bar-fill red" style="width:${adBarWidth(flagged.length, totalSessions || 1)}%"></div></div><span class="report-val">${flagged.length}</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;font-family:'DM Mono',monospace">Pending claims: ${adFormatMoney(pendingTotal)} · Flagged rate: ${flaggedPct}%</div>`;
+}
+
 async function loadAnalysis() {
-  const payoutEl = document.getElementById('analysis-payout-chart');
-  const modEl = document.getElementById('analysis-module-chart');
-  if (payoutEl && VF.skeleton) payoutEl.innerHTML = VF.skeleton.block(true);
-  if (modEl && VF.skeleton) modEl.innerHTML = VF.skeleton.block(true);
+  const payoutMob = document.getElementById('analysis-payout-chart');
+  const modMob = document.getElementById('analysis-module-chart');
+  const payoutDesk = document.getElementById('analysis-d-payout-chart');
+  const modDesk = document.getElementById('analysis-d-module-chart');
+  if (VF.skeleton) {
+    [payoutMob, modMob, payoutDesk, modDesk].forEach((el) => {
+      if (el) el.innerHTML = VF.skeleton.block(true);
+    });
+  }
 
   try {
     const [sessions, claims, tutorsRaw] = await Promise.all([
@@ -1154,12 +1193,20 @@ async function loadAnalysis() {
     const periodLong = now.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
     const periodShort = now.toLocaleDateString('en-ZA', { month: 'short', year: 'numeric' });
 
-    const sub = document.getElementById('analysis-page-sub');
-    if (sub) {
-      sub.textContent = `Session totals, active tutors and payout summaries — ${periodLong}`;
+    const mobSub = document.getElementById('analysis-page-sub');
+    if (mobSub) {
+      mobSub.textContent = `Session totals, active tutors and payout summaries — ${periodLong}`;
     }
-    const sem = document.getElementById('analysis-hero-sem');
-    if (sem) sem.textContent = periodShort;
+    const deskSub = document.getElementById('analysis-d-sub');
+    if (deskSub) {
+      deskSub.textContent = `Coordinator · Student Employment Office · ${periodLong}`;
+    }
+    const mobSem = document.getElementById('analysis-hero-sem');
+    if (mobSem) mobSem.textContent = periodShort;
+    const deskSem = document.getElementById('analysis-d-sem');
+    if (deskSem) deskSem.textContent = periodLong;
+    const modSub = document.getElementById('analysis-d-module-sub');
+    if (modSub) modSub.textContent = periodShort;
 
     const ring = document.getElementById('analysis-ring-arc');
     if (ring) {
@@ -1183,30 +1230,55 @@ async function loadAnalysis() {
     setText('analysis-stat-tutors', String(tutors.length));
     setText('analysis-stat-payouts', adFormatMoney(paidTotal));
 
-    const payoutEl = document.getElementById('analysis-payout-chart');
-    if (payoutEl) {
-      payoutEl.innerHTML = payoutEntries.length
-        ? payoutEntries.map(([name, amt]) => `
-          <div class="ad-an-bar-row">
-            <span class="ad-an-bar-label">${String(name).replace(/</g, '&lt;')}</span>
-            <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((amt / maxPay) * 100)}%"></div></div>
-            <span class="ad-an-bar-val">${adFormatMoney(amt)}</span>
-          </div>`).join('')
-        : '<div class="ad-analysis-empty">No approved payouts yet.</div>';
-    }
+    setText('analysis-d-flagged', String(flagged.length));
+    setText('analysis-d-flagged-sub', `${flaggedRate}% of sessions`);
+    setText('analysis-d-sessions', String(sessions.length));
+    setText('analysis-d-pending', adFormatMoney(pendingTotal));
+    setText('analysis-d-tutors', String(tutors.length));
+    setText('analysis-d-payouts', adFormatMoney(paidTotal));
 
-    const modEl = document.getElementById('analysis-module-chart');
-    if (modEl) {
-      const modEntries = Object.entries(modules).sort((a, b) => b[1] - a[1]);
-      modEl.innerHTML = modEntries.length
-        ? modEntries.map(([code, count]) => `
-          <div class="ad-an-bar-row">
-            <span class="ad-an-bar-label">${String(code).replace(/</g, '&lt;')}</span>
-            <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((count / maxMod) * 100)}%"></div></div>
-            <span class="ad-an-bar-val">${count}</span>
-          </div>`).join('')
-        : '<div class="ad-analysis-empty">No session data yet this month.</div>';
-    }
+    renderAnalysisSummaryPanel(sessions, claims, tutors, flagged);
+
+    const payoutMobHtml = payoutEntries.length
+      ? payoutEntries.map(([name, amt]) => `
+        <div class="ad-an-bar-row">
+          <span class="ad-an-bar-label">${String(name).replace(/</g, '&lt;')}</span>
+          <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((amt / maxPay) * 100)}%"></div></div>
+          <span class="ad-an-bar-val">${adFormatMoney(amt)}</span>
+        </div>`).join('')
+      : '<div class="ad-analysis-empty">No approved payouts yet.</div>';
+
+    const modMobHtml = Object.entries(modules).sort((a, b) => b[1] - a[1]).length
+      ? Object.entries(modules).sort((a, b) => b[1] - a[1]).map(([code, count]) => `
+        <div class="ad-an-bar-row">
+          <span class="ad-an-bar-label">${String(code).replace(/</g, '&lt;')}</span>
+          <div class="ad-an-bar-wrap"><div class="ad-an-bar-fill" style="width:${Math.round((count / maxMod) * 100)}%"></div></div>
+          <span class="ad-an-bar-val">${count}</span>
+        </div>`).join('')
+      : '<div class="ad-analysis-empty">No session data yet this month.</div>';
+
+    const payoutDeskHtml = payoutEntries.length
+      ? payoutEntries.map(([name, amt]) => `
+        <div class="report-row">
+          <span class="report-label">${String(name).replace(/</g, '&lt;')}</span>
+          <div class="report-bar-wrap"><div class="report-bar-fill" style="width:${Math.round((amt / maxPay) * 100)}%"></div></div>
+          <span class="report-val">${adFormatMoney(amt)}</span>
+        </div>`).join('')
+      : '<div class="analysis-chart-empty">No approved payouts yet.</div>';
+
+    const modDeskHtml = Object.entries(modules).sort((a, b) => b[1] - a[1]).length
+      ? Object.entries(modules).sort((a, b) => b[1] - a[1]).map(([code, count]) => `
+        <div class="report-row">
+          <span class="report-label">${String(code).replace(/</g, '&lt;')}</span>
+          <div class="report-bar-wrap"><div class="report-bar-fill" style="width:${Math.round((count / maxMod) * 100)}%"></div></div>
+          <span class="report-val">${count}</span>
+        </div>`).join('')
+      : '<div class="analysis-chart-empty">No session data yet this month.</div>';
+
+    if (payoutMob) payoutMob.innerHTML = payoutMobHtml;
+    if (modMob) modMob.innerHTML = modMobHtml;
+    if (payoutDesk) payoutDesk.innerHTML = payoutDeskHtml;
+    if (modDesk) modDesk.innerHTML = modDeskHtml;
   } catch (err) {
     showToast('Could not load analysis');
   }
@@ -1607,8 +1679,20 @@ function adToast(msg, isError) {
 
 function getManagedUser(role, id) {
   const n = Number(id);
-  const store = role === 'lecturer' ? window.LECTURERS : window.TUTORS;
+  let store;
+  if (role === 'lecturer') store = window.LECTURERS;
+  else if (role === 'demonstrator') store = window.DEMONSTRATORS;
+  else store = window.TUTORS;
   return store[n] || store[id] || null;
+}
+
+function managedApiRole(role) {
+  return role === 'demonstrator' ? 'tutor' : role;
+}
+
+function managedRoleLabel(role) {
+  if (role === 'demonstrator') return 'Demonstrator';
+  return role.charAt(0).toUpperCase() + role.slice(1);
 }
 
 async function loadLecturers() {
@@ -1693,13 +1777,13 @@ async function loadTutors() {
   if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
 
   try {
-    const tutors = await VF.apiFetch('/users/tutors');
+    const tutors = await VF.apiFetch('/users/tutors?positionType=tutor');
     window.TUTORS = {};
     tutors.forEach((t) => { window.TUTORS[t.id] = t; });
 
     if (body) {
       body.innerHTML = tutors.length
-        ? tutors.map(renderTutorRow).join('')
+        ? tutors.map((t) => renderTutorRow(t, 'tutor')).join('')
         : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
     }
     if (cards) {
@@ -1709,7 +1793,7 @@ async function loadTutors() {
         const n = tutors.length;
         cards.innerHTML =
           `<div class="ad-list-count">${n} tutor${n === 1 ? '' : 's'}</div>` +
-          tutors.map(renderTutorCard).join('');
+          tutors.map((t) => renderTutorCard(t, 'tutor')).join('');
       }
     }
   } catch (err) {
@@ -1717,13 +1801,44 @@ async function loadTutors() {
   }
 }
 
-function renderTutorCard(t) {
+async function loadDemonstrators() {
+  const body = document.getElementById('demonstrators-body');
+  const cards = document.getElementById('demonstrators-cards');
+  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(6, 5);
+  if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
+
+  try {
+    const demonstrators = await VF.apiFetch('/users/tutors?positionType=demonstrator');
+    window.DEMONSTRATORS = {};
+    demonstrators.forEach((d) => { window.DEMONSTRATORS[d.id] = d; });
+
+    if (body) {
+      body.innerHTML = demonstrators.length
+        ? demonstrators.map((d) => renderTutorRow(d, 'demonstrator')).join('')
+        : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved demonstrators yet.</td></tr>';
+    }
+    if (cards) {
+      if (!demonstrators.length) {
+        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No demonstrators yet</h3><p>Approved demonstrators will appear here.</p></div></div>`;
+      } else {
+        const n = demonstrators.length;
+        cards.innerHTML =
+          `<div class="ad-list-count">${n} demonstrator${n === 1 ? '' : 's'}</div>` +
+          demonstrators.map((d) => renderTutorCard(d, 'demonstrator')).join('');
+      }
+    }
+  } catch (err) {
+    adToast(err.errors ? err.errors[0] : 'Could not load demonstrators.', true);
+  }
+}
+
+function renderTutorCard(t, role = 'tutor') {
   const name = `${t.first_names} ${t.surname}`;
   const initials = userInitials(t.first_names, t.surname);
   const mod = t.module_code || t.module_name || '—';
   const status = t.temp_password_flag ? 'Temp password' : 'Active';
   const statusClass = t.temp_password_flag ? 'neutral' : 'status';
-  return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('tutor', ${t.id})">
+  return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('${role}', ${t.id})">
     <div class="ad-cr-avatar">${adEscapeHtml(initials)}</div>
     <div class="ad-cr-info">
       <div class="ad-cr-name">${adEscapeHtml(name)}</div>
@@ -1749,8 +1864,7 @@ function openUserActionSheet(role, id) {
   const name = `${user.first_names} ${user.surname}`;
   document.getElementById('ad-user-sheet-name').textContent = name;
   document.getElementById('ad-user-sheet-avatar').textContent = userInitials(user.first_names, user.surname);
-  document.getElementById('ad-user-sheet-role').textContent =
-    role.charAt(0).toUpperCase() + role.slice(1);
+  document.getElementById('ad-user-sheet-role').textContent = managedRoleLabel(role);
   const editBtn = document.getElementById('ad-user-sheet-edit-modules');
   if (editBtn) editBtn.hidden = role !== 'lecturer';
   document.getElementById('ad-user-sheet-overlay').classList.add('open');
@@ -1792,7 +1906,7 @@ function userSheetDeactivate() {
   confirmDeleteUser(role, id);
 }
 
-function renderTutorRow(t) {
+function renderTutorRow(t, role = 'tutor') {
   const respLabel = t.responsibility_level
     ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1)
     : '—';
@@ -1809,8 +1923,8 @@ function renderTutorRow(t) {
       <td>${adEscapeHtml(respLabel)}</td>
       <td>
         <button type="button" class="btn-sm" onclick="openUserMessageModal(${t.id}, ${JSON.stringify(name)})">Message</button>
-        <button type="button" class="btn-sm" onclick="confirmResetPassword('tutor', ${t.id})">Reset pwd</button>
-        <button type="button" class="btn-sm danger" onclick="confirmDeleteUser('tutor', ${t.id})">Deactivate</button>
+        <button type="button" class="btn-sm" onclick="confirmResetPassword('${role}', ${t.id})">Reset pwd</button>
+        <button type="button" class="btn-sm danger" onclick="confirmDeleteUser('${role}', ${t.id})">Deactivate</button>
       </td>
     </tr>`;
 }
@@ -1878,11 +1992,12 @@ function confirmResetPassword(role, id) {
     buttonLabel: 'Generate',
     action: async () => {
       try {
-        const result = await VF.apiFetch(`/users/${role}/${id}/reset-password`, { method: 'PATCH' });
+        const result = await VF.apiFetch(`/users/${managedApiRole(role)}/${id}/reset-password`, { method: 'PATCH' });
         handleCredentialResult(result, {
           successMessage: `New password emailed to ${result.email}`,
         });
         if (role === 'lecturer') loadLecturers();
+        else if (role === 'demonstrator') loadDemonstrators();
         else loadTutors();
       } catch (err) {
         adToast(err.errors ? err.errors[0] : 'Could not reset password.', true);
@@ -1905,10 +2020,15 @@ function confirmDeleteUser(role, id) {
     buttonLabel: 'Deactivate',
     action: async () => {
       try {
-        await VF.apiFetch(`/users/${role}/${id}`, { method: 'DELETE' });
+        await VF.apiFetch(`/users/${managedApiRole(role)}/${id}`, { method: 'DELETE' });
         adToast(`${name} removed`);
         if (role === 'lecturer') {
           loadLecturers();
+        } else if (role === 'demonstrator') {
+          loadDemonstrators();
+          if (typeof loadApplications === 'function') loadApplications();
+          if (typeof loadReferrals === 'function') loadReferrals();
+          if (typeof refreshDashboardPanels === 'function') refreshDashboardPanels();
         } else {
           loadTutors();
           if (typeof loadApplications === 'function') loadApplications();
@@ -2028,7 +2148,17 @@ let acAllRecipients = [];
 let userMessageRecipientId = null;
 let userMessageRecipientName = '';
 
-function renderBroadcastChips(tutors, lecturers) {
+function splitTutorsByPosition(list) {
+  const tutors = [];
+  const demonstrators = [];
+  (Array.isArray(list) ? list : []).forEach((row) => {
+    if ((row.position_type || 'tutor') === 'demonstrator') demonstrators.push(row);
+    else tutors.push(row);
+  });
+  return { tutors, demonstrators };
+}
+
+function renderBroadcastChips(tutors, lecturers, demonstrators = []) {
   const wrap = document.getElementById('ma-recipients');
   const hint = document.getElementById('ma-hint');
 
@@ -2037,6 +2167,11 @@ function renderBroadcastChips(tutors, lecturers) {
       id: t.id,
       name: `${t.first_names} ${t.surname}`,
       role: 'tutor',
+    })),
+    ...demonstrators.map((t) => ({
+      id: t.id,
+      name: `${t.first_names} ${t.surname}`,
+      role: 'demonstrator',
     })),
     ...lecturers.map((l) => ({
       id: l.id,
@@ -2054,21 +2189,24 @@ function renderBroadcastChips(tutors, lecturers) {
       const label = `${inits} · ${r.name}`;
       const style = r.role === 'tutor'
         ? "font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--green);padding:3px 10px;border-radius:5px;border:1px solid rgba(92,200,138,.2);"
-        : "font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--accent);padding:3px 10px;border-radius:5px;border:1px solid var(--border-hi);";
+        : r.role === 'demonstrator'
+          ? "font-size:11px;font-family:'DM Mono',monospace;background:rgba(120,90,200,.1);color:#8b7fd4;padding:3px 10px;border-radius:5px;border:1px solid rgba(120,90,200,.22);"
+          : "font-size:11px;font-family:'DM Mono',monospace;background:var(--faint);color:var(--accent);padding:3px 10px;border-radius:5px;border:1px solid var(--border-hi);";
       return `<span style="${style}">${adEscapeHtml(label)}</span>`;
     }).join('');
   }
 
   const xt = tutors.length;
+  const xd = demonstrators.length;
   const yl = lecturers.length;
+  const parts = [];
+  if (xt) parts.push(`${xt} tutor${xt === 1 ? '' : 's'}`);
+  if (xd) parts.push(`${xd} demonstrator${xd === 1 ? '' : 's'}`);
+  if (yl) parts.push(`${yl} lecturer${yl === 1 ? '' : 's'}`);
   if (hint) {
-    if (xt && !yl) {
-      hint.textContent = `Sending to ${xt} tutor${xt === 1 ? '' : 's'} via VeriFlow`;
-    } else if (yl && !xt) {
-      hint.textContent = `Sending to ${yl} lecturer${yl === 1 ? '' : 's'} via VeriFlow`;
-    } else {
-      hint.textContent = `Sending to ${xt} tutor${xt === 1 ? '' : 's'} and ${yl} lecturer${yl === 1 ? '' : 's'} via VeriFlow`;
-    }
+    hint.textContent = parts.length
+      ? `Sending to ${parts.join(', ')} via VeriFlow`
+      : 'No recipients selected';
   }
 }
 
@@ -2079,7 +2217,7 @@ async function openMsgAll() {
 
   const nameEl = document.querySelector('#ma-modal .modal-name');
   const toEl = document.querySelector('#ma-modal .modal-to');
-  if (nameEl) nameEl.textContent = 'All Tutors and Lecturers';
+  if (nameEl) nameEl.textContent = 'All Tutors, Demonstrators, and Lecturers';
   if (toEl) toEl.textContent = 'Broadcasting to';
 
   const wrap = document.getElementById('ma-recipients');
@@ -2091,11 +2229,12 @@ async function openMsgAll() {
   setTimeout(() => document.getElementById('ma-subject')?.focus(), 300);
 
   try {
-    const [tutors, lecturers] = await Promise.all([
+    const [allTutors, lecturers] = await Promise.all([
       VF.apiFetch('/users/tutors'),
       VF.apiFetch('/users/lecturers'),
     ]);
-    renderBroadcastChips(tutors, lecturers);
+    const { tutors, demonstrators } = splitTutorsByPosition(allTutors);
+    renderBroadcastChips(tutors, lecturers, demonstrators);
   } catch (err) {
     showToast('Could not load recipients');
     closeMsgAll();
@@ -2103,9 +2242,8 @@ async function openMsgAll() {
 }
 
 function openAdminGroupBroadcast(group) {
-  const role = group === 'lecturer' ? 'lecturer' : 'tutor';
   const contacts = typeof getAdminMessageGroupContacts === 'function'
-    ? getAdminMessageGroupContacts(role)
+    ? getAdminMessageGroupContacts(group)
     : [];
 
   document.getElementById('ma-subject').value = '';
@@ -2113,25 +2251,23 @@ function openAdminGroupBroadcast(group) {
 
   const nameEl = document.querySelector('#ma-modal .modal-name');
   const toEl = document.querySelector('#ma-modal .modal-to');
-  if (nameEl) nameEl.textContent = role === 'tutor' ? 'All Tutors' : 'All Lecturers';
+  const titles = {
+    tutor: 'All Tutors',
+    demonstrator: 'All Demonstrators',
+    lecturer: 'All Lecturers',
+  };
+  if (nameEl) nameEl.textContent = titles[group] || 'All Recipients';
   if (toEl) toEl.textContent = 'Message all';
 
-  const tutors = role === 'tutor'
-    ? contacts.map((c) => ({
-      id: c.id,
-      first_names: (c.name || '').split(/\s+/)[0] || '',
-      surname: (c.name || '').split(/\s+/).slice(1).join(' ') || '',
-    }))
-    : [];
-  const lecturers = role === 'lecturer'
-    ? contacts.map((c) => ({
-      id: c.id,
-      first_names: (c.name || '').split(/\s+/)[0] || '',
-      surname: (c.name || '').split(/\s+/).slice(1).join(' ') || '',
-    }))
-    : [];
+  const people = contacts.map((c) => ({
+    id: c.id,
+    first_names: (c.name || '').split(/\s+/)[0] || '',
+    surname: (c.name || '').split(/\s+/).slice(1).join(' ') || '',
+  }));
 
-  renderBroadcastChips(tutors, lecturers);
+  if (group === 'tutor') renderBroadcastChips(people, [], []);
+  else if (group === 'demonstrator') renderBroadcastChips([], [], people);
+  else renderBroadcastChips([], people, []);
 
   if (!broadcastRecipients.length) {
     showToast(role === 'tutor' ? 'No tutors to message' : 'No lecturers to message');
@@ -2279,16 +2415,22 @@ async function openAdminCompose() {
   document.getElementById('ac-overlay')?.classList.add('open');
 
   try {
-    const [tutors, lecturers] = await Promise.all([
+    const [allTutors, lecturers] = await Promise.all([
       VF.apiFetch('/users/tutors'),
       VF.apiFetch('/users/lecturers'),
     ]);
+    const { tutors, demonstrators } = splitTutorsByPosition(allTutors);
 
     acAllRecipients = [
       ...tutors.map((t) => ({
         id: t.id,
         name: `${t.first_names} ${t.surname}`,
         role: 'tutor',
+      })),
+      ...demonstrators.map((t) => ({
+        id: t.id,
+        name: `${t.first_names} ${t.surname}`,
+        role: 'demonstrator',
       })),
       ...lecturers.map((l) => ({
         id: l.id,
@@ -2298,10 +2440,14 @@ async function openAdminCompose() {
     ];
 
     if (select) {
+      const roleLabel = (role) => {
+        if (role === 'demonstrator') return 'demo';
+        return role;
+      };
       select.innerHTML =
         '<option value="">Select recipient…</option>' +
         acAllRecipients.map((r) =>
-          `<option value="${r.id}">${adEscapeHtml(r.name)} (${r.role})</option>`
+          `<option value="${r.id}">${adEscapeHtml(r.name)} (${roleLabel(r.role)})</option>`
         ).join('');
     }
   } catch (err) {
@@ -2438,6 +2584,7 @@ window.openNotificationTarget = openNotificationTarget;
 window.initAdminApiDashboard = initAdminApiDashboard;
 window.loadLecturers = loadLecturers;
 window.loadTutors = loadTutors;
+window.loadDemonstrators = loadDemonstrators;
 window.confirmResetPassword = confirmResetPassword;
 window.confirmDeleteUser = confirmDeleteUser;
 window.openEditModulesModal = openEditModulesModal;

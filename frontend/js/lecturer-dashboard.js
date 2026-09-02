@@ -5,6 +5,7 @@ let currentModuleCourse = '';
 let lecturerDisplayName = '';
 let SESSIONS = {};
 let moduleTutorPool = [];
+let teamFilter = 'all';
 let LECTURER_CLAIMS = [];
 
 const MONTH_SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -97,7 +98,7 @@ function applyModuleUi() {
   setText('#hero-module-text', `${code} · ${name} · ${period}`);
   setText('#dash-recent-title', `Recent sessions — ${code}`);
   setText('#sessions-hero-sub', `${code} · ${name} · ${period}`);
-  setText('#tutors-hero-sub', `${code} · ${name} · tutors for this module`);
+  setText('#tutors-hero-sub', `${code} · ${name} · tutors & demonstrators for this module`);
   setText('#report-title', `${code} Module Report`);
   setText('#report-sub', `${name} · ${lecturerDisplayName || 'lecturer'} · ${period}`);
   setText('#classlist-hero-sub', `${code} · ${name}`);
@@ -450,21 +451,161 @@ function updateSessionsHeroStats(sessions) {
   if (dashStats) dashStats.textContent = String(sessions.length);
 }
 
+function isDemonstrator(member) {
+  return (member.position_type || 'tutor') === 'demonstrator';
+}
+
+function teamRoleChip(member) {
+  const demo = isDemonstrator(member);
+  return `<span class="lec-role-chip ${demo ? 'demo' : 'tutor'}">${demo ? 'Demo' : 'Tutor'}</span>`;
+}
+
+function teamResponsibilityLabel(member) {
+  if (!member.responsibility_level) return '—';
+  const base = member.responsibility_level.charAt(0).toUpperCase() + member.responsibility_level.slice(1);
+  return isDemonstrator(member) ? base : `${base} Tutor`;
+}
+
+function filteredTeamMembers(members) {
+  if (teamFilter === 'tutor') return members.filter((m) => !isDemonstrator(m));
+  if (teamFilter === 'demonstrator') return members.filter((m) => isDemonstrator(m));
+  return members;
+}
+
+function teamEmptyMessage() {
+  if (teamFilter === 'demonstrator') return 'No demonstrators on this module yet.';
+  if (teamFilter === 'tutor') return 'No tutors on this module yet.';
+  return 'No tutors or demonstrators on this module yet.';
+}
+
+function bindTeamMessageButtons(root) {
+  if (!root) return;
+  root.querySelectorAll('[data-msg-tutor]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      openMsg(btn.getAttribute('data-msg-tutor'), btn.getAttribute('data-msg-name'));
+    });
+  });
+}
+
+function updateTeamStats(members) {
+  const tutors = members.filter((m) => !isDemonstrator(m)).length;
+  const demos = members.filter((m) => isDemonstrator(m)).length;
+  setText('#team-tutors-count', String(tutors));
+  setText('#team-demos-count', String(demos));
+  setText('#team-total-count', String(members.length));
+  setText('#lec-hub-tutors-badge', String(members.length));
+
+  const dashTutorStat = document.querySelector('#view-dashboard .stat-box:nth-child(1) .stat-val');
+  if (dashTutorStat) dashTutorStat.textContent = String(members.length);
+}
+
+function renderTeamTable(members) {
+  const body = document.getElementById('team-table-body');
+  if (!body) return;
+
+  if (!members.length) {
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">${teamEmptyMessage()}</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = members.map((m) => {
+    const fullName = `${m.first_names || ''} ${m.surname || ''}`.trim();
+    const qual = QUAL_DISPLAY[m.qualification_level] || m.qualification_level || '—';
+    const resp = teamResponsibilityLabel(m);
+    return `
+      <tr data-user-id="${m.id}">
+        <td class="lec-team-name">${escapeHtml(fullName)}</td>
+        <td>${teamRoleChip(m)}</td>
+        <td class="lec-team-mono">${escapeHtml(m.student_number || '—')}</td>
+        <td>${escapeHtml(qual)}</td>
+        <td>${escapeHtml(resp)}</td>
+        <td>
+          <button type="button" class="btn-sm" data-msg-tutor="${Number(m.id)}" data-msg-name="${escapeHtml(fullName)}">Message</button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  bindTeamMessageButtons(body);
+}
+
+function renderTeamCards(members) {
+  const grid = document.getElementById('tutors-grid');
+  if (!grid) return;
+
+  if (!members.length) {
+    grid.innerHTML = `<div class="lec-tutors-loading">${teamEmptyMessage()}</div>`;
+    return;
+  }
+
+  grid.innerHTML = members.map((m) => {
+    const initials = VF.initials(m.first_names, m.surname);
+    const qual = QUAL_DISPLAY[m.qualification_level] || m.qualification_level || '—';
+    const resp = teamResponsibilityLabel(m);
+    const fullName = `${m.first_names || ''} ${m.surname || ''}`.trim();
+    return `
+      <div class="tutor-card">
+        <div class="tc-top">
+          <div class="tc-av">${escapeHtml(initials)}</div>
+          <div class="tc-who">
+            <div class="tc-name-row">
+              <div class="tc-name">${escapeHtml(fullName)}</div>
+              ${teamRoleChip(m)}
+            </div>
+            <div class="tc-module">${escapeHtml(m.module_name || currentModuleName || '—')}</div>
+          </div>
+        </div>
+        <div class="tc-chips">
+          <span class="tc-chip attend">${escapeHtml(m.student_number || '—')}</span>
+        </div>
+        <div class="tc-qual">
+          <div class="tc-qual-item"><strong>${escapeHtml(qual)}</strong>Qualification</div>
+          <div class="tc-qual-item"><strong>${escapeHtml(resp)}</strong>Responsibility</div>
+        </div>
+        <button type="button" class="msg-btn" data-msg-tutor="${Number(m.id)}" data-msg-name="${escapeHtml(fullName)}">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          Message
+        </button>
+      </div>`;
+  }).join('');
+
+  bindTeamMessageButtons(grid);
+}
+
+function renderTeamList(members) {
+  const list = filteredTeamMembers(members);
+  updateTeamStats(members);
+  renderTeamTable(list);
+  renderTeamCards(list);
+}
+
+function setTeamFilter(filter, btn) {
+  teamFilter = filter;
+  document.querySelectorAll('#team-filter-tabs .filter-tab').forEach((b) => {
+    b.classList.toggle('active', b === btn);
+  });
+  renderTeamList(moduleTutorPool);
+}
+
+window.setTeamFilter = setTeamFilter;
+
 function renderSidebarTutors(tutors) {
   const wrap = document.getElementById('sidebar-tutors-list');
   if (!wrap) return;
 
   if (!tutors.length) {
-    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No tutors on this module yet.</div>';
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No team members on this module yet.</div>';
     return;
   }
 
   wrap.innerHTML = tutors.map((t, i) => {
     const initials = VF.initials(t.first_names, t.surname);
     const last = i === tutors.length - 1 ? ' style="border-bottom:none;padding-bottom:0;"' : '';
+    const role = isDemonstrator(t) ? 'Demo' : 'Tutor';
     return `<div class="tutor-item"${last}>
       <div class="tutor-av">${initials}</div>
-      <div><div class="tutor-name">${t.first_names} ${t.surname}</div><div class="tutor-mod">${t.module_name || currentModuleCode}</div></div>
+      <div><div class="tutor-name">${t.first_names} ${t.surname} <span class="lec-role-chip ${isDemonstrator(t) ? 'demo' : 'tutor'}" style="font-size:9px;padding:2px 6px;vertical-align:middle">${role}</span></div><div class="tutor-mod">${t.module_name || currentModuleCode}</div></div>
       <div class="tutor-sessions">—</div>
     </div>`;
   }).join('');
@@ -1561,11 +1702,12 @@ function renderNsTutorList(tutors) {
   }
   wrap.innerHTML = tutors.map(t => {
     const initials = VF.initials(t.first_names, t.surname);
+    const role = isDemonstrator(t) ? 'Demonstrator' : 'Tutor';
     return `<div class="ns-tutor-row" data-tutor="${t.id}" onclick="toggleTutor(this)">
         <div class="ns-tutor-av">${initials}</div>
         <div class="ns-tutor-info">
           <div class="ns-tutor-name">${t.first_names} ${t.surname}</div>
-          <div class="ns-tutor-meta">${t.module_name || currentModuleCode}</div>
+          <div class="ns-tutor-meta">${role} · ${t.module_name || currentModuleCode}</div>
         </div>
         <div class="ns-tutor-check" aria-hidden="true"></div>
       </div>`;
@@ -1646,19 +1788,20 @@ function openMsgAll() {
   const hint = document.getElementById('ma-hint');
   if (chips) {
     if (!tutors.length) {
-      chips.innerHTML = '<span class="ma-chip ma-chip-empty">No tutors on this module</span>';
+      chips.innerHTML = '<span class="ma-chip ma-chip-empty">No team members on this module</span>';
     } else {
       chips.innerHTML = tutors.map(t => {
         const initials = VF.initials(t.first_names, t.surname);
         const name = `${t.first_names || ''} ${t.surname || ''}`.trim();
-        return `<span class="ma-chip">${escapeHtml(initials)} · ${escapeHtml(name)}</span>`;
+        const role = isDemonstrator(t) ? 'Demo' : 'Tutor';
+        return `<span class="ma-chip">${escapeHtml(initials)} · ${escapeHtml(name)} · ${role}</span>`;
       }).join('');
     }
   }
   if (hint) {
     hint.textContent = tutors.length
-      ? `Sent to ${tutors.length} tutor${tutors.length === 1 ? '' : 's'} via VeriFlow`
-      : 'No tutors to message';
+      ? `Sent to ${tutors.length} team member${tutors.length === 1 ? '' : 's'} via VeriFlow`
+      : 'No team members to message';
   }
   document.getElementById('ma-subject').value = '';
   document.getElementById('ma-body').value = '';
@@ -1670,7 +1813,7 @@ function maCloseOutside(e) { if(e.target===document.getElementById('ma-overlay')
 function sendMsgAll() {
   const tutors = Array.isArray(moduleTutorPool) ? moduleTutorPool : [];
   if (!tutors.length) {
-    showToast('No tutors on this module');
+    showToast('No team members on this module');
     return;
   }
   const subject = document.getElementById('ma-subject').value.trim();
@@ -2478,7 +2621,7 @@ function exportModuleReport() {
 <h1>${modCode} Module Report — ${label}</h1>
 <p>${currentModuleName || ''} · ${lecturerDisplayName || ''}</p>
 <ul><li>Sessions: ${r.planned}</li><li>Completed: ${r.completed}</li><li>Flagged: ${r.flagged}</li><li>Completion rate: ${r.completionRate}%</li><li>Tutor attendance: ${r.tutorAttendance}%</li></ul>
-<h2>Tutor performance</h2>
+<h2>Team performance</h2>
 <table><thead><tr><th>Name</th><th>Sessions attended</th><th>Rate</th></tr></thead><tbody>${rows || '<tr><td colspan="3">No tutors</td></tr>'}</tbody></table>
 </body></html>`;
 
@@ -3034,20 +3177,14 @@ async function loadMyReferrals() {
 
 async function loadMyTutors() {
   const grid = document.getElementById('tutors-grid');
-  if (grid) grid.innerHTML = skeletonTutorCards(6);
+  const tableBody = document.getElementById('team-table-body');
+  if (grid) grid.innerHTML = skeletonTutorCards(3);
+  if (tableBody && VF.skeleton) tableBody.innerHTML = VF.skeleton.tbody(6, 4);
 
   try {
     const tutors = asListPayload(await VF.apiFetch(`/users/tutors${moduleQuerySuffix()}`));
     moduleTutorPool = tutors;
-    const count  = document.getElementById('tutors-count');
-    const appr   = document.getElementById('tutors-approved');
-    if (count) count.textContent = tutors.length;
-    if (appr)  appr.textContent  = tutors.length;
-
-    const dashTutorStat = document.querySelector('#view-dashboard .stat-box:nth-child(1) .stat-val');
-    if (dashTutorStat) dashTutorStat.textContent = String(tutors.length);
-    setText('#lec-hub-tutors-sub', "Manage this module's tutors");
-    setText('#lec-hub-tutors-badge', String(tutors.length));
+    setText('#lec-hub-tutors-sub', 'Tutors & demonstrators');
 
     renderSidebarTutors(tutors);
     renderNsTutorList(tutors);
@@ -3056,59 +3193,21 @@ async function loadMyTutors() {
       renderSessionRows(Object.values(SESSIONS));
     }
 
-    if (!grid) {
-      loadMyReferrals();
-      return;
-    }
-    if (!tutors.length) {
-      grid.innerHTML = '<div class="lec-tutors-loading">No tutors on this module yet.</div>';
-      loadMyReferrals();
-      return;
+    if (grid || tableBody) {
+      renderTeamList(tutors);
+    } else {
+      updateTeamStats(tutors);
     }
 
-    grid.innerHTML = tutors.map(t => {
-      const initials = VF.initials(t.first_names, t.surname);
-      const qual     = QUAL_DISPLAY[t.qualification_level] || t.qualification_level || '—';
-      const resp     = t.responsibility_level
-        ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1) + ' Tutor'
-        : '—';
-      const fullName = `${t.first_names || ''} ${t.surname || ''}`.trim();
-      return `
-        <div class="tutor-card">
-          <div class="tc-top">
-            <div class="tc-av">${escapeHtml(initials)}</div>
-            <div class="tc-who">
-              <div class="tc-name">${escapeHtml(fullName)}</div>
-              <div class="tc-module">${escapeHtml(t.module_name || currentModuleName || '—')}</div>
-            </div>
-          </div>
-          <div class="tc-chips">
-            <span class="tc-chip attend">${escapeHtml(t.student_number || '—')}</span>
-          </div>
-          <div class="tc-qual">
-            <div class="tc-qual-item"><strong>${escapeHtml(qual)}</strong>Qualification Level</div>
-            <div class="tc-qual-item"><strong>${escapeHtml(resp)}</strong>Responsibility Level</div>
-          </div>
-          <button type="button" class="msg-btn" data-msg-tutor="${Number(t.id)}" data-msg-name="${escapeHtml(fullName)}">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-            </svg>
-            Message
-          </button>
-        </div>`;
-    }).join('');
-
-    grid.querySelectorAll('[data-msg-tutor]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        openMsg(btn.getAttribute('data-msg-tutor'), btn.getAttribute('data-msg-name'));
-      });
-    });
     loadMyReferrals();
   } catch (err) {
-    if (grid) grid.innerHTML = '<div class="lec-tutors-loading">Could not load tutors.</div>';
+    if (grid) grid.innerHTML = '<div class="lec-tutors-loading">Could not load team.</div>';
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Could not load team.</td></tr>';
+    }
     const wrap = document.getElementById('my-referrals-list');
     if (wrap) wrap.innerHTML = '<div class="lec-referrals-empty">Could not load referrals.</div>';
-    showToast('Could not load tutors');
+    showToast('Could not load team');
   }
 }
 

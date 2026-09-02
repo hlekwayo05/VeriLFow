@@ -123,9 +123,9 @@ Closing date: {closing_date}
 Kind regards,
 Student Employment Office
 University of Mpumalanga',
-  rate_undergrad          NUMERIC(8,2) DEFAULT 70.00,
-  rate_honours            NUMERIC(8,2) DEFAULT 85.00,
-  rate_masters            NUMERIC(8,2) DEFAULT 100.00,
+  rate_undergrad          NUMERIC(8,2) DEFAULT 59.66,
+  rate_honours            NUMERIC(8,2) DEFAULT 73.87,
+  rate_masters            NUMERIC(8,2) DEFAULT 90.92,
   max_hours_per_semester  INTEGER DEFAULT 160,
   created_at            TIMESTAMPTZ DEFAULT NOW(),
   updated_at            TIMESTAMPTZ DEFAULT NOW(),
@@ -141,9 +141,15 @@ WHERE id = 1
   AND (announcement_subject IS NULL
     OR announcement_subject = 'Tutor Applications Now Open — 2026');
 
-ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_undergrad NUMERIC(8,2) DEFAULT 70.00;
-ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_honours NUMERIC(8,2) DEFAULT 85.00;
-ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_masters NUMERIC(8,2) DEFAULT 100.00;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_undergrad NUMERIC(8,2) DEFAULT 59.66;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_honours NUMERIC(8,2) DEFAULT 73.87;
+ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_masters NUMERIC(8,2) DEFAULT 90.92;
+
+UPDATE settings SET
+  rate_undergrad = 59.66,
+  rate_honours = 73.87,
+  rate_masters = 90.92
+WHERE id = 1;
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS max_hours_per_semester INTEGER DEFAULT 160;
 
 -- =============================================================
@@ -309,10 +315,15 @@ CREATE TABLE applications (
   module_name           VARCHAR(150),
   module_code           VARCHAR(20),
   gpa                   NUMERIC(5,2) CHECK (gpa >= 0 AND gpa <= 100),
+  position_type         VARCHAR(20)  NOT NULL DEFAULT 'tutor'
+                        CHECK (position_type IN ('tutor', 'demonstrator')),
+  cost_centre           VARCHAR(50),
 
   -- Step 3 fields
   cv_filename           VARCHAR(255),
+  cv_original_name      VARCHAR(255),
   transcript_filename   VARCHAR(255),
+  transcript_original_name VARCHAR(255),
   declared              BOOLEAN      NOT NULL DEFAULT FALSE,
 
   -- Automated screening (step 3 submit)
@@ -337,6 +348,12 @@ CREATE INDEX idx_applications_status  ON applications (status);
 CREATE INDEX idx_applications_module  ON applications (module_name);
 CREATE INDEX idx_applications_module_code ON applications (module_code);
 CREATE INDEX idx_applications_user_id ON applications (user_id);
+
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS position_type VARCHAR(20) DEFAULT 'tutor'
+  CHECK (position_type IN ('tutor', 'demonstrator'));
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS cost_centre VARCHAR(50);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS cv_original_name VARCHAR(255);
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS transcript_original_name VARCHAR(255);
 CREATE INDEX IF NOT EXISTS idx_applications_assigned_lecturer
   ON applications (assigned_lecturer_id)
   WHERE assigned_lecturer_id IS NOT NULL;
@@ -476,6 +493,19 @@ CREATE TABLE tutor_profiles (
   created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id          SERIAL PRIMARY KEY,
+  user_id     INTEGER      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash  VARCHAR(64)  NOT NULL,
+  expires_at  TIMESTAMPTZ  NOT NULL,
+  used_at     TIMESTAMPTZ,
+  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens (user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_hash ON password_reset_tokens (token_hash);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON password_reset_tokens (expires_at);
 
 -- =============================================================
 --  LECTURER MODULES

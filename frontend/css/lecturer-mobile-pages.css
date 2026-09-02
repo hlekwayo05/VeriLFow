@@ -411,15 +411,28 @@ body.lec-dash #reg-mobile-list { display: none; }
     margin: 0 !important;
   }
 
-  /* Tutors */
-  body.lec-dash .tutors-table-head { display: none !important; }
-  body.lec-dash .stats-strip {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+  /* Team */
+  body.lec-dash .lec-team-table-wrap { display: none !important; }
+  body.lec-dash .lec-team-cards.tutors-grid { display: grid !important; }
+  body.lec-dash .lec-team-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
     gap: 10px !important;
+    margin-bottom: 12px !important;
+  }
+  body.lec-dash .lec-team-actions { width: 100% !important; }
+  body.lec-dash .lec-team-actions .lec-ref-btn { flex: 1 !important; }
+  body.lec-dash .tutors-table-head { display: none !important; }
+  body.lec-dash .stats-strip.lec-team-stats {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
     flex-direction: row !important;
     margin-bottom: 14px !important;
   }
+  body.lec-dash .stats-strip.lec-team-stats .stat-box { padding: 12px !important; }
+  body.lec-dash .stats-strip.lec-team-stats .stat-val { font-size: 22px !important; }
+  body.lec-dash .stats-strip.lec-team-stats .stat-label { font-size: 9px !important; }
   body.lec-dash .stat-box {
     background: #fff !important;
     border: 1px solid #e4e8e3 !important;
@@ -712,6 +725,10 @@ body.lec-dash #reg-mobile-list { display: none; }
   }
   body.lec-dash .tm-person-av.tutor {
     background: linear-gradient(150deg, #4f9c8e, #26534d) !important;
+    color: #eef4f1 !important;
+  }
+  body.lec-dash .tm-person-av.demonstrator {
+    background: linear-gradient(150deg, #8b7fd4, #5c4fb8) !important;
     color: #eef4f1 !important;
   }
   body.lec-dash .tm-person-av.admin {

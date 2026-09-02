@@ -103,6 +103,19 @@
           </div>
         </div>
 
+        <div class="form-group" id="grp-position-type">
+          <label for="position-type">Position Type</label>
+          <select id="position-type" name="positionType" required onchange="handlePositionTypeChange()">
+            <option value="" disabled selected>Select position type…</option>
+            <option value="tutor">Tutor</option>
+            <option value="demonstrator">Demonstrator</option>
+          </select>
+          <div class="form-hint">
+            Tutors must have passed the specific module they want to tutor. Demonstrators are assessed on academic average only.
+          </div>
+          <div class="form-error">Please select a position type.</div>
+        </div>
+
         <div class="form-group" id="grp-year">
           <label for="year">Year &amp; semester</label>
           <select id="year" onchange="populateModules()">
@@ -118,7 +131,7 @@
           </select>
           <input type="hidden" id="input-module-code" value="" />
           <div class="form-error">Please select a module.</div>
-          <div class="module-hint" id="moduleHint"></div>
+          <div class="form-hint module-hint" id="module-pass-hint">You must have passed this module to tutor it.</div>
         </div>
 
         <div class="form-group" id="grp-gpa">
@@ -202,7 +215,7 @@
       // Prefill only from this account's server record — never leftover local drafts
       populateFromApp(app);
       VF.bindApplyFormProgress([
-        'faculty', 'course', 'qualificationLevel', 'year', 'module', 'gpa',
+        'faculty', 'course', 'qualificationLevel', 'position-type', 'year', 'module', 'gpa',
       ]);
     });
   })();
@@ -234,6 +247,23 @@
     }
   }
 
+  function handlePositionTypeChange() {
+    const type = document.getElementById('position-type').value;
+    const moduleHint = document.getElementById('module-pass-hint');
+
+    if (type === 'demonstrator') {
+      if (moduleHint) {
+        moduleHint.textContent =
+          'As a demonstrator, you are assessed on your academic average only.';
+      }
+    } else {
+      if (moduleHint) {
+        moduleHint.textContent =
+          'You must have passed this module to tutor it.';
+      }
+    }
+  }
+
   function populateCourses() {
     const faculty = document.getElementById('faculty').value;
     const csel = document.getElementById('course');
@@ -255,7 +285,7 @@
     curriculumYearSemesters(course).forEach(y => {
       ysel.innerHTML += `<option>${y}</option>`;
     });
-    document.getElementById('moduleHint').classList.remove('visible');
+    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function populateModules() {
@@ -267,13 +297,13 @@
     curriculumModulesForYear(course, year).forEach(m => {
       msel.innerHTML += moduleSelectOptionHtml(m);
     });
-    document.getElementById('moduleHint').classList.remove('visible');
+    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function onModuleSelected() {
     const msel = document.getElementById('module');
     document.getElementById('input-module-code').value = readModuleCodeFromSelect(msel);
-    document.getElementById('moduleHint').classList.remove('visible');
+    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function populateFromApp(app) {
@@ -320,6 +350,10 @@
     }
     if (qlValue) document.getElementById('qualificationLevel').value = qlValue;
     checkQualificationEligibility();
+    if (app.position_type) {
+      document.getElementById('position-type').value = app.position_type;
+      handlePositionTypeChange();
+    }
     document.getElementById('gpa').value = app.gpa != null ? app.gpa : '';
   }
 
@@ -334,6 +368,7 @@
       module_name: s.academic.module,
       module_code: s.academic.moduleCode,
       qualification_level: QUALIFICATION_CODE_MAP[s.academic.qualificationLevel] || s.academic.qualificationLevel,
+      position_type: s.academic.positionType,
       gpa: s.academic.gpa,
     });
   }
@@ -344,6 +379,7 @@
       { id: 'faculty',            check: v => v.length > 0,                        msg: 'Please select your faculty.' },
       { id: 'course',             check: v => v.length > 0,                        msg: 'Please select your course.' },
       { id: 'qualificationLevel', check: v => v.length > 0,                        msg: 'Please select your current qualification level.' },
+      { id: 'position-type',      check: v => v.length > 0,                        msg: 'Please select a position type.' },
       { id: 'year',               check: v => v.length > 0,                        msg: 'Please select the year and semester.' },
       { id: 'module',             check: v => v.length > 0,                        msg: 'Please select a module.' },
       { id: 'input-module-code',  check: v => v.length > 0,                        msg: 'Module code is required.' },
@@ -359,6 +395,7 @@
     const moduleCode         = document.getElementById('input-module-code').value.trim();
     const gpa                = parseFloat(document.getElementById('gpa').value);
     const qualificationLevel = QUALIFICATION_CODE_MAP[qualificationLabel] || '';
+    const positionType       = document.getElementById('position-type').value;
 
     const btn = document.getElementById('nextBtn');
     const originalHTML = btn.innerHTML;
@@ -376,6 +413,7 @@
           moduleName:      module,
           moduleCode,
           gpa,
+          positionType,
         },
       });
 
@@ -418,6 +456,7 @@
           module,
           moduleCode,
           gpa,
+          positionType,
         },
         step: 3,
       });

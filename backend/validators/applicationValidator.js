@@ -30,6 +30,9 @@ const validateAcademicSave = [
   body('gpa')
     .notEmpty().withMessage('GPA / academic average is required.')
     .isFloat({ min: 0, max: 100 }).withMessage('GPA must be a number between 0 and 100.'),
+  body('positionType')
+    .notEmpty().withMessage('Position type is required.')
+    .isIn(['tutor', 'demonstrator']).withMessage('Position type must be tutor or demonstrator.'),
   handleValidationErrors,
 ];
 

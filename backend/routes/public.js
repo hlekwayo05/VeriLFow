@@ -67,9 +67,9 @@ router.get('/settings-extended', async (req, res) => {
       max_hours_per_semester: row.max_hours_per_semester != null
         ? parseInt(row.max_hours_per_semester, 10)
         : 160,
-      rate_undergrad: row.rate_undergrad != null ? parseFloat(row.rate_undergrad) : 70,
-      rate_honours:   row.rate_honours != null ? parseFloat(row.rate_honours) : 85,
-      rate_masters:   row.rate_masters != null ? parseFloat(row.rate_masters) : 100,
+      rate_undergrad: row.rate_undergrad != null ? parseFloat(row.rate_undergrad) : 59.66,
+      rate_honours:   row.rate_honours != null ? parseFloat(row.rate_honours) : 73.87,
+      rate_masters:   row.rate_masters != null ? parseFloat(row.rate_masters) : 90.92,
     });
   } catch (err) {
     console.error('Public settings-extended error:', err.message);

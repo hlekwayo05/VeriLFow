@@ -11,7 +11,43 @@ let msgCurrentUserId = null;
 let msgPeers = [];
 /** Admin only: which contact group is selected ('tutor' | 'lecturer' | null) */
 let msgAdminGroup = null;
-let msgAdminContacts = { tutor: [], lecturer: [] };
+let msgAdminContacts = { tutor: [], demonstrator: [], lecturer: [] };
+
+function splitTutorsByPosition(list) {
+  const tutors = [];
+  const demonstrators = [];
+  (Array.isArray(list) ? list : []).forEach((row) => {
+    if ((row.position_type || 'tutor') === 'demonstrator') demonstrators.push(row);
+    else tutors.push(row);
+  });
+  return { tutors, demonstrators };
+}
+
+function adminGroupHeading(group) {
+  if (group === 'tutor') return 'All tutors';
+  if (group === 'demonstrator') return 'All demonstrators';
+  return 'All lecturers';
+}
+
+function adminGroupEmptyLabel(group) {
+  if (group === 'tutor') return 'tutors';
+  if (group === 'demonstrator') return 'demonstrators';
+  return 'lecturers';
+}
+
+function adminGroupBroadcastLabel(group) {
+  if (group === 'tutor') return 'Message all tutors';
+  if (group === 'demonstrator') return 'Message all demonstrators';
+  return 'Message all lecturers';
+}
+
+function findAdminContactByPeerId(peerId) {
+  for (const group of ['tutor', 'demonstrator', 'lecturer']) {
+    const hit = (msgAdminContacts[group] || []).find((p) => Number(p.id) === Number(peerId));
+    if (hit) return hit;
+  }
+  return null;
+}
 
 function msgInitials(first, surname) {
   const a = String(first || '').trim().charAt(0);
@@ -62,16 +98,22 @@ function msgContactKey(c) {
 }
 
 function normalizePeerContact(raw) {
-  const type = raw.type || 'lecturer';
+  let type = raw.type || 'lecturer';
+  if (type === 'tutor' && raw.position_type === 'demonstrator') {
+    type = 'demonstrator';
+  }
+  if (type === 'tutor' && raw.positionType === 'demonstrator') {
+    type = 'demonstrator';
+  }
   const first = raw.firstNames || raw.first_names || '';
   const surname = raw.surname || '';
   const full = msgTitleCase(raw.name || `${first} ${surname}`.trim()) ||
-    (type === 'admin' ? 'Admin' : type === 'tutor' ? 'Tutor' : 'Lecturer');
+    (type === 'admin' ? 'Admin' : type === 'demonstrator' ? 'Demonstrator' : type === 'tutor' ? 'Tutor' : 'Lecturer');
   const initials = raw.initials || msgInitials(first, surname) ||
-    (type === 'admin' ? 'AD' : type === 'tutor' ? 'T' : 'L');
+    (type === 'admin' ? 'AD' : type === 'demonstrator' ? 'D' : type === 'tutor' ? 'T' : 'L');
   const label = type === 'admin'
     ? 'Admin'
-    : (full.split(/\s+/)[0] || (type === 'tutor' ? 'Tutor' : 'Lecturer'));
+    : (full.split(/\s+/)[0] || (type === 'demonstrator' ? 'Demo' : type === 'tutor' ? 'Tutor' : 'Lecturer'));
   return {
     type,
     id: raw.id || null,
@@ -105,17 +147,27 @@ async function loadMessagePeers() {
 
   if (role === 'admin') {
     try {
-      const [tutors, lecturers] = await Promise.all([
+      const [allTutors, lecturers] = await Promise.all([
         VF.apiFetch('/users/tutors'),
         VF.apiFetch('/users/lecturers'),
       ]);
+      const { tutors, demonstrators } = splitTutorsByPosition(allTutors);
       msgAdminContacts = {
-        tutor: dedupeContactsById((Array.isArray(tutors) ? tutors : []).map((t) => normalizePeerContact({
+        tutor: dedupeContactsById(tutors.map((t) => normalizePeerContact({
           type: 'tutor',
           id: t.id,
           first_names: t.first_names,
           surname: t.surname,
           name: `${t.first_names || ''} ${t.surname || ''}`.trim(),
+          position_type: t.position_type,
+        }))),
+        demonstrator: dedupeContactsById(demonstrators.map((t) => normalizePeerContact({
+          type: 'demonstrator',
+          id: t.id,
+          first_names: t.first_names,
+          surname: t.surname,
+          name: `${t.first_names || ''} ${t.surname || ''}`.trim(),
+          position_type: t.position_type,
         }))),
         lecturer: dedupeContactsById((Array.isArray(lecturers) ? lecturers : []).map((l) => normalizePeerContact({
           type: 'lecturer',
@@ -128,7 +180,7 @@ async function loadMessagePeers() {
       msgPeers = msgAdminGroup ? (msgAdminContacts[msgAdminGroup] || []) : [];
     } catch (err) {
       console.error('loadMessagePeers (admin):', err);
-      msgAdminContacts = { tutor: [], lecturer: [] };
+      msgAdminContacts = { tutor: [], demonstrator: [], lecturer: [] };
       msgPeers = [];
     }
     return msgPeers;
@@ -156,12 +208,13 @@ async function loadMessagePeers() {
 function peerRoleLabel(type) {
   if (type === 'admin') return 'Admin';
   if (type === 'lecturer') return 'Lecturer';
+  if (type === 'demonstrator') return 'Demo';
   if (type === 'tutor') return 'Tutor';
   return 'Contact';
 }
 
 function selectAdminMessageGroup(group) {
-  msgAdminGroup = group === 'tutor' || group === 'lecturer' ? group : null;
+  msgAdminGroup = group === 'tutor' || group === 'demonstrator' || group === 'lecturer' ? group : null;
   msgPeers = msgAdminGroup ? (msgAdminContacts[msgAdminGroup] || []) : [];
   renderMessagePeople();
 }
@@ -197,6 +250,7 @@ function renderMessagePeople() {
   if (role === 'admin') {
     syncAdminMsgChrome();
     const tutorCount = (msgAdminContacts.tutor || []).length;
+    const demoCount = (msgAdminContacts.demonstrator || []).length;
     const lecturerCount = (msgAdminContacts.lecturer || []).length;
 
     if (!msgAdminGroup) {
@@ -216,6 +270,16 @@ function renderMessagePeople() {
             </span>
             <svg class="ad-msg-group-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
           </button>
+          <button type="button" class="ad-msg-group-btn" onclick="selectAdminMessageGroup('demonstrator')">
+            <span class="ad-msg-group-ico c-demonstrator" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="ad-msg-group-text">
+              <span class="ad-msg-group-title">Demonstrators</span>
+              <span class="ad-msg-group-sub">${demoCount} on the system</span>
+            </span>
+            <svg class="ad-msg-group-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
           <button type="button" class="ad-msg-group-btn" onclick="selectAdminMessageGroup('lecturer')">
             <span class="ad-msg-group-ico c-lecturer" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
@@ -231,7 +295,7 @@ function renderMessagePeople() {
     }
 
     const people = msgAdminContacts[msgAdminGroup] || [];
-    const heading = msgAdminGroup === 'tutor' ? 'All tutors' : 'All lecturers';
+    const heading = adminGroupHeading(msgAdminGroup);
     if (!people.length) {
       wrap.innerHTML = `
         <button type="button" class="ad-msg-group-back" onclick="clearAdminMessageGroup()">
@@ -239,7 +303,7 @@ function renderMessagePeople() {
           Back
         </button>
         <div class="tm-people-empty">
-          <strong>No ${msgAdminGroup === 'tutor' ? 'tutors' : 'lecturers'} yet</strong>
+          <strong>No ${adminGroupEmptyLabel(msgAdminGroup)} yet</strong>
           <span>Accounts will appear here once they are on the system.</span>
         </div>`;
       return;
@@ -271,7 +335,7 @@ function renderMessagePeople() {
       </div>
       <button type="button" class="ad-btn-primary ad-msg-all-btn" onclick="openAdminGroupBroadcast('${msgAdminGroup}')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        ${msgAdminGroup === 'tutor' ? 'Message all tutors' : 'Message all lecturers'}
+        ${adminGroupBroadcastLabel(msgAdminGroup)}
       </button>`;
     return;
   }
@@ -289,12 +353,12 @@ function renderMessagePeople() {
   if (!msgPeers.length) {
     wrap.innerHTML = `<div class="tm-people-empty">
       <strong>No contacts yet</strong>
-      <span>Your ${role === 'lecturer' ? 'tutors' : 'lecturer'} will appear here once linked to this module.</span>
+      <span>Your ${role === 'lecturer' ? 'tutors and demonstrators' : 'lecturer'} will appear here once linked to this module.</span>
     </div>`;
     return;
   }
 
-  const heading = role === 'lecturer' ? 'Message your tutors' : 'Message your lecturer';
+  const heading = role === 'lecturer' ? 'Message your tutors & demonstrators' : 'Message your lecturer';
   wrap.innerHTML = `
     <div class="tm-people-head">
       <span class="tm-people-head-title">${heading}</span>
@@ -335,7 +399,7 @@ function showPendingChat(contact) {
 
   const av = document.getElementById('t-av');
   av.textContent = contact.initials;
-  av.className = msgAvatarClass(contact.type, 'thread-av');
+  av.className = msgContactAvatarClass(contact.type, 'thread-av');
   document.getElementById('t-name').textContent = contact.name;
   const moduleLabel = typeof currentModuleCode !== 'undefined' && currentModuleCode ? currentModuleCode : '';
   document.getElementById('t-meta').textContent =
@@ -360,6 +424,7 @@ function showPendingChat(contact) {
 async function openMessageContact(key) {
   const contact = msgPeers.find((c) => msgContactKey(c) === key)
     || (msgAdminContacts.tutor || []).find((c) => msgContactKey(c) === key)
+    || (msgAdminContacts.demonstrator || []).find((c) => msgContactKey(c) === key)
     || (msgAdminContacts.lecturer || []).find((c) => msgContactKey(c) === key);
   if (!contact) return;
 
@@ -442,17 +507,44 @@ function msgFormatBubbleTime(iso) {
 
 function msgPeerFilterType(peerRole) {
   if (peerRole === 'tutor') return 'tutor';
+  if (peerRole === 'demonstrator') return 'demonstrator';
   if (peerRole === 'lecturer') return 'lecturer';
   if (peerRole === 'admin') return 'admin';
   return 'lecturer';
+}
+
+function threadSenderFilterType(thread) {
+  if (!thread) return 'lecturer';
+  if (msgPeerFilterType(thread.peerRole) === 'admin') return 'admin';
+  const peer = msgPeers.find((p) => p.id && Number(p.id) === Number(thread.peerId))
+    || findAdminContactByPeerId(thread.peerId);
+  if (peer?.type === 'demonstrator') return 'demonstrator';
+  if (peer?.type === 'tutor') return 'tutor';
+  return msgPeerFilterType(thread.peerRole);
 }
 
 function msgAvatarClass(peerRole, base) {
   const type = msgPeerFilterType(peerRole);
   if (type === 'admin') return `${base} admin`;
   if (type === 'lecturer') return `${base} lecturer`;
+  if (type === 'demonstrator') return `${base} demonstrator`;
   if (type === 'tutor') return `${base} tutor`;
   return base;
+}
+
+function msgContactAvatarClass(contactType, base) {
+  if (contactType === 'admin') return `${base} admin`;
+  if (contactType === 'lecturer') return `${base} lecturer`;
+  if (contactType === 'demonstrator') return `${base} demonstrator`;
+  if (contactType === 'tutor') return `${base} tutor`;
+  return base;
+}
+
+function avatarClassForThread(thread, base) {
+  const peer = msgPeers.find((p) => p.id && Number(p.id) === Number(thread.peerId))
+    || findAdminContactByPeerId(thread.peerId);
+  if (peer) return msgContactAvatarClass(peer.type, base);
+  return msgAvatarClass(thread.peerRole, base);
 }
 
 function msgShowToast(text) {
@@ -525,7 +617,7 @@ function renderInboxList() {
     }
     const role = window.MESSAGING_ROLE;
     const emptySub = role === 'lecturer'
-      ? 'Choose a tutor above to start chatting.'
+      ? 'Choose a tutor or demonstrator above to start chatting.'
       : 'Choose Admin or your lecturer above to start chatting.';
     list.innerHTML = `<div class="tm-recent-empty-card">
       <div class="tm-recent-empty">
@@ -541,8 +633,8 @@ function renderInboxList() {
 
   list.innerHTML = items.map((t) => {
     const kind = t.threadKind || 'peer';
-    const senderType = msgPeerFilterType(t.peerRole);
-    const avClass = msgAvatarClass(t.peerRole, 'ii-av');
+    const senderType = threadSenderFilterType(t);
+    const avClass = avatarClassForThread(t, 'ii-av');
     const active = t.id === msgActiveThreadId && kind === msgActiveThreadKind ? ' active' : '';
     const unread = t.unread ? ' unread' : '';
     const preview = (t.preview || '').replace(/</g, '&lt;');
@@ -657,7 +749,7 @@ async function openThread(kind, id) {
 
   const av = document.getElementById('t-av');
   av.textContent = summary.peerInitials || '?';
-  av.className = msgAvatarClass(summary.peerRole, 'thread-av');
+  av.className = avatarClassForThread(summary, 'thread-av');
   av.style.color = '';
   av.style.borderColor = '';
 

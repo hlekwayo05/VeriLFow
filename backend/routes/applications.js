@@ -8,6 +8,8 @@ const { uploadLimiter } = require('../middleware/rateLimiter');
 const { isApplicationsOpenFromDb } = require('./public');
 const multer       = require('multer');
 const path         = require('path');
+const fs           = require('fs');
+const os           = require('os');
 const {
   findCurriculumModule,
   courseToProgramme,
@@ -25,9 +27,12 @@ const { validateUploadedFile } = require('../utils/fileValidation');
 const { validateAcademicSave, validateSubmitApplication } = require('../validators/applicationValidator');
 
 
+const UPLOAD_TMP_DIR = path.join(os.tmpdir(), 'veriflow-uploads');
+fs.mkdirSync(UPLOAD_TMP_DIR, { recursive: true });
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
+  destination: (_req, _file, cb) => {
+    cb(null, UPLOAD_TMP_DIR);
   },
   filename: (req, file, cb) => {
     const ext  = path.extname(file.originalname).toLowerCase();
@@ -78,6 +83,11 @@ async function persistUploadToStorage(localPath, storagePath) {
   }
 }
 
+function safeOriginalFilename(originalname) {
+  const base = path.basename(String(originalname || '').trim());
+  return base ? base.slice(0, 255) : null;
+}
+
 
 router.post(
   '/me/documents',
@@ -102,7 +112,8 @@ router.post(
 
     try {
       const appResult = await pool.query(
-        `SELECT id, status, cv_filename, transcript_filename
+        `SELECT id, status, cv_filename, transcript_filename,
+                cv_original_name, transcript_original_name
          FROM applications WHERE user_id = $1`,
         [userId]
       );
@@ -116,6 +127,8 @@ router.post(
 
       let cvStoragePath = app.cv_filename || null;
       let transcriptStoragePath = app.transcript_filename || null;
+      let cvOriginalName = app.cv_original_name || null;
+      let transcriptOriginalName = app.transcript_original_name || null;
 
       if (hasCv) {
         const file = req.files.cvFile[0];
@@ -123,6 +136,7 @@ router.post(
           file.path,
           'applications/' + file.filename
         );
+        cvOriginalName = safeOriginalFilename(file.originalname);
       }
       if (hasTranscript) {
         const file = req.files.transcriptFile[0];
@@ -130,14 +144,17 @@ router.post(
           file.path,
           'applications/' + file.filename
         );
+        transcriptOriginalName = safeOriginalFilename(file.originalname);
       }
 
       await pool.query(
         `UPDATE applications
          SET cv_filename = COALESCE($1, cv_filename),
-             transcript_filename = COALESCE($2, transcript_filename)
-         WHERE user_id = $3 AND status = 'incomplete'`,
-        [cvStoragePath, transcriptStoragePath, userId]
+             transcript_filename = COALESCE($2, transcript_filename),
+             cv_original_name = COALESCE($3, cv_original_name),
+             transcript_original_name = COALESCE($4, transcript_original_name)
+         WHERE user_id = $5 AND status = 'incomplete'`,
+        [cvStoragePath, transcriptStoragePath, cvOriginalName, transcriptOriginalName, userId]
       );
 
       return res.json({
@@ -145,6 +162,8 @@ router.post(
         transcript: !!transcriptStoragePath,
         cv_filename: cvStoragePath,
         transcript_filename: transcriptStoragePath,
+        cv_original_name: cvOriginalName,
+        transcript_original_name: transcriptOriginalName,
       });
     } catch (err) {
       console.error('Draft document upload error:', err.message);
@@ -160,11 +179,15 @@ router.patch(
   requireRole('tutor'),
   validateAcademicSave,
   async (req, res) => {
-    const { faculty, course, qualificationLevel, moduleYearLevel, moduleName, moduleCode, gpa } = req.body;
+    const { faculty, course, qualificationLevel, moduleYearLevel, moduleName, moduleCode, gpa, positionType } = req.body;
     const userId = req.user.userId;
 
     if (!(await isApplicationsOpenFromDb())) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
+    }
+
+    if (!['tutor', 'demonstrator'].includes(positionType)) {
+      return res.status(400).json({ errors: ['Position type must be tutor or demonstrator.'] });
     }
 
     const gpaNum = parseFloat(gpa);
@@ -224,8 +247,9 @@ router.patch(
              module_year_level   = $4,
              module_name         = $5,
              module_code         = $6,
-             gpa                 = $7
-         WHERE user_id = $8`,
+             gpa                 = $7,
+             position_type       = $8
+         WHERE user_id = $9`,
         [
           faculty.trim(),
           savedCourse,
@@ -234,6 +258,7 @@ router.patch(
           savedName,
           savedCode,
           gpaNum,
+          positionType,
           userId,
         ]
       );
@@ -270,7 +295,8 @@ router.post(
     try {
       const appResult = await pool.query(
         `SELECT id, status, qualification_level, module_year_level, module_name, gpa, course,
-                cv_filename, transcript_filename
+                cv_filename, transcript_filename, cv_original_name, transcript_original_name,
+                position_type
          FROM applications
          WHERE user_id = $1`,
         [userId]
@@ -303,9 +329,13 @@ router.post(
       let cvStoragePath;
       let transcriptStoragePath;
 
+      let cvOriginalName = app.cv_original_name || null;
+      let transcriptOriginalName = app.transcript_original_name || null;
+
       if (freshCv) {
         cvPath = freshCv.path;
         cvStoragePath = await persistUploadToStorage(cvPath, 'applications/' + freshCv.filename);
+        cvOriginalName = safeOriginalFilename(freshCv.originalname);
       } else if (app.cv_filename) {
         cvStoragePath = app.cv_filename;
         cvPath = path.join(uploadsDir, path.basename(app.cv_filename));
@@ -317,6 +347,7 @@ router.post(
           transcriptPath,
           'applications/' + freshTranscript.filename
         );
+        transcriptOriginalName = safeOriginalFilename(freshTranscript.originalname);
       } else if (app.transcript_filename) {
         transcriptStoragePath = app.transcript_filename;
         transcriptPath = path.join(uploadsDir, path.basename(app.transcript_filename));
@@ -387,12 +418,14 @@ router.post(
       if (eligibilityPass) {
         try {
           const settings = await getSettings();
+          const positionType = app.position_type || 'tutor';
           const scanResult = await screenApplication({
             cvPath,
             transcriptPath,
             claimedAverage:  parseFloat(app.gpa),
             tutorModuleName: app.module_name,
             settings,
+            positionType,
           });
 
           screening      = scanResult.screening;
@@ -421,16 +454,20 @@ router.post(
         `UPDATE applications
          SET cv_filename         = $1,
              transcript_filename = $2,
+             cv_original_name    = $3,
+             transcript_original_name = $4,
              declared            = TRUE,
-             status              = $3,
-             rejection_reason    = $4,
-             cv_keyword_score    = $5,
-             screening_result    = $6,
+             status              = $5,
+             rejection_reason    = $6,
+             cv_keyword_score    = $7,
+             screening_result    = $8,
              submitted_at        = NOW()
-         WHERE user_id = $7`,
+         WHERE user_id = $9`,
         [
           cvStoragePath,
           transcriptStoragePath,
+          cvOriginalName,
+          transcriptOriginalName,
           newStatus,
           rejectionReason,
           cvKeywordScore,
@@ -483,10 +520,14 @@ router.get(
            a.module_name,
            COALESCE(a.module_code, lm.module_code) AS module_code,
            a.gpa,
+           a.position_type,
+           a.cost_centre,
            a.cv_filename,
+           a.cv_original_name,
            a.cv_keyword_score,
            a.screening_result,
            a.transcript_filename,
+           a.transcript_original_name,
            a.declared,
            a.rejection_reason,
            a.responsibility_level,
@@ -549,10 +590,14 @@ router.get(
           a.module_name,
           COALESCE(a.module_code, lm.module_code) AS module_code,
           a.gpa,
+          a.position_type,
+          a.cost_centre,
           a.cv_filename,
+          a.cv_original_name,
           a.cv_keyword_score,
           a.screening_result,
           a.transcript_filename,
+          a.transcript_original_name,
           a.rejection_reason,
           a.responsibility_level,
           a.assigned_lecturer_id,
@@ -666,11 +711,17 @@ router.patch(
   requireRole('admin'),
   async (req, res) => {
     const appId = parseInt(req.params.id);
-    const { responsibilityLevel } = req.body;
+    const { responsibilityLevel, costCentre } = req.body;
 
     if (!['standard', 'senior', 'lead'].includes(responsibilityLevel)) {
       return res.status(400).json({
         errors: ['Responsibility level must be standard, senior, or lead.'],
+      });
+    }
+
+    if (!['school_of_computing', 'ucdg'].includes(costCentre)) {
+      return res.status(400).json({
+        errors: ['Cost centre must be school_of_computing or ucdg.'],
       });
     }
 
@@ -724,9 +775,10 @@ router.patch(
          SET status                = 'approved',
              responsibility_level  = $1,
              assigned_lecturer_id  = $2,
+             cost_centre           = $3,
              reviewed_at           = NOW()
-         WHERE id = $3`,
-        [responsibilityLevel, assignedLecturerId, appId]
+         WHERE id = $4`,
+        [responsibilityLevel, assignedLecturerId, costCentre, appId]
       );
 
       const userResult = await pool.query(

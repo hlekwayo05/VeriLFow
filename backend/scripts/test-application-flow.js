@@ -104,7 +104,9 @@ async function main() {
       qualificationLevel: '3rd_year',
       moduleYearLevel: '3rd Year',
       moduleName: 'Programming',
+      moduleCode: 'PRT301',
       gpa: 78,
+      positionType: 'tutor',
     },
   });
   if (!academic.ok) throw new Error(`Academic save failed (${academic.status}): ${JSON.stringify(academic.data)}`);

@@ -19,6 +19,10 @@ const FILES = [
   '017_session_tutors_tutor_index.sql',
   '018_session_cancelled_status.sql',
   '019_perf_indexes_partition.sql',
+  '020_update_2026_tariff_rates.sql',
+  '021_position_type_cost_centre.sql',
+  '022_document_original_names.sql',
+  '023_password_reset_tokens.sql',
 ];
 
 async function main() {

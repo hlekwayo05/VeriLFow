@@ -241,8 +241,9 @@ async function scanAcademicRecord(transcriptPath, {
  * Run full eligibility validation from scan results.
  * Returns { pass, reason, detail, screening }.
  */
-function evaluateScreening(cvScan, transcriptScan, settings) {
+function evaluateScreening(cvScan, transcriptScan, settings, positionType = 'tutor') {
   const screening = { cv: cvScan, transcript: transcriptScan };
+  const isDemo         = positionType === 'demonstrator';
   const minAverage     = parseFloat(settings.min_average) || 75;
   const modulePassMark = parseFloat(settings.module_pass_mark) || 70;
   const minCvKeywords  = parseInt(settings.min_cv_keywords, 10) || 0;
@@ -256,7 +257,7 @@ function evaluateScreening(cvScan, transcriptScan, settings) {
     };
   }
 
-  if (!transcriptScan.allModulesPassed) {
+  if (!isDemo && !transcriptScan.allModulesPassed) {
     const failed = transcriptScan.failedModules.slice(0, 3).join('; ');
     return {
       pass: false,
@@ -266,7 +267,7 @@ function evaluateScreening(cvScan, transcriptScan, settings) {
     };
   }
 
-  if (!transcriptScan.tutorModuleFound) {
+  if (!isDemo && !transcriptScan.tutorModuleFound) {
     return {
       pass: false,
       reason: `No passed record found for "${transcriptScan.tutorModuleName || 'your selected module'}" on your academic record.`,
@@ -275,7 +276,7 @@ function evaluateScreening(cvScan, transcriptScan, settings) {
     };
   }
 
-  if (!transcriptScan.tutorModulePassed) {
+  if (!isDemo && !transcriptScan.tutorModulePassed) {
     const tm = transcriptScan.tutorModule;
     return {
       pass: false,
@@ -318,7 +319,7 @@ function evaluateScreening(cvScan, transcriptScan, settings) {
 /**
  * Full document screening for application submit.
  */
-async function screenApplication({ cvPath, transcriptPath, claimedAverage, tutorModuleName, settings }) {
+async function screenApplication({ cvPath, transcriptPath, claimedAverage, tutorModuleName, settings, positionType = 'tutor' }) {
   const keywords = (settings.cv_keywords || '')
     .split(',')
     .map(k => k.trim())
@@ -334,7 +335,7 @@ async function screenApplication({ cvPath, transcriptPath, claimedAverage, tutor
   });
   transcriptScan.tutorModuleName = tutorModuleName;
 
-  return evaluateScreening(cvScan, transcriptScan, settings);
+  return evaluateScreening(cvScan, transcriptScan, settings, positionType);
 }
 
 module.exports = {

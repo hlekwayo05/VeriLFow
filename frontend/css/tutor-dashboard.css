@@ -3666,6 +3666,10 @@ body.tutor-dash .thread-av.tutor {
     border-bottom: none;
   }
   body.tutor-dash .profile-card-main .profile-section-title { display: none; }
+  body.tutor-dash .profile-card--cost-centre .profile-row-val {
+    color: #26534d;
+    font-weight: 600;
+  }
   body.tutor-dash .profile-row {
     flex-direction: row;
     align-items: flex-start;

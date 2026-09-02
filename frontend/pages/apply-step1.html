@@ -138,7 +138,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=19"></script>
+<script src="../js/app.js?v=20"></script>
 <script>
   VF.pageIn();
   VF.bindPasswordChecklist('password', 'pwdChecklist');
@@ -178,6 +178,7 @@
         VF.resumeTutorApplication();
       } else {
         document.getElementById('step1Form').style.display = '';
+        VF.bindApplyStep1AutoFields();
         VF.bindApplyFormProgress([
           'surname', 'title', 'initials', 'firstNames',
           'email', 'cell', 'studentNumber', 'password', 'confirm',
@@ -201,7 +202,7 @@
       { id: 'initials',      check: v => v.length > 0,                          msg: 'Initials are required.' },
       { id: 'firstNames',    check: v => v.length > 0,                          msg: 'First name(s) are required.' },
       { id: 'email',         check: v => /^[a-zA-Z0-9._%+-]+@ump\.ac\.za$/i.test(v), msg: 'Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).' },
-      { id: 'cell',          check: v => v.length >= 9,                         msg: 'Please enter a valid cell number.' },
+      { id: 'cell',          check: v => VF.isValidSaCellPhone(v),                   msg: 'Enter a 10-digit SA cell number (e.g. 082 456 7890).' },
       { id: 'studentNumber', check: v => v.length >= 5,                         msg: 'Student number is required.' },
       { id: 'password',      check: v => VF.isStrongPassword(v),                 msg: VF.passwordErrorMessage(pwd) || 'Password is not strong enough.' },
       { id: 'confirm',       check: v => v === pwd,                             msg: 'Passwords do not match.' },
@@ -219,7 +220,7 @@
       initials:      document.getElementById('initials').value.trim(),
       firstNames:    document.getElementById('firstNames').value.trim(),
       email:         document.getElementById('email').value.trim(),
-      cell:          document.getElementById('cell').value.trim(),
+      cell:          VF.formatSaCellPhone(document.getElementById('cell').value.trim()),
       studentNumber: document.getElementById('studentNumber').value.trim(),
       password:      pwd,
       confirm:       cfm,

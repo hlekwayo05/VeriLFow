@@ -49,6 +49,23 @@ function sessionClaimHours(sessionType) {
   return sessionType === 'practical' ? 5 : 3;
 }
 
+function sessionClaimPay(hourlyRate, sessionType) {
+  const rate = Number(hourlyRate);
+  if (!Number.isFinite(rate) || rate <= 0) return 0;
+  return Math.round(rate * sessionClaimHours(sessionType) * 100) / 100;
+}
+
+function timesheetClaimTotal(ts) {
+  if (ts.claim) return Number(ts.claim.total_amount);
+  const rate = Number(ts.ratePerHour);
+  if (!Number.isFinite(rate) || rate <= 0) return ts.totalAmount ?? 0;
+  const amount = (ts.sessions || []).reduce(
+    (sum, s) => sum + sessionClaimPay(rate, s.session_type),
+    0
+  );
+  return Math.round(amount * 100) / 100;
+}
+
 function setText(selector, value) {
   const el = document.querySelector(selector);
   if (el) el.textContent = value;
@@ -1463,7 +1480,7 @@ function renderTimesheetView(ts) {
   currentTimesheet = ts;
   const label = monthYearLabel(ts.periodMonth, ts.periodYear);
   const totalHours = ts.claim ? ts.lineItems.reduce((s, r) => s + Number(r.claimed_hours || 0), 0) : ts.totalHours;
-  const totalAmount = ts.claim ? Number(ts.claim.total_amount) : ts.totalAmount;
+  const totalAmount = timesheetClaimTotal(ts);
   const monthShort = MONTH_NAMES[ts.periodMonth - 1];
   let claimForView = enrichTutorClaim(ts.claim);
   const statusClass = claimForView ? claimStatusBadgeClass(claimForView.status) : 'not-sub';
@@ -2166,6 +2183,18 @@ function closeTutorSidebar() {
   if (btn) btn.setAttribute('aria-label', 'Open menu');
 }
 
+function formatCostCentreLabel(costCentre) {
+  if (costCentre === 'ucdg') return 'UCDG (Mr. Machava, Building 10)';
+  if (costCentre === 'school_of_computing') return 'School of Computing (Head of School)';
+  return 'Not assigned yet';
+}
+
+function costCentreContact(costCentre) {
+  if (costCentre === 'ucdg') return 'Mr. Machava, Building 10';
+  if (costCentre === 'school_of_computing') return 'Head of School, School of Computing';
+  return 'Contact the Student Employment Office';
+}
+
 function renderProfile() {
   const s = VF.getState();
   const u = s.user || {};
@@ -2279,6 +2308,9 @@ function renderProfile() {
     ? (String(gpaRaw).includes('%') ? String(gpaRaw) : `${gpaRaw}%`)
     : null;
 
+  const costCentreLabel = formatCostCentreLabel(app?.cost_centre);
+  const isApproved = app?.status === 'approved' || s.applicationStatus === 'approved';
+
   content.innerHTML = `
     ${warningStripHtml}
     <div class="profile-card profile-card-main">
@@ -2290,6 +2322,10 @@ function renderProfile() {
         </div>
       </div>
     </div>
+    ${isApproved ? section('Cost centre', [
+      ['Assigned cost centre', esc(costCentreLabel)],
+      ['Finance contact', esc(costCentreContact(app?.cost_centre))],
+    ], 'profile-card--cost-centre') : ''}
     ${section('Personal information', [
       ['Title', esc(dash(titleLabel))],
       ['Initials', esc(dash(u.initials))],

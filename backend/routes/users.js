@@ -11,7 +11,9 @@ const requireRole  = require('../middleware/requireRole');
 const {
   adminActionLimiter,
   passwordResetLimiter,
+  studentImportLimiter,
 } = require('../middleware/rateLimiter');
+const { flattenAllModules, COURSE_SHORT_MAP } = require('../constants');
 
 const BCRYPT_COST = 12;
 const { generateTempPassword } = require('../utils/tempPassword');
@@ -29,10 +31,40 @@ const {
   validateOnboardingDocuments,
   validateProfileUpdate,
   validateCreateLecturer,
+  validateImportLecturers,
   validateAddLecturerModule,
   validateResetPassword,
 } = require('../validators/userValidator');
 const { validateUploadedFile } = require('../utils/fileValidation');
+
+function normalizeImportCell(raw) {
+  const s = String(raw || '').trim().replace(/\s/g, '');
+  if (!s) return null;
+  if (s.startsWith('+')) return s;
+  if (/^0\d{9}$/.test(s)) return `+27${s.slice(1)}`;
+  return s;
+}
+
+function moduleFromImport(moduleAssignment, courseRaw) {
+  const name = String(moduleAssignment || '').trim();
+  if (!name) return null;
+
+  const courseKey = COURSE_SHORT_MAP[String(courseRaw || '').trim().toUpperCase()] || null;
+  const all = flattenAllModules();
+  const pool = courseKey ? all.filter((m) => m.course === courseKey) : all;
+
+  let hit = pool.find((m) => m.name.toLowerCase() === name.toLowerCase());
+  if (!hit) hit = pool.find((m) => m.code.toLowerCase() === name.toLowerCase());
+  if (!hit) {
+    hit = pool.find(
+      (m) => m.name.toLowerCase().includes(name.toLowerCase())
+        || name.toLowerCase().includes(m.name.toLowerCase())
+    );
+  }
+  if (!hit) return null;
+
+  return { code: hit.code, name: hit.name, course: hit.course };
+}
 
 async function purgeTutorAccount(client, tutorId) {
   const userResult = await client.query(
@@ -739,6 +771,120 @@ router.post(
 );
 
 
+router.post(
+  '/lecturers/import',
+  studentImportLimiter,
+  authenticate,
+  requireRole('admin'),
+  validateImportLecturers,
+  async (req, res) => {
+    const rows = req.body.lecturers || req.body;
+    let imported = 0;
+    let skipped = 0;
+    const createdByEmail = new Map();
+
+    for (const row of rows) {
+      const firstName = String(row.first_name || row.firstName || row.first_names || '').trim();
+      const surname = String(row.surname || '').trim();
+      const email = String(row.email || '').trim().toLowerCase();
+      const cell = normalizeImportCell(row.cell_number || row.cell);
+      const mod = moduleFromImport(
+        row.module_assignment || row.module_name || row.moduleName,
+        row.course
+      );
+
+      if (!firstName || !surname || !email || !mod) {
+        skipped += 1;
+        continue;
+      }
+
+      try {
+        let lecturerId = createdByEmail.get(email);
+
+        if (!lecturerId) {
+          const existing = await pool.query(
+            'SELECT id, role FROM users WHERE email = $1',
+            [email]
+          );
+
+          if (existing.rows.length > 0) {
+            if (existing.rows[0].role !== 'lecturer') {
+              skipped += 1;
+              continue;
+            }
+            lecturerId = existing.rows[0].id;
+          }
+        }
+
+        if (!lecturerId) {
+          const tempPassword = generateTempPassword();
+          const passwordHash = await bcrypt.hash(tempPassword, BCRYPT_COST);
+          const client = await pool.connect();
+
+          try {
+            await client.query('BEGIN');
+
+            const userResult = await client.query(
+              `INSERT INTO users
+                 (first_names, surname, email, cell, password_hash, role, temp_password_flag)
+               VALUES ($1, $2, $3, $4, $5, 'lecturer', TRUE)
+               RETURNING id`,
+              [firstName, surname, email, cell, passwordHash]
+            );
+
+            lecturerId = userResult.rows[0].id;
+
+            await client.query(
+              `INSERT INTO lecturer_modules (lecturer_id, course, module_code, module_name)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (course, module_name) DO NOTHING`,
+              [lecturerId, mod.course, mod.code.toUpperCase(), mod.name]
+            );
+
+            await client.query('COMMIT');
+            createdByEmail.set(email, lecturerId);
+            imported += 1;
+
+            try {
+              await sendLecturerWelcomeEmail({
+                lecturerEmail: email,
+                lecturerFirstName: firstName,
+                tempPassword,
+                modules: [mod],
+                loginLink: referralLoginLink(),
+              });
+            } catch (mailErr) {
+              console.error(`Lecturer import welcome email failed (${email}):`, mailErr.message);
+            }
+          } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+          } finally {
+            client.release();
+          }
+        } else {
+          const moduleResult = await pool.query(
+            `INSERT INTO lecturer_modules (lecturer_id, course, module_code, module_name)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (course, module_name) DO NOTHING
+             RETURNING id`,
+            [lecturerId, mod.course, mod.code.toUpperCase(), mod.name]
+          );
+          if (moduleResult.rows.length) imported += 1;
+          else skipped += 1;
+          createdByEmail.set(email, lecturerId);
+        }
+      } catch (err) {
+        console.error('Import lecturer error:', err.message);
+        skipped += 1;
+      }
+    }
+
+    return res.status(200).json({ imported, skipped, total: rows.length });
+  }
+);
+
+
 router.get(
   '/lecturers',
   authenticate,
@@ -786,8 +932,11 @@ router.get(
     const moduleCode = req.query.moduleCode
       ? String(req.query.moduleCode).trim().toUpperCase()
       : null;
+    const positionType = req.query.positionType
+      ? String(req.query.positionType).trim().toLowerCase()
+      : null;
     const pagination = parsePagination(req.query);
-    const cacheKey = `tutors:${role}:${userId}:${moduleCode || '*'}:${pagination.enabled ? `${pagination.page}:${pagination.limit}` : 'all'}`;
+    const cacheKey = `tutors:${role}:${userId}:${moduleCode || '*'}:${positionType || '*'}:${pagination.enabled ? `${pagination.page}:${pagination.limit}` : 'all'}`;
 
     try {
       const cached = cacheGet(cacheKey);
@@ -806,6 +955,7 @@ router.get(
            a.qualification_level,
            a.module_name,
            a.responsibility_level,
+           a.position_type,
            a.assigned_lecturer_id,
            a.gpa,
            lec.first_names AS lecturer_first_names,
@@ -820,6 +970,12 @@ router.get(
            AND a.status = 'approved'`;
 
       const params = [];
+      if (positionType === 'demonstrator') {
+        query += ` AND COALESCE(a.position_type, 'tutor') = 'demonstrator'`;
+      } else if (positionType === 'tutor') {
+        query += ` AND COALESCE(a.position_type, 'tutor') = 'tutor'`;
+      }
+
       if (role === 'lecturer') {
         params.push(userId);
         query += ` AND a.assigned_lecturer_id = $${params.length}`;
