@@ -66,11 +66,12 @@ router.get(
       const firstNames = sanitizeFilenamePart(application.first_names);
 
       res.setHeader('Content-Type', 'application/pdf');
+      const inline = req.query.inline === '1' || req.query.inline === 'true';
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="AppointmentFormD_${surname}_${firstNames}.pdf"`
+        `${inline ? 'inline' : 'attachment'}; filename="AppointmentFormD_${surname}_${firstNames}.pdf"`
       );
-      return res.send(pdf);
+      return res.send(Buffer.from(pdf));
     } catch (err) {
       console.error('Form D generation error:', err.message);
       return res.status(500).json({
@@ -118,11 +119,12 @@ router.get(
       const firstNames = sanitizeFilenamePart(application.first_names);
 
       res.setHeader('Content-Type', 'application/pdf');
+      const inline = req.query.inline === '1' || req.query.inline === 'true';
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="ConfirmationForm_${surname}_${firstNames}.pdf"`
+        `${inline ? 'inline' : 'attachment'}; filename="ConfirmationForm_${surname}_${firstNames}.pdf"`
       );
-      return res.send(pdf);
+      return res.send(Buffer.from(pdf));
     } catch (err) {
       console.error('Confirmation form error:', err.message);
       return res.status(500).json({

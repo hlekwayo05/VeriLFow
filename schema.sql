@@ -1,4 +1,4 @@
--- VeriFlow — supplemental schema for Supabase SQL editor
+-- VeriFlow - supplemental schema for Supabase SQL editor
 -- Run this after your base schema is in place.
 -- Migrations 007 and 008 in backend/migrations/ apply the same changes locally.
 
@@ -19,7 +19,7 @@ EXCEPTION
 END $$;
 
 -- =============================================================
---  FEATURE 1 — JOB POSTINGS
+--  FEATURE 1 - JOB POSTINGS
 -- =============================================================
 
 CREATE TABLE IF NOT EXISTS postings (
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS postings (
 );
 
 -- =============================================================
---  FEATURE 2 — GLOBAL APPLICATION WINDOW + SETTINGS
+--  FEATURE 2 - GLOBAL APPLICATION WINDOW + SETTINGS
 -- =============================================================
 
 CREATE TABLE IF NOT EXISTS settings (
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS settings (
   min_cv_keywords       INTEGER DEFAULT 0,
   applications_open     BOOLEAN DEFAULT false,
   closing_date          DATE,
-  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open — 2026',
+  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open - 2026',
   announcement_body     TEXT DEFAULT
     'Dear Students,
 
@@ -71,7 +71,7 @@ University of Mpumalanga',
 INSERT INTO settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
 -- =============================================================
---  FEATURE 3 — STUDENT LIST
+--  FEATURE 3 - STUDENT LIST
 -- =============================================================
 
 CREATE TABLE IF NOT EXISTS students (

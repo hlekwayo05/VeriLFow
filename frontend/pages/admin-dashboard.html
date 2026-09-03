@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>VeriFlow — Admin Dashboard</title>
+<title>VeriFlow - Admin Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=31"/>
-<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=22"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=32"/>
+<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=23"/>
 </head>
 <body class="admin-dash ad-on-hub">
 <div class="app">
@@ -33,22 +33,22 @@
     <div class="nav-item" id="nav-applications" onclick="showPage('applications',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
       Applications
-      <span class="nav-badge" id="app-nav-badge">—</span>
+      <span class="nav-badge" id="app-nav-badge">-</span>
     </div>
     <div class="nav-item" id="nav-referrals" onclick="showPage('referrals',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
       Referral Approvals
-      <span class="nav-badge" id="nav-referrals-badge">—</span>
+      <span class="nav-badge" id="nav-referrals-badge">-</span>
     </div>
     <div class="nav-item" id="nav-claims" onclick="showPage('claims',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       Claims Queue
-      <span class="nav-badge" id="nav-claims-badge">—</span>
+      <span class="nav-badge" id="nav-claims-badge">-</span>
     </div>
     <div class="nav-item" id="nav-flagged" onclick="showPage('flagged',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       Flagged Sessions
-      <span class="nav-badge" id="nav-flagged-badge">—</span>
+      <span class="nav-badge" id="nav-flagged-badge">-</span>
     </div>
     <div class="nav-item" id="nav-messages-admin" onclick="showPage('messages',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
@@ -100,7 +100,7 @@
   <button type="button" class="ad-hub-hero" id="ad-hub-hero" onclick="showPage('applications',document.getElementById('nav-applications'))">
     <div class="ad-hub-hero-label">Priority queue</div>
     <div class="ad-hub-hero-title" id="ad-hub-next-title">Loading…</div>
-    <div class="ad-hub-hero-meta" id="ad-hub-next-meta">—</div>
+    <div class="ad-hub-hero-meta" id="ad-hub-next-meta">-</div>
   </button>
 
   <div class="ad-hub-section">
@@ -175,21 +175,21 @@
     </div>
     <div class="stats-row">
       <div class="stat-card" onclick="showPage('applications',document.querySelector('[onclick*=applications]'))">
-        <div class="stat-label">Open Applications</div><div class="stat-value hi" id="stat-open-apps">—</div><div class="stat-sub">awaiting review</div>
+        <div class="stat-label">Open Applications</div><div class="stat-value hi" id="stat-open-apps">-</div><div class="stat-sub">awaiting review</div>
       </div>
       <div class="stat-card" onclick="showPage('referrals',document.querySelector('[onclick*=referrals]'))">
-        <div class="stat-label">Referrals Pending</div><div class="stat-value amber" id="stat-referrals-pending">—</div><div class="stat-sub">require countersign</div>
+        <div class="stat-label">Referrals Pending</div><div class="stat-value amber" id="stat-referrals-pending">-</div><div class="stat-sub">require countersign</div>
       </div>
       <div class="stat-card" onclick="showPage('claims',document.querySelector('[onclick*=claims]'))">
-        <div class="stat-label">Claims to Approve</div><div class="stat-value amber" id="stat-pending-claims">—</div><div class="stat-sub">before finance handoff</div>
+        <div class="stat-label">Claims to Approve</div><div class="stat-value amber" id="stat-pending-claims">-</div><div class="stat-sub">before finance handoff</div>
       </div>
       <div class="stat-card" onclick="showPage('flagged',document.querySelector('[onclick*=flagged]'))">
-        <div class="stat-label">Flagged Sessions</div><div class="stat-value red" id="stat-flagged-sessions">—</div><div class="stat-sub">dispute resolution needed</div>
+        <div class="stat-label">Flagged Sessions</div><div class="stat-value red" id="stat-flagged-sessions">-</div><div class="stat-sub">dispute resolution needed</div>
       </div>
     </div>
 
     <div class="section-header" style="animation:adFadeUp .4s ease .22s both">
-      <span class="section-title">Referral approvals — action required</span>
+      <span class="section-title">Referral approvals - action required</span>
       <span class="section-sub" id="overview-referrals-sub">Loading…</span>
     </div>
     <table class="data-table">
@@ -200,7 +200,7 @@
     </table>
 
     <div class="section-header" style="animation:adFadeUp .4s ease .30s both">
-      <span class="section-title">Flagged sessions — dispute resolution</span>
+      <span class="section-title">Flagged sessions - dispute resolution</span>
       <span class="section-sub" id="dash-flagged-sub">Loading…</span>
     </div>
     <table class="data-table">
@@ -286,10 +286,10 @@
         <button class="tab-btn" onclick="switchTab('auto-rejected',this,'applications')">Auto-Rejected</button>
       </div>
       <div class="ad-apps-legend">
-        <span class="ad-apps-leg"><span class="pref-dot high"></span>Definitely preferred (80–100%)</span>
-        <span class="ad-apps-leg"><span class="pref-dot med"></span>Highly preferred (85–90%)</span>
-        <span class="ad-apps-leg"><span class="pref-dot orange"></span>Preferred (70–84%)</span>
-        <span class="ad-apps-leg"><span class="pref-dot none"></span>Eligible, lowest preference (65–69%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot high"></span>Definitely preferred (80-100%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot med"></span>Highly preferred (85-90%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot orange"></span>Preferred (70-84%)</span>
+        <span class="ad-apps-leg"><span class="pref-dot none"></span>Eligible, lowest preference (65-69%)</span>
       </div>
     </div>
     <div id="tab-dict" class="tab-pane active">
@@ -334,7 +334,7 @@
         <div class="ad-appd-title-block">
           <span class="ad-appd-eyebrow">Application submission</span>
           <h1 class="ad-appd-title" id="ad-appd-title">Applicant</h1>
-          <p class="ad-appd-sub" id="ad-appd-subtitle">—</p>
+          <p class="ad-appd-sub" id="ad-appd-subtitle">-</p>
         </div>
         <div id="ad-appd-status" class="ad-appd-status"></div>
       </div>
@@ -378,13 +378,13 @@
   </div>
 </div>
 
-<!-- Mobile document preview -->
-<div id="ad-app-doc-overlay" class="ad-app-doc-overlay" style="display:none;" aria-hidden="true">
-  <div class="ad-app-doc-sheet">
+<!-- Document preview -->
+<div id="ad-app-doc-overlay" class="ad-app-doc-overlay" style="display:none;" aria-hidden="true" onclick="closeMobileAppDoc(event)">
+  <div class="ad-app-doc-sheet" onclick="event.stopPropagation()">
     <div class="ad-app-doc-toolbar">
       <div class="ad-app-doc-toolbar-title" id="ad-app-doc-title">Document</div>
       <div class="ad-app-doc-toolbar-actions">
-        <a id="ad-app-doc-newtab" href="#" target="_blank" rel="noopener" class="btn-sm">Open</a>
+        <button type="button" class="btn-sm" id="ad-app-doc-download">Download</button>
         <button type="button" class="btn-sm" onclick="closeMobileAppDoc()">Close</button>
       </div>
     </div>
@@ -491,7 +491,7 @@
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <div class="thread-av" id="t-av">CN</div>
-            <div class="thread-info"><div class="thread-name" id="t-name">—</div><div class="thread-meta" id="t-meta">—</div></div>
+            <div class="thread-info"><div class="thread-name" id="t-name">-</div><div class="thread-meta" id="t-meta">-</div></div>
             <button class="thread-reply-btn" onclick="focusCompose()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>Reply</button>
           </div>
           <div class="thread-messages" id="thread-messages"></div>
@@ -509,7 +509,7 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
         HOME
       </button>
-      <div class="page-hero"><h1>User Management</h1><p id="users-summary">Lecturers, tutors, demonstrators, and students — create accounts, reset passwords, manage modules</p></div>
+      <div class="page-hero"><h1>User Management</h1><p id="users-summary">Lecturers, tutors, demonstrators, and students - create accounts, reset passwords, manage modules</p></div>
     </div>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('lecturers',this,'users')">Lecturers</button>
@@ -597,7 +597,7 @@
 <div class="modal-overlay ad-sheet-overlay" id="ad-user-sheet-overlay" onclick="closeUserActionSheet(event)">
   <div class="modal um-modal ad-sheet ad-user-sheet" id="ad-user-sheet" onclick="event.stopPropagation()">
     <div class="ad-sheet-person">
-      <div class="ad-cr-avatar" id="ad-user-sheet-avatar">—</div>
+      <div class="ad-cr-avatar" id="ad-user-sheet-avatar">-</div>
       <div>
         <div class="ad-sheet-person-name" id="ad-user-sheet-name">Name</div>
         <div class="ad-sheet-person-role" id="ad-user-sheet-role">Role</div>
@@ -698,7 +698,7 @@
     <div class="right-col">
       <div class="panel">
         <div class="panel-header">
-          <div><h3>Reports</h3><div style="font-size:11px;color:var(--muted);margin-top:2px" id="analysis-d-sem">—</div></div>
+          <div><h3>Reports</h3><div style="font-size:11px;color:var(--muted);margin-top:2px" id="analysis-d-sem">-</div></div>
         </div>
         <div id="analysis-d-summary-panel">
           <div style="padding:8px 0;font-size:12px;color:var(--muted);text-align:center">Loading…</div>
@@ -728,7 +728,7 @@
       <div class="ad-an-hero" id="analysis-hero">
         <div class="ad-an-hero-top">
           <span class="ad-an-hero-label">Flagged rate</span>
-          <span class="ad-an-hero-sem" id="analysis-hero-sem">—</span>
+          <span class="ad-an-hero-sem" id="analysis-hero-sem">-</span>
         </div>
         <div class="ad-an-hero-body">
           <div class="ad-an-ring-wrap">
@@ -891,7 +891,7 @@
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6;">
             A professionally designed HTML email will be sent automatically to all students when applications are
-            opened. The body field above is optional — leave it blank to use the standard template, or write a custom
+            opened. The body field above is optional - leave it blank to use the standard template, or write a custom
             message to add a personal note from the coordinator at the top of the email.
           </div>
         </div>
@@ -972,7 +972,7 @@
         <div>
           <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Application submission</div>
           <div id="app-modal-title" style="font-size:22px;font-weight:700;color:var(--text);margin-top:2px;">Applicant</div>
-          <div id="app-modal-subtitle" style="font-size:12px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace;">—</div>
+          <div id="app-modal-subtitle" style="font-size:12px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace;">-</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <div id="app-modal-status"></div>
@@ -982,7 +982,7 @@
       <div id="app-modal-body" style="padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;"></div>
       <div style="padding:0 20px 20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;">
         <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;grid-column:1 / -1;">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Documents & declaration</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Documents</div>
           <div id="app-doc-preview-list" style="display:grid;gap:10px;"></div>
         </div>
       </div>
@@ -1014,9 +1014,9 @@
     <div style="padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;">
       <div style="grid-column:1 / -1;background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
-          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Applicant</div><div id="approval-applicant" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">—</div></div>
-          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Module</div><div id="approval-module" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">—</div></div>
-          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Qualification</div><div id="approval-qualification" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">—</div></div>
+          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Applicant</div><div id="approval-applicant" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
+          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Module</div><div id="approval-module" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
+          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Qualification</div><div id="approval-qualification" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
         </div>
       </div>
       <div class="field-group" style="grid-column:1 / -1;">
@@ -1036,8 +1036,8 @@
           <option value="ucdg">UCDG</option>
         </select>
         <div style="font-size:11px;color:var(--muted);margin-top:6px;">
-          School of Computing — funded from school budget, approved by Head of School.<br/>
-          UCDG — university-wide fund managed by Mr. Machava (Building 10).
+          School of Computing - funded from school budget, approved by Head of School.<br/>
+          UCDG - university-wide fund managed by Mr. Machava (Building 10).
         </div>
       </div>
       <div style="grid-column:1 / -1;background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;display:grid;gap:10px;">
@@ -1064,7 +1064,7 @@
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);">
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Reject application</div>
-        <div id="reject-applicant" style="font-size:20px;font-weight:700;color:var(--text);margin-top:2px;">—</div>
+        <div id="reject-applicant" style="font-size:20px;font-weight:700;color:var(--text);margin-top:2px;">-</div>
       </div>
       <button class="btn-sm" onclick="closeRejectModal()">Close</button>
     </div>
@@ -1085,8 +1085,8 @@
   <div class="modal claim-modal" id="cd-modal">
     <div class="modal-header">
       <div>
-        <div class="modal-to" id="cd-period">—</div>
-        <div class="modal-name" id="cd-title">—</div>
+        <div class="modal-to" id="cd-period">-</div>
+        <div class="modal-name" id="cd-title">-</div>
       </div>
       <button type="button" class="modal-close" onclick="closeClaimDetail()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1108,7 +1108,7 @@
       <div>
         <div class="return-claim-eyebrow">Return to tutor</div>
         <div class="return-claim-title" id="claim-return-title">Return claim</div>
-        <div class="return-claim-sub" id="claim-return-subtitle">—</div>
+        <div class="return-claim-sub" id="claim-return-subtitle">-</div>
       </div>
       <button type="button" class="modal-close" onclick="closeClaimReturnModal()" aria-label="Close">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1137,19 +1137,19 @@
   <div class="reg-modal">
     <div class="reg-modal-header">
       <div>
-        <div class="reg-modal-eyebrow" id="reg-eyebrow">—</div>
+        <div class="reg-modal-eyebrow" id="reg-eyebrow">-</div>
         <div class="reg-modal-title" id="reg-title">Attendance Register</div>
       </div>
       <button type="button" class="reg-modal-close" onclick="closeRegister()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="reg-modal-meta" id="reg-meta">—</div>
+    <div class="reg-modal-meta" id="reg-meta">-</div>
     <div class="reg-summary-strip">
-      <div class="reg-stat"><div class="reg-stat-lbl">Enrolled</div><div class="reg-stat-val" id="reg-enrolled">—</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Present</div><div class="reg-stat-val green" id="reg-present">—</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Absent</div><div class="reg-stat-val red" id="reg-absent">—</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Rate</div><div class="reg-stat-val amber" id="reg-pct">—</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Enrolled</div><div class="reg-stat-val" id="reg-enrolled">-</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Present</div><div class="reg-stat-val green" id="reg-present">-</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Absent</div><div class="reg-stat-val red" id="reg-absent">-</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Rate</div><div class="reg-stat-val amber" id="reg-pct">-</div></div>
     </div>
     <div class="reg-table-wrap">
       <table class="reg-table">
@@ -1310,7 +1310,7 @@
         <div class="um-field"><div class="um-label">Surname</div><input id="student-surname" class="um-input" type="text" placeholder="e.g. Mokoena" /></div>
         <div class="um-field"><div class="um-label">Email</div><input id="student-email" class="um-input" type="email" placeholder="e.g. tmokoena@ump.ac.za" /></div>
         <div class="um-field"><div class="um-label">Student number</div><input id="student-number" class="um-input" type="text" placeholder="e.g. 202012345" /></div>
-        <div class="um-field"><div class="um-label">Programme</div><select id="student-programme" class="um-input"><option value="">—</option><option value="DICT">DICT</option><option value="BICT">BICT</option></select></div>
+        <div class="um-field"><div class="um-label">Programme</div><select id="student-programme" class="um-input"><option value="">-</option><option value="DICT">DICT</option><option value="BICT">BICT</option></select></div>
         <div class="um-field"><div class="um-label">Year level</div><input id="student-year-level" class="um-input" type="text" placeholder="e.g. 3rd year" /></div>
       </div>
       <div class="um-actions"><button class="btn-sm" onclick="closeAddStudentModal()">Cancel</button><button class="btn-primary" onclick="saveStudent()">Save Student</button></div>
@@ -1320,19 +1320,19 @@
   <!-- GENERIC CONFIRM MODAL -->
   <div class="modal-overlay" id="confirm-overlay" onclick="closeConfirmModal(event)">
     <div class="modal um-modal small" id="confirm-modal">
-      <div class="modal-header"><div><div class="modal-to" id="confirm-eyebrow">Confirmation</div><div class="modal-name" id="confirm-title">—</div></div><button class="modal-close" onclick="closeConfirmModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-      <div class="um-confirm-message" id="confirm-message">—</div>
+      <div class="modal-header"><div><div class="modal-to" id="confirm-eyebrow">Confirmation</div><div class="modal-name" id="confirm-title">-</div></div><button class="modal-close" onclick="closeConfirmModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="um-confirm-message" id="confirm-message">-</div>
       <div class="um-actions"><button class="btn-sm" onclick="closeConfirmModal()">Cancel</button><button class="btn-primary" id="confirm-action-btn" onclick="runConfirmAction()">Confirm</button></div>
     </div>
   </div>
 
-  <!-- CREDENTIAL RESULT MODAL — shows a generated temp password exactly once -->
+  <!-- CREDENTIAL RESULT MODAL - shows a generated temp password exactly once -->
   <div class="modal-overlay" id="credential-overlay" onclick="closeCredentialModal(event)">
     <div class="modal um-modal small" id="credential-modal">
-      <div class="modal-header"><div><div class="modal-to">Temporary password</div><div class="modal-name" id="credential-email">—</div></div><button class="modal-close" onclick="closeCredentialModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-header"><div><div class="modal-to">Temporary password</div><div class="modal-name" id="credential-email">-</div></div><button class="modal-close" onclick="closeCredentialModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section">
-        <div class="um-label" style="margin-bottom:8px;">Share this with the user — it will not be shown again</div>
-        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text);background:rgba(0,0,0,.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;letter-spacing:.05em;" id="credential-password">—</div>
+        <div class="um-label" style="margin-bottom:8px;">Share this with the user - it will not be shown again</div>
+        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:var(--text);background:rgba(0,0,0,.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:center;letter-spacing:.05em;" id="credential-password">-</div>
       </div>
       <div class="um-actions"><button class="btn-primary" onclick="closeCredentialModal()">Done</button></div>
     </div>
@@ -1341,7 +1341,7 @@
   <!-- USER MESSAGE MODAL -->
   <div class="modal-overlay" id="user-message-overlay" onclick="closeUserMessageModal(event)">
     <div class="modal um-modal small" id="user-message-modal">
-      <div class="modal-header"><div><div class="modal-to">Message to</div><div class="modal-name" id="user-message-name">—</div></div><button class="modal-close" onclick="closeUserMessageModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-header"><div><div class="modal-to">Message to</div><div class="modal-name" id="user-message-name">-</div></div><button class="modal-close" onclick="closeUserMessageModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section um-grid one">
         <div class="um-field"><div class="um-label">Subject</div><input id="user-message-subject" class="um-input" type="text" placeholder="Subject…" /></div>
         <div class="um-field"><div class="um-label">Message</div><textarea id="user-message-body" class="um-textarea" placeholder="Write your message here…"></textarea></div>
@@ -1350,7 +1350,7 @@
     </div>
   </div>
 
-  <!-- EDIT MODULES MODAL (lecturers only — a lecturer may teach more than one module) -->
+  <!-- EDIT MODULES MODAL (lecturers only - a lecturer may teach more than one module) -->
   <div class="modal-overlay" id="edit-modules-overlay" onclick="closeEditModulesModal(event)">
     <div class="modal um-modal small" id="edit-modules-modal">
       <div class="modal-header"><div><div class="modal-to">Lecturer Management</div><div class="modal-name" id="edit-modules-lecturer-name">Edit Modules</div></div><button class="modal-close" onclick="closeEditModulesModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -1365,8 +1365,8 @@
             <div class="um-label">Course</div>
             <select id="new-module-course" class="um-input" style="height:38px;" onchange="populateEditModuleNameDropdown()">
               <option value="">Select course…</option>
-              <option value="BICT — Bachelor of ICT">BICT — Bachelor of ICT</option>
-              <option value="DICT — Diploma in ICT">DICT — Diploma in ICT</option>
+              <option value="BICT - Bachelor of ICT">BICT - Bachelor of ICT</option>
+              <option value="DICT - Diploma in ICT">DICT - Diploma in ICT</option>
             </select>
           </div>
           <div class="um-field">
@@ -1386,16 +1386,16 @@
   <!-- FLAGGED SESSION INVESTIGATION MODAL -->
   <div class="modal-overlay" id="flag-overlay" onclick="closeFlagModal(event)">
     <div class="modal um-modal" id="flag-modal" style="width:920px;max-width:96vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;">
-      <div class="modal-header"><div><div class="modal-to">Flagged Session</div><div class="modal-name" id="flag-title">—</div></div><button class="modal-close" onclick="closeFlagModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+      <div class="modal-header"><div><div class="modal-to">Flagged Session</div><div class="modal-name" id="flag-title">-</div></div><button class="modal-close" onclick="closeFlagModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div style="overflow:auto;padding:20px;display:flex;flex-direction:column;gap:16px;">
         <div class="um-section um-note" id="flag-detail-note"></div>
         <div class="um-section um-grid">
-          <div class="um-field"><div class="um-label">Tutor</div><div class="um-note" id="flag-tutor">—</div></div>
-          <div class="um-field"><div class="um-label">Module</div><div class="um-note" id="flag-module">—</div></div>
-          <div class="um-field"><div class="um-label">Date</div><div class="um-note" id="flag-session">—</div></div>
-          <div class="um-field"><div class="um-label">Session type</div><div class="um-note" id="flag-type">—</div></div>
-          <div class="um-field"><div class="um-label">Reported by</div><div class="um-note" id="flag-reported">—</div></div>
-          <div class="um-field"><div class="um-label">Attendance data</div><div class="um-note" id="flag-attendance">—</div></div>
+          <div class="um-field"><div class="um-label">Tutor</div><div class="um-note" id="flag-tutor">-</div></div>
+          <div class="um-field"><div class="um-label">Module</div><div class="um-note" id="flag-module">-</div></div>
+          <div class="um-field"><div class="um-label">Date</div><div class="um-note" id="flag-session">-</div></div>
+          <div class="um-field"><div class="um-label">Session type</div><div class="um-note" id="flag-type">-</div></div>
+          <div class="um-field"><div class="um-label">Reported by</div><div class="um-note" id="flag-reported">-</div></div>
+          <div class="um-field"><div class="um-label">Attendance data</div><div class="um-note" id="flag-attendance">-</div></div>
         </div>
         <div class="um-section">
           <div class="um-field"><div class="um-label">Investigation notes</div><textarea id="flag-investigation-notes" class="um-textarea" placeholder="Write what you found during the investigation…"></textarea></div>
@@ -1421,8 +1421,8 @@
         <div class="um-field"><div class="um-label">Resolution outcome</div>
           <select id="resolve-outcome" class="um-select">
             <option value="">Select an outcome…</option>
-            <option value="confirmed">Session confirmed — remove flag</option>
-            <option value="invalid">Session invalid — exclude from claim</option>
+            <option value="confirmed">Session confirmed - remove flag</option>
+            <option value="invalid">Session invalid - exclude from claim</option>
             <option value="warned">Tutor formally warned</option>
           </select>
         </div>
@@ -1438,10 +1438,10 @@
       <div class="modal-header"><div><div class="modal-to">Support Ticket</div><div class="modal-name" id="support-respond-title">Ticket #0000</div></div><button class="modal-close" onclick="closeSupportRespondModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div style="overflow:auto;padding:20px;display:flex;flex-direction:column;gap:16px;">
         <div class="um-grid two">
-          <div class="um-field"><div class="um-label">From</div><div class="um-note" id="support-respond-from">—</div></div>
-          <div class="um-field"><div class="um-label">Role</div><div class="um-note" id="support-respond-role">—</div></div>
-          <div class="um-field"><div class="um-label">Subject</div><div class="um-note" id="support-respond-subject">—</div></div>
-          <div class="um-field"><div class="um-label">Priority</div><div class="um-note" id="support-respond-priority">—</div></div>
+          <div class="um-field"><div class="um-label">From</div><div class="um-note" id="support-respond-from">-</div></div>
+          <div class="um-field"><div class="um-label">Role</div><div class="um-note" id="support-respond-role">-</div></div>
+          <div class="um-field"><div class="um-label">Subject</div><div class="um-note" id="support-respond-subject">-</div></div>
+          <div class="um-field"><div class="um-label">Priority</div><div class="um-note" id="support-respond-priority">-</div></div>
         </div>
         <div class="um-section"><div class="um-label" style="margin-bottom:8px;">Ticket details</div><div class="um-note" id="support-respond-details"></div></div>
         <div class="um-section"><div class="um-label" style="margin-bottom:8px;">Thread</div><div class="support-thread" id="support-respond-history"></div></div>
@@ -1468,8 +1468,8 @@
 <script src="../js/messaging.js?v=16"></script>
 <script src="../js/admin-dashboard-api.js?v=35"></script>
 <script>
-  if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
-  if (!VF.requireRole('admin', 'login.html')) { /* stop — requireRole already redirected */ }
+  if (!VF.requireAuth('login.html')) { /* stop - requireAuth already redirected */ }
+  if (!VF.requireRole('admin', 'login.html')) { /* stop - requireRole already redirected */ }
 
   let activeApplicationDetailId = null;
 
@@ -1539,7 +1539,7 @@
       const badge = document.getElementById('nav-referrals-badge')
         || document.querySelector('[onclick*="referrals"] .nav-badge');
       if (badge) {
-        badge.textContent = pending ? String(pending) : '—';
+        badge.textContent = pending ? String(pending) : '-';
         if (badge.id === 'nav-referrals-badge') {
           badge.style.display = pending ? '' : 'none';
         }
@@ -1572,7 +1572,7 @@ function populatePostingModuleSelect() {
   const select = document.getElementById('posting-module');
   if (!select || typeof CURRICULUM === 'undefined') return;
   const programme = document.getElementById('posting-programme').value || 'DICT';
-  const course = programme === 'BICT' ? 'BICT — Bachelor of ICT' : 'DICT — Diploma in ICT';
+  const course = programme === 'BICT' ? 'BICT - Bachelor of ICT' : 'DICT - Diploma in ICT';
   const prevCode = select.value;
   select.innerHTML = '';
   curriculumModulesForCourse(course).forEach((m, index) => {
@@ -1701,7 +1701,7 @@ function renderPostingRow(p) {
     <td style="font-weight:600;color:var(--text)">${p.module_code}</td>
     <td style="color:var(--muted)">${prog}</td>
     <td style="color:var(--muted)">${formatPositionType(p.position_type)}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.min_year_level || '—'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.min_year_level || '-'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.min_average}%</td>
     <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.applications_needed ?? p.apps_needed}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--text)">${p.application_count || 0}</td>
@@ -1711,14 +1711,14 @@ function renderPostingRow(p) {
 
 function renderPostingCard(p) {
   const prog = p.programme || (p.course && p.course.startsWith('BICT') ? 'BICT' : 'DICT');
-  const avg = p.min_average != null ? `${Number(p.min_average).toFixed(2)}%` : '—';
+  const avg = p.min_average != null ? `${Number(p.min_average).toFixed(2)}%` : '-';
   return `<div class="ad-posting-card">
-    <div class="ad-posting-code">${p.module_code || '—'}</div>
+    <div class="ad-posting-code">${p.module_code || '-'}</div>
     <div class="ad-posting-prog">${prog} · ${formatPositionType(p.position_type)}</div>
     <div class="ad-posting-stats">
-      <div class="item"><div class="k">${p.min_year_level || '—'}</div><div class="l">Year level req.</div></div>
+      <div class="item"><div class="k">${p.min_year_level || '-'}</div><div class="l">Year level req.</div></div>
       <div class="item"><div class="k">${avg}</div><div class="l">Avg req.</div></div>
-      <div class="item"><div class="k">${p.applications_needed ?? p.apps_needed ?? '—'}</div><div class="l">Apps needed</div></div>
+      <div class="item"><div class="k">${p.applications_needed ?? p.apps_needed ?? '-'}</div><div class="l">Apps needed</div></div>
       <div class="item"><div class="k">${p.application_count || 0}</div><div class="l">Applications</div></div>
     </div>
     <button type="button" class="ad-btn-outline" style="margin-top:14px;" onclick="editPosting(${p.id})">Edit</button>
@@ -1820,7 +1820,7 @@ function applicationActions(id, status) {
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return '-';
   const d = new Date(dateStr);
   const today = new Date();
   if (d.toDateString() === today.toDateString()) return 'Today';
@@ -1828,7 +1828,7 @@ function formatDate(dateStr) {
 }
 
 function courseShort(course) {
-  if (!course) return '—';
+  if (!course) return '-';
   if (course.startsWith('BICT')) return 'BICT';
   if (course.startsWith('DICT')) return 'DICT';
   return course;
@@ -1853,7 +1853,7 @@ function referralActions(id, status) {
 function renderReferralRow(ref) {
   const gpa = ref.gpa != null ? Number(ref.gpa) : null;
   const gpaColor = gpa == null ? 'var(--muted)' : (gpa >= 70 ? 'var(--green)' : 'var(--yellow)');
-  const gpaText = gpa != null ? gpa + '%' : '—';
+  const gpaText = gpa != null ? gpa + '%' : '-';
   return `<tr>
     <td style="font-weight:600;color:var(--text)">${ref.first_names} ${ref.surname}</td>
     <td style="color:var(--muted)">${formatLecturerName(ref)}</td>
@@ -1910,7 +1910,7 @@ async function loadReferrals() {
     const summary = document.getElementById('referrals-summary');
     if (summary) {
       summary.textContent = pending.length
-        ? `Appointed or referred tutors on the lecturer pathway — ${pending.length} require countersignature`
+        ? `Appointed or referred tutors on the lecturer pathway - ${pending.length} require countersignature`
         : 'No referrals awaiting countersignature';
     }
 
@@ -1923,10 +1923,10 @@ async function loadReferrals() {
     if (cards) {
       cards.innerHTML = refs.length
         ? refs.map((ref) => {
-          const gpa = ref.gpa != null ? `${Number(ref.gpa).toFixed(2)}%` : '—';
+          const gpa = ref.gpa != null ? `${Number(ref.gpa).toFixed(2)}%` : '-';
           return `<div class="ad-rec-card">
             <div class="ad-rec-name">${ref.first_names} ${ref.surname}</div>
-            <div class="ad-rec-sub">${formatLecturerName(ref)} · ${ref.module_code || '—'}</div>
+            <div class="ad-rec-sub">${formatLecturerName(ref)} · ${ref.module_code || '-'}</div>
             <div class="ad-rec-grid">
               <div class="item"><div class="k">${qualificationPlain(ref.qualification_level)}</div><div class="l">Qualification</div></div>
               <div class="item"><div class="k">${gpa}</div><div class="l">Average</div></div>
@@ -1948,14 +1948,14 @@ async function loadReferrals() {
 
 function qualificationPlain(level) {
   if (level === 'masters' || level === 'masters_holder' || level === 'phd') {
-    return QUALIFICATION_DISPLAY_MAP[level] || level || '—';
+    return QUALIFICATION_DISPLAY_MAP[level] || level || '-';
   }
   if (level === '4th_year_honours') return 'Honours';
   return 'Undergrad';
 }
 
 function formatGpaDisplay(gpa) {
-  if (gpa == null || gpa === '') return '—';
+  if (gpa == null || gpa === '') return '-';
   const n = Number(gpa);
   if (Number.isNaN(n)) return `${gpa}%`;
   return `${n.toFixed(2)}%`;
@@ -1977,14 +1977,14 @@ function renderApplicationCard(app, opts) {
 
   if (inProgress) {
     module = app.email || 'In progress';
-    col1Val = app.email || '—';
+    col1Val = app.email || '-';
     col1Lab = 'EMAIL';
-    col2Val = app.student_number || '—';
+    col2Val = app.student_number || '-';
     col2Lab = 'STUDENT NO.';
     col3Val = formatDate(app.created_at);
     col3Lab = 'STARTED';
   } else if (withReason) {
-    module = (app.module_name || '—') + positionTypeChip(app.position_type);
+    module = (app.module_name || '-') + positionTypeChip(app.position_type);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -1992,7 +1992,7 @@ function renderApplicationCard(app, opts) {
     col3Val = app.rejection_reason || 'Did not meet eligibility';
     col3Lab = 'REASON';
   } else {
-    module = (app.module_name || '—') + positionTypeChip(app.position_type);
+    module = (app.module_name || '-') + positionTypeChip(app.position_type);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -2036,7 +2036,7 @@ function renderAppsCards(listEl, apps, opts, emptyMsg) {
 function renderApplicationRow(app, withReason) {
   const pref = getPreferenceTier(app.gpa);
   const gpaColor = app.gpa != null && Number(app.gpa) >= 70 ? 'var(--green)' : 'var(--yellow)';
-  const gpaCell = app.gpa != null ? `${app.gpa}%` : '—';
+  const gpaCell = app.gpa != null ? `${app.gpa}%` : '-';
   const dateCell = withReason
     ? `<td style="color:var(--muted)">${app.rejection_reason || 'Did not meet eligibility requirements'}</td>`
     : `<td style="color:var(--muted)">${formatDate(app.submitted_at || app.created_at)}</td>`;
@@ -2046,9 +2046,9 @@ function renderApplicationRow(app, withReason) {
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot ${pref.dotClass}"></span></td>
       <td style="font-weight:600;color:var(--text)">${app.first_names} ${app.surname}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.module_name || '—'}${positionTypeChip(app.position_type)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.module_name || '-'}${positionTypeChip(app.position_type)}</td>
       <td>${qualificationChip(app.qualification_level)}</td>
-      <td style="font-family:'DM Mono',monospace;color:${gpaCell === '—' ? 'var(--muted)' : gpaColor}">${gpaCell}</td>
+      <td style="font-family:'DM Mono',monospace;color:${gpaCell === '-' ? 'var(--muted)' : gpaColor}">${gpaCell}</td>
       ${dateCell}
       <td>${applicationStatusChip(app.status)}</td>
       ${actionCell}
@@ -2060,8 +2060,8 @@ function renderInProgressRow(app) {
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot none"></span></td>
       <td style="font-weight:600;color:var(--text)">${app.first_names} ${app.surname}</td>
-      <td style="color:var(--muted);font-size:12px">${app.email || '—'}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.student_number || '—'}</td>
+      <td style="color:var(--muted);font-size:12px">${app.email || '-'}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.student_number || '-'}</td>
       <td style="color:var(--muted)">${formatDate(app.created_at)}</td>
       <td>${applicationStatusChip(app.status)}</td>
     </tr>`;
@@ -2078,15 +2078,15 @@ function formatScreeningBlock(app) {
 
   const cv = screening.cv || {};
   const tr = screening.transcript || {};
-  const matched = (cv.matched || []).join(', ') || '—';
+  const matched = (cv.matched || []).join(', ') || '-';
   const tutorLine = tr.tutorModule
-    ? `${tr.tutorModule.name} — ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
+    ? `${tr.tutorModule.name} - ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
     : 'Not found on transcript';
 
   return `
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;gap:8px;font-size:12px;">
-      <div><strong>CV keyword score:</strong> ${cv.score ?? app.cv_keyword_score ?? 0} / ${cv.totalKeywords ?? '—'} matched (${matched})</div>
-      <div><strong>Transcript average:</strong> ${tr.calculatedAverage != null ? tr.calculatedAverage + '%' : '—'}${tr.claimedAverage != null ? ` (declared ${tr.claimedAverage}%)` : ''}</div>
+      <div><strong>CV keyword score:</strong> ${cv.score ?? app.cv_keyword_score ?? 0} / ${cv.totalKeywords ?? '-'} matched (${matched})</div>
+      <div><strong>Transcript average:</strong> ${tr.calculatedAverage != null ? tr.calculatedAverage + '%' : '-'}${tr.claimedAverage != null ? ` (declared ${tr.claimedAverage}%)` : ''}</div>
       <div><strong>All modules passed:</strong> ${tr.allModulesPassed ? 'Yes' : 'No'}</div>
       <div><strong>Tutor module on record:</strong> ${tutorLine}</div>
     </div>`;
@@ -2251,9 +2251,9 @@ function renderStudentRow(s) {
   return `<tr data-student-id="${s.id}">
     <td style="font-weight:600;color:var(--text)">${name}</td>
     <td style="color:var(--muted)">${s.email}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.student_number || '—'}</td>
-    <td style="color:var(--muted)">${s.programme || '—'}</td>
-    <td style="color:var(--muted)">${s.year_level || '—'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.student_number || '-'}</td>
+    <td style="color:var(--muted)">${s.programme || '-'}</td>
+    <td style="color:var(--muted)">${s.year_level || '-'}</td>
     <td><button class="btn-sm danger" onclick="removeStudent(${s.id})">Remove</button></td>
   </tr>`;
 }
@@ -2261,13 +2261,13 @@ function renderStudentRow(s) {
 function renderStudentCard(s) {
   const name = `${s.first_names || ''} ${s.surname || ''}`.trim() || 'Student';
   const initials = ((s.first_names || '').trim().charAt(0) + (s.surname || '').trim().charAt(0) || '?').toUpperCase();
-  const prog = s.programme || '—';
-  const year = s.year_level || '—';
+  const prog = s.programme || '-';
+  const year = s.year_level || '-';
   return `<div class="ad-compact-row ad-compact-row--static">
     <div class="ad-cr-avatar">${initials}</div>
     <div class="ad-cr-info">
       <div class="ad-cr-name">${name}</div>
-      <div class="ad-cr-email">${s.email || '—'}</div>
+      <div class="ad-cr-email">${s.email || '-'}</div>
       <div class="ad-cr-meta">
         <span class="ad-mini-chip">${prog}</span>
         <span class="ad-mini-chip neutral">${year}</span>
@@ -2312,34 +2312,39 @@ async function removeStudent(id) {
   }
 }
 
-async function downloadAppointmentForm(applicationId, kind) {
+async function fetchAppointmentFormFile(applicationId, kind) {
   const token = VF.getToken();
-  if (!token) {
-    VF.toast('Please log in again.', 'err');
-    return;
-  }
+  if (!token) throw new Error('Please log in again.');
   const path = kind === 'confirmation'
     ? `/appointments/${applicationId}/confirmation`
     : `/appointments/${applicationId}/form-d`;
+  const res = await fetch(VF.API_BASE + path + '?inline=1', {
+    headers: { Authorization: 'Bearer ' + token },
+  });
+  if (!res.ok) {
+    let msg = 'Could not load form.';
+    try {
+      const data = await res.json();
+      if (data.errors && data.errors[0]) msg = data.errors[0];
+    } catch (_) { /* ignore */ }
+    throw new Error(msg);
+  }
+  const blob = await res.blob();
+  const pdfBlob = blob.type === 'application/pdf'
+    ? blob
+    : new Blob([await blob.arrayBuffer()], { type: 'application/pdf' });
+  const cd = res.headers.get('Content-Disposition') || '';
+  const match = cd.match(/filename="?([^"]+)"?/i);
+  const filename = match ? match[1] : `${kind}.pdf`;
+  return { blob: pdfBlob, filename };
+}
+
+async function downloadAppointmentForm(applicationId, kind) {
   try {
-    const res = await fetch(VF.API_BASE + path, {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (!res.ok) {
-      let msg = 'Could not download form.';
-      try {
-        const data = await res.json();
-        if (data.errors && data.errors[0]) msg = data.errors[0];
-      } catch (_) { /* ignore */ }
-      throw new Error(msg);
-    }
-    const blob = await res.blob();
-    const cd = res.headers.get('Content-Disposition') || '';
-    const match = cd.match(/filename="?([^"]+)"?/i);
-    const filename = match ? match[1] : `${kind}.pdf`;
+    const file = await fetchAppointmentFormFile(applicationId, kind);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
+    a.href = URL.createObjectURL(file.blob);
+    a.download = file.filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -2347,6 +2352,16 @@ async function downloadAppointmentForm(applicationId, kind) {
     VF.toast('Download started.', 'ok');
   } catch (err) {
     VF.toast(err.message || 'Could not download form.', 'err');
+  }
+}
+
+async function viewAppointmentForm(applicationId, kind) {
+  try {
+    const file = await fetchAppointmentFormFile(applicationId, kind);
+    const title = kind === 'confirmation' ? 'Confirmation Form' : 'Appointment Form D';
+    showAdminDocBlob(title, file.blob, file.filename);
+  } catch (err) {
+    VF.toast(err.message || 'Could not open form.', 'err');
   }
 }
 
@@ -2646,7 +2661,7 @@ function openApprovalModal(id) {
   pendingApprovalId = id;
   pendingReferralApprovalId = null;
   document.getElementById('approval-applicant').textContent = app.first_names + ' ' + app.surname;
-  document.getElementById('approval-module').textContent = app.module_name || '—';
+  document.getElementById('approval-module').textContent = app.module_name || '-';
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level;
   document.getElementById('approval-responsibility').value = '';
   document.getElementById('approval-cost-centre').value = '';
@@ -2664,7 +2679,7 @@ function openReferralApprovalModal(id) {
   pendingReferralApprovalId = id;
   pendingApprovalId = null;
   document.getElementById('approval-applicant').textContent = ref.first_names + ' ' + ref.surname;
-  document.getElementById('approval-module').textContent = ref.module_code + ' · ' + (ref.module_name || '—');
+  document.getElementById('approval-module').textContent = ref.module_code + ' · ' + (ref.module_name || '-');
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[ref.qualification_level] || ref.qualification_level;
   document.getElementById('approval-responsibility').value = '';
   document.getElementById('approval-cost-centre').value = '';
@@ -2683,7 +2698,7 @@ function closeApprovalModal(e) {
   pendingReferralApprovalId = null;
 }
 
-// Rate table mirrors backend constants.js exactly — same 9 combinations.
+// Rate table mirrors backend constants.js exactly - same 9 combinations.
 const RATE_TABLE_DISPLAY = {
   '3rd_year':         { standard: 59.66 },
   '4th_year_honours': { standard: 73.87 },
@@ -2753,16 +2768,16 @@ async function finalizeApplicationApproval() {
       if (typeof handleCredentialResult === 'function') {
         handleCredentialResult(result, {
           fallbackMessage: result.accountCreated && result.tempPassword
-            ? 'Approval email could not be sent — share login details with the tutor.'
+            ? 'Approval email could not be sent - share login details with the tutor.'
             : undefined,
           successMessage: result.emailSent
-            ? `Referral approved — login details emailed to ${result.email}`
+            ? `Referral approved - login details emailed to ${result.email}`
             : (result.applicationApproved
-              ? 'Referral approved — tutor added to User Management'
+              ? 'Referral approved - tutor added to User Management'
               : 'Referral approved.'),
         });
       } else {
-        VF.toast(result.applicationApproved ? 'Referral approved — tutor added to User Management' : 'Referral approved', 'ok');
+        VF.toast(result.applicationApproved ? 'Referral approved - tutor added to User Management' : 'Referral approved', 'ok');
       }
       return;
     }
@@ -2792,7 +2807,7 @@ function isAdminMobileView() {
 }
 
 function formatAppStage(status) {
-  return String(status || '—')
+  return String(status || '-')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -2837,7 +2852,7 @@ function fillMobileApplicationDetail(app) {
 
   document.getElementById('ad-appd-title').textContent = name;
   document.getElementById('ad-appd-subtitle').textContent =
-    `${app.module_name || '—'} · ${app.course || '—'} · ${formatDate(app.submitted_at || app.created_at)}`;
+    `${app.module_name || '-'} · ${app.course || '-'} · ${formatDate(app.submitted_at || app.created_at)}`;
   document.getElementById('ad-appd-status').innerHTML = applicationStatusChip(app.status);
 
   document.getElementById('ad-appd-status-summary').innerHTML = `
@@ -2852,7 +2867,7 @@ function fillMobileApplicationDetail(app) {
       </div>
       <div class="ad-appd-summary-span">
         <div class="ad-appd-field-label">Module</div>
-        <div class="ad-appd-summary-val">${app.module_name || '—'}</div>
+        <div class="ad-appd-summary-val">${app.module_name || '-'}</div>
       </div>
       <div class="ad-appd-summary-span">
         <div class="ad-appd-field-label">Assigned lecturer</div>
@@ -2863,21 +2878,21 @@ function fillMobileApplicationDetail(app) {
 
   document.getElementById('ad-appd-personal').innerHTML = `
     <div class="ad-appd-field-group-title">Personal information</div>
-    ${adAppdFieldRow('Title', app.title || '—')}
-    ${adAppdFieldRow('Initials', app.initials || '—')}
+    ${adAppdFieldRow('Title', app.title || '-')}
+    ${adAppdFieldRow('Initials', app.initials || '-')}
     ${adAppdFieldRow('Name', name)}
-    ${adAppdFieldRow('Email', app.email || '—', true)}
-    ${adAppdFieldRow('Cell', app.cell || '—', true)}
-    ${adAppdFieldRow('Student number', app.student_number || '—', true)}`;
+    ${adAppdFieldRow('Email', app.email || '-', true)}
+    ${adAppdFieldRow('Cell', app.cell || '-', true)}
+    ${adAppdFieldRow('Student number', app.student_number || '-', true)}`;
 
   document.getElementById('ad-appd-academic').innerHTML = `
     <div class="ad-appd-field-group-title">Academic information</div>
-    ${adAppdFieldRow('Faculty', app.faculty || '—')}
-    ${adAppdFieldRow('Course', app.course || '—')}
-    ${adAppdFieldRow('Qualification level', QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '—')}
+    ${adAppdFieldRow('Faculty', app.faculty || '-')}
+    ${adAppdFieldRow('Course', app.course || '-')}
+    ${adAppdFieldRow('Qualification level', QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-')}
     ${adAppdFieldRow('Position type', app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor')}
-    ${adAppdFieldRow('Module year level', app.module_year_level || '—')}
-    ${adAppdFieldRow('Module to tutor', app.module_name || '—')}
+    ${adAppdFieldRow('Module year level', app.module_year_level || '-')}
+    ${adAppdFieldRow('Module to tutor', app.module_name || '-')}
     ${adAppdFieldRow('Current average', formatGpaDisplay(app.gpa))}`;
 
   const screening = parseScreeningResult(app);
@@ -2892,17 +2907,17 @@ function fillMobileApplicationDetail(app) {
   else metaEl.textContent = '';
 
   const tutorLine = tr.tutorModule
-    ? `${tr.tutorModule.name} — ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
-    : (screening ? 'Not found on transcript' : '—');
+    ? `${tr.tutorModule.name} - ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
+    : (screening ? 'Not found on transcript' : '-');
   const avgLine = tr.calculatedAverage != null
     ? `${tr.calculatedAverage}%${tr.claimedAverage != null ? ` <span class="ad-appd-faint">(declared ${tr.claimedAverage}%)</span>` : ''}`
-    : '—';
+    : '-';
 
   document.getElementById('ad-appd-keywords').innerHTML = `
     <div class="ad-appd-kw-box">${matchedList || (score != null ? 'No matched keywords listed.' : 'No screening result yet.')}</div>
     <div class="ad-appd-kw-extra">
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">Transcript average</span><span class="ad-appd-v">${avgLine}</span></div>
-      <div class="ad-appd-field-row bare"><span class="ad-appd-k">All modules passed</span><span class="ad-appd-v${tr.allModulesPassed ? ' ok' : ''}">${screening ? (tr.allModulesPassed ? 'Yes' : 'No') : '—'}</span></div>
+      <div class="ad-appd-field-row bare"><span class="ad-appd-k">All modules passed</span><span class="ad-appd-v${tr.allModulesPassed ? ' ok' : ''}">${screening ? (tr.allModulesPassed ? 'Yes' : 'No') : '-'}</span></div>
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${tutorLine}</span></div>
     </div>`;
 
@@ -2930,8 +2945,7 @@ function fillMobileApplicationDetail(app) {
   const idName = app.id_original_name || app.id_filename || 'Not uploaded';
   const taxName = app.tax_original_name || app.tax_filename || 'Not uploaded';
   const bankName = app.bank_original_name || app.bank_filename || 'Not uploaded';
-  const escFn = (f) => String(f || '').replace(/'/g, "\\'");
-  const docRow = (label, fileLabel, filename, ico) => `
+  const docRow = (label, fileLabel, filename, ico, viewOnclick) => `
     <div class="ad-appd-doc-row">
       <div class="ad-appd-doc-left">
         <div class="ad-appd-doc-ico">${ico}</div>
@@ -2940,9 +2954,12 @@ function fillMobileApplicationDetail(app) {
           <div class="ad-appd-doc-file">${fileLabel}</div>
         </div>
       </div>
-      ${filename ? `<button type="button" class="ad-appd-doc-btn" onclick="openAppDocReview('${label}', '${escFn(filename)}')">Review</button>` : ''}
+      ${viewOnclick || filename ? `<button type="button" class="ad-appd-doc-btn" onclick='${viewOnclick || `viewAdminUpload(${JSON.stringify(label)}, ${JSON.stringify(filename)})`}'>View</button>` : ''}
     </div>`;
+  const formAccepted = app.offer_accepted_at ? 'Generated form - accepted' : 'Generated form - not accepted yet';
   document.getElementById('ad-appd-docs').innerHTML = `
+    ${app.status === 'approved' ? docRow('Appointment Form D', formAccepted, null, docSvg, `viewAppointmentForm(${app.id}, "form-d")`) : ''}
+    ${app.status === 'approved' ? docRow('Confirmation Form', formAccepted, null, docSvg, `viewAppointmentForm(${app.id}, "confirmation")`) : ''}
     ${docRow('CV', cvName, app.cv_filename, docSvg)}
     ${docRow('Academic record', trName, app.transcript_filename, recSvg)}
     ${docRow('ID copy', idName, app.id_filename, docSvg)}
@@ -3056,14 +3073,14 @@ function openApplicationDetail(id) {
 
   activeApplicationDetailId = null;
   document.getElementById('app-modal-title').textContent = app.first_names + ' ' + app.surname;
-  document.getElementById('app-modal-subtitle').textContent = (app.module_name || '—') + ' · ' + (app.course || '—') + ' · ' + formatDate(app.submitted_at);
+  document.getElementById('app-modal-subtitle').textContent = (app.module_name || '-') + ' · ' + (app.course || '-') + ' · ' + formatDate(app.submitted_at);
   document.getElementById('app-modal-status').innerHTML = applicationStatusChip(app.status);
   document.getElementById('app-modal-body').innerHTML = `
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;grid-column:1 / -1;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Status summary</div>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
         <div><div style="font-size:11px;color:var(--muted)">Current stage</div><div style="font-weight:700;color:var(--text)">${formatAppStage(app.status)}</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">Module</div><div style="font-weight:700;color:var(--text)">${app.module_name || '—'}</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">Module</div><div style="font-weight:700;color:var(--text)">${app.module_name || '-'}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Date submitted</div><div style="font-weight:700;color:var(--text)">${formatDate(app.submitted_at)}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Assigned lecturer</div><div style="font-weight:700;color:var(--text)">${app.lecturer_first_names ? app.lecturer_first_names + ' ' + app.lecturer_surname : 'Not yet assigned'}</div></div>
       </div>
@@ -3072,25 +3089,25 @@ function openApplicationDetail(id) {
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Personal information</div>
       <div style="display:grid;gap:8px;font-size:12px;">
-        <div><strong>Title:</strong> ${app.title || '—'}</div>
-        <div><strong>Initials:</strong> ${app.initials || '—'}</div>
+        <div><strong>Title:</strong> ${app.title || '-'}</div>
+        <div><strong>Initials:</strong> ${app.initials || '-'}</div>
         <div><strong>Name:</strong> ${app.first_names} ${app.surname}</div>
-        <div><strong>Email:</strong> ${app.email || '—'}</div>
-        <div><strong>Cell:</strong> ${app.cell || '—'}</div>
-        <div><strong>Student number:</strong> ${app.student_number || '—'}</div>
+        <div><strong>Email:</strong> ${app.email || '-'}</div>
+        <div><strong>Cell:</strong> ${app.cell || '-'}</div>
+        <div><strong>Student number:</strong> ${app.student_number || '-'}</div>
       </div>
     </div>
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Academic information</div>
       <div style="display:grid;gap:8px;font-size:12px;">
-        <div><strong>Faculty:</strong> ${app.faculty || '—'}</div>
-        <div><strong>Course:</strong> ${app.course || '—'}</div>
-        <div><strong>Qualification level:</strong> ${QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '—'}</div>
+        <div><strong>Faculty:</strong> ${app.faculty || '-'}</div>
+        <div><strong>Course:</strong> ${app.course || '-'}</div>
+        <div><strong>Qualification level:</strong> ${QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-'}</div>
         <div><strong>Position type:</strong> ${app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'}</div>
-        <div><strong>Module year level:</strong> ${app.module_year_level || '—'}</div>
-        <div><strong>Module to tutor:</strong> ${app.module_name || '—'}</div>
+        <div><strong>Module year level:</strong> ${app.module_year_level || '-'}</div>
+        <div><strong>Module to tutor:</strong> ${app.module_name || '-'}</div>
         <div><strong>Current average:</strong> ${app.gpa}%</div>
-        <div><strong>CV keyword score:</strong> ${app.cv_keyword_score != null ? app.cv_keyword_score : '—'}</div>
+        <div><strong>CV keyword score:</strong> ${app.cv_keyword_score != null ? app.cv_keyword_score : '-'}</div>
         ${formatScreeningBlock(app)}
       </div>
     </div>
@@ -3106,96 +3123,114 @@ function openApplicationDetail(id) {
 
   const previewList = document.getElementById('app-doc-preview-list');
   closeDocPanel();
+  const viewBtn = (label, filename) => filename
+    ? `<button type="button" class="btn-sm" onclick='viewAdminUpload(${JSON.stringify(label)}, ${JSON.stringify(filename)})'>View</button>`
+    : '';
+  const formBtns = (kind, viewLabel) => `
+    <div style="display:flex;gap:8px;">
+      <button type="button" class="btn-sm" onclick="viewAppointmentForm(${app.id}, '${kind}')">${viewLabel}</button>
+      <button type="button" class="btn-sm" onclick="downloadAppointmentForm(${app.id}, '${kind}')">Download</button>
+    </div>`;
+  const docRow = (title, subtitle, actions) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">${title}</div>
+        <div style="font-size:11px;color:var(--muted);">${subtitle}</div>
+      </div>
+      ${actions}
+    </div>`;
+  const generated = app.status === 'approved'
+    ? docRow(
+        'Appointment Form D',
+        app.offer_accepted_at
+          ? `Accepted ${new Date(app.offer_accepted_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          : 'Generated form - not accepted yet',
+        formBtns('form-d', 'View')
+      )
+      + docRow(
+        'Confirmation Form',
+        app.offer_accepted_at
+          ? `Accepted ${new Date(app.offer_accepted_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          : 'Generated form - not accepted yet',
+        formBtns('confirmation', 'View')
+      )
+    : '';
   previewList.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">CV</div>
-        <div style="font-size:11px;color:var(--muted);">${app.cv_original_name || app.cv_filename || 'Not uploaded'}</div>
-      </div>
-      ${app.cv_filename ? `<button class="btn-sm" onclick="openDocPanel('CV', '${app.cv_filename}')">Review</button>` : ''}
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">Academic record</div>
-        <div style="font-size:11px;color:var(--muted);">${app.transcript_original_name || app.transcript_filename || 'Not uploaded'}</div>
-      </div>
-      ${app.transcript_filename ? `<button class="btn-sm" onclick="openDocPanel('Academic record', '${app.transcript_filename}')">Review</button>` : ''}
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">ID copy</div>
-        <div style="font-size:11px;color:var(--muted);">${app.id_original_name || app.id_filename || 'Not uploaded'}</div>
-      </div>
-      ${app.id_filename ? `<button class="btn-sm" onclick="openDocPanel('ID copy', '${app.id_filename}')">Review</button>` : ''}
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">Tax number proof</div>
-        <div style="font-size:11px;color:var(--muted);">${app.tax_original_name || app.tax_filename || 'Not uploaded'}</div>
-      </div>
-      ${app.tax_filename ? `<button class="btn-sm" onclick="openDocPanel('Tax number proof', '${app.tax_filename}')">Review</button>` : ''}
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">Proof of banking</div>
-        <div style="font-size:11px;color:var(--muted);">${app.bank_original_name || app.bank_filename || 'Not uploaded'}</div>
-      </div>
-      ${app.bank_filename ? `<button class="btn-sm" onclick="openDocPanel('Proof of banking', '${app.bank_filename}')">Review</button>` : ''}
-    </div>
+    ${generated}
+    ${docRow('CV', app.cv_original_name || app.cv_filename || 'Not uploaded', viewBtn('CV', app.cv_filename))}
+    ${docRow('Academic record', app.transcript_original_name || app.transcript_filename || 'Not uploaded', viewBtn('Academic record', app.transcript_filename))}
+    ${docRow('ID copy', app.id_original_name || app.id_filename || 'Not uploaded', viewBtn('ID copy', app.id_filename))}
+    ${docRow('Tax number proof', app.tax_original_name || app.tax_filename || 'Not uploaded', viewBtn('Tax number proof', app.tax_filename))}
+    ${docRow('Proof of banking', app.bank_original_name || app.bank_filename || 'Not uploaded', viewBtn('Proof of banking', app.bank_filename))}
   `;
-
-  if (app.status === 'approved') {
-    document.getElementById('app-modal-body').innerHTML += `
-      <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;grid-column:1 / -1;">
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">
-          Generated Forms (Download &amp; Print)
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button type="button" class="btn-sm" onclick="downloadAppointmentForm(${app.id}, 'form-d')">
-            Download Appointment Form D
-          </button>
-          <button type="button" class="btn-sm" onclick="downloadAppointmentForm(${app.id}, 'confirmation')">
-            Download Confirmation Form
-          </button>
-        </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px;">
-          Print these forms, obtain the tutor's signature, and submit the complete package to HR.
-        </div>
-      </div>
-    `;
-  }
 
   document.getElementById('application-modal').style.display = 'flex';
   document.body.classList.add('admin-modal-open');
 }
 
 async function openAppDocReview(label, filename) {
-  if (!isAdminMobileView()) {
-    return openDocPanel(label, filename);
-  }
+  return viewAdminUpload(label, filename);
+}
+
+function showAdminDocBlob(title, blob, downloadName) {
   const overlay = document.getElementById('ad-app-doc-overlay');
   const frame = document.getElementById('ad-app-doc-frame');
-  const link = document.getElementById('ad-app-doc-newtab');
-  document.getElementById('ad-app-doc-title').textContent = label;
-  if (frame.dataset.blobUrl) {
-    URL.revokeObjectURL(frame.dataset.blobUrl);
-    delete frame.dataset.blobUrl;
+  const downloadBtn = document.getElementById('ad-app-doc-download');
+  if (!overlay || !frame) {
+    VF.toast('Could not open document viewer.', 'err');
+    return;
   }
-  frame.src = '';
-  link.removeAttribute('href');
-  overlay.style.display = 'flex';
+  closeMobileAppDoc();
+  const url = URL.createObjectURL(blob);
+  frame.dataset.blobUrl = url;
+  document.getElementById('ad-app-doc-title').textContent = title;
+  frame.src = url;
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = downloadName || 'document';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
+  }
+  overlay.style.setProperty('display', 'flex', 'important');
   overlay.setAttribute('aria-hidden', 'false');
+}
+
+async function viewAdminUpload(label, filename) {
+  if (!filename) return;
   try {
-    const url = await VF.fetchUploadDownloadUrl(filename);
+    const url = await VF.fetchUploadObjectUrl(filename);
+    const overlay = document.getElementById('ad-app-doc-overlay');
+    const frame = document.getElementById('ad-app-doc-frame');
+    const downloadBtn = document.getElementById('ad-app-doc-download');
+    if (!overlay || !frame) throw new Error('Could not open document viewer.');
+    closeMobileAppDoc();
+    frame.dataset.blobUrl = url;
+    document.getElementById('ad-app-doc-title').textContent = label;
     frame.src = url;
-    link.href = url;
+    if (downloadBtn) {
+      const downloadName = String(filename).split('/').pop() || 'document';
+      downloadBtn.onclick = () => {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = downloadName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      };
+    }
+    overlay.style.setProperty('display', 'flex', 'important');
+    overlay.setAttribute('aria-hidden', 'false');
   } catch (err) {
     VF.toast(err.message || 'Could not load document.', 'err');
-    closeMobileAppDoc();
   }
 }
 
-function closeMobileAppDoc() {
+function closeMobileAppDoc(event) {
+  if (event && event.target !== event.currentTarget) return;
   const overlay = document.getElementById('ad-app-doc-overlay');
   if (!overlay) return;
   const frame = document.getElementById('ad-app-doc-frame');
@@ -3204,32 +3239,12 @@ function closeMobileAppDoc() {
     delete frame.dataset.blobUrl;
   }
   if (frame) frame.src = '';
-  overlay.style.display = 'none';
+  overlay.style.setProperty('display', 'none', 'important');
   overlay.setAttribute('aria-hidden', 'true');
 }
 
 async function openDocPanel(label, filename) {
-  const frame = document.getElementById('app-doc-side-frame');
-  const link = document.getElementById('app-doc-side-newtab');
-  document.getElementById('app-doc-side-title').textContent = label;
-
-  if (frame.dataset.blobUrl) {
-    URL.revokeObjectURL(frame.dataset.blobUrl);
-    delete frame.dataset.blobUrl;
-  }
-
-  frame.src = '';
-  link.removeAttribute('href');
-  document.getElementById('app-doc-side-panel').style.display = 'flex';
-  document.getElementById('app-modal-main').style.width = 'min(680px, 100%)';
-
-  try {
-    const url = await VF.fetchUploadDownloadUrl(filename);
-    frame.src = url;
-    link.href = url;
-  } catch (err) {
-    VF.toast(err.message || 'Could not load document.', 'err');
-  }
+  return viewAdminUpload(label, filename);
 }
 
 function closeDocPanel() {
@@ -3247,6 +3262,7 @@ function closeApplicationDetail(e) {
   if (e && e.target !== document.getElementById('application-modal')) return;
   document.getElementById('application-modal').style.display = 'none';
   document.body.classList.remove('admin-modal-open');
+  closeMobileAppDoc();
   closeDocPanel();
 }
 
@@ -3288,8 +3304,8 @@ function addLecturerModuleRow() {
     <div class="ad-module-fields-2">
       <select class="um-input ad-sheet-input new-lecturer-module-course" onchange="populateModuleNameDropdown(this, '${nameSelId}')">
         <option value="">Course…</option>
-        <option value="BICT — Bachelor of ICT">BICT</option>
-        <option value="DICT — Diploma in ICT">DICT</option>
+        <option value="BICT - Bachelor of ICT">BICT</option>
+        <option value="DICT - Diploma in ICT">DICT</option>
       </select>
       <select class="um-input ad-sheet-input new-lecturer-module-name" id="${nameSelId}" disabled onchange="onLecturerModuleNameSelected(this)">
         <option value="">Select course first…</option>
@@ -3386,7 +3402,7 @@ async function saveLecturerAccount() {
     loadLecturers();
     if (typeof handleCredentialResult === 'function') {
       handleCredentialResult(result, {
-        successMessage: `Lecturer created — login details emailed to ${result.email}`,
+        successMessage: `Lecturer created - login details emailed to ${result.email}`,
       });
     }
 

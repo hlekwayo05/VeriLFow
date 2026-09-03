@@ -1,4 +1,4 @@
-/* VeriFlow — Admin mobile pages (max-width 900px)
+/* VeriFlow - Admin mobile pages (max-width 900px)
    Matches coordinator mobile suite mock */
 
 @media (max-width: 900px) {
@@ -1128,7 +1128,7 @@
     border-radius: 50%;
   }
 
-  /* Analysis — original mobile layout */
+  /* Analysis - original mobile layout */
   body.admin-dash #page-analysis .ad-analysis-page {
     padding: 8px 0 120px !important;
   }
@@ -2225,7 +2225,6 @@
   body.admin-dash .ad-apps-cards,
   body.admin-dash .ad-page-back,
   body.admin-dash #page-application-detail,
-  body.admin-dash .ad-app-doc-overlay,
   body.admin-dash #ad-user-sheet-overlay {
     display: none !important;
   }

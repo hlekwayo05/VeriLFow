@@ -32,7 +32,7 @@ function generateTempPassword(length = Math.max(12, PASSWORD_MIN)) {
     chars.push(all[fillBytes[i] % all.length]);
   }
 
-  // Fisher–Yates shuffle
+  // Fisher-Yates shuffle
   for (let i = chars.length - 1; i > 0; i--) {
     const j = crypto.randomBytes(1)[0] % (i + 1);
     [chars[i], chars[j]] = [chars[j], chars[i]];

@@ -92,7 +92,7 @@ async function main() {
   });
   if (!reg.ok) throw new Error(`Register failed (${reg.status}): ${JSON.stringify(reg.data)}`);
   const token = reg.data.token;
-  console.log('   OK — userId', reg.data.userId);
+  console.log('   OK - userId', reg.data.userId);
 
   console.log('2. Save academic info (step 2)...');
   const academic = await request('/applications/me/academic', {
@@ -100,7 +100,7 @@ async function main() {
     token,
     json: {
       faculty: 'Information & Communication Technology',
-      course: 'BICT — Bachelor of ICT',
+      course: 'BICT - Bachelor of ICT',
       qualificationLevel: '3rd_year',
       moduleYearLevel: '3rd Year',
       moduleName: 'Programming',

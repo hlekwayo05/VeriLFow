@@ -7,7 +7,7 @@
  * Usage (from backend/):
  *   node scripts/wipe-data.js
  *
- * Full schema wipe (dangerous — empties EVERYTHING including modules):
+ * Full schema wipe (dangerous - empties EVERYTHING including modules):
  *   node scripts/wipe-data.js --all
  *
  * After a users wipe, re-seed admin if needed:

@@ -121,7 +121,7 @@ router.post('/', async (req, res) => {
     }
     if (!isValidStudentNumber(studentNumber)) {
       return res.status(400).json({
-        errors: ['Student number must be 6–15 alphanumeric characters.'],
+        errors: ['Student number must be 6-15 alphanumeric characters.'],
       });
     }
 
@@ -199,7 +199,7 @@ router.post('/', async (req, res) => {
   if (!studentNumber) errors.push('Student number is required.');
   if (!sessionCode)   errors.push('Session code is required.');
   if (studentNumber && !isValidStudentNumber(studentNumber)) {
-    errors.push('Student number must be 6–15 alphanumeric characters.');
+    errors.push('Student number must be 6-15 alphanumeric characters.');
   }
   if (errors.length) return res.status(400).json({ errors });
 
@@ -356,7 +356,7 @@ router.get(
           }))
         : result.rows.map((row) => ({
             student_number: row.student_number,
-            full_name:      row.full_name || '—',
+            full_name:      row.full_name || '-',
             recorded_at:    row.recorded_at,
             present:        true,
           }));

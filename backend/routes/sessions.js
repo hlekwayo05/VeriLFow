@@ -336,7 +336,7 @@ router.get(
         `;
 
       } else {
-        // Tutor — only sessions they are assigned to
+        // Tutor - only sessions they are assigned to
         params = [userId];
         query = `
           SELECT
@@ -591,7 +591,7 @@ router.patch(
         if (existing.rows.length === 0) unique = true;
       }
 
-      // Code expires 4 hours from now — enough for any session type
+      // Code expires 4 hours from now - enough for any session type
       const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
 
       await pool.query(
@@ -659,7 +659,7 @@ router.patch(
       invalidateSessionCaches();
       return res.status(200).json({
         message: finalStatus === 'flagged'
-          ? 'Session flagged — no tutor confirmed availability.'
+          ? 'Session flagged - no tutor confirmed availability.'
           : 'Session marked as completed.',
         status: finalStatus,
       });

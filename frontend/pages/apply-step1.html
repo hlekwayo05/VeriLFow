@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>VeriFlow — Apply · Step 1</title>
+  <title>VeriFlow - Apply · Step 1</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -37,7 +37,7 @@
       <div class="form-header">
         <div class="form-eyebrow">Application · Step 1 of 3</div>
         <div class="form-title">Personal<br>information</div>
-        <p class="form-subtitle">Tell us who you are. Your account will be created when you move to step 2 — you can return and continue any time.</p>
+        <p class="form-subtitle">Tell us who you are. Your account will be created when you move to step 2 - you can return and continue any time.</p>
       </div>
 
       <form id="step1Form" onsubmit="handleNext(event)" novalidate style="display:none">
@@ -104,7 +104,7 @@
 
         <div class="form-actions">
           <button type="submit" class="btn btn-ink btn-glow" style="flex:1" id="nextBtn">
-            <span class="btn-next-copy">Next — Academic information</span>
+            <span class="btn-next-copy">Next - Academic information</span>
             <i class="ti ti-arrow-right" aria-hidden="true"></i>
           </button>
           <a href="login.html">
@@ -148,14 +148,14 @@
     const label = document.querySelector('#nextBtn .btn-next-copy');
     if (!label) return;
     const set = () => {
-      label.textContent = mq.matches ? 'Next' : 'Next — Academic information';
+      label.textContent = mq.matches ? 'Next' : 'Next - Academic information';
     };
     set();
     mq.addEventListener('change', set);
   })();
 
   // Pre-fill only for a returning applicant in this browser session.
-  // Token lives in sessionStorage; vf_state lives in localStorage — so closing
+  // Token lives in sessionStorage; vf_state lives in localStorage - so closing
   // the tab can leave someone else's draft behind. Never show that on a fresh apply.
   if (!VF.isAuthenticated()) {
     VF.clearState();
@@ -232,7 +232,7 @@
         body: formValues,
       });
 
-      // Account created — store the JWT so step 2 is authenticated
+      // Account created - store the JWT so step 2 is authenticated
       VF.clearState();
       VF.setToken(data.token);
 

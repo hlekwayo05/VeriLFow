@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 001 — Simplify application_status
+--  Migration 001 - Simplify application_status
 --
 --  Reason: lecturers do not review tutor applications. Admin is
 --  the sole reviewer. The pipeline is now:
@@ -17,7 +17,7 @@
 
 BEGIN;
 
--- Safety check — if any row is currently using a value we're about
+-- Safety check - if any row is currently using a value we're about
 -- to remove, stop the migration rather than silently losing data.
 DO $$
 DECLARE
@@ -54,7 +54,7 @@ ALTER TABLE applications
 DROP TYPE application_status;
 ALTER TYPE application_status_new RENAME TO application_status;
 
--- 4. Drop lecturer_rank — no longer needed since lecturers do not
+-- 4. Drop lecturer_rank - no longer needed since lecturers do not
 --    rank or review applications in any capacity.
 ALTER TABLE applications DROP COLUMN IF EXISTS lecturer_rank;
 

@@ -39,7 +39,7 @@ const VF = (() => {
     const name = fileRequestName(filename);
     const data = await apiFetch(`/files/${encodeURIComponent(name)}/token`);
     if (!data.url) throw new Error('Could not get document URL.');
-    // Relative local fallback — resolve against API origin host
+    // Relative local fallback - resolve against API origin host
     if (data.url.startsWith('/')) {
       return `${API_ORIGIN}${data.url}`;
     }
@@ -96,7 +96,7 @@ const VF = (() => {
   }
 
   /**
-   * apiFetch — wraps fetch() with the API base URL, JSON headers,
+   * apiFetch - wraps fetch() with the API base URL, JSON headers,
    * and the Authorization header when a token is present.
    * Throws an Error with .errors (array) on failure so callers
    * can show the right message to the user.
@@ -187,11 +187,11 @@ const VF = (() => {
     return 'frontend/images/veriflo-brand.png';
   }
 
-  function logoHtml(alt = 'VeriFlow — Accurate. Timely. Transparent.') {
+  function logoHtml(alt = 'VeriFlow - Accurate. Timely. Transparent.') {
     return `<img src="${logoSrc()}" alt="${alt}" class="brand-logo" width="160" height="48" decoding="async"/>`;
   }
 
-  /** App home — login is the single entry screen (index redirects here). */
+  /** App home - login is the single entry screen (index redirects here). */
   function homeUrl() {
     return new URL(loginUrl(), window.location.href).href;
   }
@@ -378,7 +378,7 @@ const VF = (() => {
       rejectionReason:   app.rejection_reason || null,
       rejectionDetail:   rejectionDetailFromApp(app),
     };
-    // Always replace academic from the server — never keep another session's draft
+    // Always replace academic from the server - never keep another session's draft
     if (app.faculty || app.course || app.module_name) {
       patch.academic = {
         faculty:             app.faculty || '',
@@ -499,7 +499,7 @@ const VF = (() => {
       return {
         pass: false,
         reason: 'You have not passed the required prerequisite module for this tutor position.',
-        detail: 'Required pass: COS1511 — Introduction to Programming. Our records show this module has not been completed with a mark of 65% or above.'
+        detail: 'Required pass: COS1511 - Introduction to Programming. Our records show this module has not been completed with a mark of 65% or above.'
       };
     }
     return { pass: true };
@@ -544,7 +544,7 @@ const VF = (() => {
     ];
     return `
       <div class="apply-mobile-progress" aria-label="Application progress, step ${currentStep} of 3">
-        <div class="wizard-label">Application · Step ${currentStep} of 3 — ${labels[currentStep - 1] || ''}</div>
+        <div class="wizard-label">Application · Step ${currentStep} of 3 - ${labels[currentStep - 1] || ''}</div>
         <div class="progress-track">${segHtml}</div>
         <div class="progress-sidebar">
           <div class="progress-sidebar-label">Your progress</div>
@@ -559,7 +559,7 @@ const VF = (() => {
     if (el) el.innerHTML = renderApplyProgress(currentStep);
   }
 
-  /** Set the active step segment fill (0–1). Previous steps stay full. */
+  /** Set the active step segment fill (0-1). Previous steps stay full. */
   function setApplyStepProgress(ratio) {
     const fill = document.querySelector('.apply-mobile-progress .progress-seg.active .progress-seg-fill');
     if (!fill) return;
@@ -782,7 +782,7 @@ const VF = (() => {
       ).join('');
     },
 
-    /** For real <tbody> placeholders — uses <tr><td colspan> */
+    /** For real <tbody> placeholders - uses <tr><td colspan> */
     tbody(cols = 5, count = 6) {
       return Array.from({ length: count }, () => `
         <tr class="vf-skel-tr-native" aria-hidden="true">

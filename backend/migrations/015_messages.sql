@@ -1,4 +1,4 @@
--- Migration 015 — Lecturer ↔ tutor messaging threads
+-- Migration 015 - Lecturer ↔ tutor messaging threads
 
 BEGIN;
 

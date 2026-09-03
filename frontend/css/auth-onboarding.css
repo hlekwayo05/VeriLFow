@@ -1,5 +1,5 @@
 /* ============================================================
-   Login / Apply / Onboarding / Tracker — Space Grotesk + JetBrains Mono
+   Login / Apply / Onboarding / Tracker - Space Grotesk + JetBrains Mono
    Mobile suite tokens from onboarding-flow mock (keep brand logo)
    ============================================================ */
 
@@ -520,7 +520,7 @@ body.tracker-page .tracker-title {
     color: #182420 !important;
   }
 
-  /* Focus glow (same traveling conic as login) — must beat the rules above */
+  /* Focus glow (same traveling conic as login) - must beat the rules above */
   body.apply-flow .form-group input:focus,
   body.apply-flow .form-group select:focus,
   body.apply-flow .form-group textarea:focus {

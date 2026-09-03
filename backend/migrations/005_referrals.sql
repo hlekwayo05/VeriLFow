@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 005 — Tutor referrals (lecturer nominate, admin approve)
+--  Migration 005 - Tutor referrals (lecturer nominate, admin approve)
 --
 --  Lecturers refer tutor candidates for their own modules.
 --  Admins countersign with a responsibility level.

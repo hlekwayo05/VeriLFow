@@ -23,7 +23,7 @@ This document is a **mount map and capability guide**, not an OpenAPI dump. For 
 
 ---
 
-## Auth — `/api/auth`
+## Auth - `/api/auth`
 
 | Method | Path | Auth | Purpose |
 |--------|------|------|---------|
@@ -44,7 +44,7 @@ Strong password rules apply to register and change-password. Login validation is
 
 ---
 
-## Applications — `/api/applications`
+## Applications - `/api/applications`
 
 Applicant (`tutor`) paths typically use `/me/...`. Admin paths list and mutate any application.
 
@@ -57,7 +57,7 @@ Applicant (`tutor`) paths typically use `/me/...`. Admin paths list and mutate a
 
 ---
 
-## Users — `/api/users`
+## Users - `/api/users`
 
 | Capability | Notes |
 |------------|-------|
@@ -71,7 +71,7 @@ Role gates: most mutations require `admin` or the owning user.
 
 ---
 
-## Sessions — `/api/sessions`
+## Sessions - `/api/sessions`
 
 Lecturer-centric; tutors see assigned sessions.
 
@@ -87,7 +87,7 @@ Pagination may be available via `page` / `limit` on heavier list endpoints.
 
 ---
 
-## Attendance — `/api/attendance`
+## Attendance - `/api/attendance`
 
 Mostly unauthenticated student-facing (rate limited).
 
@@ -99,7 +99,7 @@ Mostly unauthenticated student-facing (rate limited).
 
 ---
 
-## Claims — `/api/claims` and `/api/admin`
+## Claims - `/api/claims` and `/api/admin`
 
 | Mount | Actor | Purpose |
 |-------|-------|---------|
@@ -110,13 +110,13 @@ Claim status machine: see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ---
 
-## Referrals — `/api/referrals`
+## Referrals - `/api/referrals`
 
 Lecturer creates referral → admin approves/rejects. Approval may create a tutor user and email a temporary password.
 
 ---
 
-## Postings — `/api/postings`
+## Postings - `/api/postings`
 
 Admin CRUD for tutor vacancy postings. Public/applicant surfaces may read active postings depending on route guards in `postings.js`.
 
@@ -131,19 +131,19 @@ Admin CRUD for tutor vacancy postings. Public/applicant surfaces may read active
 
 ---
 
-## Messaging — `/api/messages`
+## Messaging - `/api/messages`
 
 Lecturer↔tutor threads and coordinator threads. Broadcast / message send paths are rate limited.
 
 ---
 
-## Support — `/api/support`
+## Support - `/api/support`
 
 Ticket create/list/reply for tutors/lecturers; admin triage.
 
 ---
 
-## Files — `/api/files`
+## Files - `/api/files`
 
 Authenticated download / signed URL issuance for application and onboarding documents. Filenames are sanitized; access is ownership- or role-checked in `files.js`.
 

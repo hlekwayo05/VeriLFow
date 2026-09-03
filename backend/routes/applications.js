@@ -26,7 +26,6 @@ const { uploadFile } = require('../services/storage');
 const { validateUploadedFile } = require('../utils/fileValidation');
 const { validateAcademicSave, validateSubmitApplication } = require('../validators/applicationValidator');
 
-
 const UPLOAD_TMP_DIR = path.join(os.tmpdir(), 'veriflow-uploads');
 fs.mkdirSync(UPLOAD_TMP_DIR, { recursive: true });
 
@@ -280,7 +279,7 @@ router.patch(
 
     if (!curriculumHit) {
       return res.status(400).json({
-        errors: [`"${moduleName}" is not a valid module for ${course} — ${moduleYearLevel}.`],
+        errors: [`"${moduleName}" is not a valid module for ${course} - ${moduleYearLevel}.`],
       });
     }
 
@@ -658,6 +657,7 @@ router.get(
            a.assigned_lecturer_id,
            a.submitted_at,
            a.reviewed_at,
+           a.offer_accepted_at,
            u.first_names,
            u.surname,
            u.title,
@@ -689,6 +689,81 @@ router.get(
     } catch (err) {
       console.error('Get application error:', err.message);
       return res.status(500).json({ error: 'Server error.' });
+    }
+  }
+);
+
+
+router.post(
+  '/me/accept-offer',
+  authenticate,
+  requireRole('tutor'),
+  async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+      const result = await pool.query(
+        `SELECT
+           a.id,
+           a.status,
+           a.offer_accepted_at,
+           COALESCE(tp.step1_complete, FALSE) AS step1_complete,
+           COALESCE(tp.step2_complete, FALSE) AS step2_complete
+         FROM applications a
+         LEFT JOIN tutor_profiles tp ON tp.user_id = a.user_id
+         WHERE a.user_id = $1`,
+        [userId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ errors: ['Application not found.'] });
+      }
+
+      const app = result.rows[0];
+      if (app.status !== 'approved') {
+        return res.status(403).json({
+          errors: ['You can only accept an offer after your appointment is approved.'],
+        });
+      }
+      if (!app.step1_complete || !app.step2_complete) {
+        return res.status(403).json({
+          errors: ['Complete onboarding before accepting the offer.'],
+        });
+      }
+
+      if (app.offer_accepted_at) {
+        return res.status(200).json({
+          offer_accepted_at: app.offer_accepted_at,
+          alreadyAccepted: true,
+        });
+      }
+
+      const updated = await pool.query(
+        `UPDATE applications
+         SET offer_accepted_at = NOW(), updated_at = NOW()
+         WHERE id = $1 AND offer_accepted_at IS NULL
+         RETURNING offer_accepted_at`,
+        [app.id]
+      );
+
+      if (!updated.rows[0]) {
+        const again = await pool.query(
+          'SELECT offer_accepted_at FROM applications WHERE id = $1',
+          [app.id]
+        );
+        return res.status(200).json({
+          offer_accepted_at: again.rows[0]?.offer_accepted_at,
+          alreadyAccepted: true,
+        });
+      }
+
+      return res.status(200).json({
+        offer_accepted_at: updated.rows[0].offer_accepted_at,
+        alreadyAccepted: false,
+      });
+    } catch (err) {
+      console.error('Accept offer error:', err.message);
+      return res.status(500).json({ errors: ['Could not record acceptance.'] });
     }
   }
 );
@@ -740,6 +815,7 @@ router.get(
           a.assigned_lecturer_id,
           a.submitted_at,
           a.reviewed_at,
+          a.offer_accepted_at,
           a.created_at,
            u.first_names,
            u.surname,
@@ -865,8 +941,8 @@ router.patch(
     try {
       // Load the full application to validate qualification + find matching lecturer
       const appResult = await pool.query(
-        `SELECT a.qualification_level, a.course, a.module_name,
-                u.email, u.first_names
+        `SELECT a.qualification_level, a.course, a.module_name, a.position_type,
+                a.user_id, u.email, u.first_names, u.surname
          FROM applications a
          JOIN users u ON u.id = a.user_id
          WHERE a.id = $1`,
@@ -935,6 +1011,7 @@ router.patch(
         studentEmail:     app.email,
         studentFirstName: app.first_names,
         moduleName:       app.module_name,
+        positionType:     app.position_type,
       })
         .then(() => {
           console.log(`Application approval email sent to ${app.email}`);

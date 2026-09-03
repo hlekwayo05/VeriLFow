@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>VeriFlow — Log In</title>
+  <title>VeriFlow - Log In</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -250,7 +250,7 @@
       <span class="auth-badge">Student portal</span>
       <img
         src="../images/veriflo-brand.png"
-        alt="veriflo — Accurate. Timely. Transparent."
+        alt="veriflo - Accurate. Timely. Transparent."
         class="auth-brand-fill"
         decoding="async"
       />
@@ -313,7 +313,7 @@
 <script>
   VF.pageIn();
 
-  // Already logged in — send tutors to the right place without showing the form again
+  // Already logged in - send tutors to the right place without showing the form again
   if (VF.isAuthenticated()) {
     const token = VF.getToken();
     try {
@@ -349,7 +349,7 @@
         },
       });
 
-      // Store the JWT — this is what keeps the user logged in
+      // Store the JWT - this is what keeps the user logged in
       VF.clearState();
       VF.setToken(data.token);
 
@@ -383,7 +383,7 @@
       } else if (data.role === 'lecturer') {
         VF.navigate('lecturer-dashboard.html');
       } else {
-        // Tutor — route immediately from login response (do not wait on a second API call)
+        // Tutor - route immediately from login response (do not wait on a second API call)
         VF.routeTutor(tutorRoute);
         VF.fetchTutorRouteState().catch(() => {});
       }

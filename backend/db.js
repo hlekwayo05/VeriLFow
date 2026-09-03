@@ -20,7 +20,7 @@ function getPoolConfig(connectionString = process.env.DATABASE_URL) {
     allowExitOnIdle: true,
     keepAlive: true,
     keepAliveInitialDelayMillis: 10_000,
-    // Applied at connection start — avoids racing client.query in 'connect' handlers.
+    // Applied at connection start - avoids racing client.query in 'connect' handlers.
     options: '-c statement_timeout=8000',
   };
 

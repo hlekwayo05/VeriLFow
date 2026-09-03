@@ -37,7 +37,7 @@ function getConfiguredOrigins() {
     .filter(Boolean);
 }
 
-/** Live Server / phone QR scans use changing LAN IPs — allow them outside production. */
+/** Live Server / phone QR scans use changing LAN IPs - allow them outside production. */
 function isPrivateLanOrigin(origin) {
   try {
     const host = new URL(origin).hostname;
@@ -186,7 +186,7 @@ app.use('/api/auth/register', registerLimiter);
 app.use('/api/attendance', attendanceLimiter);
 app.use('/api', generalLimiter);
 
-// Uploads are NOT publicly served — use GET /api/files/:filename (authenticated)
+// Uploads are NOT publicly served - use GET /api/files/:filename (authenticated)
 
 app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/public',       require('./routes/public'));
@@ -259,7 +259,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\nPort ${PORT} is already in use — another backend is still running.`);
+    console.error(`\nPort ${PORT} is already in use - another backend is still running.`);
     console.error('Fix: stop the other terminal (Ctrl+C), or run in PowerShell:');
     console.error(`  netstat -ano | findstr :${PORT}`);
     console.error('  taskkill /PID <pid-from-listening-line> /F\n');

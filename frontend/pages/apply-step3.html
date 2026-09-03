@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>VeriFlow — Apply · Step 3</title>
+  <title>VeriFlow - Apply · Step 3</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -23,7 +23,7 @@
     .check-item.done { color:var(--ok); }
     .check-item.pending { color:var(--ink-4); }
 
-    /* Real clickable file input on top of the card — works on mobile (no JS .click()) */
+    /* Real clickable file input on top of the card - works on mobile (no JS .click()) */
     .apply-flow .upload-box {
       position: relative;
       overflow: hidden;
@@ -226,7 +226,7 @@
     document.getElementById(meta.name).textContent = meta.label + ' uploaded';
     document.getElementById(meta.sub).textContent = fileName
       ? (fileName + ' · saved')
-      : 'Saved on server — ready to submit';
+      : 'Saved on server - ready to submit';
   }
 
   function documentDisplayName(originalName, storagePath) {
@@ -437,12 +437,12 @@
       submitting = false;
       btn.innerHTML = originalHTML;
       updateSubmit();
-      VF.toast('Submission did not complete. Your files are still saved — try Submit again.', 'err');
+      VF.toast('Submission did not complete. Your files are still saved - try Submit again.', 'err');
     } catch (err) {
       submitting = false;
       btn.innerHTML = originalHTML;
       updateSubmit();
-      VF.toast(err.errors ? err.errors[0] : 'Could not submit. Your files are still saved — try again.', 'err');
+      VF.toast(err.errors ? err.errors[0] : 'Could not submit. Your files are still saved - try again.', 'err');
     }
   }
 

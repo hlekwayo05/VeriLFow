@@ -1,4 +1,4 @@
--- CHANGE 1 — simplified HR document filename columns on applications
+-- CHANGE 1 - simplified HR document filename columns on applications
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS id_filename TEXT;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS tax_filename TEXT;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_filename TEXT;
@@ -11,7 +11,7 @@ UPDATE applications SET tax_filename = tax_proof_filename
 UPDATE applications SET bank_filename = bank_proof_filename
   WHERE bank_filename IS NULL AND bank_proof_filename IS NOT NULL;
 
--- CHANGE 2 — appointment configuration settings
+-- CHANGE 2 - appointment configuration settings
 ALTER TABLE settings
   ADD COLUMN IF NOT EXISTS appointment_start_date DATE DEFAULT '2026-02-01';
 ALTER TABLE settings
@@ -40,5 +40,5 @@ UPDATE settings SET
   ucdg_approver_name     = COALESCE(NULLIF(TRIM(ucdg_approver_name), ''), 'Mr. Machava')
 WHERE id = 1;
 
--- CHANGE 5 — HR staff number
+-- CHANGE 5 - HR staff number
 ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_number VARCHAR(20);

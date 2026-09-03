@@ -638,7 +638,7 @@ function renderInboxList() {
     const active = t.id === msgActiveThreadId && kind === msgActiveThreadKind ? ' active' : '';
     const unread = t.unread ? ' unread' : '';
     const preview = (t.preview || '').replace(/</g, '&lt;');
-    const name = (t.peerName || '—').replace(/</g, '&lt;');
+    const name = (t.peerName || '-').replace(/</g, '&lt;');
     const displayName = senderType === 'admin' ? 'Admin' : name;
     const badge = t.unreadCount > 0
       ? `<span class="ii-unread-badge">${t.unreadCount > 9 ? '9+' : t.unreadCount}</span>`
@@ -701,7 +701,7 @@ function renderThreadMessages(messages) {
 
   container.innerHTML = (messages || []).map((entry) => {
     const dir = entry.isMine ? 'outgoing' : 'incoming';
-    const sender = (entry.senderName || '—').replace(/</g, '&lt;');
+    const sender = (entry.senderName || '-').replace(/</g, '&lt;');
     const text = (entry.body || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
     const time = msgFormatBubbleTime(entry.createdAt);
     const subjectLine = entry.subject && !entry.isMine
@@ -755,7 +755,7 @@ async function openThread(kind, id) {
 
   const displayName = msgPeerFilterType(summary.peerRole) === 'admin'
     ? 'Admin'
-    : (summary.peerName || '—');
+    : (summary.peerName || '-');
   document.getElementById('t-name').textContent = displayName;
   document.getElementById('t-meta').textContent =
     `${summary.moduleCode || ''} · ${summary.subject || 'Conversation'}`.replace(/^ · /, '');

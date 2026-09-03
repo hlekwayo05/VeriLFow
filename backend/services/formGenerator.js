@@ -2,6 +2,55 @@
 
 const puppeteer = require('puppeteer');
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatZaDate(value) {
+  if (!value) return '-';
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('en-ZA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function appointeeFullName(application) {
+  return `${application.first_names || ''} ${application.surname || ''}`.trim();
+}
+
+function appointeeSignatureBlocks(application) {
+  const name = appointeeFullName(application);
+  if (application.offer_accepted_at) {
+    return `
+  <div class="sig-block">
+    <div class="sig-label">Signed</div>
+    <div class="sig-filled">${escapeHtml(name)}</div>
+    <div class="sig-sub">Accepted electronically in VeriFlow</div>
+  </div>
+  <div class="sig-block">
+    <div class="sig-label">Date</div>
+    <div class="sig-filled">${escapeHtml(formatZaDate(application.offer_accepted_at))}</div>
+  </div>`;
+  }
+  return `
+  <div class="sig-block">
+    <div class="sig-label">Signed</div>
+    <div class="sig-line"></div>
+    <div class="sig-sub">${escapeHtml(name)}</div>
+  </div>
+  <div class="sig-block">
+    <div class="sig-label">Date</div>
+    <div class="sig-line"></div>
+  </div>`;
+}
+
 async function generateAppointmentFormD({
   application,
   settings,
@@ -11,13 +60,13 @@ async function generateAppointmentFormD({
       .toLocaleDateString('en-ZA', {
         day: 'numeric', month: 'long', year: 'numeric'
       })
-    : '—';
+    : '-';
   const endDate = settings.appointment_end_date
     ? new Date(settings.appointment_end_date)
       .toLocaleDateString('en-ZA', {
         day: 'numeric', month: 'long', year: 'numeric'
       })
-    : '—';
+    : '-';
 
   const approver = application.cost_centre === 'ucdg'
     ? (settings.ucdg_approver_name || 'Mr. Machava')
@@ -51,7 +100,7 @@ async function generateAppointmentFormD({
 
   const hourlyRate = rateTable[
     application.qualification_level
-  ]?.[application.responsibility_level] || '—';
+  ]?.[application.responsibility_level] || '-';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -139,6 +188,13 @@ async function generateAppointmentFormD({
     min-height: 32px;
     margin-bottom: 4px;
   }
+  .sig-filled {
+    border-bottom: 1px solid #000;
+    min-height: 32px;
+    margin-bottom: 4px;
+    padding-top: 10px;
+    font-weight: bold;
+  }
   .sig-sub {
     font-size: 9px;
     color: #666;
@@ -172,7 +228,7 @@ async function generateAppointmentFormD({
 <body>
 
 <h1>University of Mpumalanga</h1>
-<h2>Appointment Form D — Consultant / Tutor /
+<h2>Appointment Form D - Consultant / Tutor /
 Demonstrator</h2>
 
 <div class="note">
@@ -322,7 +378,7 @@ Demonstrator</h2>
 <div class="field-row">
   <span class="field-label">Pay Rate:</span>
   <span class="field-value">
-    R${hourlyRate}/hr —
+    R${hourlyRate}/hr -
     ${qualDisplay[application.qualification_level]
       || application.qualification_level}
     (${respDisplay[application.responsibility_level]
@@ -336,32 +392,7 @@ Demonstrator</h2>
 </div>
 
 <div class="signature-row">
-  <div class="sig-block">
-    <div class="sig-label">
-      Signature of Appointee
-    </div>
-    <div class="sig-line"></div>
-    <div class="sig-sub">
-      ${application.first_names || ''}
-      ${application.surname || ''}
-    </div>
-  </div>
-  <div class="sig-block">
-    <div class="sig-label">Date</div>
-    <div class="sig-line"></div>
-  </div>
-</div>
-
-<div class="supporting-docs">
-  <strong>Supporting Documents Required:</strong>
-  <ul>
-    <li>Copy of Identity Document</li>
-    <li>Proof of Income Tax Number</li>
-    <li>Proof of Bank Account (statement or
-      web printout)</li>
-    <li>Letter of appointment from Faculty,
-      School or Division</li>
-  </ul>
+  ${appointeeSignatureBlocks(application)}
 </div>
 
 <div class="institutional-box">
@@ -468,7 +499,7 @@ async function generateConfirmationForm({
 
   const hourlyRate = rateTable[
     application.qualification_level
-  ]?.[application.responsibility_level] || '—';
+  ]?.[application.responsibility_level] || '-';
 
   const positionLabel =
     application.position_type === 'demonstrator'
@@ -479,8 +510,6 @@ async function generateConfirmationForm({
     'Dr M Madiope';
   const directorTitle = settings.director_title ||
     'Director: Academic Support Services Division';
-  const directorEmail = settings.director_email ||
-    'Mabizweni.machava@ump.ac.za';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -560,6 +589,13 @@ async function generateConfirmationForm({
     min-height: 32px;
     margin-bottom: 4px;
   }
+  .sig-filled {
+    border-bottom: 1px solid #000;
+    min-height: 32px;
+    margin-bottom: 4px;
+    padding-top: 10px;
+    font-weight: bold;
+  }
   .witness-row {
     display: flex;
     gap: 40px;
@@ -612,12 +648,11 @@ async function generateConfirmationForm({
 
 <div class="body-text">
   UMP would like to welcome you as a valued member
-  of staff. Kindly notify us in writing of your
-  acceptance of the appointment by completing the
-  attached ACCEPTANCE OF OFFER and returning it to
-  the Academic Support Services email:
-  ${directorEmail} within 10 working days upon
-  receipt of this offer letter.
+  of staff. Kindly accept this appointment in
+  VeriFlow by selecting I accept on your profile
+  within 10 working days of this offer. Your
+  authenticated login records your signature on the
+  appointment forms.
 </div>
 
 <div class="sign-off">
@@ -651,25 +686,7 @@ async function generateConfirmationForm({
   </div>
 
   <div class="signature-row">
-    <div class="sig-block">
-      <div class="sig-label">Signed</div>
-      <div class="sig-line"></div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-label">Date</div>
-      <div class="sig-line"></div>
-    </div>
-  </div>
-
-  <div class="witness-row">
-    <div class="sig-block">
-      <div class="sig-label">Witness 1</div>
-      <div class="sig-line"></div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-label">Witness 2</div>
-      <div class="sig-line"></div>
-    </div>
+    ${appointeeSignatureBlocks(application)}
   </div>
 </div>
 

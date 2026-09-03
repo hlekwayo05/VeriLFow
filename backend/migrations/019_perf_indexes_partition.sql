@@ -1,5 +1,5 @@
 -- =============================================================
--- 019: Performance — indexes, attendance_logs hash partitioning
+-- 019: Performance - indexes, attendance_logs hash partitioning
 -- Safe / idempotent. Run via: npm run db:migrate-pending
 -- =============================================================
 
@@ -52,7 +52,7 @@ BEGIN
   WHERE n.nspname = 'public' AND c.relname = 'attendance_logs';
 
   IF relkind IS NULL THEN
-    RAISE NOTICE 'attendance_logs missing — skip partitioning';
+    RAISE NOTICE 'attendance_logs missing - skip partitioning';
     RETURN;
   END IF;
 

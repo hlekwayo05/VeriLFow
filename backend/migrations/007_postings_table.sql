@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 007 — Postings table (replaces job_postings)
+--  Migration 007 - Postings table (replaces job_postings)
 --
 --  Run once:
 --  psql -U postgres -d veriflow -f migrations/007_postings_table.sql

@@ -17,7 +17,7 @@ const ROW_DEFAULTS = {
   min_cv_keywords:      0,
   applications_open:    false,
   closing_date:         null,
-  announcement_subject: 'Tutor & Demonstrator Applications Now Open — 2026 Academic Year',
+  announcement_subject: 'Tutor & Demonstrator Applications Now Open - 2026 Academic Year',
   announcement_body:    `Dear Students,
 
 Applications are now open for tutor and demonstrator positions for the 2026 academic year. To apply click the link below.

@@ -1,4 +1,4 @@
-/* VeriFlow — mobile landing only (≤900px) — aligned with login.html */
+/* VeriFlow - mobile landing only (≤900px) - aligned with login.html */
 
 .vf-desktop-home {
   display: block;
@@ -329,7 +329,7 @@
     animation: landingWaveIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
   }
 
-  /* W…E…L…C…O…M…E — one letter at a time */
+  /* W…E…L…C…O…M…E - one letter at a time */
   .vf-mobile-home.landing-page.is-ready .landing-welcome-letter {
     animation: landingLetterIn 0.18s ease forwards;
     animation-delay: calc(0.3s + (var(--i) * 0.18s));
@@ -347,7 +347,7 @@
     animation-duration: 0.32s;
   }
 
-  /* Subtitle — word by word, after Welcome finishes */
+  /* Subtitle - word by word, after Welcome finishes */
   .vf-mobile-home.landing-page.is-ready .landing-subtitle-word {
     animation: landingWordIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     animation-delay: calc(1.55s + (var(--i) * 0.16s));

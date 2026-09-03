@@ -5,12 +5,12 @@ const { getRateEntry } = require('../constants');
 const { getAppSettings } = require('./settings');
 
 function dash(v) {
-  if (v == null || String(v).trim() === '') return '—';
+  if (v == null || String(v).trim() === '') return '-';
   return String(v).trim();
 }
 
 function formatDateLong(value) {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
   return d.toLocaleDateString('en-ZA', {
@@ -21,7 +21,7 @@ function formatDateLong(value) {
 }
 
 function formatDateShort(value) {
-  if (!value) return '—';
+  if (!value) return '-';
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
   return d.toLocaleDateString('en-ZA', {
@@ -46,7 +46,7 @@ function resolveHourlyRate(app) {
 }
 
 function buildPostalAddress(profile) {
-  if (!profile?.street_address) return '—';
+  if (!profile?.street_address) return '-';
   return [profile.street_address, profile.city, profile.postal_code]
     .filter(Boolean)
     .join(', ');
@@ -95,12 +95,13 @@ async function loadHrFormContext(pool, userId) {
        a.module_name,
        a.module_code,
        a.cost_centre,
-       a.status AS application_status
+       a.status AS application_status,
+       a.offer_accepted_at
      FROM users u
      LEFT JOIN tutor_profiles tp ON tp.user_id = u.id
      LEFT JOIN LATERAL (
        SELECT position_type, qualification_level, responsibility_level,
-              module_name, module_code, cost_centre, status
+              module_name, module_code, cost_centre, status, offer_accepted_at
        FROM applications
        WHERE user_id = u.id AND status = 'approved'
        ORDER BY updated_at DESC NULLS LAST, id DESC
@@ -132,11 +133,27 @@ async function loadHrFormContext(pool, userId) {
     rate,
     roleLabel: positionLabel(row.position_type),
     fullName: `${row.first_names || ''} ${row.surname || ''}`.trim(),
-    periodStart: settings.appointment_period_start,
-    periodEnd: settings.appointment_period_end,
+    periodStart: settings.appointment_start_date || settings.appointment_period_start,
+    periodEnd: settings.appointment_end_date || settings.appointment_period_end,
     directorName: settings.director_name || 'Dr M Madiope',
     directorTitle: settings.director_title || 'Director: Academic Support Services Division',
+    offerAcceptedAt: row.offer_accepted_at || null,
   };
+}
+
+function writeAppointeeAcceptance(doc, ctx) {
+  if (ctx.offerAcceptedAt) {
+    doc.font('Helvetica').fontSize(10).fillColor('#182420')
+      .text(
+        `SIGNED: ${dash(ctx.fullName)}          DATE: ${formatDateShort(ctx.offerAcceptedAt)}`
+      );
+    doc.moveDown(0.35);
+    doc.font('Helvetica-Oblique').fontSize(8).fillColor('#5b6864')
+      .text('Accepted electronically in VeriFlow (authenticated account).');
+    return;
+  }
+  doc.font('Helvetica').fontSize(10).fillColor('#182420')
+    .text('SIGNED: _______________________________          DATE: _______________');
 }
 
 function newDoc() {
@@ -164,7 +181,7 @@ function fieldRow(doc, label, value, y) {
 }
 
 /**
- * Appointment Form D — Consultant / fixed-term appointment details for HR.
+ * Appointment Form D - Consultant / fixed-term appointment details for HR.
  */
 async function buildAppointmentFormDPdf(ctx) {
   const doc = newDoc();
@@ -174,12 +191,12 @@ async function buildAppointmentFormDPdf(ctx) {
   const width = doc.page.width - doc.page.margins.left - doc.page.margins.right;
 
   doc.font('Helvetica-Bold').fontSize(16).fillColor('#152e2c')
-    .text('Appointment Form D — Consultant', left, 54, { width, align: 'center' });
+    .text('Appointment Form D - Consultant', left, 54, { width, align: 'center' });
 
   doc.moveDown(0.6);
   doc.font('Helvetica-Oblique').fontSize(8).fillColor('#5b6864')
     .text(
-      'Note: Complete this form using the applicant’s details. Supporting documents (ID, tax proof, banking proof) are attached from the VeriFlow application.',
+      'Note: This form has been pre-filled by VeriFlow from the approved application and tutor profile.',
       { width, align: 'left' }
     );
 
@@ -209,20 +226,28 @@ async function buildAppointmentFormDPdf(ctx) {
   line('Account Holder Name', u.account_holder);
   line('Income Tax Number', u.tax_number);
   line('Position', ctx.roleLabel);
-  line('Module', [u.module_code, u.module_name].filter(Boolean).join(' — ') || '—');
+  line('Module', [u.module_code, u.module_name].filter(Boolean).join(' - ') || '-');
   if (ctx.rate != null) line('Hourly rate', `R ${Number(ctx.rate).toFixed(2)}`);
 
   y += 10;
   doc.font('Helvetica-Bold').fontSize(10).fillColor('#182420').text('Signature and Date', left, y);
-  y += 22;
-  doc.font('Helvetica').fontSize(9).fillColor('#5b6864')
-    .text('Applicant signature: _______________________________     Date: _______________', left, y);
-
-  y += 28;
-  doc.font('Helvetica-Bold').fontSize(10).fillColor('#182420').text('Supporting documents required', left, y);
-  y += 14;
-  doc.font('Helvetica').fontSize(9).fillColor('#182420')
-    .text('• Copy of Identity Document\n• Proof of Income Tax Number\n• Proof of bank account number\n• Letter of appointment (rate and funding source)', left, y, { width });
+  y += 18;
+  if (ctx.offerAcceptedAt) {
+    doc.font('Helvetica').fontSize(10).fillColor('#182420')
+      .text(`Applicant: ${dash(ctx.fullName)}`, left, y);
+    y += 16;
+    doc.text(`Date: ${formatDateShort(ctx.offerAcceptedAt)}`, left, y);
+    y += 14;
+    doc.font('Helvetica-Oblique').fontSize(8).fillColor('#5b6864')
+      .text('Accepted electronically in VeriFlow (authenticated account).', left, y);
+  } else {
+    doc.font('Helvetica').fontSize(9).fillColor('#5b6864')
+      .text(
+        'Applicant signature: _______________________________     Date: _______________',
+        left,
+        y
+      );
+  }
 
   y = doc.y + 20;
   doc.font('Helvetica-Bold').fontSize(10).text('Institutional Approval', left, y);
@@ -257,7 +282,7 @@ async function buildAcceptanceLetterPdf(ctx) {
   const today = formatDateLong(new Date());
   const rateText = ctx.rate != null
     ? `R ${Number(ctx.rate).toFixed(2)} per hour`
-    : 'R — per hour (rate based on the level of study)';
+    : 'R - per hour (rate based on the level of study)';
 
   doc.font('Helvetica').fontSize(9).fillColor('#5b6864')
     .text(`Date: ${today}`, left, 54)
@@ -295,12 +320,12 @@ async function buildAcceptanceLetterPdf(ctx) {
   doc.text('Reporting Line: Academic Staff Development Professional');
   doc.text(`Rate of claim: ${rateText}`);
   if (u.module_name) {
-    doc.text(`Assigned module: ${[u.module_code, u.module_name].filter(Boolean).join(' — ')}`);
+    doc.text(`Assigned module: ${[u.module_code, u.module_name].filter(Boolean).join(' - ')}`);
   }
 
   doc.moveDown(0.8);
   doc.text(
-    'UMP would like to welcome you as a valued member of staff. Kindly notify us in writing of your acceptance of the appointment by completing the attached ACCEPTANCE OF OFFER and returning it to the Academic Support Services email: Mabizweni.machava@ump.ac.za within 10 working days upon receipt of this offer letter.',
+    'UMP would like to welcome you as a valued member of staff. Kindly accept this appointment in VeriFlow by selecting I accept on your profile within 10 working days of this offer. Your authenticated login records your signature on the appointment forms.',
     { width }
   );
 
@@ -322,11 +347,7 @@ async function buildAcceptanceLetterPdf(ctx) {
     );
 
   doc.moveDown(1.5);
-  doc.text('SIGNED: _______________________________          DATE: _______________');
-  doc.moveDown(1.2);
-  doc.text('WITNESS 1: _______________________________');
-  doc.moveDown(1.0);
-  doc.text('WITNESS 2: _______________________________');
+  writeAppointeeAcceptance(doc, ctx);
 
   doc.moveDown(2);
   doc.font('Helvetica').fontSize(8).fillColor('#5b6864')

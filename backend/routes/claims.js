@@ -948,7 +948,7 @@ router.patch(
         const lecturer = claimLecturerName(claim);
         const period = claimPeriodLabel(claim);
         const moduleLabel = claimModuleLabel(claim);
-        const subject = `Claim ready for approval — ${tutor} · ${moduleLabel} · ${period}`;
+        const subject = `Claim ready for approval - ${tutor} · ${moduleLabel} · ${period}`;
         const text =
           `${lecturer} has verified ${tutor}'s ${period} timesheet for ${moduleLabel}. ` +
           'Log in to VeriFlow to review.';
@@ -1016,7 +1016,7 @@ router.patch(
 
       fireClaimEmail({
         to: claim.tutor_email,
-        subject: `Claim returned — ${moduleLabel} · ${period}`,
+        subject: `Claim returned - ${moduleLabel} · ${period}`,
         text:
           `Your ${period} timesheet for ${moduleLabel} has been returned by your lecturer: ${returnNote}`,
       });
@@ -1064,7 +1064,7 @@ router.patch(
 
         fireClaimEmail({
           to: claim.tutor_email,
-          subject: `Claim approved — ${moduleLabel} · ${period}`,
+          subject: `Claim approved - ${moduleLabel} · ${period}`,
           text:
             `Your ${period} timesheet for ${moduleLabel} has been approved and forwarded to finance.`,
         });
@@ -1120,14 +1120,14 @@ router.patch(
 
       fireClaimEmail({
         to: claim.tutor_email,
-        subject: `Claim returned — ${moduleLabel} · ${period}`,
+        subject: `Claim returned - ${moduleLabel} · ${period}`,
         text:
           `Your ${period} timesheet for ${moduleLabel} has been returned by the coordinator: ${trimmed}`,
       });
 
       fireClaimEmail({
         to: claim.lecturer_email,
-        subject: `Tutor claim returned — ${tutor} · ${moduleLabel}`,
+        subject: `Tutor claim returned - ${tutor} · ${moduleLabel}`,
         text:
           `The coordinator returned ${tutor}'s claim for ${moduleLabel} with note: ${trimmed}`,
       });

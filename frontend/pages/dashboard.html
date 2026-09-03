@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>VeriFlow — Tutor Dashboard</title>
+<title>VeriFlow - Tutor Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=5"/>
-<link rel="stylesheet" href="../css/tutor-dashboard.css?v=56"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=59"/>
 </head>
 <body class="tutor-dash td-on-hub">
 <div class="app">
@@ -22,7 +22,7 @@
     <img src="../images/veriflo-brand.png" alt="VeriFlow" class="lec-logo-img" width="140" height="40"/>
   </div>
   <div class="sidebar-module-chip">
-    <strong id="sidebar-mod-code">—</strong>
+    <strong id="sidebar-mod-code">-</strong>
     <span id="sidebar-mod-name">Loading…</span>
   </div>
   <div class="nav-group">
@@ -78,7 +78,7 @@
 
   <div id="page-dashboard" class="page active">
 
-    <!-- Mobile home hub — matches veriflow-mobile-suite.html -->
+    <!-- Mobile home hub - matches veriflow-mobile-suite.html -->
     <div class="td-mobile-hub" id="td-mobile-hub">
       <header class="td-hub-top">
         <div class="td-hub-who">
@@ -131,6 +131,18 @@
         </div>
       </div>
 
+      <div class="td-hub-section td-hub-section--tight" id="td-hub-hr-forms" hidden>
+        <div class="td-hr-notice">
+          <div class="td-hr-notice-title" data-hr-forms-title>Appointment forms</div>
+          <p class="td-hr-notice-text" data-hr-forms-text>View your appointment forms here. Accept the offer from your profile.</p>
+          <div class="td-hr-notice-actions">
+            <button type="button" class="btn-sm" onclick="viewHrForm('appointment-form-d')">View Appointment Form D</button>
+            <button type="button" class="btn-sm" onclick="viewHrForm('confirmation-form')">View Confirmation Form</button>
+            <button type="button" class="btn-sm" onclick="showPage('profile',document.getElementById('nav-profile'))">Open profile</button>
+          </div>
+        </div>
+      </div>
+
       <div class="td-hub-section td-hub-section--tight">
         <button type="button" class="td-hub-next" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
           <span class="td-hub-next-ico" aria-hidden="true">
@@ -138,7 +150,7 @@
           </span>
           <span class="td-hub-next-txt">
             <span class="td-hub-next-t1" id="td-hub-next-title">Loading…</span>
-            <span class="td-hub-next-t2" id="td-hub-next-meta">—</span>
+            <span class="td-hub-next-t2" id="td-hub-next-meta">-</span>
           </span>
           <svg class="td-hub-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
         </button>
@@ -147,10 +159,10 @@
       <div class="td-hub-section">
         <div class="td-hub-section-head">
           <span class="td-hub-section-title">This month's sessions</span>
-          <span class="td-hub-section-meta" id="td-hub-strip-meta">—</span>
+          <span class="td-hub-section-meta" id="td-hub-strip-meta">-</span>
         </div>
         <div class="td-hub-strip-card">
-          <div class="td-hub-strip-msg" id="td-hub-strip-msg">No sessions logged yet this month — once you're assigned one, it'll light up here.</div>
+          <div class="td-hub-strip-msg" id="td-hub-strip-msg">No sessions logged yet this month - once you're assigned one, it'll light up here.</div>
           <div class="td-hub-strip" id="td-hub-strip"></div>
         </div>
       </div>
@@ -232,38 +244,47 @@
         <h1 id="tutor-hero-name">Loading…</h1>
         <p id="hero-module-text">Loading module…</p>
       </div>
+      <div class="td-hr-notice td-hr-notice--desktop" id="td-desktop-hr-forms" hidden>
+        <div class="td-hr-notice-title" data-hr-forms-title>Appointment forms</div>
+        <p class="td-hr-notice-text" data-hr-forms-text>View your appointment forms here. Accept the offer from your profile. You cannot submit claims until a staff number is on file.</p>
+        <div class="td-hr-notice-actions">
+          <button type="button" class="btn-sm" onclick="viewHrForm('appointment-form-d')">View Appointment Form D</button>
+          <button type="button" class="btn-sm" onclick="viewHrForm('confirmation-form')">View Confirmation Form</button>
+          <button type="button" class="btn-sm" onclick="showPage('profile',document.getElementById('nav-profile'))">Open profile</button>
+        </div>
+      </div>
       <div class="module-tabs" id="module-tabs">
         <span style="font-size:12px;color:var(--muted);padding:8px 4px">Loading modules…</span>
       </div>
       <div class="stats-row">
         <div class="stat-card" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
           <div class="stat-label">Hours Used</div>
-          <div class="stat-value" id="stat-hours-used">—</div>
+          <div class="stat-value" id="stat-hours-used">-</div>
           <div class="stat-sub">of 160 this semester</div>
         </div>
         <div class="stat-card" onclick="showPage('hourlog',document.getElementById('nav-hourlog'))">
           <div class="stat-label">Hours Remaining</div>
-          <div class="stat-value hi" id="stat-hours-left">—</div>
+          <div class="stat-value hi" id="stat-hours-left">-</div>
           <div class="stat-sub">estimated from sessions</div>
         </div>
         <div class="stat-card" onclick="showPage('sessions',document.getElementById('nav-sessions'))">
           <div class="stat-label">Sessions This Month</div>
-          <div class="stat-value" id="stat-sessions-month">—</div>
-          <div class="stat-sub" id="stat-sessions-sub">—</div>
+          <div class="stat-value" id="stat-sessions-month">-</div>
+          <div class="stat-sub" id="stat-sessions-sub">-</div>
         </div>
         <div class="stat-card" onclick="showPage('claims',document.getElementById('nav-claims'))">
           <div class="stat-label">Pending Claim</div>
-          <div class="stat-value" style="font-size:26px;padding-top:4px;" id="stat-pending-claim">—</div>
+          <div class="stat-value" style="font-size:26px;padding-top:4px;" id="stat-pending-claim">-</div>
           <div class="stat-sub" id="stat-pending-claim-sub">for this module</div>
         </div>
       </div>
       <div class="semester-section">
-        <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="semester-hours-label">—</span></div>
+        <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="semester-hours-label">-</span></div>
         <div class="sem-track"><div class="sem-fill" style="width:0%"></div></div>
       </div>
       <div class="section-header">
         <span class="section-title">Upcoming sessions</span>
-        <span class="section-sub" id="dash-upcoming-label">—</span>
+        <span class="section-sub" id="dash-upcoming-label">-</span>
       </div>
       <div class="table-scroll">
         <table class="dash-table">
@@ -286,7 +307,7 @@
         </div>
       <div class="panel">
         <div class="panel-header"><div><h3>Sessions this month</h3><div style="font-size:11px;color:var(--muted);margin-top:2px" id="dash-month-sessions-sub">Loading…</div></div></div>
-        <div class="sessions-stat"><span>Monthly progress</span><span class="sessions-pct" id="dash-month-progress-pct">—</span></div>
+        <div class="sessions-stat"><span>Monthly progress</span><span class="sessions-pct" id="dash-month-progress-pct">-</span></div>
         <div class="bar-track"><div class="bar-fill" id="dash-month-progress-bar" style="width:0%"></div></div>
         <div class="chart-area" id="dash-month-chart"></div>
         <div class="chart-labels" id="dash-month-chart-labels"></div>
@@ -301,12 +322,12 @@
         HOME
       </button>
       <div class="page-hero tm-sess-hero">
-        <h1>Sessions <span class="ts-title-dim">— <em id="sessions-page-title">—</em></span></h1>
+        <h1>Sessions <span class="ts-title-dim">- <em id="sessions-page-title">-</em></span></h1>
       </div>
       <div class="tm-sess-summary" id="tm-sess-summary">
         <div class="tm-sess-summary-label">Sessions</div>
         <div class="tm-sess-summary-title" id="tm-sess-summary-title">Loading…</div>
-        <div class="tm-sess-summary-sub" id="tm-sess-summary-sub">—</div>
+        <div class="tm-sess-summary-sub" id="tm-sess-summary-sub">-</div>
         <span class="tm-sess-summary-pill" id="tm-sess-summary-stats">0 this month</span>
         <span class="tm-sess-summary-chip" id="tm-sess-summary-chip" hidden></span>
       </div>
@@ -366,8 +387,8 @@
             </button>
             <div class="thread-av" id="t-av">TM</div>
             <div class="thread-info">
-              <div class="thread-name" id="t-name">—</div>
-              <div class="thread-meta" id="t-meta">—</div>
+              <div class="thread-name" id="t-name">-</div>
+              <div class="thread-meta" id="t-meta">-</div>
             </div>
             <button class="thread-reply-btn" onclick="focusCompose()">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
@@ -403,31 +424,31 @@
         <p id="hourlog-hero-sub-desktop" class="hl-desktop-sub">Loading…</p>
       </div>
       <div class="hourlog-grid">
-        <div class="hl-card"><div class="hl-label">Hours Used</div><div class="hl-value" id="hl-hours-used">—</div><div class="hl-sub">of 160 allocated this semester</div></div>
-        <div class="hl-card"><div class="hl-label">Hours Remaining</div><div class="hl-value hi" id="hl-hours-left">—</div><div class="hl-sub">estimated from completed sessions</div></div>
-        <div class="hl-card"><div class="hl-label">Sessions on module</div><div class="hl-value amber" id="hl-sessions-month">—</div><div class="hl-sub" id="hl-sessions-sub">—</div></div>
+        <div class="hl-card"><div class="hl-label">Hours Used</div><div class="hl-value" id="hl-hours-used">-</div><div class="hl-sub">of 160 allocated this semester</div></div>
+        <div class="hl-card"><div class="hl-label">Hours Remaining</div><div class="hl-value hi" id="hl-hours-left">-</div><div class="hl-sub">estimated from completed sessions</div></div>
+        <div class="hl-card"><div class="hl-label">Sessions on module</div><div class="hl-value amber" id="hl-sessions-month">-</div><div class="hl-sub" id="hl-sessions-sub">-</div></div>
       </div>
       <div class="hl-pulse-wrap">
         <div class="semester-section" style="animation:tdFadeUp .4s ease .18s both">
-          <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="hourlog-semester-label">—</span></div>
+          <div class="semester-header"><span>Semester hour usage</span><span class="hrs" id="hourlog-semester-label">-</span></div>
           <div class="hl-pulse-metric" aria-hidden="false">
             <div class="hl-pulse-label">Hours</div>
             <div class="hl-pulse-figures">
               <div class="hl-pulse-nums">
-                <span class="hl-pulse-used" id="hl-pulse-used">—</span>
-                <span class="hl-pulse-cap" id="hl-pulse-cap"> / —</span>
+                <span class="hl-pulse-used" id="hl-pulse-used">-</span>
+                <span class="hl-pulse-cap" id="hl-pulse-cap"> / -</span>
               </div>
-              <span class="hl-pulse-pct" id="hl-pulse-pct" hidden>—</span>
+              <span class="hl-pulse-pct" id="hl-pulse-pct" hidden>-</span>
             </div>
           </div>
           <div class="sem-track"><div class="sem-fill" style="width:0%"></div></div>
           <div class="hl-pulse-aside" aria-label="Hour log summary">
             <div class="hl-pulse-chip">
-              <span class="hl-pulse-chip-val" id="hl-pulse-left">—</span>
+              <span class="hl-pulse-chip-val" id="hl-pulse-left">-</span>
               <span class="hl-pulse-chip-lbl">HRS REMAINING</span>
             </div>
             <div class="hl-pulse-chip">
-              <span class="hl-pulse-chip-val" id="hl-pulse-sess">—</span>
+              <span class="hl-pulse-chip-val" id="hl-pulse-sess">-</span>
               <span class="hl-pulse-chip-lbl" id="hl-pulse-sess-lbl">CONFIRMED · PENDING</span>
             </div>
           </div>
@@ -461,14 +482,14 @@
         </button>
       </div>
       <div class="page-hero tm-cal-hero">
-        <h1>Calendar — <em id="calendar-page-title">—</em></h1>
+        <h1>Calendar - <em id="calendar-page-title">-</em></h1>
         <p id="calendar-hero-sub">Loading…</p>
       </div>
       <div class="cal-page-layout">
         <div class="cal-wrap">
           <div class="cal-header">
             <button class="cal-nav-btn" onclick="calChangeMonth(-1)" aria-label="Previous month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-            <span class="cal-title" id="cal-title">—</span>
+            <span class="cal-title" id="cal-title">-</span>
             <button class="cal-nav-btn" onclick="calChangeMonth(1)" aria-label="Next month"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
           <div class="cal-days-header">
@@ -520,7 +541,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           HOME
         </button>
-        <h1>Claims <span class="ts-title-dim">— Timesheet</span></h1>
+        <h1>Claims <span class="ts-title-dim">- Timesheet</span></h1>
         <p id="claims-hero-sub">Loading…</p>
       </div>
       <div id="claims-list-wrap">
@@ -549,7 +570,7 @@
       <div class="st-help-card">
         <div class="st-help-label">Support</div>
         <div class="st-help-title">Student Employment Office</div>
-        <div class="st-help-sub">Typical reply within 1–2 business days.</div>
+        <div class="st-help-sub">Typical reply within 1-2 business days.</div>
       </div>
 
       <div class="st-tickets-section">
@@ -639,7 +660,7 @@
         <div>
           <div class="modal-to">Student Employment Office</div>
           <div class="modal-name">Raise a Support Ticket</div>
-          <p class="st-modal-hint">Tell us what went wrong — a coordinator will review and reply here.</p>
+          <p class="st-modal-hint">Tell us what went wrong - a coordinator will review and reply here.</p>
         </div>
       </div>
       <button type="button" class="modal-close" onclick="closeNewTicketModal()" aria-label="Close">
@@ -658,9 +679,9 @@
         <label class="ns-label" for="ticket-priority">Priority</label>
         <div class="ns-select-wrap">
           <select id="ticket-priority" class="ns-select">
-            <option value="low">Low — general question</option>
-            <option value="medium" selected>Medium — needs attention</option>
-            <option value="high">High — blocking my work</option>
+            <option value="low">Low - general question</option>
+            <option value="medium" selected>Medium - needs attention</option>
+            <option value="high">High - blocking my work</option>
           </select>
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
@@ -672,7 +693,7 @@
     </div>
     <div class="ns-divider"></div>
     <div class="ns-footer st-modal-footer">
-      <span class="st-modal-footnote">Typical response within 1–2 business days</span>
+      <span class="st-modal-footnote">Typical response within 1-2 business days</span>
       <div class="st-modal-actions">
         <button type="button" class="ns-cancel" onclick="closeNewTicketModal()">Cancel</button>
         <button type="button" class="ns-create" onclick="submitNewTicket()">
@@ -683,6 +704,53 @@
           Submit Ticket
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="hrAcceptModal" onclick="closeHrAcceptModal(event)">
+  <div class="modal um-modal small hr-accept-modal" role="dialog" aria-modal="true" aria-labelledby="hr-accept-title">
+    <div class="modal-header">
+      <div>
+        <div class="modal-to">Appointment offer</div>
+        <div class="modal-name" id="hr-accept-title">Accept your appointment</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeHrAcceptModal()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="hr-accept-body">
+      <p class="hr-accept-lead" id="hr-accept-statement">
+        I confirm that I accept the employment offer in the Academic Support Services department (FYE Programme).
+      </p>
+      <div class="hr-accept-note">
+        This records your signature on Appointment Form D and the Confirmation Form in VeriFlow. Your name and today’s date will appear on both PDFs.
+      </div>
+    </div>
+    <div class="um-actions">
+      <button type="button" class="btn-sm" onclick="closeHrAcceptModal()">Cancel</button>
+      <button type="button" class="btn-primary" id="hr-accept-confirm-btn" onclick="confirmHrOffer()">I accept</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="hrFormModal" onclick="closeHrFormViewer(event)">
+  <div class="modal hr-form-modal" role="dialog" aria-modal="true" aria-labelledby="hr-form-modal-title">
+    <div class="modal-header">
+      <div>
+        <div class="modal-to">Appointment forms</div>
+        <div class="modal-name" id="hr-form-modal-title">Form</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeHrFormViewer()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="hr-form-modal-body">
+      <iframe id="hr-form-frame" title="Appointment form preview"></iframe>
+    </div>
+    <div class="hr-form-modal-footer">
+      <button type="button" class="btn-sm" id="hr-form-download-btn">Download PDF</button>
+      <button type="button" class="btn-primary" onclick="closeHrFormViewer()">Close</button>
     </div>
   </div>
 </div>
@@ -702,7 +770,7 @@
     <div class="qr-countdown-wrap" id="qr-countdown-wrap">
       <div class="qr-countdown-label">Code changes in</div>
       <div class="qr-countdown-seconds" id="qr-countdown-seconds">10</div>
-      <div class="qr-countdown-sub" id="qr-countdown">seconds left — scan now</div>
+      <div class="qr-countdown-sub" id="qr-countdown">seconds left - scan now</div>
       <div class="qr-countdown-track"><div class="qr-countdown-fill" id="qr-countdown-fill"></div></div>
     </div>
     <p class="qr-hint-desktop">Students scan this QR on the same Wi‑Fi as this computer. The link uses your network IP, not localhost.</p>
@@ -725,17 +793,17 @@
         <div class="reg-modal-title" id="reg-title">Attendance Register</div>
         <div class="reg-modal-eyebrow" id="reg-eyebrow">IS211 · Information Systems 211</div>
       </div>
-      <div class="reg-head-count" id="reg-head-count" aria-hidden="true">—</div>
+      <div class="reg-head-count" id="reg-head-count" aria-hidden="true">-</div>
       <button type="button" class="reg-modal-close reg-modal-close--desktop" onclick="closeRegister()" aria-label="Close">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="reg-modal-meta" id="reg-meta">—</div>
+    <div class="reg-modal-meta" id="reg-meta">-</div>
     <div class="reg-summary-strip">
       <div class="reg-stat"><div class="reg-stat-lbl">Enrolled</div><div class="reg-stat-val" id="reg-enrolled">26</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Present</div><div class="reg-stat-val green" id="reg-present">—</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Absent</div><div class="reg-stat-val red" id="reg-absent">—</div></div>
-      <div class="reg-stat"><div class="reg-stat-lbl">Rate</div><div class="reg-stat-val amber" id="reg-pct">—</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Present</div><div class="reg-stat-val green" id="reg-present">-</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Absent</div><div class="reg-stat-val red" id="reg-absent">-</div></div>
+      <div class="reg-stat"><div class="reg-stat-lbl">Rate</div><div class="reg-stat-val amber" id="reg-pct">-</div></div>
     </div>
     <div class="reg-table-wrap">
       <table class="reg-table">
@@ -792,7 +860,7 @@
 
 <script src="../js/app.js?v=20"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/tutor-dashboard.js?v=79"></script>
+<script src="../js/tutor-dashboard.js?v=83"></script>
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 

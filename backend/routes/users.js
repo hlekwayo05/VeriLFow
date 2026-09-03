@@ -226,7 +226,7 @@ async function applyOnboardingDocumentUploads(userId, files) {
       console.log(`${field} uploaded to Supabase Storage:`, storagePath);
     } catch (storageErr) {
       console.error('Storage upload failed:', storageErr.message);
-      // Continue anyway — local file still saved as fallback
+      // Continue anyway - local file still saved as fallback
     }
 
     updates.push(`${column} = $${idx++}`);
@@ -292,9 +292,10 @@ router.get(
       const { generateHrFormPdf } = require('../services/hrForms');
       const file = await generateHrFormPdf(pool, req.user.userId, kind);
       res.setHeader('Content-Type', file.contentType);
+      const inline = req.query.inline === '1' || req.query.inline === 'true';
       res.setHeader(
         'Content-Disposition',
-        `attachment; filename="${file.filename}"`
+        `${inline ? 'inline' : 'attachment'}; filename="${file.filename}"`
       );
       return res.status(200).send(file.buffer);
     } catch (err) {
@@ -445,7 +446,7 @@ router.patch(
       try {
         documents = await applyOnboardingDocumentUploads(userId, req.files);
       } catch (docErr) {
-        // Profile is already complete — don't block unlock if optional docs fail
+        // Profile is already complete - don't block unlock if optional docs fail
         console.error('Onboarding step2 document upload error:', docErr.message);
       }
 
@@ -584,7 +585,7 @@ router.get(
            )
           AND (
             lm.course = a.course
-            OR TRIM(REPLACE(lm.course, '—', '-')) = TRIM(REPLACE(a.course, '—', '-'))
+            OR TRIM(REPLACE(lm.course, '-', '-')) = TRIM(REPLACE(a.course, '-', '-'))
           )
          WHERE a.user_id = $1 AND a.status = 'approved'
          ORDER BY lm.module_code ASC`,

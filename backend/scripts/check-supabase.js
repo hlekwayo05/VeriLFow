@@ -60,7 +60,7 @@ async function main() {
   if (host.includes('supabase') || host.includes('pooler.supabase')) {
     pass(`Connected host: ${host}`);
   } else if (host === 'localhost' || host === '127.0.0.1') {
-    fail(`Still on local Postgres (${host}) — not Supabase`);
+    fail(`Still on local Postgres (${host}) - not Supabase`);
   } else {
     warn(`Host is ${host} (expected Supabase)`);
   }
@@ -110,7 +110,7 @@ async function main() {
   if (modCount.rows[0].n >= 40) {
     pass(`Modules seeded: ${modCount.rows[0].n} (${byCourse.rows.map((r) => `${r.course}=${r.n}`).join(', ')})`);
   } else if (modCount.rows[0].n === 0) {
-    fail('modules table is empty — run npm run db:modules');
+    fail('modules table is empty - run npm run db:modules');
   } else {
     warn(`modules count only ${modCount.rows[0].n} (expected ~49)`);
   }
@@ -129,7 +129,7 @@ async function main() {
     ['veriflow@ump.ac.za']
   );
   if (!admin.rows[0]) {
-    fail('Admin veriflow@ump.ac.za not found — run node seed.js');
+    fail('Admin veriflow@ump.ac.za not found - run node seed.js');
   } else {
     const a = admin.rows[0];
     if (a.role !== 'admin') fail(`veriflow@ump.ac.za role is ${a.role}, expected admin`);
@@ -168,7 +168,7 @@ async function main() {
       (SELECT COUNT(*)::int FROM students) AS students
   `);
   const c = counts.rows[0];
-  pass(`Counts — users=${c.users} applications=${c.applications} sessions=${c.sessions} postings=${c.postings} students=${c.students}`);
+  pass(`Counts - users=${c.users} applications=${c.applications} sessions=${c.sessions} postings=${c.postings} students=${c.students}`);
 
   // Apply registry check simulation
   const registry = await pool.query(

@@ -1,4 +1,4 @@
--- Claims workflow v2 — run once against Supabase PostgreSQL
+-- Claims workflow v2 - run once against Supabase PostgreSQL
 -- Drops existing claims data and recreates tables with the new workflow schema.
 
 DROP TABLE IF EXISTS claim_sessions CASCADE;

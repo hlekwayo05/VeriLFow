@@ -1,6 +1,6 @@
 'use strict';
 
-/** Admin dashboard — API-backed claims, flagged sessions, dashboard, analysis, messages */
+/** Admin dashboard - API-backed claims, flagged sessions, dashboard, analysis, messages */
 
 const AD_MONTH = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -30,29 +30,29 @@ function adFormatClaimPeriod(c) {
 }
 
 function adFormatMoney(n) {
-  if (n == null || n === '') return '—';
+  if (n == null || n === '') return '-';
   return 'R' + Number(n).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
 function adCourseShort(course) {
-  if (!course) return '—';
+  if (!course) return '-';
   if (course.startsWith('BICT')) return 'BICT';
   if (course.startsWith('DICT')) return 'DICT';
-  return String(course).split(/[\s—-]/)[0].trim() || course;
+  return String(course).split(/[\s--]/)[0].trim() || course;
 }
 
 function adAppModuleLabel(app) {
   const code = app.module_code || '';
   const name = app.module_name || '';
   const course = adCourseShort(app.course);
-  const label = code || name || '—';
+  const label = code || name || '-';
   return `${label} · ${course}`;
 }
 
 function adRelativeTime(iso) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '-';
   const now = new Date();
   const diffMs = now - d;
   const diffMin = Math.floor(diffMs / 60000);
@@ -81,7 +81,7 @@ function adBarWidth(value, max) {
 }
 
 function adFormatSessionDate(iso, startTime) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(String(iso).slice(0, 10));
   const datePart = d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
   const timePart = startTime ? ` · ${String(startTime).slice(0, 5)}` : '';
@@ -90,7 +90,7 @@ function adFormatSessionDate(iso, startTime) {
 
 function adSessionTypeLabel(t) {
   const map = { tutorial: 'Tutorial', practical: 'Practical', online: 'Online', revision: 'Revision', lecture: 'Lecture' };
-  return map[t] || t || '—';
+  return map[t] || t || '-';
 }
 
 function adClaimStatusChip(status) {
@@ -108,7 +108,7 @@ function adClaimActionButtons(id, status) {
 }
 
 function adQualChip(level) {
-  if (!level) return '<span class="qual-chip">—</span>';
+  if (!level) return '<span class="qual-chip">-</span>';
   const label = AD_QUAL_DISPLAY[level] || level;
   const cls = ['masters', 'masters_holder', 'phd', '4th_year_honours'].includes(level) ? ' honours' : '';
   return `<span class="qual-chip${cls}">${label}</span>`;
@@ -152,11 +152,11 @@ async function loadClaims() {
     tbody.innerHTML = claims.map((c) => {
       const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim();
       const hours = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
-      const rate = c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '—';
-      const resp = AD_RESP_DISPLAY[c.responsibility_level] || c.responsibility_level || '—';
+      const rate = c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '-';
+      const resp = AD_RESP_DISPLAY[c.responsibility_level] || c.responsibility_level || '-';
       return `<tr data-claim-id="${c.id}" data-status="${c.status}">
-        <td style="font-weight:600;color:var(--text)">${tutor || '—'}</td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${c.module_code || '—'}</td>
+        <td style="font-weight:600;color:var(--text)">${tutor || '-'}</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${c.module_code || '-'}</td>
         <td style="color:var(--muted)">${adFormatClaimPeriod(c)}</td>
         <td style="font-family:'DM Mono',monospace;color:var(--muted)">${hours}</td>
         <td style="font-family:'DM Mono',monospace;color:var(--muted)">${rate}</td>
@@ -170,15 +170,15 @@ async function loadClaims() {
 
     if (cards) {
       cards.innerHTML = claims.map((c) => {
-        const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '—';
+        const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '-';
         const hours = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
         return `<button type="button" class="ad-rec-card" onclick="openClaimDetail(${c.id})">
           <div class="ad-rec-name">${tutor}</div>
-          <div class="ad-rec-sub">${c.module_code || '—'} · ${adFormatClaimPeriod(c)}</div>
+          <div class="ad-rec-sub">${c.module_code || '-'} · ${adFormatClaimPeriod(c)}</div>
           <div class="ad-rec-grid">
             <div class="item"><div class="k">${hours}</div><div class="l">Hours</div></div>
             <div class="item"><div class="k">${adFormatMoney(c.total_amount)}</div><div class="l">Amount</div></div>
-            <div class="item"><div class="k">${c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '—'}</div><div class="l">Rate</div></div>
+            <div class="item"><div class="k">${c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '-'}</div><div class="l">Rate</div></div>
           </div>
           <div>${adClaimStatusChip(c.status)}</div>
         </button>`;
@@ -201,7 +201,7 @@ function adClaimStatusTag(status) {
 }
 
 function adLecturerApprovalBar(claim) {
-  const lecturer = `${claim.lecturer_first_names || ''} ${claim.lecturer_surname || ''}`.trim() || '—';
+  const lecturer = `${claim.lecturer_first_names || ''} ${claim.lecturer_surname || ''}`.trim() || '-';
   const reviewedAt = claim.lecturer_reviewed_at
     ? new Date(claim.lecturer_reviewed_at).toLocaleDateString('en-ZA', {
         day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
@@ -242,33 +242,33 @@ async function openClaimDetail(id) {
 
     const tutor = `${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim();
     const period = adFormatClaimPeriod(claim);
-    document.getElementById('cd-title').textContent = `${tutor} — Claim`;
-    document.getElementById('cd-period').textContent = `${period} · ${claim.module_code || '—'}`;
+    document.getElementById('cd-title').textContent = `${tutor} - Claim`;
+    document.getElementById('cd-period').textContent = `${period} · ${claim.module_code || '-'}`;
 
-    const qual = AD_QUAL_DISPLAY[claim.qualification_level] || claim.qualification_level || '—';
-    const resp = AD_RESP_DISPLAY[claim.responsibility_level] || claim.responsibility_level || '—';
-    const rate = claim.pay_rate != null ? `R${Number(claim.pay_rate).toFixed(2)}/hr` : '—';
+    const qual = AD_QUAL_DISPLAY[claim.qualification_level] || claim.qualification_level || '-';
+    const resp = AD_RESP_DISPLAY[claim.responsibility_level] || claim.responsibility_level || '-';
+    const rate = claim.pay_rate != null ? `R${Number(claim.pay_rate).toFixed(2)}/hr` : '-';
     const totalHours = Number(claim.total_hours || 0);
 
     const rows = sessions.filter((s) => s.included !== false).map((s) => {
       const date = s.session_date
         ? new Date(String(s.session_date).slice(0, 10)).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
-        : '—';
-      const time = s.start_time ? String(s.start_time).slice(0, 5) : '—';
+        : '-';
+      const time = s.start_time ? String(s.start_time).slice(0, 5) : '-';
       const flagged = s.session_status === 'flagged';
       const present = s.attendance_count ?? 0;
       const enrolled = s.enrolled_count ?? 0;
       const attCls = enrolled && (present / enrolled) >= 0.75 ? 'att-good' : (enrolled ? 'att-low' : '');
       const sessionId = s.session_id || s.id;
-      const att = `${present} / ${enrolled || '—'}`;
+      const att = `${present} / ${enrolled || '-'}`;
       return `<tr class="${flagged ? 'flagged-row' : ''}">
         <td style="font-weight:600;color:${flagged ? 'var(--red)' : 'var(--text)'}">${date}</td>
         <td style="font-family:'DM Mono',monospace;color:var(--muted);">${time}</td>
-        <td style="color:var(--muted);">${s.venue || '—'}</td>
-        <td style="color:var(--muted);">${s.topic || '—'}</td>
-        <td><span class="type-chip">${s.session_type || '—'}</span></td>
+        <td style="color:var(--muted);">${s.venue || '-'}</td>
+        <td style="color:var(--muted);">${s.topic || '-'}</td>
+        <td><span class="type-chip">${s.session_type || '-'}</span></td>
         <td><button type="button" class="att-reg-link ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})" title="View attendance register">${att}</button></td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${s.claimed_hours || '—'} hrs</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${s.claimed_hours || '-'} hrs</td>
       </tr>`;
     }).join('');
 
@@ -285,8 +285,8 @@ async function openClaimDetail(id) {
       <div class="ts-modal-wrap">
         <div class="ts-modal-head">
           <div>
-            <div class="ts-modal-head-title">${tutor} — ${period}</div>
-            <div class="ts-modal-head-sub">${claim.module_code || '—'} · ${sessions.length} session(s)</div>
+            <div class="ts-modal-head-title">${tutor} - ${period}</div>
+            <div class="ts-modal-head-sub">${claim.module_code || '-'} · ${sessions.length} session(s)</div>
           </div>
           ${adClaimStatusTag(claim.status)}
         </div>
@@ -336,8 +336,8 @@ function openClaimReturnModal(id) {
   const claim = ADMIN_CLAIMS[id] || adminClaimsCache.find((c) => c.id === id);
   pendingClaimReturnId = id;
   const tutor = claim ? `${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim() : 'Tutor';
-  const period = claim ? adFormatClaimPeriod(claim) : '—';
-  const module = claim?.module_code || '—';
+  const period = claim ? adFormatClaimPeriod(claim) : '-';
+  const module = claim?.module_code || '-';
   document.getElementById('claim-return-subtitle').textContent = `${tutor} · ${module} · ${period}`;
   document.getElementById('claim-return-reason').value = '';
   document.getElementById('claim-return-overlay').classList.add('open');
@@ -399,12 +399,12 @@ function adFlagIssueLabel(session) {
 }
 
 function adFlaggedRow(session) {
-  const tutor = session.tutor_names || '—';
+  const tutor = session.tutor_names || '-';
   const lecturer = `${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim() || 'System';
   const dateStr = adFormatSessionDate(session.session_date, session.start_time);
   return `<tr data-flag-id="${session.id}" data-status="open">
     <td style="font-weight:600;color:var(--text)">${tutor}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${session.module_code || '—'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${session.module_code || '-'}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--muted)">${dateStr}</td>
     <td style="color:var(--muted)">${adSessionTypeLabel(session.session_type)}</td>
     <td><span class="issue-chip no-confirm">${adFlagIssueLabel(session)}</span></td>
@@ -452,11 +452,11 @@ async function loadFlaggedSessions() {
     if (flaggedCards) {
       flaggedCards.innerHTML = flagged.length
         ? flagged.map((s) => {
-          const tutor = s.tutor_names || '—';
+          const tutor = s.tutor_names || '-';
           const dateStr = adFormatSessionDate(s.session_date, s.start_time);
           return `<button type="button" class="ad-rec-card flag" onclick="investigateFlaggedSession(${s.id})">
             <div class="ad-rec-name">${tutor}</div>
-            <div class="ad-rec-sub">${s.module_code || '—'} · ${dateStr}</div>
+            <div class="ad-rec-sub">${s.module_code || '-'} · ${dateStr}</div>
             <div class="ad-rec-grid">
               <div class="item"><div class="k">${adSessionTypeLabel(s.session_type)}</div><div class="l">Type</div></div>
               <div class="item"><div class="k">${adFlagIssueLabel(s)}</div><div class="l">Issue</div></div>
@@ -474,11 +474,11 @@ async function loadFlaggedSessions() {
     if (dashBody) {
       dashBody.innerHTML = flagged.length
         ? flagged.slice(0, 5).map((s) => {
-          const tutor = s.tutor_names || '—';
+          const tutor = s.tutor_names || '-';
           const dateStr = adFormatSessionDate(s.session_date, s.start_time);
           return `<tr>
             <td style="font-weight:600;color:var(--text)">${tutor}</td>
-            <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.module_code || '—'}</td>
+            <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.module_code || '-'}</td>
             <td style="font-family:'DM Mono',monospace;color:var(--muted)">${dateStr}</td>
             <td><span class="issue-chip no-confirm">${adFlagIssueLabel(s)}</span></td>
             <td><button class="btn-sm" onclick="investigateFlaggedSession(${s.id})">Investigate</button></td>
@@ -508,13 +508,13 @@ function openFlagModal(flagId) {
   const session = FLAGGED_SESSIONS[flagId];
   if (!session) return;
   activeFlagId = flagId;
-  const tutor = session.tutor_names || '—';
+  const tutor = session.tutor_names || '-';
   const lecturer = `${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim();
   const dateStr = adFormatSessionDate(session.session_date, session.start_time);
-  document.getElementById('flag-title').textContent = `${tutor} · ${session.module_code || '—'}`;
+  document.getElementById('flag-title').textContent = `${tutor} · ${session.module_code || '-'}`;
   document.getElementById('flag-detail-note').innerHTML = `<strong>Issue:</strong> ${adFlagIssueLabel(session)} · <strong>Session:</strong> ${dateStr}`;
   document.getElementById('flag-tutor').textContent = tutor;
-  document.getElementById('flag-module').textContent = session.module_code || '—';
+  document.getElementById('flag-module').textContent = session.module_code || '-';
   document.getElementById('flag-session').textContent = dateStr;
   document.getElementById('flag-type').textContent = adSessionTypeLabel(session.session_type);
   document.getElementById('flag-reported').textContent = lecturer || 'System';
@@ -522,7 +522,7 @@ function openFlagModal(flagId) {
     ? `${session.attendance_count} student(s) logged`
     : 'No attendance data recorded';
   document.getElementById('flag-investigation-notes').value = '';
-  document.getElementById('flag-message-subject').value = `Flag follow-up — ${session.module_code || ''} · ${dateStr}`;
+  document.getElementById('flag-message-subject').value = `Flag follow-up - ${session.module_code || ''} · ${dateStr}`;
   document.getElementById('flag-message-body').value = '';
   document.getElementById('flag-overlay').classList.add('open');
 }
@@ -533,7 +533,7 @@ function openResolveModal(flagId) {
   activeResolveId = flagId;
   const labelEl = document.getElementById('resolve-session-label');
   if (labelEl) {
-    labelEl.textContent = `${session.tutor_names || '—'} · ${session.module_code || '—'} · ${adFormatSessionDate(session.session_date, session.start_time)}`;
+    labelEl.textContent = `${session.tutor_names || '-'} · ${session.module_code || '-'} · ${adFormatSessionDate(session.session_date, session.start_time)}`;
   }
   document.getElementById('resolve-outcome').value = '';
   document.getElementById('resolve-note').value = '';
@@ -569,25 +569,25 @@ function adSetText(selector, value) {
 }
 
 function formatAdminRegisterSignInTime(recordedAt) {
-  if (!recordedAt) return '—';
+  if (!recordedAt) return '-';
   return new Date(recordedAt).toLocaleTimeString('en-ZA', { hour: 'numeric', minute: '2-digit' });
 }
 
 function renderAdminRegisterModal(data) {
   const session = data.session || {};
-  const modCode = session.module_code || '—';
+  const modCode = session.module_code || '-';
   const date = session.session_date
     ? new Date(String(session.session_date).slice(0, 10)).toLocaleDateString('en-ZA', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
-    : '—';
+    : '-';
   const time = session.start_time ? String(session.start_time).slice(0, 5) : '';
   const meta = [time, session.venue, session.topic, adSessionTypeLabel(session.session_type)]
     .filter(Boolean).join(' · ');
 
   const students = data.students || (data.attendance || []).map((a) => ({
     student_number: a.student_number,
-    full_name: a.full_name || '—',
+    full_name: a.full_name || '-',
     recorded_at: a.recorded_at,
     present: true,
   }));
@@ -598,8 +598,8 @@ function renderAdminRegisterModal(data) {
   const pct = enrolled ? Math.round((present / enrolled) * 100) : (present ? 100 : 0);
 
   adSetText('#reg-eyebrow', modCode);
-  adSetText('#reg-title', `Attendance Register — ${date}`);
-  adSetText('#reg-meta', meta || '—');
+  adSetText('#reg-title', `Attendance Register - ${date}`);
+  adSetText('#reg-meta', meta || '-');
   adSetText('#reg-enrolled', String(enrolled));
   adSetText('#reg-present', String(present));
   adSetText('#reg-absent', String(absent));
@@ -617,7 +617,7 @@ function renderAdminRegisterModal(data) {
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td style="color:var(--muted);font-size:10px;font-family:'DM Mono',monospace">${String(i + 1).padStart(2, '0')}</td>
       <td class="reg-snum">${s.student_number}</td>
-      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${s.full_name || '—'}</td>
+      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${s.full_name || '-'}</td>
       <td class="reg-time">${formatAdminRegisterSignInTime(s.recorded_at)}</td>
       <td><span class="reg-badge ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span></td>
     </tr>`).join('');
@@ -679,16 +679,16 @@ function downloadRegister() {
   const present = students.filter((s) => s.present).length;
   const absent = Math.max(0, enrolled - present);
   const pct = enrolled ? Math.round((present / enrolled) * 100) : (present ? 100 : 0);
-  const modCode = session.module_code || '—';
+  const modCode = session.module_code || '-';
   const dateLabel = session.session_date
     ? new Date(String(session.session_date).slice(0, 10)).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'Session';
 
   const rows = students.map((s, i) => `
-    <tr><td>${String(i + 1).padStart(2, '0')}</td><td>${s.student_number}</td><td>${s.full_name || '—'}</td>
+    <tr><td>${String(i + 1).padStart(2, '0')}</td><td>${s.student_number}</td><td>${s.full_name || '-'}</td>
     <td>${formatAdminRegisterSignInTime(s.recorded_at)}</td><td>${s.present ? 'Present' : 'Absent'}</td></tr>`).join('');
 
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Register — ${dateLabel}</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Register - ${dateLabel}</title>
 <style>body{font-family:sans-serif;padding:40px;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:16px}
 th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5;font-size:11px;text-transform:uppercase}</style></head>
 <body><h1>Attendance Register</h1><p>${modCode} · ${dateLabel}</p>
@@ -720,7 +720,7 @@ async function confirmResolution() {
   const parts = [];
   if (outcome) parts.push(outcomeLabels[outcome] || outcome);
   if (note) parts.push(note);
-  const fullNote = parts.join(' — ') || null;
+  const fullNote = parts.join(' - ') || null;
   try {
     await VF.apiFetch(`/sessions/${activeResolveId}/resolve-flag`, {
       method: 'PATCH',
@@ -737,14 +737,14 @@ async function confirmResolution() {
 }
 
 function sendFlagMessage() {
-  showToast('Open Messages to reply in the tutor–lecturer thread');
+  showToast('Open Messages to reply in the tutor-lecturer thread');
   closeFlagModal();
   showPage('messages', document.querySelector('.nav-item[onclick*="messages"]'));
   if (typeof loadMessageThreads === 'function') loadMessageThreads();
 }
 
 function markFlagInvestigating() {
-  showToast('Investigation noted — use Messages to contact the tutor or lecturer');
+  showToast('Investigation noted - use Messages to contact the tutor or lecturer');
 }
 
 async function loadDashboardOverview() {
@@ -809,14 +809,14 @@ async function loadDashboardOverview() {
 
     updateNavBadges();
 
-    // Use referrals already fetched above — avoid a second /referrals round-trip.
+    // Use referrals already fetched above - avoid a second /referrals round-trip.
     const pendingRefCount = pendingReferrals.length;
     const refStat = document.getElementById('stat-referrals-pending');
     if (refStat) refStat.textContent = String(pendingRefCount);
     const refBadge = document.getElementById('nav-referrals-badge')
       || document.querySelector('[onclick*="referrals"] .nav-badge');
     if (refBadge) {
-      refBadge.textContent = pendingRefCount ? String(pendingRefCount) : '—';
+      refBadge.textContent = pendingRefCount ? String(pendingRefCount) : '-';
       if (refBadge.id === 'nav-referrals-badge') {
         refBadge.style.display = pendingRefCount ? '' : 'none';
       }
@@ -836,7 +836,7 @@ async function loadDashboardOverview() {
     showToast(err.errors ? err.errors[0] : 'Could not refresh dashboard');
     ['stat-open-apps', 'stat-pending-claims', 'stat-flagged-sessions'].forEach((id) => {
       const el = document.getElementById(id);
-      if (el) el.textContent = '—';
+      if (el) el.textContent = '-';
     });
     updateAdminMobileHub({ openApps: 0, pendingClaims: 0, pendingReferrals: 0, flagged: 0, openSupport: 0, openPostings: 0 });
     const notif = document.getElementById('dash-notifications');
@@ -913,7 +913,7 @@ function buildDashboardActivityFeed(applications, claims, flagged, referrals, su
         targetId: a.id,
         ts: new Date(a.submitted_at || a.created_at).getTime(),
         title,
-        sub: `${a.first_names} ${a.surname} — ${adAppModuleLabel(a)}`,
+        sub: `${a.first_names} ${a.surname} - ${adAppModuleLabel(a)}`,
         time: adRelativeTime(a.submitted_at || a.created_at),
         unread: ['submitted', 'under_review', 'shortlisted'].includes(a.status),
       });
@@ -927,7 +927,7 @@ function buildDashboardActivityFeed(applications, claims, flagged, referrals, su
         targetId: c.id,
         ts: new Date(c.submitted_at || c.lecturer_reviewed_at || 0).getTime(),
         title: 'Claim ready for approval',
-        sub: `${c.tutor_first_names} ${c.tutor_surname} — ${adFormatClaimPeriod(c)}${c.module_code ? ` · ${c.module_code}` : ''}`,
+        sub: `${c.tutor_first_names} ${c.tutor_surname} - ${adFormatClaimPeriod(c)}${c.module_code ? ` · ${c.module_code}` : ''}`,
         time: adRelativeTime(c.submitted_at),
         unread: true,
       });
@@ -942,7 +942,7 @@ function buildDashboardActivityFeed(applications, claims, flagged, referrals, su
         targetId: r.id,
         ts: new Date(r.created_at || 0).getTime(),
         title: 'Referral pending',
-        sub: `${r.first_names} ${r.surname} — ${r.module_code || r.module_name || 'module'} · ${lecturer || 'lecturer'}`,
+        sub: `${r.first_names} ${r.surname} - ${r.module_code || r.module_name || 'module'} · ${lecturer || 'lecturer'}`,
         time: adRelativeTime(r.created_at),
         unread: true,
       });
@@ -969,7 +969,7 @@ function buildDashboardActivityFeed(applications, claims, flagged, referrals, su
         targetId: t.id,
         ts: new Date(t.created_at || 0).getTime(),
         title: t.status === 'in_progress' ? 'Support ticket in progress' : 'New support ticket',
-        sub: `${t.created_by_name || roleLabel} — ${t.subject || 'No subject'} · ${t.priority || 'medium'} priority`,
+        sub: `${t.created_by_name || roleLabel} - ${t.subject || 'No subject'} · ${t.priority || 'medium'} priority`,
         time: adRelativeTime(t.created_at),
         unread: t.status === 'open',
       });
@@ -1195,7 +1195,7 @@ async function loadAnalysis() {
 
     const mobSub = document.getElementById('analysis-page-sub');
     if (mobSub) {
-      mobSub.textContent = `Session totals, active tutors and payout summaries — ${periodLong}`;
+      mobSub.textContent = `Session totals, active tutors and payout summaries - ${periodLong}`;
     }
     const deskSub = document.getElementById('analysis-d-sub');
     if (deskSub) {
@@ -1307,11 +1307,11 @@ function supportPriorityChip(priority) {
 function supportRoleChip(role) {
   if (role === 'tutor') return '<span class="sc new-app">Tutor</span>';
   if (role === 'lecturer') return '<span class="sc review">Lecturer</span>';
-  return supportEscapeHtml(role || '—');
+  return supportEscapeHtml(role || '-');
 }
 
 function supportFormatDate(value) {
-  if (!value) return '—';
+  if (!value) return '-';
   return new Date(value).toLocaleDateString('en-ZA', {
     day: 'numeric',
     month: 'short',
@@ -1327,7 +1327,7 @@ function renderSupportThread(replies, containerEl) {
   }
   containerEl.innerHTML = replies.map((r) => {
     const out = r.author_role === 'admin';
-    const meta = `${supportEscapeHtml(r.author_name || r.author_role || '—')} · ${supportFormatDate(r.created_at)}`;
+    const meta = `${supportEscapeHtml(r.author_name || r.author_role || '-')} · ${supportFormatDate(r.created_at)}`;
     return `<div class="support-message${out ? ' out' : ''}">` +
       `<div class="support-message-meta">${meta}</div>` +
       `<div class="support-message-bubble">${supportEscapeHtml(r.message)}</div>` +
@@ -1354,7 +1354,7 @@ function renderSupportTicketTable(tickets) {
 
   tbody.innerHTML = tickets.map((t) => {
     const detailsText = supportEscapeHtml(
-      (t.details || '').length > 60 ? `${t.details.slice(0, 60)}…` : (t.details || '—')
+      (t.details || '').length > 60 ? `${t.details.slice(0, 60)}…` : (t.details || '-')
     );
     const actions = t.status === 'resolved'
       ? '<span class="sc active-u">Resolved</span>'
@@ -1363,7 +1363,7 @@ function renderSupportTicketTable(tickets) {
 
     return `<tr data-ticket-id="${t.id}" data-ticket-status="${t.status}">` +
       `<td style="font-family:'DM Mono',monospace;">#${t.id}</td>` +
-      `<td>${supportEscapeHtml(t.created_by_name || '—')}</td>` +
+      `<td>${supportEscapeHtml(t.created_by_name || '-')}</td>` +
       `<td>${supportRoleChip(t.created_by_role)}</td>` +
       `<td>${detailsText}</td>` +
       `<td>${supportPriorityChip(t.priority)}</td>` +
@@ -1379,10 +1379,10 @@ function renderSupportTicketTable(tickets) {
         : `openSupportRespondModal(${t.id})`;
       return `<button type="button" class="ad-rec-card" onclick="${openFn}">
         <div class="ad-rec-name">${supportEscapeHtml(t.created_by_name || 'Ticket #' + t.id)}</div>
-        <div class="ad-rec-sub">${supportEscapeHtml(t.subject || t.details || '—')}</div>
+        <div class="ad-rec-sub">${supportEscapeHtml(t.subject || t.details || '-')}</div>
         <div class="ad-rec-grid">
           <div class="item"><div class="k">#${t.id}</div><div class="l">Ticket</div></div>
-          <div class="item"><div class="k">${supportEscapeHtml(t.priority || '—')}</div><div class="l">Priority</div></div>
+          <div class="item"><div class="k">${supportEscapeHtml(t.priority || '-')}</div><div class="l">Priority</div></div>
           <div class="item"><div class="k">${supportFormatDate(t.created_at)}</div><div class="l">Date</div></div>
         </div>
       </button>`;
@@ -1416,12 +1416,12 @@ async function openSupportRespondModal(ticketId) {
     activeSupportTicketCache = ticket;
 
     setText('#support-respond-title', `Ticket #${ticket.id}`);
-    setText('#support-respond-from', ticket.created_by_name || '—');
-    setText('#support-respond-role', ticket.created_by_role || '—');
-    setText('#support-respond-subject', ticket.subject || '—');
-    setText('#support-respond-priority', ticket.priority || '—');
+    setText('#support-respond-from', ticket.created_by_name || '-');
+    setText('#support-respond-role', ticket.created_by_role || '-');
+    setText('#support-respond-subject', ticket.subject || '-');
+    setText('#support-respond-priority', ticket.priority || '-');
     const detailsEl = document.getElementById('support-respond-details');
-    if (detailsEl) detailsEl.textContent = ticket.details || '—';
+    if (detailsEl) detailsEl.textContent = ticket.details || '-';
     const msgEl = document.getElementById('support-respond-message');
     if (msgEl) msgEl.value = '';
     renderSupportThread(ticket.replies, document.getElementById('support-respond-history'));
@@ -1486,7 +1486,7 @@ async function openSupportResolveModal(ticketId) {
     setText('#support-resolve-title', `Resolve Ticket #${ticket.id}`);
     const summaryEl = document.getElementById('support-resolve-summary');
     if (summaryEl) {
-      summaryEl.textContent = `${ticket.created_by_name || '—'} · ${ticket.subject || '—'} · ${ticket.priority || '—'}`;
+      summaryEl.textContent = `${ticket.created_by_name || '-'} · ${ticket.subject || '-'} · ${ticket.priority || '-'}`;
     }
     const noteEl = document.getElementById('support-resolve-note');
     if (noteEl) noteEl.value = '';
@@ -1735,7 +1735,7 @@ function userInitials(firstNames, surname) {
 function renderLecturerCard(l) {
   const name = `${l.first_names} ${l.surname}`;
   const status = l.temp_password_flag ? 'Temp password' : 'Active';
-  const firstMod = ((l.modules || [])[0] && (l.modules || [])[0].code) || '—';
+  const firstMod = ((l.modules || [])[0] && (l.modules || [])[0].code) || '-';
   const initials = userInitials(l.first_names, l.surname);
   const statusClass = l.temp_password_flag ? 'neutral' : 'status';
   return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('lecturer', ${l.id})">
@@ -1753,7 +1753,7 @@ function renderLecturerCard(l) {
 }
 
 function renderLecturerRow(l) {
-  const moduleText = (l.modules || []).map((m) => m.code).join(', ') || '—';
+  const moduleText = (l.modules || []).map((m) => m.code).join(', ') || '-';
   const name = `${l.first_names} ${l.surname}`;
   return `
     <tr data-user-id="${l.id}">
@@ -1835,14 +1835,14 @@ async function loadDemonstrators() {
 function renderTutorCard(t, role = 'tutor') {
   const name = `${t.first_names} ${t.surname}`;
   const initials = userInitials(t.first_names, t.surname);
-  const mod = t.module_code || t.module_name || '—';
+  const mod = t.module_code || t.module_name || '-';
   const status = t.temp_password_flag ? 'Temp password' : 'Active';
   const statusClass = t.temp_password_flag ? 'neutral' : 'status';
   return `<button type="button" class="ad-compact-row" onclick="openUserActionSheet('${role}', ${t.id})">
     <div class="ad-cr-avatar">${adEscapeHtml(initials)}</div>
     <div class="ad-cr-info">
       <div class="ad-cr-name">${adEscapeHtml(name)}</div>
-      <div class="ad-cr-email">${adEscapeHtml(t.email || t.student_number || '—')}</div>
+      <div class="ad-cr-email">${adEscapeHtml(t.email || t.student_number || '-')}</div>
       <div class="ad-cr-meta">
         <span class="ad-mini-chip">${adEscapeHtml(mod)}</span>
         <span class="ad-mini-chip ${statusClass}">${status}</span>
@@ -1857,7 +1857,7 @@ let activeUserSheet = null;
 function openUserActionSheet(role, id) {
   const user = getManagedUser(role, id);
   if (!user) {
-    adToast('User not found — refresh the page and try again.', true);
+    adToast('User not found - refresh the page and try again.', true);
     return;
   }
   activeUserSheet = { role, id: Number(id) };
@@ -1909,7 +1909,7 @@ function userSheetDeactivate() {
 function renderTutorRow(t, role = 'tutor') {
   const respLabel = t.responsibility_level
     ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1)
-    : '—';
+    : '-';
   const lecturerName = t.lecturer_first_names
     ? `${t.lecturer_first_names} ${t.lecturer_surname}`
     : '<span style="color:var(--muted)">Not assigned</span>';
@@ -1917,9 +1917,9 @@ function renderTutorRow(t, role = 'tutor') {
   return `
     <tr data-user-id="${t.id}">
       <td style="font-weight:600;color:var(--text)">${adEscapeHtml(name)}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.student_number || '—')}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.student_number || '-')}</td>
       <td style="font-family:'DM Mono',monospace;color:${t.staff_number ? 'var(--text)' : 'var(--red)'}">${adEscapeHtml(t.staff_number || 'Not assigned')}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.module_name || '—')}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(t.module_name || '-')}</td>
       <td style="color:var(--text)">${lecturerName}</td>
       <td>${adEscapeHtml(respLabel)}</td>
       <td>
@@ -1944,7 +1944,7 @@ function handleCredentialResult(result, { successMessage, fallbackMessage } = {}
   if (result.tempPassword) {
     showCredentialModal(result.email, result.tempPassword);
     adToast(
-      fallbackMessage || 'Email could not be sent — share the password manually.',
+      fallbackMessage || 'Email could not be sent - share the password manually.',
       !fallbackMessage
     );
     return;
@@ -1982,7 +1982,7 @@ function runConfirmAction() {
 function confirmResetPassword(role, id) {
   const user = getManagedUser(role, id);
   if (!user) {
-    adToast('User not found — refresh the page and try again.', true);
+    adToast('User not found - refresh the page and try again.', true);
     return;
   }
   const name = `${user.first_names} ${user.surname}`;
@@ -2010,7 +2010,7 @@ function confirmResetPassword(role, id) {
 function confirmDeleteUser(role, id) {
   const user = getManagedUser(role, id);
   if (!user) {
-    adToast('User not found — refresh the page and try again.', true);
+    adToast('User not found - refresh the page and try again.', true);
     return;
   }
   const name = `${user.first_names} ${user.surname}`;
@@ -2046,7 +2046,7 @@ function confirmDeleteUser(role, id) {
 function openEditModulesModal(lecturerId) {
   const lecturer = getManagedUser('lecturer', lecturerId);
   if (!lecturer) {
-    adToast('Lecturer not found — refresh the page and try again.', true);
+    adToast('Lecturer not found - refresh the page and try again.', true);
     return;
   }
   activeEditLecturerId = Number(lecturerId);
@@ -2066,8 +2066,8 @@ function renderCurrentModulesList(lecturer) {
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;">
           <span style="font-size:12px;color:var(--text);">
             <span style="font-family:'DM Mono',monospace;">${adEscapeHtml(m.code)}</span>
-            — ${adEscapeHtml(m.name)}
-            <span style="color:var(--muted);font-size:11px;">(${m.course === 'BICT — Bachelor of ICT' ? 'BICT' : 'DICT'})</span>
+            - ${adEscapeHtml(m.name)}
+            <span style="color:var(--muted);font-size:11px;">(${m.course === 'BICT - Bachelor of ICT' ? 'BICT' : 'DICT'})</span>
           </span>
           <button type="button" class="btn-sm danger" data-code="${adEscapeHtml(m.code)}" data-course="${adEscapeHtml(m.course)}" onclick="removeModuleFromLecturer(this)">Remove</button>
         </div>`).join('')

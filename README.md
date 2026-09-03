@@ -56,7 +56,7 @@ veriflow-project/
     ├── services/              # Mail, storage, QR, PDF, screening, cache
     ├── validators/            # express-validator chains
     ├── utils/                 # Password policy, pagination, file checks
-    ├── migrations/            # Additive SQL (001–019+)
+    ├── migrations/            # Additive SQL (001-019+)
     ├── scripts/               # Schema apply, migrate, wipe, storage setup
     └── uploads/               # Local fallback (gitignored)
 ```
@@ -80,7 +80,7 @@ Authoritative schema: **`backend/schema.sql`**. Ignore the small root `schema.sq
 cd backend
 npm install
 cp ../.env.example .env   # or copy backend/.env.example and fill values
-# Edit .env — at minimum DATABASE_URL, JWT_SECRET, SUPABASE_*, CORS_ORIGIN, FRONTEND_URL
+# Edit .env - at minimum DATABASE_URL, JWT_SECRET, SUPABASE_*, CORS_ORIGIN, FRONTEND_URL
 
 npm run db:schema           # fresh empty DB only
 npm run db:migrate-pending  # additive migrations not fully baked into older DBs
@@ -118,11 +118,11 @@ Default admin after seed: **`veriflow@ump.ac.za`** / value of `ADMIN_SEED_PASSWO
 
 ## Core product flows (summary)
 
-1. **Apply** — Step 1 registers the user (`POST /api/auth/register`) and opens an incomplete application. Steps 2–3 collect academics and documents; submit runs automated screening and moves status to `submitted` (or auto-`rejected`).
-2. **Review** — Admin moves applications through `under_review` → `shortlisted` → `approved` / `rejected`, optionally assigning a lecturer and responsibility level.
-3. **Onboard** — Approved tutors complete identity + banking/tax onboarding; JWT then carries `onboardingComplete`.
-4. **Operate** — Lecturers create sessions, activate QR attendance, complete sessions. Tutors submit monthly claims → lecturer → coordinator.
-5. **Refer** — Lecturers can refer students; admin approval may create a tutor account with a temporary password.
+1. **Apply** - Step 1 registers the user (`POST /api/auth/register`) and opens an incomplete application. Steps 2-3 collect academics and documents; submit runs automated screening and moves status to `submitted` (or auto-`rejected`).
+2. **Review** - Admin moves applications through `under_review` → `shortlisted` → `approved` / `rejected`, optionally assigning a lecturer and responsibility level.
+3. **Onboard** - Approved tutors complete identity + banking/tax onboarding; JWT then carries `onboardingComplete`.
+4. **Operate** - Lecturers create sessions, activate QR attendance, complete sessions. Tutors submit monthly claims → lecturer → coordinator.
+5. **Refer** - Lecturers can refer students; admin approval may create a tutor account with a temporary password.
 
 State machines and table relationships are detailed in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

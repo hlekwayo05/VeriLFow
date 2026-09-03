@@ -17,7 +17,7 @@
  */
 
 -- =============================================================
---  VeriFlow — PostgreSQL Schema
+--  VeriFlow - PostgreSQL Schema
 -- =============================================================
 
 -- =============================================================
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS settings (
   min_cv_keywords       INTEGER DEFAULT 0,
   applications_open     BOOLEAN DEFAULT FALSE,
   closing_date          DATE,
-  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open — 2026 Academic Year',
+  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open - 2026 Academic Year',
   announcement_body     TEXT DEFAULT
     'Dear Students,
 
@@ -145,10 +145,10 @@ University of Mpumalanga',
 INSERT INTO settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
 
 UPDATE settings SET
-  announcement_subject = 'Tutor Applications Now Open — 2026 Academic Year'
+  announcement_subject = 'Tutor Applications Now Open - 2026 Academic Year'
 WHERE id = 1
   AND (announcement_subject IS NULL
-    OR announcement_subject = 'Tutor Applications Now Open — 2026');
+    OR announcement_subject = 'Tutor Applications Now Open - 2026');
 
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_undergrad NUMERIC(8,2) DEFAULT 59.66;
 ALTER TABLE settings ADD COLUMN IF NOT EXISTS rate_honours NUMERIC(8,2) DEFAULT 73.87;
@@ -284,7 +284,7 @@ CREATE INDEX IF NOT EXISTS idx_message_threads_lecturer ON message_threads (lect
 CREATE INDEX IF NOT EXISTS idx_message_threads_tutor ON message_threads (tutor_id, last_message_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_thread ON messages (thread_id, created_at ASC);
 
--- Coordinator (admin) messaging — separate from lecturer↔tutor peer threads
+-- Coordinator (admin) messaging - separate from lecturer↔tutor peer threads
 CREATE TABLE IF NOT EXISTS coordinator_threads (
   id              SERIAL PRIMARY KEY,
   peer_id         INT          NOT NULL REFERENCES users (id) ON DELETE CASCADE,
@@ -330,7 +330,7 @@ CREATE TABLE applications (
   faculty               VARCHAR(100),
   course                VARCHAR(100),
   qualification_level   qualification_level,
-  module_year_level     VARCHAR(50),                   -- e.g. '2nd Year — Semester 1'
+  module_year_level     VARCHAR(50),                   -- e.g. '2nd Year - Semester 1'
   module_name           VARCHAR(150),
   module_code           VARCHAR(20),
   gpa                   NUMERIC(5,2) CHECK (gpa >= 0 AND gpa <= 100),
@@ -366,6 +366,7 @@ CREATE TABLE applications (
 
   submitted_at          TIMESTAMPTZ,                   -- set when step 3 is submitted
   reviewed_at           TIMESTAMPTZ,                   -- set when admin takes action
+  offer_accepted_at     TIMESTAMPTZ,                   -- tutor clicked I accept in VeriFlow
   created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
 
@@ -391,6 +392,7 @@ ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_proof_original_name VARCH
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS id_filename TEXT;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS tax_filename TEXT;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS bank_filename TEXT;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS offer_accepted_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS idx_applications_assigned_lecturer
   ON applications (assigned_lecturer_id)
   WHERE assigned_lecturer_id IS NOT NULL;
@@ -438,61 +440,61 @@ CREATE TABLE modules (
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
--- DICT — Diploma in ICT (keep in sync with frontend/js/curriculum.js)
+-- DICT - Diploma in ICT (keep in sync with frontend/js/curriculum.js)
 INSERT INTO modules (code, name, course, year_semester) VALUES
-  ('COM100',  'Professional Communication 100', 'DICT', '1st Year — Semester 1'),
-  ('DICT121', 'Computing Theory 121', 'DICT', '1st Year — Semester 1'),
-  ('DICT131', 'Multimedia Fundamentals 131', 'DICT', '1st Year — Semester 1'),
-  ('DICT151', 'Programming Fundamentals 151', 'DICT', '1st Year — Semester 1'),
-  ('DICT111', 'Information Systems 111', 'DICT', '1st Year — Semester 1'),
-  ('DICT112', 'Communication Network Fundamentals 112', 'DICT', '1st Year — Semester 2'),
-  ('DICT122', 'Programming Fundamentals 122', 'DICT', '1st Year — Semester 2'),
-  ('DICT132', 'Multimedia Fundamentals 132', 'DICT', '1st Year — Semester 2'),
-  ('DICT142', 'Business Practice 142', 'DICT', '1st Year — Semester 2'),
-  ('STAT101', 'Basic Statistics 101', 'DICT', '1st Year — Semester 2'),
-  ('DICT211', 'Application Development 211', 'DICT', '2nd Year — Semester 1'),
-  ('DICT221', 'Software Development 221', 'DICT', '2nd Year — Semester 1'),
-  ('DICT231', 'IT Service Management 231', 'DICT', '2nd Year — Semester 1'),
-  ('DICT241', 'Information Systems 241', 'DICT', '2nd Year — Semester 1'),
-  ('DICT222', 'Application Development 222', 'DICT', '2nd Year — Semester 2'),
-  ('DICT232', 'Communication Network 232', 'DICT', '2nd Year — Semester 2'),
-  ('DICT242', 'Multimedia Applications 242', 'DICT', '2nd Year — Semester 2'),
-  ('DICT252', 'IT Project Management 252', 'DICT', '2nd Year — Semester 2'),
-  ('DICT311', 'Application Development 311', 'DICT', '3rd Year — Semester 1'),
-  ('DICT321', 'Information Systems 321', 'DICT', '3rd Year — Semester 1'),
-  ('DICT312', 'Application Development 312', 'DICT', '3rd Year — Semester 2'),
-  ('DICT322', 'Information Systems 322', 'DICT', '3rd Year — Semester 2'),
+  ('COM100',  'Professional Communication 100', 'DICT', '1st Year - Semester 1'),
+  ('DICT121', 'Computing Theory 121', 'DICT', '1st Year - Semester 1'),
+  ('DICT131', 'Multimedia Fundamentals 131', 'DICT', '1st Year - Semester 1'),
+  ('DICT151', 'Programming Fundamentals 151', 'DICT', '1st Year - Semester 1'),
+  ('DICT111', 'Information Systems 111', 'DICT', '1st Year - Semester 1'),
+  ('DICT112', 'Communication Network Fundamentals 112', 'DICT', '1st Year - Semester 2'),
+  ('DICT122', 'Programming Fundamentals 122', 'DICT', '1st Year - Semester 2'),
+  ('DICT132', 'Multimedia Fundamentals 132', 'DICT', '1st Year - Semester 2'),
+  ('DICT142', 'Business Practice 142', 'DICT', '1st Year - Semester 2'),
+  ('STAT101', 'Basic Statistics 101', 'DICT', '1st Year - Semester 2'),
+  ('DICT211', 'Application Development 211', 'DICT', '2nd Year - Semester 1'),
+  ('DICT221', 'Software Development 221', 'DICT', '2nd Year - Semester 1'),
+  ('DICT231', 'IT Service Management 231', 'DICT', '2nd Year - Semester 1'),
+  ('DICT241', 'Information Systems 241', 'DICT', '2nd Year - Semester 1'),
+  ('DICT222', 'Application Development 222', 'DICT', '2nd Year - Semester 2'),
+  ('DICT232', 'Communication Network 232', 'DICT', '2nd Year - Semester 2'),
+  ('DICT242', 'Multimedia Applications 242', 'DICT', '2nd Year - Semester 2'),
+  ('DICT252', 'IT Project Management 252', 'DICT', '2nd Year - Semester 2'),
+  ('DICT311', 'Application Development 311', 'DICT', '3rd Year - Semester 1'),
+  ('DICT321', 'Information Systems 321', 'DICT', '3rd Year - Semester 1'),
+  ('DICT312', 'Application Development 312', 'DICT', '3rd Year - Semester 2'),
+  ('DICT322', 'Information Systems 322', 'DICT', '3rd Year - Semester 2'),
   ('DICT300', 'Project 300', 'DICT', 'Year Block')
 ON CONFLICT (code) DO NOTHING;
 
--- BICT — Bachelor of ICT
+-- BICT - Bachelor of ICT
 INSERT INTO modules (code, name, course, year_semester) VALUES
-  ('ALP101',  'Academic Literacy and Professional Development for ICT 101', 'BICT', '1st Year — Semester 1'),
-  ('DBF101',  'Introduction to Databases 101', 'BICT', '1st Year — Semester 1'),
-  ('MFC101',  'Mathematics for Computing 101', 'BICT', '1st Year — Semester 1'),
-  ('PRT101',  'Introduction to Programming Techniques 101', 'BICT', '1st Year — Semester 1'),
-  ('CNT101',  'Introduction Communication Networking 101', 'BICT', '1st Year — Semester 1'),
-  ('CPP102',  'Computing Professional Practice 102', 'BICT', '1st Year — Semester 2'),
-  ('MFC102',  'Mathematics for Computing 102', 'BICT', '1st Year — Semester 2'),
-  ('OSF102',  'Introduction to Operating Systems 102', 'BICT', '1st Year — Semester 2'),
-  ('PRT102',  'Programming Techniques 102', 'BICT', '1st Year — Semester 2'),
-  ('CNT102',  'Communication Networking 102', 'BICT', '1st Year — Semester 2'),
-  ('PRT201',  'Programming Techniques 201', 'BICT', '2nd Year — Semester 1'),
-  ('WDV201',  'Introduction to Web Development 201', 'BICT', '2nd Year — Semester 1'),
-  ('PSE201',  'Principles of Software Engineering 201', 'BICT', '2nd Year — Semester 1'),
-  ('DBS201',  'Database Systems 201', 'BICT', '2nd Year — Semester 1'),
-  ('STF201',  'Statistics for Information Communication Technology 201', 'BICT', '2nd Year — Semester 1'),
-  ('CYB202',  'Cybersecurity 202', 'BICT', '2nd Year — Semester 2'),
-  ('MDT202',  'Mobile Application Development Techniques 202', 'BICT', '2nd Year — Semester 2'),
-  ('IOT202',  'Introduction to the Internet of Things 202', 'BICT', '2nd Year — Semester 2'),
-  ('DSA202',  'Data Structures and Algorithms 202', 'BICT', '2nd Year — Semester 2'),
-  ('DSA202B', 'Data Scalability and Analytics 202', 'BICT', '2nd Year — Semester 2'),
-  ('PRJ300',  'Project 300', 'BICT', '3rd Year — Semester 1'),
-  ('IPM301',  'Information Technology Project Management 301', 'BICT', '3rd Year — Semester 1'),
-  ('DAN301',  'Data Analytics 301', 'BICT', '3rd Year — Semester 1'),
-  ('CYB302',  'Cybersecurity 302', 'BICT', '3rd Year — Semester 2'),
-  ('PRG301',  'Programming Techniques 301', 'BICT', '3rd Year — Semester 2'),
-  ('CNT302',  'Communication Networks 302', 'BICT', '3rd Year — Semester 2')
+  ('ALP101',  'Academic Literacy and Professional Development for ICT 101', 'BICT', '1st Year - Semester 1'),
+  ('DBF101',  'Introduction to Databases 101', 'BICT', '1st Year - Semester 1'),
+  ('MFC101',  'Mathematics for Computing 101', 'BICT', '1st Year - Semester 1'),
+  ('PRT101',  'Introduction to Programming Techniques 101', 'BICT', '1st Year - Semester 1'),
+  ('CNT101',  'Introduction Communication Networking 101', 'BICT', '1st Year - Semester 1'),
+  ('CPP102',  'Computing Professional Practice 102', 'BICT', '1st Year - Semester 2'),
+  ('MFC102',  'Mathematics for Computing 102', 'BICT', '1st Year - Semester 2'),
+  ('OSF102',  'Introduction to Operating Systems 102', 'BICT', '1st Year - Semester 2'),
+  ('PRT102',  'Programming Techniques 102', 'BICT', '1st Year - Semester 2'),
+  ('CNT102',  'Communication Networking 102', 'BICT', '1st Year - Semester 2'),
+  ('PRT201',  'Programming Techniques 201', 'BICT', '2nd Year - Semester 1'),
+  ('WDV201',  'Introduction to Web Development 201', 'BICT', '2nd Year - Semester 1'),
+  ('PSE201',  'Principles of Software Engineering 201', 'BICT', '2nd Year - Semester 1'),
+  ('DBS201',  'Database Systems 201', 'BICT', '2nd Year - Semester 1'),
+  ('STF201',  'Statistics for Information Communication Technology 201', 'BICT', '2nd Year - Semester 1'),
+  ('CYB202',  'Cybersecurity 202', 'BICT', '2nd Year - Semester 2'),
+  ('MDT202',  'Mobile Application Development Techniques 202', 'BICT', '2nd Year - Semester 2'),
+  ('IOT202',  'Introduction to the Internet of Things 202', 'BICT', '2nd Year - Semester 2'),
+  ('DSA202',  'Data Structures and Algorithms 202', 'BICT', '2nd Year - Semester 2'),
+  ('DSA202B', 'Data Scalability and Analytics 202', 'BICT', '2nd Year - Semester 2'),
+  ('PRJ300',  'Project 300', 'BICT', '3rd Year - Semester 1'),
+  ('IPM301',  'Information Technology Project Management 301', 'BICT', '3rd Year - Semester 1'),
+  ('DAN301',  'Data Analytics 301', 'BICT', '3rd Year - Semester 1'),
+  ('CYB302',  'Cybersecurity 302', 'BICT', '3rd Year - Semester 2'),
+  ('PRG301',  'Programming Techniques 301', 'BICT', '3rd Year - Semester 2'),
+  ('CNT302',  'Communication Networks 302', 'BICT', '3rd Year - Semester 2')
 ON CONFLICT (code) DO NOTHING;
 
 -- =============================================================
@@ -553,8 +555,8 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON password_reset_t
 CREATE TABLE lecturer_modules (
   id                    SERIAL PRIMARY KEY,
   lecturer_id           INT          NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-  course                VARCHAR(50)  NOT NULL,         -- 'BICT — Bachelor of ICT' | 'DICT — Diploma in ICT'
-  module_code           VARCHAR(20)  NOT NULL,         -- lecturer's own real code, e.g. 'IS211' — informational only
+  course                VARCHAR(50)  NOT NULL,         -- 'BICT - Bachelor of ICT' | 'DICT - Diploma in ICT'
+  module_code           VARCHAR(20)  NOT NULL,         -- lecturer's own real code, e.g. 'IS211' - informational only
   module_name           VARCHAR(150) NOT NULL,         -- MUST match a name in constants.js CURRICULUM for this course
   created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
 
@@ -615,7 +617,7 @@ CREATE INDEX IF NOT EXISTS idx_session_tutors_tutor_id ON session_tutors (tutor_
 -- =============================================================
 --  ATTENDANCE LOGS
 --  One row per student per session.
---  Students are NOT in the users table — identified by student number only.
+--  Students are NOT in the users table - identified by student number only.
 -- =============================================================
 
 CREATE TABLE attendance_logs (

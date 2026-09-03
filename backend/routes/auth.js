@@ -183,7 +183,7 @@ router.post('/register', validateRegister, async (req, res) => {
         });
 
         return res.status(200).json({
-          message: 'Registration resumed — continue your application.',
+          message: 'Registration resumed - continue your application.',
           token,
           userId: existing.id,
           role: 'tutor',

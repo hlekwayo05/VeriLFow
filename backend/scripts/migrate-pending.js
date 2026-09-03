@@ -25,6 +25,7 @@ const FILES = [
   '023_password_reset_tokens.sql',
   '024_hr_docs_appointment_settings.sql',
   '025_hr_appointment_staff_number.sql',
+  '026_offer_accepted_at.sql',
 ];
 
 async function main() {

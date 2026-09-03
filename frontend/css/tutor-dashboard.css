@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   VeriFlow — Tutor Dashboard CSS
+   VeriFlow - Tutor Dashboard CSS
    Matches lecturer-dashboard.css light design system
    ═══════════════════════════════════════════════════════ */
 html, body { height: 100%; margin: 0; padding: 0; }
@@ -1198,6 +1198,91 @@ body.tutor-dash .profile-warning-pill {
   border-radius: 6px;
   font-size: 12px;
 }
+body.tutor-dash .td-hr-notice {
+  background: rgba(47, 122, 110, 0.08);
+  border: 1px solid rgba(47, 122, 110, 0.28);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+body.tutor-dash .td-hr-notice--desktop {
+  margin: 0 0 18px;
+}
+body.tutor-dash .td-hr-notice-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--ink, #182420);
+  margin-bottom: 6px;
+}
+body.tutor-dash .td-hr-notice-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+body.tutor-dash .td-hr-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+body.tutor-dash .hr-accept-modal {
+  width: min(480px, 94vw);
+}
+body.tutor-dash .hr-accept-body {
+  margin-bottom: 4px;
+}
+body.tutor-dash .hr-accept-lead {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 0 0 14px;
+  font-weight: 500;
+}
+body.tutor-dash .hr-accept-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  background: rgba(47, 122, 110, 0.08);
+  border: 1px solid rgba(47, 122, 110, 0.22);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 0 0 18px;
+}
+body.tutor-dash .hr-form-modal {
+  width: min(920px, 96vw);
+  max-width: 96vw;
+  height: min(88vh, 900px);
+  max-height: 90vh;
+  padding: 18px 20px 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+body.tutor-dash .hr-form-modal .modal-header {
+  margin-bottom: 12px;
+}
+body.tutor-dash .hr-form-modal-body {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f4f5f3;
+}
+body.tutor-dash .hr-form-modal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+body.tutor-dash .hr-form-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  flex-shrink: 0;
+}
 body.tutor-dash .td-hub-modules { display: none; }
 
 body.tutor-dash .tm-sess-cards { display: none; }
@@ -1464,12 +1549,12 @@ body.tutor-dash .thread-av.tutor {
 
 @media (max-width: 900px) {
   /*
-    Mobile tutor tokens (campus utility — glanceable between classes)
+    Mobile tutor tokens (campus utility - glanceable between classes)
     Signature: session-slot rail (timetable stripe), not icon-in-square SaaS tiles.
     Avoided: cream+serif+terracotta · black+neon · broadsheet hairlines.
   */
 
-  /* Mock typography — Space Grotesk + JetBrains Mono (matches mobile suite) */
+  /* Mock typography - Space Grotesk + JetBrains Mono (matches mobile suite) */
   body.tutor-dash,
   body.tutor-dash button,
   body.tutor-dash input,
@@ -1701,7 +1786,7 @@ body.tutor-dash .thread-av.tutor {
     color: #F7F9F8;
   }
 
-  /* Semester hours hero — suite layout (ring + vertical stats) */
+  /* Semester hours hero - suite layout (ring + vertical stats) */
   body.tutor-dash .td-hub-hero {
     position: relative;
     display: block;
@@ -1832,7 +1917,7 @@ body.tutor-dash .thread-av.tutor {
   }
   body.tutor-dash .td-hub-hero-stat { display: none; }
 
-  /* Hub quick actions — suite list rows */
+  /* Hub quick actions - suite list rows */
   body.tutor-dash .td-hub-grid {
     display: flex;
     flex-direction: column;
@@ -1960,7 +2045,7 @@ body.tutor-dash .thread-av.tutor {
     color: #fff;
   }
 
-  /* Floating bottom nav — thumb zone */
+  /* Floating bottom nav - thumb zone */
   body.tutor-dash .td-bottom-nav {
     display: flex;
     align-items: center;
@@ -2068,7 +2153,7 @@ body.tutor-dash .thread-av.tutor {
   body.tutor-dash .page-hero { margin-bottom: 18px; }
   body.tutor-dash .page-hero h1 { font-size: 30px; }
 
-  /* Sessions — suite mobile layout */
+  /* Sessions - suite mobile layout */
   body.tutor-dash #page-sessions .full-page.tm-sess-page {
     padding: 16px 20px calc(100px + env(safe-area-inset-bottom, 0px));
     background: #f2f4f1;
@@ -2457,7 +2542,7 @@ body.tutor-dash .thread-av.tutor {
   }
   body.tutor-dash .ts-table-wrap { overflow-x: auto; }
 
-  /* Hour log — suite mobile layout */
+  /* Hour log - suite mobile layout */
   body.tutor-dash #page-hourlog .hourlog-grid { display: none; }
   body.tutor-dash .hl-row-label { width: 100px; font-size: 11px; }
   body.tutor-dash #page-hourlog .full-page.hl-suite {
@@ -2661,7 +2746,7 @@ body.tutor-dash .thread-av.tutor {
     display: none;
   }
 
-  /* Calendar — suite mobile layout */
+  /* Calendar - suite mobile layout */
   body.tutor-dash #page-calendar.active {
     display: flex;
     flex-direction: column;
@@ -2848,7 +2933,7 @@ body.tutor-dash .thread-av.tutor {
     line-height: 1.45;
   }
 
-  /* Claims — suite mobile layout */
+  /* Claims - suite mobile layout */
   body.tutor-dash #page-claims .full-page.ts-suite {
     padding: 16px 20px calc(100px + env(safe-area-inset-bottom, 0px));
     background: #f2f4f1;
@@ -3270,7 +3355,7 @@ body.tutor-dash .thread-av.tutor {
   }
   body.tutor-dash #page-claims .chr-chevron { display: none; }
 
-  /* Messages — suite mobile layout */
+  /* Messages - suite mobile layout */
   body.tutor-dash #page-messages.active {
     display: flex;
     flex-direction: column;
@@ -3587,7 +3672,7 @@ body.tutor-dash .thread-av.tutor {
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Profile — suite mobile layout */
+  /* Profile - suite mobile layout */
   body.tutor-dash #page-profile .full-page.pf-suite {
     padding: 16px 20px calc(100px + env(safe-area-inset-bottom, 0px));
     background: #f2f4f1;
@@ -3713,8 +3798,16 @@ body.tutor-dash .thread-av.tutor {
   body.tutor-dash .profile-card--upload .um-grid,
   body.tutor-dash .profile-card--update .um-grid,
   body.tutor-dash .profile-card--upload .um-actions,
-  body.tutor-dash .profile-card--update .um-actions {
+  body.tutor-dash .profile-card--update .um-actions,
+  body.tutor-dash .profile-card--hr-forms .um-actions {
     padding: 0 16px 16px;
+  }
+  body.tutor-dash .hr-form-modal {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
   }
   body.tutor-dash .profile-warnings {
     margin-bottom: 0;
@@ -3746,7 +3839,7 @@ body.tutor-dash .thread-av.tutor {
     opacity: 0.88;
   }
 
-  /* QR modal — bottom sheet (suite mock) */
+  /* QR modal - bottom sheet (suite mock) */
   body.tutor-dash #qrModal {
     align-items: flex-end;
     justify-content: center;
@@ -3914,7 +4007,7 @@ body.tutor-dash .thread-av.tutor {
   body.tutor-dash .um-grid { grid-template-columns: 1fr; }
   body.tutor-dash .tcd-stats { grid-template-columns: repeat(2, 1fr); }
 
-  /* Support — exact suite mobile layout */
+  /* Support - exact suite mobile layout */
   body.tutor-dash #page-support .full-page.st-suite {
     padding: 16px 20px calc(100px + env(safe-area-inset-bottom, 0px));
     background: #f2f4f1;
@@ -4010,7 +4103,7 @@ body.tutor-dash .thread-av.tutor {
   }
   body.tutor-dash #page-support .st-sticky-bar { display: none !important; }
 
-  /* Support ticket compose — bottom sheet */
+  /* Support ticket compose - bottom sheet */
   body.tutor-dash #new-ticket-overlay {
     align-items: flex-end;
     justify-content: center;
@@ -4070,7 +4163,7 @@ body.tutor-dash .thread-av.tutor {
     justify-content: center;
   }
 
-  /* Attendance register — mobile roster sheet */
+  /* Attendance register - mobile roster sheet */
   body.tutor-dash .reg-overlay {
     align-items: flex-end;
     justify-content: center;

@@ -16,7 +16,7 @@ Boot fails if these are missing when `NODE_ENV=production` (`server.js`):
 |----------|---------|
 | `DATABASE_URL` | Postgres (prefer Supabase **session** pooler, port 5432) |
 | `SUPABASE_URL` | Project URL |
-| `SUPABASE_SERVICE_KEY` | **service_role** key — never the anon key, never ship to the browser |
+| `SUPABASE_SERVICE_KEY` | **service_role** key - never the anon key, never ship to the browser |
 | `JWT_SECRET` | ≥32 random characters (`openssl rand -hex 32`) |
 | `CORS_ORIGIN` | Comma-separated exact origins (no trailing slash) |
 
@@ -27,7 +27,7 @@ Boot fails if these are missing when `NODE_ENV=production` (`server.js`):
 | `FRONTEND_URL` | Base used in QR links and many emails (e.g. `https://veriflow-frontend.onrender.com/frontend`) |
 | `PORTAL_URL` | Apply deep-link in emails |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transactional mail |
-| `ADMIN_SEED_PASSWORD` | Only for `node seed.js` — not read at runtime for login |
+| `ADMIN_SEED_PASSWORD` | Only for `node seed.js` - not read at runtime for login |
 | `TRUST_PROXY` | `1` (or true) behind Render so rate limits see client IPs |
 
 ### Development helpers
@@ -50,7 +50,7 @@ Never commit `backend/.env`.
 
 ```bash
 cd backend
-npm run db:schema           # applies backend/schema.sql — expect failure if objects already exist
+npm run db:schema           # applies backend/schema.sql - expect failure if objects already exist
 npm run db:migrate-pending  # apply additive migrations listed in scripts/migrate-pending.js
 npm run db:modules          # module catalogue
 node seed.js                # admin user
@@ -86,7 +86,7 @@ node scripts/wipe-data.js   # users + operational data only; keeps modules, stud
 node seed.js                # restore admin
 ```
 
-Full wipe of **every** public table (including modules) — only when intentional:
+Full wipe of **every** public table (including modules) - only when intentional:
 
 ```bash
 node scripts/wipe-data.js --all
@@ -109,13 +109,13 @@ Re-running `seed.js` upserts that admin and removes known demo emails if present
 
 ## Local process model
 
-Terminal A — API:
+Terminal A - API:
 
 ```bash
 cd backend && npm run dev
 ```
 
-Terminal B — static UI (example):
+Terminal B - static UI (example):
 
 ```bash
 # from repo root, any static server that preserves /frontend paths
@@ -176,7 +176,7 @@ If the API hostname changes, update those constants and redeploy the frontend.
 
 1. `GET /api/health` → `status: ok`
 2. Login as seeded admin
-3. Confirm CORS (browser network tab — no CORS errors from the frontend origin)
+3. Confirm CORS (browser network tab - no CORS errors from the frontend origin)
 4. Upload a small PDF on apply/onboarding and open it back via Files
 5. Create a session, activate, open attendance URL on a phone
 
@@ -186,15 +186,15 @@ If the API hostname changes, update those constants and redeploy the frontend.
 
 | Symptom | Likely cause |
 |---------|----------------|
-| Login fails after wipe | Admin row gone — run `node seed.js` |
+| Login fails after wipe | Admin row gone - run `node seed.js` |
 | CORS errors in browser | Origin missing from `CORS_ORIGIN` or trailing slash mismatch |
 | Rate limit / wrong IP bans | `TRUST_PROXY` not set behind Render |
 | Supabase connect timeouts | Using direct IPv6-only host; switch to session pooler URL |
 | Emails only to one inbox | `EMAIL_OVERRIDE` still set |
 | Files 401 / broken preview | Missing JWT, Storage misconfig, or bucket not created (`storage:setup`) |
 | Frontend hits wrong API | Non-local host using hardcoded Render URL; or local not detected as LAN |
-| `db:schema` fails mid-way | DB not empty — use migrations instead of re-applying full schema |
-| Weak password rejected on apply | Expected — strong policy on register (see `passwordPolicy.js`) |
+| `db:schema` fails mid-way | DB not empty - use migrations instead of re-applying full schema |
+| Weak password rejected on apply | Expected - strong policy on register (see `passwordPolicy.js`) |
 
 ---
 

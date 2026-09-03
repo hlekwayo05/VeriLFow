@@ -9,64 +9,80 @@ Versions follow chronological project milestones.
 
 ## [Unreleased]
 
-### Added
-- Apply Step 3 required HR documents — ID copy, tax number proof, banking proof (`idFile` / `taxFile` / `bankFile`)
-- System Settings **Appointment Configuration** — appointment dates, director name/title/email, School of Computing and UCDG approvers
-- Admin PDF downloads for approved applications — Appointment Form D and Confirmation Form via Puppeteer (`GET /api/appointments/:id/form-d|confirmation`)
-- HR staff-number workflow — `users.staff_number`, Export for HR CSV, Upload HR Staff Numbers CSV, tutors table column, claim submit gated until staff number assigned, tutor profile status
-
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Production hardening follow-ups (stronger JWT secrets, email routing)
+- Batch HR pack ZIP for admin handoff
 
 ---
 
-## [0.5.0] — 2026-09-02
+## [0.6.0] - 2026-09-03
+
+### Added
+- Apply Step 3 required HR documents - ID copy, tax number proof, banking proof (`idFile` / `taxFile` / `bankFile`)
+- System Settings **Appointment Configuration** - appointment dates, director name/title/email, School of Computing and UCDG approvers
+- Admin PDF downloads for approved applications - Appointment Form D and Confirmation Form via Puppeteer (`GET /api/appointments/:id/form-d|confirmation`)
+- HR staff-number workflow - `users.staff_number`, Export for HR CSV, Upload HR Staff Numbers CSV, tutors table column, claim submit gated until staff number assigned, tutor profile status
+- Tutor **I accept** on Profile after onboarding - records `offer_accepted_at`, stamps name + date on Form D and Confirmation Form for tutor and admin PDFs (no witnesses)
+- In-app acceptance modal matching the tutor dashboard design (replaces browser confirm)
+- In-browser **View** for Appointment Form D, Confirmation Form, and application documents (CV, academic record, ID, tax, banking) on tutor and admin sides
+- Dashboard appointment-forms banner after onboarding - points tutors to Profile to accept; after accept, shows accepted date and that claims wait on staff number
+
+### Changed
+- Appointment Form D period dates read `appointment_start_date` / `appointment_end_date` (with legacy fallback)
+- Appointment Form D no longer lists “supporting documents required” (those files are already collected in VeriFlow)
+- Approval email points students to complete onboarding and accept the appointment in VeriFlow (no PDF attachment)
+- Admin application detail lists generated forms and uploaded documents in one Documents section with View / Download
+- Admin Form D / Confirmation PDF responses send a real PDF buffer so in-browser preview opens correctly
+
+---
+
+## [0.5.0] - 2026-09-02
 
 ### Security
 - **Strong password policy** on register, change-password, and password reset: min 8 characters with uppercase, lowercase, number, and special character (enforced in UI checklist + backend validators). Login still accepts existing weaker passwords. Temporary passwords always meet the same rules.
 
 ### Added
-- **Forgot password** — self-service reset from the login page; email link expires in one hour (`POST /auth/forgot-password`, `POST /auth/reset-password`)
-- **User Management — Demonstrators tab** — approved demonstrators listed separately from tutors (`position_type` filter on `/users/tutors`)
-- **User Management — Lecturer CSV import** — bulk create lecturers from CSV with columns `first_name`, `surname`, `email`, `cell_number`, `module_assignment`, `course`; module codes resolved from curriculum; welcome email sent for new accounts
-- **Position type (Tutor vs Demonstrator)** on applications — step 2 selection, differentiated document screening (demonstrators skip module pass checks)
-- **Cost centre** on approval — School of Computing or UCDG required at coordinator approval; shown in admin detail and tutor profile
-- Apply step 1 **auto-fill** — student number extracted from `@ump.ac.za` email; SA cell numbers normalised to `+27` format
+- **Forgot password** - self-service reset from the login page; email link expires in one hour (`POST /auth/forgot-password`, `POST /auth/reset-password`)
+- **User Management - Demonstrators tab** - approved demonstrators listed separately from tutors (`position_type` filter on `/users/tutors`)
+- **User Management - Lecturer CSV import** - bulk create lecturers from CSV with columns `first_name`, `surname`, `email`, `cell_number`, `module_assignment`, `course`; module codes resolved from curriculum; welcome email sent for new accounts
+- **Position type (Tutor vs Demonstrator)** on applications - step 2 selection, differentiated document screening (demonstrators skip module pass checks)
+- **Cost centre** on approval - School of Computing or UCDG required at coordinator approval; shown in admin detail and tutor profile
+- Apply step 1 **auto-fill** - student number extracted from `@ump.ac.za` email; SA cell numbers normalised to `+27` format
 - Document **original filename** storage (`cv_original_name`, `transcript_original_name`) so uploads show friendly names instead of internal storage paths
 - Shared shimmer **skeleton loaders** (`skeleton.css` + `VF.skeleton`) across lecturer, tutor, and admin dashboards and messaging
 - DB performance migration (`019`): indexes, optional pagination, short TTL response cache, `attendance_logs` partitioning
-- `backend/scripts/wipe-data.js` — remove users + related operational data; preserves modules, students, settings, postings (`--all` for full truncate)
+- `backend/scripts/wipe-data.js` - remove users + related operational data; preserves modules, students, settings, postings (`--all` for full truncate)
 - Project documentation: expanded `README.md` plus `docs/ARCHITECTURE.md`, `docs/API.md`, `docs/OPERATIONS.md`
 
 ### Changed
 - Admin applications table shows **Tutor** or **Demo** badge next to module name for every applicant
 - Tutor profile shows **Cost centre** in its own card (assigned cost centre + finance contact) for approved tutors
 - Referral approval now requires **Cost centre** selection (same as direct application approval)
-- Admin Messages — separate **Demonstrators** group in contact picker, inbox filter, compose dropdown, and broadcast flows; tutor/demo split by `position_type`
-- Lecturer Messages — tutors and demonstrators shown separately with **Tutor** / **Demo** labels, purple avatar for demonstrators, and Demonstrators inbox filter
-- Lecturer **My Team** page — tutors and demonstrators with role badges, filter tabs (All / Tutors / Demonstrators), desktop table view, and separate stats for tutors vs demonstrators
-- **Announcement email** — apply button links to `apply-step1.html` (fixes broken `/apply.html`); copy includes Tutor and Demonstrator roles
-- **2026 UMP tariff alignment** — qualification display names (including PhD Candidate or Holder), full rate table in backend and admin approval flow, read-only Pay Rate Reference in System Settings, and updated legacy settings defaults (59.66 / 73.87 / 90.92)
+- Admin Messages - separate **Demonstrators** group in contact picker, inbox filter, compose dropdown, and broadcast flows; tutor/demo split by `position_type`
+- Lecturer Messages - tutors and demonstrators shown separately with **Tutor** / **Demo** labels, purple avatar for demonstrators, and Demonstrators inbox filter
+- Lecturer **My Team** page - tutors and demonstrators with role badges, filter tabs (All / Tutors / Demonstrators), desktop table view, and separate stats for tutors vs demonstrators
+- **Announcement email** - apply button links to `apply-step1.html` (fixes broken `/apply.html`); copy includes Tutor and Demonstrator roles
+- **2026 UMP tariff alignment** - qualification display names (including PhD Candidate or Holder), full rate table in backend and admin approval flow, read-only Pay Rate Reference in System Settings, and updated legacy settings defaults (59.66 / 73.87 / 90.92)
 - Admin **Analysis** desktop layout matches **Dashboard** (two-column grid, stat cards, Reports sidebar); mobile Analysis layout unchanged
 - Lecturer Tutors page desktop view restored to card grid (was broken against 6-column table CSS)
 - Reduced decorative comment wallpaper across backend routes, frontend JS/CSS, and dashboard HTML (kept non-obvious “why” notes and useful JSDoc)
 
 ### Fixed
-- Apply step 3 document upload appeared to reset after first save — nodemon no longer restarts when temp upload files are written; UI re-syncs from server after each save
+- Apply step 3 document upload appeared to reset after first save - nodemon no longer restarts when temp upload files are written; UI re-syncs from server after each save
 - Apply step 3 showed internal storage filenames (e.g. `2_cvFile_…pdf`) instead of the uploaded document names after save or page reload
 - Tutor dashboard treated cancelled sessions as Upcoming; cancelled sessions now show correctly with clear status/actions
 - Submitted page stuck on “Loading your application…” because a top-level `return` made the inline script illegal in the browser
 
 ---
 
-## [0.4.0] — 2026-07-29
+## [0.4.0] - 2026-07-29
 
 ### Added
-- **Admin mobile** — Applications list + full-page application detail, sticky review actions with reveal-on-scroll, document preview sheet
-- **Admin mobile User Management** — Compact lecturer/tutor/student cards, person action bottom sheet, sticky Add Lecturer / Add Student / Import CTAs
+- **Admin mobile** - Applications list + full-page application detail, sticky review actions with reveal-on-scroll, document preview sheet
+- **Admin mobile User Management** - Compact lecturer/tutor/student cards, person action bottom sheet, sticky Add Lecturer / Add Student / Import CTAs
 - **Add Lecturer** bottom sheet with module rows and traveling glow on inputs/buttons
-- **Lecturer mobile** — Sessions sticky **New Session** CTA, New Session + Refer a Tutor bottom sheets matching mobile mock
+- **Lecturer mobile** - Sessions sticky **New Session** CTA, New Session + Refer a Tutor bottom sheets matching mobile mock
 - Shared mobile design system styles: `veriflow-mobile.css`, `admin-mobile-pages.css`, `lecturer-mobile-pages.css`, `auth-onboarding.css`
 - Traveling conic **glow** on primary CTAs and focused form inputs (login, apply, onboarding, admin/lecturer sheets)
 
@@ -82,7 +98,7 @@ Versions follow chronological project milestones.
 
 ---
 
-## [0.3.0] — 2026-07-28
+## [0.3.0] - 2026-07-28
 
 ### Added
 - Production-oriented `backend/.env.example` and server bootstrap docs for deployment
@@ -93,7 +109,7 @@ Versions follow chronological project milestones.
 
 ---
 
-## [0.2.0] — 2026-07-19
+## [0.2.0] - 2026-07-19
 
 ### Added
 - **Input validation** via `express-validator` for auth, applications, claims, students, and users
@@ -106,14 +122,14 @@ Versions follow chronological project milestones.
 
 ---
 
-## [0.1.2] — 2026-07-17
+## [0.1.2] - 2026-07-17
 
 ### Fixed
 - Attendance rate-limiter IPv6 key generation warning (`express-rate-limit` `ipKeyGenerator`)
 
 ---
 
-## [0.1.1] — 2026-07-16
+## [0.1.1] - 2026-07-16
 
 ### Added
 - Supabase DB tooling: schema apply, module seed, pending migration helpers, connectivity checks
@@ -126,7 +142,7 @@ Versions follow chronological project milestones.
 
 ---
 
-## [0.1.0] — 2026-07-16
+## [0.1.0] - 2026-07-16
 
 ### Added
 - Supabase Storage dual-write for application documents with signed download URLs
@@ -143,7 +159,7 @@ Versions follow chronological project milestones.
 
 ---
 
-## [0.0.1] — 2026-07-14
+## [0.0.1] - 2026-07-14
 
 ### Added
 - Initial **VeriFlow** platform:

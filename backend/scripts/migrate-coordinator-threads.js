@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Coordinator (admin) messaging — separate from lecturer↔tutor peer threads.
+ * Coordinator (admin) messaging - separate from lecturer↔tutor peer threads.
  * Safe to run multiple times (IF NOT EXISTS).
  */
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });

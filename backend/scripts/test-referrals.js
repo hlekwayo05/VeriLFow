@@ -38,7 +38,7 @@ async function main() {
     `SELECT u.id FROM users u
      JOIN lecturer_modules lm ON lm.lecturer_id = u.id
      WHERE u.role = 'lecturer'
-       AND lm.course = 'DICT — Diploma in ICT'
+       AND lm.course = 'DICT - Diploma in ICT'
        AND UPPER(lm.module_code) = 'IS211'
      LIMIT 1`
   );
@@ -46,10 +46,10 @@ async function main() {
     `SELECT id FROM users WHERE email = 'veriflow@ump.ac.za'`
   );
   if (!adminRes.rows[0]) {
-    throw new Error('Admin veriflow@ump.ac.za not found — run node seed.js');
+    throw new Error('Admin veriflow@ump.ac.za not found - run node seed.js');
   }
   if (!lecRes.rows[0]) {
-    throw new Error('No lecturer with IS211 found — create one in User Management');
+    throw new Error('No lecturer with IS211 found - create one in User Management');
   }
 
   const lecToken = jwt.sign(

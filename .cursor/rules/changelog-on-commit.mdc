@@ -1,0 +1,17 @@
+---
+description: When user asks for a commit message, promote CHANGELOG Unreleased to a dated version
+alwaysApply: true
+---
+
+# Changelog versioning on commit requests
+
+Whenever the user asks for a **commit message** (or to prepare a commit):
+
+1. Update `CHANGELOG.md` **before** giving the message.
+2. Move finished work out of `## [Unreleased]` into a new dated section:
+   - Bump the version sensibly from the latest dated section (patch for fixes, minor for features).
+   - Use today's date from user/session context as `YYYY-MM-DD`.
+3. Leave `## [Unreleased]` at the top with only **Planned / in progress** (and any unfinished notes).
+4. Then give the commit message (and only create the commit if they explicitly ask you to commit).
+
+Do not leave shippable work sitting only under `[Unreleased]` when they are about to commit.

@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 003 — Link tutors to lecturers via course + module
+--  Migration 003 - Link tutors to lecturers via course + module
 --
 --  Context: a lecturer can teach multiple modules; a tutor applies
 --  for exactly one module within one course (BICT or DICT). When
@@ -10,12 +10,12 @@
 --  belongs to (since the same module name, e.g. "Programming",
 --  exists independently in both BICT and DICT with different
 --  lecturers and different students) and to be picked from the
---  same official curriculum list tutors apply against — not
---  free text — so the match is always reliable.
+--  same official curriculum list tutors apply against - not
+--  free text - so the match is always reliable.
 --
 --  Changes:
 --  1. lecturer_modules gains a `course` column
---  2. lecturer_modules gains UNIQUE (course, module_name) —
+--  2. lecturer_modules gains UNIQUE (course, module_name) -
 --     one lecturer per course+module combination, system-wide
 --  3. applications gains `assigned_lecturer_id`, set automatically
 --     at approval time by matching course + module_name
@@ -28,20 +28,20 @@ BEGIN;
 
 -- 1. Add course column to lecturer_modules.
 --    Existing seed rows (IS211, APD301, IS310) are free-text codes
---    entered before this rule existed — backfill them as DICT
+--    entered before this rule existed - backfill them as DICT
 --    since UMP's seed lecturer (Dr Mahlangu) teaches DICT modules.
 ALTER TABLE lecturer_modules
   ADD COLUMN course VARCHAR(50);
 
 UPDATE lecturer_modules
-  SET course = 'DICT — Diploma in ICT'
+  SET course = 'DICT - Diploma in ICT'
   WHERE course IS NULL;
 
 ALTER TABLE lecturer_modules
   ALTER COLUMN course SET NOT NULL;
 
 -- 2. Enforce one lecturer per course+module combination.
---    Drop the old (lecturer_id, module_code) uniqueness — a single
+--    Drop the old (lecturer_id, module_code) uniqueness - a single
 --    lecturer's own code is no longer the uniqueness boundary,
 --    the course+module_name pairing is.
 ALTER TABLE lecturer_modules
@@ -50,7 +50,7 @@ ALTER TABLE lecturer_modules
 ALTER TABLE lecturer_modules
   ADD CONSTRAINT lecturer_modules_course_module_name_key UNIQUE (course, module_name);
 
--- 3. Add assigned_lecturer_id to applications — set automatically
+-- 3. Add assigned_lecturer_id to applications - set automatically
 --    when admin approves a tutor, by matching course + module_name
 --    against lecturer_modules. Nullable: not every application
 --    reaches approval, and older approved rows had no lecturer

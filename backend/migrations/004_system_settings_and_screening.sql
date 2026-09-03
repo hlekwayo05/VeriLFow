@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 004 — System settings + application screening
+--  Migration 004 - System settings + application screening
 --
 --  Adds admin-configurable CV keywords and eligibility thresholds,
 --  plus columns to store automated document scan results.

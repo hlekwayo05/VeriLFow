@@ -1,5 +1,5 @@
 /*
- * SEED SCRIPT — development only
+ * SEED SCRIPT - development only
  * Never commit real passwords to source control.
  * Set ADMIN_SEED_PASSWORD in .env before running.
  * Run with: node backend/seed.js
@@ -17,13 +17,13 @@ const COST = 12;
 const adminPassword = process.env.ADMIN_SEED_PASSWORD;
 if (!adminPassword) {
   console.error(
-    'ADMIN_SEED_PASSWORD is not set in .env — ' +
+    'ADMIN_SEED_PASSWORD is not set in .env - ' +
     'cannot seed admin account safely'
   );
   process.exit(1);
 }
 
-/** Production admin — change email here only when intentionally rotating. */
+/** Production admin - change email here only when intentionally rotating. */
 const ADMIN = {
   first_names: 'VeriFlow',
   surname: 'Coordinator',

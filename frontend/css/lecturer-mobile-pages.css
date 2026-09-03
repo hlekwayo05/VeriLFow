@@ -1,4 +1,4 @@
-/* Lecturer Sessions / Messages / Tutors — mobile suite layout */
+/* Lecturer Sessions / Messages / Tutors - mobile suite layout */
 @property --lec-field-glow {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -11,7 +11,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Claim detail field layout — shared desktop + mobile */
+/* Claim detail field layout - shared desktop + mobile */
 body.lec-dash #cd-overlay .lec-cd-desk-only { display: none !important; }
 body.lec-dash #cd-overlay .lec-cd-stats {
   display: grid;
@@ -249,7 +249,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     display: flex !important;
   }
 
-  /* Sessions — stacked: HOME → title → filters → New Session → empty card */
+  /* Sessions - stacked: HOME → title → filters → New Session → empty card */
   body.lec-dash #view-sessions > .lec-page-back {
     display: inline-flex !important;
     position: static !important;
@@ -865,7 +865,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     margin: 0 !important;
   }
 
-  /* Claims — exact mock (approval hero must not flex-shrink or overflow clips ring/stats) */
+  /* Claims - exact mock (approval hero must not flex-shrink or overflow clips ring/stats) */
   body.lec-dash #view-claims.active {
     display: flex !important;
     flex-direction: column !important;
@@ -881,7 +881,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     display: none !important;
   }
 
-  /* Claims page — show HOME like other secondary pages */
+  /* Claims page - show HOME like other secondary pages */
   body.lec-dash #view-claims .lec-claims-home {
     display: inline-flex !important;
     align-items: center !important;
@@ -1258,7 +1258,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     color: #3a7d72 !important;
   }
 
-  /* Calendar — near full-bleed like design */
+  /* Calendar - near full-bleed like design */
   body.lec-dash .lec-cal-hero { display: none !important; }
   body.lec-dash #view-calendar .lec-cal-back {
     display: inline-flex !important;
@@ -1595,7 +1595,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     display: none !important;
   }
 
-  /* Report — exact mock (HOME + export + completion hero + chips) */
+  /* Report - exact mock (HOME + export + completion hero + chips) */
   body.lec-dash #view-report.active {
     display: flex !important;
     flex-direction: column !important;
@@ -1842,7 +1842,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     display: none !important;
   }
 
-  /* Support — lecturer mobile mock (#view-support) */
+  /* Support - lecturer mobile mock (#view-support) */
   body.lec-dash #view-support .lec-sup-page {
     display: flex !important;
     flex-direction: column !important;
@@ -3105,7 +3105,7 @@ body.lec-dash #reg-mobile-list { display: none; }
     line-height: 1.6 !important;
   }
 
-  /* Raise Support Ticket sheet — lecturer mock #ticketModal */
+  /* Raise Support Ticket sheet - lecturer mock #ticketModal */
   body.lec-dash #lec-ticket-overlay.open {
     align-items: flex-end !important;
     justify-content: center !important;

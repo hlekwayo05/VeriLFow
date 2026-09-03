@@ -19,11 +19,11 @@ async function extractPdfText(filePath) {
       return { text: result.text, method: 'embedded' };
     }
 
-    // Text too short — PDF may be image-based
+    // Text too short - PDF may be image-based
     // Fall back to OCR on the file directly
     console.warn(
       'PDF text extraction yielded short result ' +
-      '(' + text.length + ' chars) — trying OCR fallback'
+      '(' + text.length + ' chars) - trying OCR fallback'
     );
     const ocrText = await ocrPdfFile(filePath);
     return { text: ocrText, method: 'ocr' };

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>VeriFlow — Confirm Attendance</title>
+<title>VeriFlow - Confirm Attendance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -394,8 +394,8 @@ body {
     <div id="state-form">
       <div class="hero">
         <div class="hero-label">Sign in</div>
-        <div class="hero-headline" id="sess-module">—</div>
-        <div class="hero-desc" id="sess-meta">—</div>
+        <div class="hero-headline" id="sess-module">-</div>
+        <div class="hero-desc" id="sess-meta">-</div>
       </div>
       <div class="form-label">Enter your student number</div>
       <div class="form-sub">Your number must appear on the class list for this module</div>
@@ -415,11 +415,11 @@ body {
       <div class="success-sub">You have been signed in successfully</div>
       <div class="field-group">
         <div class="field-group-title">Sign-in details</div>
-        <div class="field-row"><span class="k">Student</span><span class="v" id="ok-name">—</span></div>
-        <div class="field-row"><span class="k">Student No.</span><span class="v" id="ok-number">—</span></div>
-        <div class="field-row"><span class="k">Module</span><span class="v" id="ok-module">—</span></div>
-        <div class="field-row"><span class="k">Date</span><span class="v" id="ok-date">—</span></div>
-        <div class="field-row"><span class="k">Signed in</span><span class="v accent" id="signed-in-time">—</span></div>
+        <div class="field-row"><span class="k">Student</span><span class="v" id="ok-name">-</span></div>
+        <div class="field-row"><span class="k">Student No.</span><span class="v" id="ok-number">-</span></div>
+        <div class="field-row"><span class="k">Module</span><span class="v" id="ok-module">-</span></div>
+        <div class="field-row"><span class="k">Date</span><span class="v" id="ok-date">-</span></div>
+        <div class="field-row"><span class="k">Signed in</span><span class="v accent" id="signed-in-time">-</span></div>
       </div>
       <div class="close-note">You may now close this page</div>
     </div>
@@ -463,7 +463,7 @@ function showState(name) {
 }
 
 function formatDate(d) {
-  if (!d) return '—';
+  if (!d) return '-';
   return new Date(d).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -491,9 +491,9 @@ function markSessionDone(sessionId, receipt) {
   if (sessionId == null || sessionId === '') return;
   const map = getDoneMap();
   map[String(sessionId)] = {
-    fullName: receipt.fullName || '—',
-    studentNumber: receipt.studentNumber || '—',
-    module: receipt.module || '—',
+    fullName: receipt.fullName || '-',
+    studentNumber: receipt.studentNumber || '-',
+    module: receipt.module || '-',
     sessionDate: receipt.sessionDate || null,
     recordedAt: receipt.recordedAt || new Date().toISOString(),
   };
@@ -503,9 +503,9 @@ function markSessionDone(sessionId, receipt) {
 }
 
 function fillConfirmDetails(receipt) {
-  document.getElementById('ok-name').textContent = receipt.fullName || '—';
-  document.getElementById('ok-number').textContent = receipt.studentNumber || '—';
-  document.getElementById('ok-module').textContent = receipt.module || '—';
+  document.getElementById('ok-name').textContent = receipt.fullName || '-';
+  document.getElementById('ok-number').textContent = receipt.studentNumber || '-';
+  document.getElementById('ok-module').textContent = receipt.module || '-';
   document.getElementById('ok-date').textContent = formatDate(receipt.sessionDate);
   const recorded = receipt.recordedAt ? new Date(receipt.recordedAt) : new Date();
   document.getElementById('signed-in-time').textContent = recorded.toLocaleTimeString('en-ZA', {
@@ -538,7 +538,7 @@ function renderSession(session) {
   }
 
   const typeLabel = { tutorial:'Tutorial', practical:'Practical', online:'Online', revision:'Revision', lecture:'Lecture' }[session.sessionType] || session.sessionType || '';
-  document.getElementById('sess-module').textContent = `${session.moduleCode}${session.topic ? ' — ' + session.topic : ''}`;
+  document.getElementById('sess-module').textContent = `${session.moduleCode}${session.topic ? ' - ' + session.topic : ''}`;
   const lines = [
     [formatDate(session.sessionDate), session.startTime ? formatTime(session.startTime) : null].filter(Boolean).join(' · '),
     session.venue || null,
@@ -581,7 +581,7 @@ async function initPage() {
   const qrToken = params.get('t');
 
   try {
-    // Fresh QR scan always wins — allows a different session on the same phone
+    // Fresh QR scan always wins - allows a different session on the same phone
     if (qrToken) {
       const data = await apiPost('/attendance/enter', { qrToken });
       passToken = data.passToken;
@@ -659,7 +659,7 @@ async function submitAttendance() {
     cooldownUntil = 0;
 
     const receipt = {
-      fullName: result.fullName || '—',
+      fullName: result.fullName || '-',
       studentNumber: result.studentNumber,
       module: result.module,
       sessionDate: result.sessionDate,
@@ -680,7 +680,7 @@ async function submitAttendance() {
 
     if (already && sessionInfo && sessionInfo.sessionId != null) {
       const receipt = {
-        fullName: '—',
+        fullName: '-',
         studentNumber: val,
         module: sessionInfo.moduleCode,
         sessionDate: sessionInfo.sessionDate,

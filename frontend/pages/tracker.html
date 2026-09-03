@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VeriFlow — Application Tracker</title>
+  <title>VeriFlow - Application Tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -201,13 +201,13 @@
 <script src="../js/app.js?v=14"></script>
 <script>
   VF.pageIn();
-  if (!VF.requireAuth('login.html')) { /* stop — requireAuth already redirected */ }
+  if (!VF.requireAuth('login.html')) { /* stop - requireAuth already redirected */ }
   if (!VF.requireRole('tutor', 'login.html')) { /* stop */ }
 
   const STAGES = [
     { key:'submitted',    label:'Submitted',          icon:'ti-send',         desc:'Application received and CV scored.' },
     { key:'under_review', label:'Under review',       icon:'ti-eye',          desc:'The FYE office is reviewing your application.' },
-    { key:'shortlisted',  label:'Shortlisted',        icon:'ti-star',         desc:'You have been shortlisted — your application is being seriously considered.' },
+    { key:'shortlisted',  label:'Shortlisted',        icon:'ti-star',         desc:'You have been shortlisted - your application is being seriously considered.' },
     { key:'decision',     label:'Final decision',     icon:'ti-gavel',        desc:'The FYE office has made a final decision on your application.' },
   ];
   const ORDER = ['submitted','under_review','shortlisted'];
@@ -247,7 +247,7 @@
       </div>
     `;
 
-    // Meta card — on mobile this also includes the user block
+    // Meta card - on mobile this also includes the user block
     document.getElementById('metaCard').innerHTML = `
       <div class="tracker-combo-user">
         <div class="user-avatar">${initials}</div>

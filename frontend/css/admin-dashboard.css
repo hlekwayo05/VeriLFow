@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   VeriFlow — Admin / Coordinator Dashboard CSS
+   VeriFlow - Admin / Coordinator Dashboard CSS
    Matches lecturer-dashboard.css light design system
    ═══════════════════════════════════════════════════════ */
 html, body { height: 100%; margin: 0; padding: 0; }
@@ -820,7 +820,7 @@ body.admin-dash .ad-sheet-btn-primary {
   gap: 6px;
 }
 
-/* Traveling glow — Add Lecturer fields + Save CTA */
+/* Traveling glow - Add Lecturer fields + Save CTA */
 @property --ad-field-glow {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -988,7 +988,7 @@ body.admin-dash .ad-bottom-nav { display: none; }
   body.admin-dash .main { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); overflow: hidden; }
   body.admin-dash .page.active { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-  /* Hub — match suite design */
+  /* Hub - match suite design */
   body.admin-dash .ad-mobile-hub {
     display: none;
     flex-direction: column;
@@ -1183,7 +1183,7 @@ body.admin-dash .ad-bottom-nav { display: none; }
   body.admin-dash .ad-hub-tile--accent .ad-hub-tile-sub { color: inherit; }
   body.admin-dash .ad-hub-tile.has-unread .ad-hub-meta { color: #26534d; font-weight: 600; }
 
-  /* Bottom nav — suite style */
+  /* Bottom nav - suite style */
   body.admin-dash .ad-bottom-nav {
     display: flex;
     align-items: stretch;
@@ -1277,7 +1277,7 @@ body.admin-dash .ad-bottom-nav { display: none; }
   body.admin-dash #page-dashboard .left-col,
   body.admin-dash #page-dashboard .right-col { border: none; padding: 18px 16px; width: 100%; }
 
-  /* Analysis — mobile keeps original layout; hide desktop grid */
+  /* Analysis - mobile keeps original layout; hide desktop grid */
   body.admin-dash #page-analysis.active { display: block !important; overflow-y: auto; }
   body.admin-dash #page-analysis .ad-analysis-desktop { display: none !important; }
   body.admin-dash .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -1368,4 +1368,51 @@ body.admin-dash .ad-bottom-nav { display: none; }
     left: 16px; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     text-align: center; right: 16px;
   }
+}
+
+body.admin-dash .ad-app-doc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+body.admin-dash .ad-app-doc-sheet {
+  width: min(920px, 96vw);
+  height: min(88vh, 900px);
+  max-height: 90vh;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22);
+}
+body.admin-dash .ad-app-doc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+body.admin-dash .ad-app-doc-toolbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+body.admin-dash .ad-app-doc-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+body.admin-dash .ad-app-doc-sheet iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+  min-height: 0;
 }

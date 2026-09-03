@@ -18,8 +18,8 @@ const {
 const BCRYPT_COST = 12;
 
 const COURSE_MAP = {
-  BICT: 'BICT — Bachelor of ICT',
-  DICT: 'DICT — Diploma in ICT',
+  BICT: 'BICT - Bachelor of ICT',
+  DICT: 'DICT - Diploma in ICT',
 };
 
 const QUALIFICATION_MAP = {

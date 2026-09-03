@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 008 — Application settings row + students list
+--  Migration 008 - Application settings row + students list
 --
 --  Run once:
 --  psql -U postgres -d veriflow -f migrations/008_settings_students.sql
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS settings (
   min_cv_keywords       INTEGER DEFAULT 0,
   applications_open     BOOLEAN DEFAULT FALSE,
   closing_date          DATE,
-  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open — 2026',
+  announcement_subject  TEXT DEFAULT 'Tutor Applications Now Open - 2026',
   announcement_body     TEXT DEFAULT
     'Dear Students,
 

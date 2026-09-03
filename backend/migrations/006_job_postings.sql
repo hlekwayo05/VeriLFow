@@ -1,5 +1,5 @@
 -- =============================================================
---  Migration 006 — Job postings (open tutor positions)
+--  Migration 006 - Job postings (open tutor positions)
 --
 --  Admin creates postings per course + module. Applications are
 --  validated against an open posting on submit (qualification,
@@ -45,10 +45,10 @@ CREATE TRIGGER trg_job_postings_updated_at
 INSERT INTO job_postings
   (course, module_code, module_name, min_qualification_level, min_average, apps_needed, status)
 VALUES
-  ('DICT — Diploma in ICT',     'IS211',  'Information Systems',     '3rd_year', 65, 5, 'open'),
-  ('DICT — Diploma in ICT',     'APD301', 'Application Development', '3rd_year', 65, 4, 'open'),
-  ('BICT — Bachelor of ICT',    'CN202',  'Communication Networks',  '4th_year_honours', 60, 3, 'open'),
-  ('BICT — Bachelor of ICT',    'IS310',  'Cybersecurity',           '3rd_year', 65, 2, 'closed')
+  ('DICT - Diploma in ICT',     'IS211',  'Information Systems',     '3rd_year', 65, 5, 'open'),
+  ('DICT - Diploma in ICT',     'APD301', 'Application Development', '3rd_year', 65, 4, 'open'),
+  ('BICT - Bachelor of ICT',    'CN202',  'Communication Networks',  '4th_year_honours', 60, 3, 'open'),
+  ('BICT - Bachelor of ICT',    'IS310',  'Cybersecurity',           '3rd_year', 65, 2, 'closed')
 ON CONFLICT (course, module_name, status) DO NOTHING;
 
 COMMIT;

@@ -21,7 +21,7 @@ How VeriFlow is put together. Companion to the [README](../README.md).
 
 The frontend is multi-page static HTML. Shared client state and HTTP live in `frontend/js/app.js` under the `VF` namespace. Role-specific UI is large page controllers (`tutor-dashboard.js`, `lecturer-dashboard.js`, `admin-dashboard-api.js`).
 
-The API is a classic Express router mount under `/api/*`. There is no GraphQL layer and no ORM — SQL is written with `pg` in route handlers and services.
+The API is a classic Express router mount under `/api/*`. There is no GraphQL layer and no ORM - SQL is written with `pg` in route handlers and services.
 
 ---
 
@@ -81,8 +81,8 @@ Claims aggregate completed session hours for a tutor/month (`claims` + `claim_se
 
 ### Referrals & postings
 
-- `postings` — public/admin job advertisements for tutor openings.
-- `referrals` — lecturer nominates a student; admin approval can provision accounts and email credentials.
+- `postings` - public/admin job advertisements for tutor openings.
+- `referrals` - lecturer nominates a student; admin approval can provision accounts and email credentials.
 
 ---
 
@@ -100,7 +100,7 @@ Claims aggregate completed session hours for a tutor/month (`claims` + `claim_se
 
 ### Caching
 
-`services/cache.js` is an in-process TTL cache (default ~30s via `API_CACHE_TTL_MS`). Suitable for read-heavy lecturer/admin lists on a single Render instance — not a distributed cache.
+`services/cache.js` is an in-process TTL cache (default ~30s via `API_CACHE_TTL_MS`). Suitable for read-heavy lecturer/admin lists on a single Render instance - not a distributed cache.
 
 ### Document screening
 
@@ -119,7 +119,7 @@ On application submit, `documentScanner.js` / `pdfText.js` extract text (PDF par
 
 ### Auth UX
 
-- Token stored in `sessionStorage` (`vf_token`) — tab-scoped, not shared across browsers.
+- Token stored in `sessionStorage` (`vf_token`) - tab-scoped, not shared across browsers.
 - `VF.requireAuth` / `VF.requireRole` gate pages.
 - `tempFlag` → force `change-password.html`.
 - Tutors are routed by application / onboarding state (`VF.routeTutor`, `resolveTutorRoute`).
@@ -134,7 +134,7 @@ On application submit, `documentScanner.js` / `pdfText.js` extract text (PDF par
 | Dashboards | `dashboard.html` (tutor), `lecturer-dashboard.html`, `admin-dashboard.html` |
 | Attendance | `attendance-scan.html` |
 
-Mobile layouts are CSS-driven (`veriflow-mobile.css`, `*-mobile-pages.css`) with the same HTML shells — not a separate mobile app.
+Mobile layouts are CSS-driven (`veriflow-mobile.css`, `*-mobile-pages.css`) with the same HTML shells - not a separate mobile app.
 
 ---
 
@@ -143,7 +143,7 @@ Mobile layouts are CSS-driven (`veriflow-mobile.css`, `*-mobile-pages.css`) with
 | Action | Rules |
 |--------|-------|
 | Register / change password / reset | Strong password (`utils/passwordPolicy.js`): ≥8 chars, upper, lower, digit, special |
-| Login | Length/presence only — existing weaker passwords remain usable |
+| Login | Length/presence only - existing weaker passwords remain usable |
 | Temp passwords | `utils/tempPassword.js` always satisfies strong policy |
 
 Forced password change clears `temp_password_flag` via `PATCH /api/auth/change-password`.
@@ -164,7 +164,7 @@ Do not expose the uploads directory as a public static mount.
 
 `services/mailer.js` sends transactional mail through Resend: approvals, rejections, lecturer welcome, password reset, claim status, announcements, referrals.
 
-- `EMAIL_OVERRIDE` — when set, all recipients are rewritten (dev / Resend sandbox).
+- `EMAIL_OVERRIDE` - when set, all recipients are rewritten (dev / Resend sandbox).
 - Link bases: `FRONTEND_URL`, `PORTAL_URL`.
 
 ---
@@ -202,7 +202,7 @@ Runtime configuration (application window open/closed, screening thresholds, ann
 
 ## Design constraints (intentional)
 
-- **Static MPA** — simple hosting, no build step; trade-off is duplicated logic and cache-busting query params.
-- **SQL in routes** — fast to change for a small team; keep transactions careful on multi-table writes (claims, wipe of users, session complete).
-- **Single-region Render + Supabase** — cold starts and pooler limits matter; prefer session pooler for `DATABASE_URL`.
-- **Hardcoded production API URL** — removes env injection on static hosting; couples frontend deploys to that hostname.
+- **Static MPA** - simple hosting, no build step; trade-off is duplicated logic and cache-busting query params.
+- **SQL in routes** - fast to change for a small team; keep transactions careful on multi-table writes (claims, wipe of users, session complete).
+- **Single-region Render + Supabase** - cold starts and pooler limits matter; prefer session pooler for `DATABASE_URL`.
+- **Hardcoded production API URL** - removes env injection on static hosting; couples frontend deploys to that hostname.

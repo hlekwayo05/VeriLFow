@@ -147,7 +147,7 @@ async function setupTutorModules(modules) {
     });
     await refreshModuleData();
   } else {
-    const empty = '<span style="font-size:12px;color:var(--muted);padding:8px 4px">No module linked yet — contact your lecturer.</span>';
+    const empty = '<span style="font-size:12px;color:var(--muted);padding:8px 4px">No module linked yet - contact your lecturer.</span>';
     if (desktopTabs) desktopTabs.innerHTML = empty;
     if (hubModules) {
       hubModules.innerHTML = '';
@@ -162,8 +162,8 @@ async function setupTutorModules(modules) {
 }
 
 function applyModuleUi() {
-  const code = currentModuleCode || '—';
-  const name = currentModuleName || '—';
+  const code = currentModuleCode || '-';
+  const name = currentModuleName || '-';
   const period = currentPeriodLabel();
   const prog = programmeShort(currentModuleCourse);
 
@@ -172,7 +172,7 @@ function applyModuleUi() {
   setText('#hero-module-text', `${code} · ${name} · ${period}${prog ? ' · ' + prog : ''}`);
   setText('#td-hub-module', `${code} · ${name}`);
   const hubMod = document.getElementById('td-hub-module');
-  if (hubMod && code && code !== '—') {
+  if (hubMod && code && code !== '-') {
     hubMod.innerHTML = `<b>${code}</b> · ${name}`;
   }
   setText('#dash-upcoming-label', code);
@@ -207,7 +207,7 @@ function sessionTypeLabel(type) {
     tutorial: 'Tutorial', practical: 'Practical', online: 'Online',
     revision: 'Revision', lecture: 'Lecture',
   };
-  return map[type] || type || '—';
+  return map[type] || type || '-';
 }
 
 function tutorStatusChip(status) {
@@ -219,7 +219,7 @@ function tutorStatusChip(status) {
 }
 
 function formatSessionDate(s, withWeekday) {
-  if (!s.session_date) return '—';
+  if (!s.session_date) return '-';
   const d = new Date(s.session_date);
   const opts = withWeekday
     ? { weekday: 'short', day: 'numeric', month: 'short' }
@@ -228,7 +228,7 @@ function formatSessionDate(s, withWeekday) {
 }
 
 function formatTimeRange(s) {
-  if (!s.start_time) return '—';
+  if (!s.start_time) return '-';
   return String(s.start_time).slice(0, 5);
 }
 
@@ -249,7 +249,7 @@ function formatQrDesc(data) {
     ? new Date(data.sessionDate).toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short' })
     : '';
   const time = data.startTime ? String(data.startTime).slice(0, 5) : '';
-  return `${data.moduleCode}${data.topic ? ' · ' + data.topic : ''} — ${date}${time ? ' · ' + time : ''}${data.venue ? ' · ' + data.venue : ''}`;
+  return `${data.moduleCode}${data.topic ? ' · ' + data.topic : ''} - ${date}${time ? ' · ' + time : ''}${data.venue ? ' · ' + data.venue : ''}`;
 }
 
 function updateQrCountdown(seconds, total) {
@@ -261,7 +261,7 @@ function updateQrCountdown(seconds, total) {
 
   if (secsEl) secsEl.textContent = String(Math.max(0, seconds));
   if (subEl) {
-    subEl.textContent = seconds === 1 ? 'second left — scan now' : 'seconds left — scan now';
+    subEl.textContent = seconds === 1 ? 'second left - scan now' : 'seconds left - scan now';
   }
   if (fillEl) {
     const pct = Math.max(0, Math.min(100, (seconds / max) * 100));
@@ -349,19 +349,19 @@ let currentRegisterData = null;
 let registerRefreshTimer = null;
 
 function formatSignInTime(recordedAt) {
-  if (!recordedAt) return '—';
+  if (!recordedAt) return '-';
   return new Date(recordedAt).toLocaleTimeString('en-ZA', { hour: 'numeric', minute: '2-digit' });
 }
 
 function renderRegisterModal(data) {
   const session = data.session || {};
-  const modCode = session.module_code || currentModuleCode || '—';
+  const modCode = session.module_code || currentModuleCode || '-';
   const modName = currentModuleName || session.module_name || '';
   const date = session.session_date
     ? new Date(session.session_date).toLocaleDateString('en-ZA', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })
-    : '—';
+    : '-';
   const dateShort = session.session_date
     ? new Date(session.session_date).toLocaleDateString('en-ZA', {
         day: 'numeric', month: 'short', year: 'numeric',
@@ -377,7 +377,7 @@ function renderRegisterModal(data) {
 
   const students = data.students || (data.attendance || []).map((a) => ({
     student_number: a.student_number,
-    full_name: a.full_name || '—',
+    full_name: a.full_name || '-',
     recorded_at: a.recorded_at,
     present: true,
   }));
@@ -397,8 +397,8 @@ function renderRegisterModal(data) {
   const isMobileReg = window.matchMedia('(max-width: 900px)').matches;
   if (titleEl) {
     titleEl.textContent = isMobileReg
-      ? `${modCode}${modName ? ' — ' + modName : ''}`
-      : `Attendance Register — ${date}`;
+      ? `${modCode}${modName ? ' - ' + modName : ''}`
+      : `Attendance Register - ${date}`;
   }
   if (eyebrowEl) {
     eyebrowEl.textContent = isMobileReg
@@ -408,12 +408,12 @@ function renderRegisterModal(data) {
   if (headCountEl) headCountEl.textContent = String(enrolled);
   if (metaEl) {
     metaEl.textContent = isMobileReg
-      ? [date !== '—' ? date : null, meta || null].filter(Boolean).join(' · ') || '—'
-      : (meta || '—');
+      ? [date !== '-' ? date : null, meta || null].filter(Boolean).join(' · ') || '-'
+      : (meta || '-');
   }
   if (footerNoteEl) {
     footerNoteEl.innerHTML = isMobileReg
-      ? `<span class="reg-footer-dot" aria-hidden="true"></span> Updated ${dateShort || '—'}`
+      ? `<span class="reg-footer-dot" aria-hidden="true"></span> Updated ${dateShort || '-'}`
       : 'Read-only · Locked after session end<br>Linked to your timesheet claim';
   }
 
@@ -433,7 +433,7 @@ function renderRegisterModal(data) {
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td class="reg-idx">${String(i + 1).padStart(2, '0')}</td>
       <td class="reg-info">
-        <div class="reg-sname"${!s.present ? ' style="color:var(--muted);font-weight:400"' : ''}>${s.full_name || '—'}</div>
+        <div class="reg-sname"${!s.present ? ' style="color:var(--muted);font-weight:400"' : ''}>${s.full_name || '-'}</div>
         <div class="reg-detail">
           <span class="reg-snum">${s.student_number}</span>
           <span class="reg-detail-sep" aria-hidden="true">·</span>
@@ -505,7 +505,7 @@ function downloadRegister() {
   const present = students.filter((s) => s.present).length;
   const absent = Math.max(0, enrolled - present);
   const pct = enrolled ? Math.round((present / enrolled) * 100) : (present ? 100 : 0);
-  const modCode = session.module_code || currentModuleCode || '—';
+  const modCode = session.module_code || currentModuleCode || '-';
   const dateLabel = session.session_date
     ? new Date(session.session_date).toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'Session';
@@ -520,7 +520,7 @@ function downloadRegister() {
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td>${String(i + 1).padStart(2, '0')}</td>
       <td>${s.student_number}</td>
-      <td>${s.full_name || '—'}</td>
+      <td>${s.full_name || '-'}</td>
       <td>${formatSignInTime(s.recorded_at)}</td>
       <td class="${s.present ? 'p-cell' : 'a-cell'}">${s.present ? 'Present' : 'Absent'}</td>
     </tr>`).join('');
@@ -530,12 +530,12 @@ function downloadRegister() {
   const tutorFullName = app
     ? `${app.first_names || ''} ${app.surname || ''}`.trim()
     : `${st.user?.firstNames || ''} ${st.user?.surname || ''}`.trim() || 'Tutor';
-  const studentNo = app?.student_number || st.user?.studentNumber || '—';
+  const studentNo = app?.student_number || st.user?.studentNumber || '-';
   const lecturerName = app?.lecturer_first_names
     ? `${app.lecturer_first_names} ${app.lecturer_surname || ''}`.trim()
-    : '—';
+    : '-';
 
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Attendance Register — ${dateLabel}</title>
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Attendance Register - ${dateLabel}</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;font-size:13px;color:#111;background:#fff;padding:44px 52px;max-width:860px;margin:0 auto}
 .hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:18px;border-bottom:2px solid #111}
@@ -555,7 +555,7 @@ tr.absent-row td{color:#bbb}.p-cell{color:#1a7a52;font-weight:600}.a-cell{color:
 .ss{border-top:1px solid #bbb;padding-top:5px;font-size:11px;color:#999}
 .ftr{margin-top:28px;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#ccc;font-family:'DM Mono',monospace;display:flex;justify-content:space-between}
 @media print{body{padding:18mm 22mm}@page{margin:0;size:A4}}</style></head><body>
-<div class="hdr"><div><h1>Attendance Register</h1><p>${modCode}${currentModuleName ? ' — ' + currentModuleName : ''} · ${dateLabel}</p><p style="margin-top:3px;font-size:11px;color:#999;font-family:'DM Mono',monospace">${meta}</p></div><div><div class="brand">VERIFLOW</div><p style="font-size:11px;color:#999;font-family:'DM Mono',monospace">Tutor Management System</p></div></div>
+<div class="hdr"><div><h1>Attendance Register</h1><p>${modCode}${currentModuleName ? ' - ' + currentModuleName : ''} · ${dateLabel}</p><p style="margin-top:3px;font-size:11px;color:#999;font-family:'DM Mono',monospace">${meta}</p></div><div><div class="brand">VERIFLOW</div><p style="font-size:11px;color:#999;font-family:'DM Mono',monospace">Tutor Management System</p></div></div>
 <div class="meta"><div class="mb"><div class="ml">Tutor</div><div class="mv">${tutorFullName}</div></div><div class="mb"><div class="ml">Student No.</div><div class="mv" style="font-family:'DM Mono',monospace">${studentNo}</div></div><div class="mb"><div class="ml">Module</div><div class="mv">${modCode}</div></div><div class="mb"><div class="ml">Present</div><div class="mv" style="color:#1a7a52">${present} / ${enrolled}</div></div><div class="mb"><div class="ml">Rate</div><div class="mv" style="color:#c8a84b">${pct}%</div></div></div>
 <div class="sum"><div class="si"><label>Enrolled</label><span>${enrolled}</span></div><div class="si"><label>Present</label><span style="color:#1a7a52">${present}</span></div><div class="si"><label>Absent</label><span style="color:#c0392b">${absent}</span></div><div class="si"><label>Attendance</label><span style="color:#c8a84b">${pct}%</span></div></div>
 <table><thead><tr><th>#</th><th>Student Number</th><th>Full Name</th><th>Sign-in Time</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
@@ -572,7 +572,7 @@ tr.absent-row td{color:#bbb}.p-cell{color:#1a7a52;font-weight:600}.a-cell{color:
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast(`Register exported — ${dateLabel}`);
+  showToast(`Register exported - ${dateLabel}`);
 }
 
 window.openRegister = openRegister;
@@ -590,7 +590,7 @@ function sessionActionHtml(s, dateLabel) {
   }
   if (isScheduled(s.status)) {
     if (s.my_confirmed_at) {
-      return '<span style="font-size:11px;color:var(--green);font-family:\'DM Mono\',monospace">Available — waiting for session to start</span>';
+      return '<span style="font-size:11px;color:var(--green);font-family:\'DM Mono\',monospace">Available - waiting for session to start</span>';
     }
     if (s.my_declined_at) {
       return '<span style="font-size:11px;color:var(--red);font-family:\'DM Mono\',monospace">Unavailable</span>';
@@ -611,7 +611,7 @@ function sessionActionHtml(s, dateLabel) {
   if (s.status === 'cancelled') {
     return '<span style="color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">Cancelled by lecturer</span>';
   }
-  return '<span style="color:var(--muted);font-size:11px">—</span>';
+  return '<span style="color:var(--muted);font-size:11px">-</span>';
 }
 
 function tutorAvailCornerHtml(s) {
@@ -712,7 +712,7 @@ function updateSessionsSummary(sessions) {
   } else {
     const isToday = sessionDateKey(next.session_date) === localTodayKey();
     const dateLabel = isToday ? 'Today' : formatSessionDate(next, true);
-    const time = next.start_time ? String(next.start_time).slice(0, 5) : '—';
+    const time = next.start_time ? String(next.start_time).slice(0, 5) : '-';
     const typeLabel = sessionTypeLabel(next.session_type);
     titleEl.textContent = next.topic || typeLabel || 'Session';
     subEl.textContent = `${dateLabel} · ${time} · ${next.venue || 'Venue TBA'}`;
@@ -735,7 +735,7 @@ function tutorMobileCardActions(s) {
     </div>`;
   }
   if (isScheduled(s.status) && s.my_confirmed_at) {
-    return '<div class="vf-sess-status-note">Available — waiting for session to start</div>';
+    return '<div class="vf-sess-status-note">Available - waiting for session to start</div>';
   }
   if (isScheduled(s.status) && s.my_declined_at) {
     return '<div class="vf-sess-status-note vf-sess-status-note--warn">Marked unavailable</div>';
@@ -844,7 +844,7 @@ function renderDashboardUpcoming(sessions) {
     <tr onclick="showPage('sessions',document.getElementById('nav-sessions'))">
       <td style="font-weight:600;color:var(--text)">${s.module_code}</td>
       <td style="color:var(--muted);font-family:'DM Mono',monospace">${formatSessionDate(s, true)}</td>
-      <td style="color:var(--muted);font-family:'DM Mono',monospace">${s.start_time ? String(s.start_time).slice(0, 5) : '—'}</td>
+      <td style="color:var(--muted);font-family:'DM Mono',monospace">${s.start_time ? String(s.start_time).slice(0, 5) : '-'}</td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
       <td>${s.status === 'active'
         ? `<button type="button" class="avail-yes" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();openQR(${s.id})">Open Register</button>`
@@ -868,14 +868,14 @@ function updateMobileHubNextSession(next, upcomingCount) {
     return;
   }
   titleEl.textContent = next.topic || sessionTypeLabel(next.session_type) || 'Session';
-  const time = next.start_time ? String(next.start_time).slice(0, 5) : '—';
+  const time = next.start_time ? String(next.start_time).slice(0, 5) : '-';
   const venue = next.venue || 'Venue TBA';
   metaEl.textContent = `${formatSessionDate(next, true)} · ${time} · ${venue}`;
 }
 
 function sessionRegisterLabel(s, dateLabel) {
   const time = s.start_time ? ` · ${String(s.start_time).slice(0, 5)}` : '';
-  return `${s.module_code} — ${dateLabel}${time}`;
+  return `${s.module_code} - ${dateLabel}${time}`;
 }
 
 function renderSessionsTable(sessions) {
@@ -900,8 +900,8 @@ function renderSessionsTable(sessions) {
     return `<tr${isPast ? ' style="background:rgba(0,0,0,.02)"' : ''}>
       <td style="${dateStyle}">${dateLabel}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${formatTimeRange(s)}</td>
-      <td style="color:var(--muted)">${s.topic || '—'}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.venue || '—'}</td>
+      <td style="color:var(--muted)">${s.topic || '-'}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.venue || '-'}</td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
       <td>${tutorStatusChip(s.status)}</td>
       <td>${action}</td>
@@ -922,7 +922,7 @@ function renderHourLogTable(sessions) {
   tbody.innerHTML = completed.slice(0, 10).map(s => `
     <tr>
       <td style="color:var(--text);font-weight:500">${formatSessionDate(s)}</td>
-      <td style="color:var(--muted)">${s.topic || '—'}</td>
+      <td style="color:var(--muted)">${s.topic || '-'}</td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${sessionClaimHours(s.session_type)} hrs</td>
       <td>${tutorStatusChip(s.status)}</td>
@@ -1178,7 +1178,7 @@ function renderHubMonthStrip(sessions) {
   if (msg) {
     msg.textContent = sessionDays.size
       ? `${sessionDays.size} day${sessionDays.size === 1 ? '' : 's'} with sessions this month`
-      : "No sessions logged yet this month — once you're assigned one, it'll light up here.";
+      : "No sessions logged yet this month - once you're assigned one, it'll light up here.";
   }
 
   let html = '';
@@ -1206,7 +1206,7 @@ function claimStatusLabel(status) {
 }
 
 function formatClaimAmount(amount) {
-  if (amount == null) return '—';
+  if (amount == null) return '-';
   return 'R' + Number(amount).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
@@ -1219,18 +1219,18 @@ function dueDateLabel(month, year) {
 }
 
 function formatTimesheetDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return '-';
   return new Date(dateStr).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
 }
 
 function formatTimesheetTimeRange(startTime, sessionType) {
-  if (!startTime) return '—';
+  if (!startTime) return '-';
   const start = String(startTime).slice(0, 5);
   const mins = sessionType === 'practical' ? 180 : 45;
   const parts = start.split(':').map(Number);
   const endDate = new Date(2000, 0, 1, parts[0], parts[1] + mins);
   const end = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
-  return `${start}–${end}`;
+  return `${start}-${end}`;
 }
 
 function attendanceCountClass(present, enrolled) {
@@ -1390,7 +1390,7 @@ function timesheetStatusSub(ts) {
   if (ts.claim) {
     const submitted = ts.claim.submitted_at
       ? new Date(ts.claim.submitted_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })
-      : '—';
+      : '-';
     return `${claimStatusLabel(ts.claim.status)} · Submitted ${submitted}`;
   }
   if (ts.pastDue) return `Not submitted · ${dueDateLabel(ts.periodMonth, ts.periodYear)}`;
@@ -1420,17 +1420,17 @@ function renderTimesheetRows(ts) {
     const present = row.attendance_count ?? 0;
     const enrolled = row.enrolled_count ?? 0;
     const sessionType = row.session_type;
-    const hours = row.claimed_hours ?? '—';
+    const hours = row.claimed_hours ?? '-';
     const notOnClaim = ts.claim && !claimedIds.has(sessionId);
     const rowStyle = notOnClaim ? ' style="background:rgba(200,168,75,.06)"' : '';
 
     return `<tr${rowStyle}>
       <td style="font-weight:500">${formatTimesheetDate(row.session_date)}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:11px">${formatTimesheetTimeRange(row.start_time, sessionType)}</td>
-      <td style="color:var(--muted)">${row.venue || '—'}</td>
-      <td>${row.topic || '—'}${notOnClaim ? ' <span style="font-size:10px;color:var(--yellow);margin-left:6px">Not on claim</span>' : ''}</td>
+      <td style="color:var(--muted)">${row.venue || '-'}</td>
+      <td>${row.topic || '-'}${notOnClaim ? ' <span style="font-size:10px;color:var(--yellow);margin-left:6px">Not on claim</span>' : ''}</td>
       <td><span class="type-chip ${sessionType === 'practical' ? 'practical' : ''}">${sessionTypeLabel(sessionType)}</span></td>
-      <td><span class="att-count ${attendanceCountClass(present, enrolled)}">${present} / ${enrolled || '—'}</span></td>
+      <td><span class="att-count ${attendanceCountClass(present, enrolled)}">${present} / ${enrolled || '-'}</span></td>
       <td style="font-family:'DM Mono',monospace">${hours} hrs</td>
     </tr>`;
   }).join('');
@@ -1448,20 +1448,20 @@ function renderTimesheetSessionCards(ts) {
     const present = row.attendance_count ?? 0;
     const enrolled = row.enrolled_count ?? 0;
     const sessionType = row.session_type;
-    const hours = row.claimed_hours ?? '—';
+    const hours = row.claimed_hours ?? '-';
     const notOnClaim = ts.claim && !claimedIds.has(row.id);
     const timeLabel = formatTimesheetTimeRange(row.start_time, sessionType);
-    const startOnly = timeLabel.includes('–') ? timeLabel.split('–')[0] : timeLabel;
+    const startOnly = timeLabel.includes('-') ? timeLabel.split('-')[0] : timeLabel;
 
     return `<article class="ts-session-card${notOnClaim ? ' ts-session-card--warn' : ''}">
       <div class="ts-session-top">
         <div class="ts-session-when">${formatTimesheetDate(row.session_date)} · ${startOnly}</div>
         <div class="ts-session-hrs">${hours} hrs</div>
       </div>
-      <div class="ts-session-title">${row.topic || '—'} · ${sessionTypeLabel(sessionType)}</div>
+      <div class="ts-session-title">${row.topic || '-'} · ${sessionTypeLabel(sessionType)}</div>
       <div class="ts-session-meta">
-        <span>${row.venue || '—'}</span>
-        <span class="att-count ${attendanceCountClass(present, enrolled)}">${present}/${enrolled || '—'} attended</span>
+        <span>${row.venue || '-'}</span>
+        <span class="att-count ${attendanceCountClass(present, enrolled)}">${present}/${enrolled || '-'} attended</span>
       </div>
       ${notOnClaim ? '<div class="ts-session-flag">Not on claim</div>' : ''}
     </article>`;
@@ -1541,7 +1541,7 @@ function renderTimesheetView(ts) {
     <div class="ts-table-wrap">
       <div class="ts-table-header">
         <div>
-          <div class="ts-table-title">${label} — Timesheet</div>
+          <div class="ts-table-title">${label} - Timesheet</div>
           <div class="ts-table-sub">${timesheetStatusSub(ts)}</div>
         </div>
         <div class="ts-table-actions">
@@ -1657,7 +1657,7 @@ async function downloadTimesheet() {
 
   const ts = currentTimesheet;
   const label = monthYearLabel(ts.periodMonth, ts.periodYear);
-  const modCode = currentModuleCode || ts.moduleCode || '—';
+  const modCode = currentModuleCode || ts.moduleCode || '-';
   const qs = new URLSearchParams({
     periodMonth: String(ts.periodMonth),
     periodYear: String(ts.periodYear),
@@ -1691,7 +1691,7 @@ async function downloadTimesheet() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast(`PDF downloaded — ${label}`);
+    showToast(`PDF downloaded - ${label}`);
   } catch (err) {
     showToast(err.message || 'Could not download timesheet');
   } finally {
@@ -1773,7 +1773,7 @@ function renderClaimsPanels(claims) {
       ? pending.slice(0, 2).map(c => `
         <button type="button" class="claim-item claim-item--clickable" onclick="goToClaimMonth(${c.period_month}, ${c.period_year})">
           <div class="c-dot review"></div>
-          <div class="c-info"><div class="c-name">${monthYearLabel(c.period_month, c.period_year)} claim</div><div class="c-sub">Submitted ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-ZA') : '—'}</div></div>
+          <div class="c-info"><div class="c-name">${monthYearLabel(c.period_month, c.period_year)} claim</div><div class="c-sub">Submitted ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-ZA') : '-'}</div></div>
           <div style="text-align:right"><div class="c-amt">${formatClaimAmount(c.total_amount)}</div><span class="stag review">${claimStatusLabel(c.status)}</span></div>
         </button>`).join('')
       : '<div style="font-size:12px;color:var(--muted);padding:8px 0">No pending claims for this module.</div>';
@@ -1931,7 +1931,7 @@ function calStatusLabel(status) {
   if (status === 'flagged') return 'Flagged';
   if (status === 'scheduled') return 'Scheduled';
   if (status === 'cancelled') return 'Cancelled';
-  return status || '—';
+  return status || '-';
 }
 
 function sessionToCalEvent(s) {
@@ -1940,10 +1940,10 @@ function sessionToCalEvent(s) {
     rawStatus: s.status,
     time: formatTimeRange(s),
     topic: s.topic || s.module_code,
-    venue: s.venue || '—',
+    venue: s.venue || '-',
     sessionType: sessionTypeLabel(s.session_type),
     status: calStatusLabel(s.status),
-    att: s.attendance_count != null ? `${s.attendance_count} logged` : '—',
+    att: s.attendance_count != null ? `${s.attendance_count} logged` : '-',
     sessionId: s.id,
   };
 }
@@ -2001,7 +2001,7 @@ function renderCalSession(ev, dateStr) {
   sEl.style.color = statusColors[ev.type] || 'var(--text)';
   const attRow = document.getElementById('cd-att-row');
   const attEl = document.getElementById('cd-att');
-  if (ev.att && ev.att !== '—') {
+  if (ev.att && ev.att !== '-') {
     attRow.style.display = 'flex';
     attEl.textContent = ev.att;
   } else {
@@ -2029,8 +2029,8 @@ function showCalDetail(d, dayEvents) {
   document.getElementById('cd-date').textContent = dateStr;
   document.getElementById('cd-time').textContent = `${items.length} sessions`;
   document.getElementById('cd-topic').textContent = 'Select a session below';
-  document.getElementById('cd-venue').textContent = '—';
-  document.getElementById('cd-type').textContent = '—';
+  document.getElementById('cd-venue').textContent = '-';
+  document.getElementById('cd-type').textContent = '-';
   document.getElementById('cd-status').textContent = 'Multiple';
   document.getElementById('cd-att-row').style.display = 'none';
 
@@ -2215,11 +2215,11 @@ function renderProfile() {
     app?.first_names || u.firstNames,
     app?.surname || u.surname
   );
-  const dash = (v) => (v === null || v === undefined || v === '') ? '—' : v;
+  const dash = (v) => (v === null || v === undefined || v === '') ? '-' : v;
   const esc = (v) => String(v == null ? '' : v).replace(/</g, '&lt;');
   const monoVal = (v) => {
     const t = dash(v);
-    if (t === '—') return '—';
+    if (t === '-') return '-';
     return `<span class="profile-mono">${esc(t)}</span>`;
   };
 
@@ -2317,6 +2317,9 @@ function renderProfile() {
 
   const costCentreLabel = formatCostCentreLabel(app?.cost_centre);
   const isApproved = app?.status === 'approved' || s.applicationStatus === 'approved';
+  const isOnboarded = VF.onboardingCompleteFromApp(app)
+    || !!(profile?.step1_complete && profile?.step2_complete)
+    || !!(VF.tutorStateFromToken()?.onboardingComplete);
 
   content.innerHTML = `
     ${warningStripHtml}
@@ -2360,7 +2363,7 @@ function renderProfile() {
       ['Application status', esc(dash(app?.status || s.applicationStatus))],
       ['HR Staff Number', user?.staff_number || app?.staff_number
         ? esc(user?.staff_number || app?.staff_number)
-        : '<span style="color:var(--yellow)">Not yet assigned — contact the Student Employment Office</span>'],
+        : '<span style="color:var(--yellow)">Not yet assigned - contact the Student Employment Office</span>'],
     ], 'profile-card--docs')}
     ${(!idDoc || !taxDoc || !bankDoc) ? `
     <div class="profile-card profile-card--upload" id="profile-doc-upload-card">
@@ -2377,21 +2380,51 @@ function renderProfile() {
         <button type="button" class="btn-primary" id="profile-doc-upload-btn" onclick="uploadProfileDocuments()">Upload documents</button>
       </div>
     </div>` : ''}
-    ${section('Onboarding — address', [
+    ${section('Onboarding - address', [
       ['ID number', monoVal(idNum)],
       ['Postal address', `<span class="profile-addr">${esc(dash(postalAddr))}</span>`],
       ['Residential address', esc(dash(resAddr))],
     ], 'profile-card--address')}
-    ${section('Onboarding — banking & tax', [
+    ${section('Onboarding - banking & tax', [
       ['Bank', esc(dash(tp.bank || profile?.bank_name))],
       ['Branch code', monoVal(tp.branch || profile?.branch_code)],
       ['Account type', esc(dash(tp.acctype || profile?.account_type))],
       ['Account number', (tp.accnum || profile?.account_number)
         ? `<span class="profile-mono">••••${esc(String(tp.accnum || profile?.account_number).slice(-4))}</span>`
-        : '—'],
+        : '-'],
       ['Account holder', esc(dash(tp.accholder || profile?.account_holder))],
       ['Income tax number', monoVal(tp.taxnum || profile?.tax_number)],
     ], 'profile-card--bank')}
+    ${isApproved && isOnboarded ? `
+    <div class="profile-card profile-card--hr-forms">
+      <div class="profile-section-title">${app?.offer_accepted_at ? 'Appointment accepted' : 'Accept your appointment'}</div>
+      <div class="profile-row">
+        <span class="profile-row-label">Appointment Form D</span>
+        <span class="profile-row-val">
+          <a class="profile-doc-link" href="#" onclick="event.preventDefault(); viewHrForm('appointment-form-d')">View</a>
+          <span class="profile-muted"> · </span>
+          <a class="profile-doc-link" href="#" onclick="event.preventDefault(); downloadHrForm('appointment-form-d')">Download</a>
+        </span>
+      </div>
+      <div class="profile-row">
+        <span class="profile-row-label">Confirmation Form</span>
+        <span class="profile-row-val">
+          <a class="profile-doc-link" href="#" onclick="event.preventDefault(); viewHrForm('confirmation-form')">View</a>
+          <span class="profile-muted"> · </span>
+          <a class="profile-doc-link" href="#" onclick="event.preventDefault(); downloadHrForm('confirmation-form')">Download</a>
+        </span>
+      </div>
+      <div class="profile-row">
+        <span class="profile-row-label">Offer</span>
+        <span class="profile-row-val">${app?.offer_accepted_at
+          ? esc(`Accepted ${formatHrAcceptedDate(app.offer_accepted_at)}`)
+          : 'Not accepted yet'}</span>
+      </div>
+      ${app?.offer_accepted_at ? '' : `
+      <div class="um-actions" style="margin-top:14px;">
+        <button type="button" class="btn-primary" onclick="acceptHrOffer()">I accept</button>
+      </div>`}
+    </div>` : ''}
     <div class="profile-card profile-card--update" id="profile-update-card">
       <div class="profile-section-title">Update profile</div>
       <p class="profile-help">
@@ -2448,6 +2481,7 @@ async function loadProfile() {
     }
 
     renderProfile();
+    updateHrFormsNotice();
   } catch (err) {
     if (content) {
       content.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted)">Could not load profile.</div>';
@@ -2605,7 +2639,7 @@ function renderTutorTickets(tickets) {
     const status = ticketStatusMeta(t.status);
     const date = t.created_at
       ? new Date(t.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
-      : '—';
+      : '-';
     const replies = t.reply_count
       ? `${t.reply_count} repl${t.reply_count === 1 ? 'y' : 'ies'}`
       : null;
@@ -2617,7 +2651,7 @@ function renderTutorTickets(tickets) {
 
     return `<article class="st-ticket-card">
       <div class="st-ticket-top">
-        <div class="st-ticket-title"><span class="st-ticket-id">#${t.id}</span> · ${t.subject || '—'}</div>
+        <div class="st-ticket-title"><span class="st-ticket-id">#${t.id}</span> · ${t.subject || '-'}</div>
         <span class="st-badge ${status.cls}">${status.label}</span>
       </div>
       <div class="st-ticket-meta">${metaParts.join(' · ')}</div>
@@ -2658,7 +2692,7 @@ async function submitNewTicket() {
       body: { subject, details, priority },
     });
     closeNewTicketModal();
-    showToast('Ticket submitted — the coordinator will respond shortly');
+    showToast('Ticket submitted - the coordinator will respond shortly');
     loadTutorTickets();
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not submit ticket');
@@ -2840,7 +2874,195 @@ async function initTutorDashboard() {
     hydrateHeroFromApi(),
     loadTutorModules(),
   ]);
+  updateHrFormsNotice();
 }
+
+let hrFormViewerUrl = null;
+
+function hrFormTitle(kind) {
+  if (kind === 'confirmation-form') return 'Confirmation Form';
+  return 'Appointment Form D';
+}
+
+async function fetchHrFormFile(kind, inline) {
+  const token = VF.getToken();
+  if (!token) throw new Error('Please log in again.');
+  const qs = inline ? '?inline=1' : '';
+  const res = await fetch(
+    VF.API_BASE + '/users/me/hr-forms/' + encodeURIComponent(kind) + qs,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (!res.ok) {
+    let msg = inline ? 'Could not open form.' : 'Could not download form.';
+    try {
+      const data = await res.json();
+      if (data.errors && data.errors[0]) msg = data.errors[0];
+    } catch (_) { /* ignore */ }
+    throw new Error(msg);
+  }
+  const blob = await res.blob();
+  const cd = res.headers.get('Content-Disposition') || '';
+  const match = cd.match(/filename="?([^"]+)"?/i);
+  const filename = match ? match[1] : (kind + '.pdf');
+  return { blob, filename };
+}
+
+async function downloadHrForm(kind) {
+  try {
+    const file = await fetchHrFormFile(kind, false);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file.blob);
+    a.download = file.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    showToast('Download started.');
+  } catch (err) {
+    showToast(err.message || 'Could not download form.');
+  }
+}
+
+function closeHrFormViewer(event) {
+  if (event && event.target !== event.currentTarget) return;
+  const overlay = document.getElementById('hrFormModal');
+  const frame = document.getElementById('hr-form-frame');
+  if (overlay) overlay.classList.remove('open');
+  if (frame) frame.src = 'about:blank';
+  if (hrFormViewerUrl) {
+    URL.revokeObjectURL(hrFormViewerUrl);
+    hrFormViewerUrl = null;
+  }
+}
+
+async function viewHrForm(kind) {
+  const overlay = document.getElementById('hrFormModal');
+  const frame = document.getElementById('hr-form-frame');
+  const title = document.getElementById('hr-form-modal-title');
+  const downloadBtn = document.getElementById('hr-form-download-btn');
+  if (!overlay || !frame) {
+    showToast('Could not open form viewer.');
+    return;
+  }
+  try {
+    const file = await fetchHrFormFile(kind, true);
+    if (hrFormViewerUrl) URL.revokeObjectURL(hrFormViewerUrl);
+    hrFormViewerUrl = URL.createObjectURL(file.blob);
+    if (title) title.textContent = hrFormTitle(kind);
+    frame.src = hrFormViewerUrl;
+    if (downloadBtn) {
+      downloadBtn.onclick = () => downloadHrForm(kind);
+    }
+    overlay.classList.add('open');
+  } catch (err) {
+    showToast(err.message || 'Could not open form.');
+  }
+}
+
+function formatHrAcceptedDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-ZA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function closeHrAcceptModal(event) {
+  if (event && event.target !== event.currentTarget) return;
+  const overlay = document.getElementById('hrAcceptModal');
+  if (overlay) overlay.classList.remove('open');
+  const btn = document.getElementById('hr-accept-confirm-btn');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'I accept';
+  }
+}
+
+function acceptHrOffer() {
+  const app = tutorApplication || window.tutorApplication;
+  const user = tutorCurrentUser || window.tutorCurrentUser;
+  const name = `${user?.first_names || app?.first_names || ''} ${user?.surname || app?.surname || ''}`.trim()
+    || 'the appointee';
+  const role = app?.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor';
+  const statement = document.getElementById('hr-accept-statement');
+  if (statement) {
+    statement.textContent =
+      `I, ${name}, hereby confirm that I accept the employment offer as a ${role} in the Academic Support Services department (FYE Programme).`;
+  }
+  const overlay = document.getElementById('hrAcceptModal');
+  if (!overlay) {
+    showToast('Could not open acceptance dialog.');
+    return;
+  }
+  overlay.classList.add('open');
+}
+
+async function confirmHrOffer() {
+  const btn = document.getElementById('hr-accept-confirm-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Accepting…';
+  }
+  try {
+    const data = await VF.apiFetch('/applications/me/accept-offer', { method: 'POST' });
+    if (tutorApplication) tutorApplication.offer_accepted_at = data.offer_accepted_at;
+    if (window.tutorApplication) window.tutorApplication.offer_accepted_at = data.offer_accepted_at;
+    closeHrAcceptModal();
+    updateHrFormsNotice();
+    if (document.getElementById('page-profile')?.classList.contains('active')
+      || document.getElementById('profile-content')) {
+      try { renderProfile(); } catch (_) { /* profile not on screen */ }
+    }
+    showToast('Offer accepted. Your forms now show your name and the date.');
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'I accept';
+    }
+    showToast(err.message || 'Could not accept the offer.');
+  }
+}
+
+function updateHrFormsNotice() {
+  const app = tutorApplication || window.tutorApplication;
+  const user = tutorCurrentUser || window.tutorCurrentUser;
+  const approved = app?.status === 'approved';
+  const onboarded = VF.onboardingCompleteFromApp(app)
+    || !!(tutorOnboardingProfile?.step1_complete && tutorOnboardingProfile?.step2_complete)
+    || !!(VF.tutorStateFromToken()?.onboardingComplete);
+  const hasStaffNumber = !!(user?.staff_number || app?.staff_number);
+  const show = approved && onboarded && !hasStaffNumber;
+  const acceptedAt = app?.offer_accepted_at;
+  const accepted = !!acceptedAt;
+
+  ['td-hub-hr-forms', 'td-desktop-hr-forms'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !show;
+  });
+
+  const title = accepted ? 'Appointment accepted' : 'Appointment forms';
+  const text = accepted
+    ? `You accepted this offer on ${formatHrAcceptedDate(acceptedAt)}. View the signed forms here. You cannot submit claims until a staff number is on file.`
+    : 'View your appointment forms here. Accept the offer from your profile. You cannot submit claims until a staff number is on file.';
+
+  document.querySelectorAll('[data-hr-forms-title]').forEach((el) => {
+    el.textContent = title;
+  });
+  document.querySelectorAll('[data-hr-forms-text]').forEach((el) => {
+    el.textContent = text;
+  });
+}
+
+window.downloadHrForm = downloadHrForm;
+window.viewHrForm = viewHrForm;
+window.closeHrFormViewer = closeHrFormViewer;
+window.acceptHrOffer = acceptHrOffer;
+window.confirmHrOffer = confirmHrOffer;
+window.closeHrAcceptModal = closeHrAcceptModal;
+window.updateHrFormsNotice = updateHrFormsNotice;
 
 let tutorDashboardStarted = false;
 
@@ -2868,7 +3090,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === e.currentTarget) closeQR();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeTutorSidebar();
+    if (e.key !== 'Escape') return;
+    const acceptModal = document.getElementById('hrAcceptModal');
+    if (acceptModal?.classList.contains('open')) {
+      closeHrAcceptModal();
+      return;
+    }
+    const hrModal = document.getElementById('hrFormModal');
+    if (hrModal?.classList.contains('open')) {
+      closeHrFormViewer();
+      return;
+    }
+    closeTutorSidebar();
   });
   window.addEventListener('resize', () => {
     if (window.innerWidth > 900) closeTutorSidebar();

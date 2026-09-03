@@ -98,7 +98,7 @@ function buildAnnouncementHtml({
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Tutor &amp; Demonstrator Applications Open — VeriFlow</title>
+<title>Tutor &amp; Demonstrator Applications Open - VeriFlow</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -202,7 +202,7 @@ function buildAnnouncementHtml({
         <table cellpadding="0" cellspacing="0" width="100%">
           ${[
             'Stipend for sessions conducted',
-            'Skills development — communication, leadership, and mentoring',
+            'Skills development - communication, leadership, and mentoring',
             'Teaching and academic experience',
             'Increased confidence and professional growth',
           ].map((item) => `
@@ -254,7 +254,7 @@ function buildAnnouncementHtml({
     <tr>
       <td style="background:#f8f8f8;padding:20px 40px;border-top:1px solid #eeeeee;">
         <p style="margin:0;font-size:11px;color:#aaaaaa;line-height:1.6;text-align:center;">
-          This email was sent via VeriFlow — the Student Employment Management System at the University of Mpumalanga.<br/>
+          This email was sent via VeriFlow - the Student Employment Management System at the University of Mpumalanga.<br/>
           You are receiving this because you are registered as a student at UMP.
         </p>
       </td>
@@ -273,7 +273,7 @@ function createResendClient() {
     const { Resend } = require('resend');
     return new Resend(process.env.RESEND_API_KEY);
   } catch (err) {
-    console.warn('Resend package not available — run npm install in backend/:', err.message);
+    console.warn('Resend package not available - run npm install in backend/:', err.message);
     return null;
   }
 }
@@ -288,7 +288,7 @@ function passwordResetLink(token) {
   return `${base}/pages/reset-password.html?token=${encodeURIComponent(token)}`;
 }
 
-/** Apply link for announcement emails — always targets apply-step1.html. */
+/** Apply link for announcement emails - always targets apply-step1.html. */
 function applyPortalLink() {
   const frontendBase = (process.env.FRONTEND_URL || 'http://localhost:5500/frontend').replace(/\/$/, '');
   const defaultLink = `${frontendBase}/pages/apply-step1.html`;
@@ -296,9 +296,9 @@ function applyPortalLink() {
   const portal = (process.env.PORTAL_URL || '').trim();
   if (!portal) return defaultLink;
 
-  // Legacy / misconfigured values (e.g. …/apply.html) — use FRONTEND_URL instead.
+  // Legacy / misconfigured values (e.g. …/apply.html) - use FRONTEND_URL instead.
   if (/\/apply\.html$/i.test(portal) && !portal.includes('/pages/apply-step1.html')) {
-    console.warn(`PORTAL_URL (${portal}) is outdated — using ${defaultLink}`);
+    console.warn(`PORTAL_URL (${portal}) is outdated - using ${defaultLink}`);
     return defaultLink;
   }
 
@@ -339,7 +339,7 @@ function emailFooterHtml() {
       </tr>
       <tr>
         <td style="padding:8px 32px 28px;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.5;color:${MUTED};">
-          VeriFlow — Accurate. Timely. Transparent.<br/>
+          VeriFlow - Accurate. Timely. Transparent.<br/>
           University of Mpumalanga · Student Employment Office
         </td>
       </tr>
@@ -369,7 +369,7 @@ function buildReferralNotificationHtml({
   moduleName,
 }) {
   const moduleLabel = moduleName
-    ? `${escapeHtml(moduleCode)} — ${escapeHtml(moduleName)}`
+    ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
 
   const body = `
@@ -398,7 +398,7 @@ function buildReferralApprovalHtml({
   studentEmail,
 }) {
   const moduleLabel = moduleName
-    ? `${escapeHtml(moduleCode)} — ${escapeHtml(moduleName)}`
+    ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
 
   const body = `
@@ -460,7 +460,7 @@ function buildReferralApprovalNoPasswordHtml({
   loginLink,
 }) {
   const moduleLabel = moduleName
-    ? `${escapeHtml(moduleCode)} — ${escapeHtml(moduleName)}`
+    ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
 
   const body = `
@@ -527,8 +527,8 @@ function buildLecturerWelcomeHtml({
   const moduleRows = (modules && modules.length)
     ? modules.map((m) => `
         <div style="margin:0 0 10px;padding:12px 14px;background:#f9fafb;border-radius:6px;border:1px solid #e5e7eb;">
-          <strong>${escapeHtml(m.code)}</strong> — ${escapeHtml(m.name)}<br/>
-          <span style="font-size:13px;color:${MUTED};">(Course: ${escapeHtml(m.course || '—')})</span>
+          <strong>${escapeHtml(m.code)}</strong> - ${escapeHtml(m.name)}<br/>
+          <span style="font-size:13px;color:${MUTED};">(Course: ${escapeHtml(m.course || '-')})</span>
         </div>`).join('')
     : `<p style="margin:0;color:#4b5563;font-size:14px;">Your modules will be assigned by the coordinator.</p>`;
 
@@ -643,15 +643,15 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: userEmail,
-    subject: 'Reset Your VeriFlow Password — UMP',
+    subject: 'Reset Your VeriFlow Password - UMP',
     html,
     text,
   });
 }
 
-async function sendResendEmail({ to, subject, html, text }) {
+async function sendResendEmail({ to, subject, html, text, attachments }) {
   if (!to) {
-    throw new Error(`Email skipped — no recipient (${subject})`);
+    throw new Error(`Email skipped - no recipient (${subject})`);
   }
   if (!process.env.RESEND_API_KEY) {
     throw new Error(
@@ -661,20 +661,25 @@ async function sendResendEmail({ to, subject, html, text }) {
 
   const resend = createResendClient();
   if (!resend) {
-    throw new Error('Resend client unavailable — run npm install in backend/');
+    throw new Error('Resend client unavailable - run npm install in backend/');
   }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
   const realEmail = to;
   const recipient = resolveEmailRecipient(realEmail, subject);
 
-  const { data, error } = await resend.emails.send({
+  const payload = {
     from: fromEmail,
     to: recipient.to,
     subject: recipient.subject,
     html,
     text,
-  });
+  };
+  if (attachments && attachments.length) {
+    payload.attachments = attachments;
+  }
+
+  const { data, error } = await resend.emails.send(payload);
 
   if (error) {
     const detail = error.message || JSON.stringify(error);
@@ -694,7 +699,7 @@ async function sendResendEmail({ to, subject, html, text }) {
 
 async function sendAnnouncementEmail(presetSettings) {
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY not set — skipping announcement emails.');
+    console.warn('RESEND_API_KEY not set - skipping announcement emails.');
     return { sent: 0, failed: 0, skipped: true };
   }
 
@@ -718,7 +723,7 @@ async function sendAnnouncementEmail(presetSettings) {
     students = result.rows;
   } catch (err) {
     if (err.code === '42P01') {
-      console.warn('students table not found — skipping announcement emails.');
+      console.warn('students table not found - skipping announcement emails.');
       return { sent: 0, failed: 0, skipped: true };
     }
     console.error('Could not load students for announcement email:', err.message);
@@ -726,12 +731,12 @@ async function sendAnnouncementEmail(presetSettings) {
   }
 
   if (!students.length) {
-    console.warn('No students in list — announcement email not sent.');
+    console.warn('No students in list - announcement email not sent.');
     return { sent: 0, failed: 0 };
   }
 
   const subject = settings.announcement_subject ||
-    'Tutor & Demonstrator Applications Now Open — 2026 Academic Year';
+    'Tutor & Demonstrator Applications Now Open - 2026 Academic Year';
   const closingLabel = formatAnnouncementClosingDate(settings.closing_date);
 
   let customMessageHtml = null;
@@ -795,7 +800,7 @@ University of Mpumalanga
     }
   }
 
-  console.log(`Announcement emails — sent: ${sent}, failed: ${failed}`);
+  console.log(`Announcement emails - sent: ${sent}, failed: ${failed}`);
   return { sent, failed };
 }
 
@@ -806,7 +811,7 @@ async function sendReferralNotificationEmail({
   moduleCode,
   moduleName,
 }) {
-  const moduleLabel = moduleName ? `${moduleCode} — ${moduleName}` : moduleCode;
+  const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
   const text = `
 Dear ${studentFirstName},
 
@@ -830,7 +835,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'You have been referred for a Tutor position — UMP',
+    subject: 'You have been referred for a Tutor position - UMP',
     html,
     text,
   });
@@ -844,7 +849,7 @@ async function sendReferralApprovalEmail({
   tempPassword,
   loginLink,
 }) {
-  const moduleLabel = moduleName ? `${moduleCode} — ${moduleName}` : moduleCode;
+  const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
   const link = loginLink || referralLoginLink();
 
   const text = `
@@ -881,7 +886,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Congratulations — Your Tutor Application has been Approved',
+    subject: 'Congratulations - Your Tutor Application has been Approved',
     html,
     text,
   });
@@ -894,7 +899,7 @@ async function sendReferralApprovalNoPasswordEmail({
   moduleName,
   loginLink,
 }) {
-  const moduleLabel = moduleName ? `${moduleCode} — ${moduleName}` : moduleCode;
+  const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
   const link = loginLink || referralLoginLink();
 
   const text = `
@@ -918,7 +923,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Congratulations — Your Tutor Application has been Approved',
+    subject: 'Congratulations - Your Tutor Application has been Approved',
     html,
     text,
   });
@@ -933,7 +938,7 @@ async function sendLecturerWelcomeEmail({
 }) {
   const link = loginLink || referralLoginLink();
   const moduleList = (modules || [])
-    .map((m) => `${m.code} — ${m.name}`)
+    .map((m) => `${m.code} - ${m.name}`)
     .join(', ') || 'To be assigned';
 
   const text = `
@@ -968,7 +973,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: lecturerEmail,
-    subject: 'Your VeriFlow Account — University of Mpumalanga',
+    subject: 'Your VeriFlow Account - University of Mpumalanga',
     html,
     text,
   });
@@ -1012,7 +1017,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: userEmail,
-    subject: 'Your VeriFlow Password Has Been Reset — UMP',
+    subject: 'Your VeriFlow Password Has Been Reset - UMP',
     html,
     text,
   });
@@ -1022,14 +1027,17 @@ async function sendApplicationApprovedEmail({
   studentEmail,
   studentFirstName,
   moduleName,
+  positionType,
 }) {
+  const roleLabel = positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
+  const roleTitle = positionType === 'demonstrator' ? 'Demonstrator' : 'Tutor';
   const moduleLabel = moduleName ? ` for ${moduleName}` : '';
   const text = `
 Dear ${studentFirstName},
 
-Congratulations! Your tutor application${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
+Congratulations! Your ${roleLabel} application${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
 
-Log in to VeriFlow to complete onboarding and access your tutor dashboard.
+Log in to VeriFlow to complete onboarding and accept your appointment on the dashboard. That records your signature on the appointment form and confirmation form.
 
 Kind regards,
 Student Employment Office
@@ -1039,16 +1047,17 @@ University of Mpumalanga
   const body = `
     <p style="margin:0 0 16px;">Dear ${escapeHtml(studentFirstName)},</p>
     <p style="margin:0 0 16px;">
-      Congratulations! Your tutor application${moduleLabel ? ` for <strong>${escapeHtml(moduleName)}</strong>` : ''}
+      Congratulations! Your ${escapeHtml(roleLabel)} application${moduleLabel ? ` for <strong>${escapeHtml(moduleName)}</strong>` : ''}
       at the University of Mpumalanga has been approved by the Student Employment Office.
     </p>
     <p style="margin:0 0 16px;">
-      Log in to VeriFlow to complete onboarding and access your tutor dashboard.
+      Log in to VeriFlow to complete onboarding and accept your appointment on the dashboard.
+      That records your signature on the appointment form and confirmation form.
     </p>`;
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Congratulations — Your Tutor Application has been Approved',
+    subject: `Congratulations - Your ${roleTitle} Application has been Approved`,
     html: wrapEmailHtml(body),
     text,
   });
@@ -1091,7 +1100,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Update on Your Tutor Application — UMP',
+    subject: 'Update on Your Tutor Application - UMP',
     html: wrapEmailHtml(body),
     text,
   });
@@ -1117,7 +1126,7 @@ function buildClaimEmailHtml(messageText) {
 
 async function sendClaimEmail({ to, subject, text }) {
   if (!to) {
-    console.warn('Claim email skipped — no recipient');
+    console.warn('Claim email skipped - no recipient');
     return false;
   }
   if (!process.env.RESEND_API_KEY) {

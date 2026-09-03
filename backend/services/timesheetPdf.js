@@ -23,7 +23,7 @@ function formatReviewDate(iso) {
 }
 
 function formatSessionDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return '-';
   return new Date(String(dateStr).slice(0, 10)).toLocaleDateString('en-ZA', {
     day: 'numeric',
     month: 'short',
@@ -31,13 +31,13 @@ function formatSessionDate(dateStr) {
 }
 
 function formatTimeRange(startTime, sessionType) {
-  if (!startTime) return '—';
+  if (!startTime) return '-';
   const start = String(startTime).slice(0, 5);
   const [h, m] = start.split(':').map(Number);
   const mins = sessionType === 'practical' ? 180 : 45;
   const endDate = new Date(2000, 0, 1, h, m + mins);
   const end = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
-  return `${start}–${end}`;
+  return `${start}-${end}`;
 }
 
 function lecturerStep(status) {
@@ -47,7 +47,7 @@ function lecturerStep(status) {
   if (['pending_coordinator', 'approved', 'returned_by_coordinator'].includes(status)) {
     return { approved: true, label: 'Approved', subtitle: 'Forwarded to coordinator' };
   }
-  return { approved: false, label: '—', subtitle: '' };
+  return { approved: false, label: '-', subtitle: '' };
 }
 
 function coordinatorStep(status) {
@@ -66,11 +66,11 @@ function coordinatorStep(status) {
   if (status === 'approved') {
     return { approved: true, label: 'Approved', subtitle: 'FYE Office · Finance handoff' };
   }
-  return { approved: false, label: '—', subtitle: '' };
+  return { approved: false, label: '-', subtitle: '' };
 }
 
 function money(amount) {
-  if (amount == null) return '—';
+  if (amount == null) return '-';
   return `R${Number(amount).toLocaleString('en-ZA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
@@ -138,11 +138,11 @@ function drawSessionTable(doc, sessions, startY) {
     const values = [
       formatSessionDate(row.session_date),
       formatTimeRange(row.start_time, row.session_type),
-      (row.venue || '—').slice(0, 18),
-      (row.topic || '—').slice(0, 32),
-      (row.session_type || '—').slice(0, 10),
-      `${present}/${enrolled || '—'}`,
-      String(row.claimed_hours ?? '—'),
+      (row.venue || '-').slice(0, 18),
+      (row.topic || '-').slice(0, 32),
+      (row.session_type || '-').slice(0, 10),
+      `${present}/${enrolled || '-'}`,
+      String(row.claimed_hours ?? '-'),
     ];
     values.forEach((val, i) => {
       doc.text(val, x + 2, y, { width: cols[i].w - 4, lineBreak: false });
@@ -181,10 +181,10 @@ function buildTimesheetPdf(data) {
       .text('VeriFlow Timesheet', 50, doc.y, { width: contentWidth, align: 'center' });
     doc.moveDown(0.3);
     doc.font('Helvetica').fontSize(11).fillColor('#666666')
-      .text(`${period} · ${data.moduleCode || '—'}`, 50, doc.y, { width: contentWidth, align: 'center' });
+      .text(`${period} · ${data.moduleCode || '-'}`, 50, doc.y, { width: contentWidth, align: 'center' });
     doc.moveDown(0.4);
     doc.font('Helvetica').fontSize(9).fillColor('#222222')
-      .text(`${data.tutorName || '—'}  ·  ${data.studentNumber || '—'}`, 50, doc.y, { width: contentWidth, align: 'center' });
+      .text(`${data.tutorName || '-'}  ·  ${data.studentNumber || '-'}`, 50, doc.y, { width: contentWidth, align: 'center' });
 
     doc.moveDown(0.8);
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#333333')
@@ -207,7 +207,7 @@ function buildTimesheetPdf(data) {
     doc.y = tableEndY + 6;
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#111111')
       .text(
-        `Total: ${data.totalHours ?? 0} hrs  ·  ${money(data.totalAmount)}  ·  Rate: ${data.payRate != null ? `R${Number(data.payRate).toFixed(2)}/hr` : '—'}`,
+        `Total: ${data.totalHours ?? 0} hrs  ·  ${money(data.totalAmount)}  ·  Rate: ${data.payRate != null ? `R${Number(data.payRate).toFixed(2)}/hr` : '-'}`,
         50,
         doc.y,
         { width: contentWidth, align: 'center' }
