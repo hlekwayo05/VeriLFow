@@ -189,19 +189,19 @@
       key: 'id', field: 'idFile', box: 'idBox', icon: 'idIcon', name: 'idName', sub: 'idSub',
       chk: 'chk-id', input: 'idInput', iconClass: 'ti ti-id',
       title: 'ID Copy', hint: 'Upload a clear copy of your South African ID document (PDF or image)',
-      label: 'ID Copy', savedCol: 'id_filename', originalCol: null, pdfOnly: false,
+      label: 'ID Copy', savedCol: 'id_filename', originalCol: 'id_original_name', pdfOnly: false,
     },
     tax: {
       key: 'tax', field: 'taxFile', box: 'taxBox', icon: 'taxIcon', name: 'taxName', sub: 'taxSub',
       chk: 'chk-tax', input: 'taxInput', iconClass: 'ti ti-receipt-tax',
       title: 'Tax Number Proof', hint: 'Upload your SARS income tax number confirmation (PDF or image)',
-      label: 'Tax Number Proof', savedCol: 'tax_filename', originalCol: null, pdfOnly: false,
+      label: 'Tax Number Proof', savedCol: 'tax_filename', originalCol: 'tax_original_name', pdfOnly: false,
     },
     bank: {
       key: 'bank', field: 'bankFile', box: 'bankBox', icon: 'bankIcon', name: 'bankName', sub: 'bankSub',
       chk: 'chk-bank', input: 'bankInput', iconClass: 'ti ti-building-bank',
       title: 'Proof of Banking Details', hint: 'Upload a bank statement or bank-printed proof of your account details (PDF or image)',
-      label: 'Proof of Banking Details', savedCol: 'bank_filename', originalCol: null, pdfOnly: false,
+      label: 'Proof of Banking Details', savedCol: 'bank_filename', originalCol: 'bank_original_name', pdfOnly: false,
     },
   };
 
@@ -258,7 +258,11 @@
       if (!path) return;
       state[meta.key] = true;
       state[meta.key + 'Saved'] = true;
-      markUploaded(meta, documentDisplayName(meta.originalCol ? app[meta.originalCol] : null, path));
+      const original = app[meta.originalCol]
+        || (meta.key === 'id' ? app.id_copy_original_name : null)
+        || (meta.key === 'tax' ? app.tax_proof_original_name : null)
+        || (meta.key === 'bank' ? app.bank_proof_original_name : null);
+      markUploaded(meta, documentDisplayName(original, path));
       setChecklistDone(meta.key, true);
     });
     updateSubmit();

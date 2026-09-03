@@ -108,9 +108,9 @@ function safeOriginalFilename(originalname) {
 const DOC_FIELDS = [
   { form: 'cvFile', column: 'cv_filename', original: 'cv_original_name', userCol: null },
   { form: 'transcriptFile', column: 'transcript_filename', original: 'transcript_original_name', userCol: null },
-  { form: 'idFile', column: 'id_filename', original: null, userCol: 'id_document_filename', legacyColumn: 'id_copy_filename' },
-  { form: 'taxFile', column: 'tax_filename', original: null, userCol: 'tax_proof_filename', legacyColumn: 'tax_proof_filename' },
-  { form: 'bankFile', column: 'bank_filename', original: null, userCol: 'bank_proof_filename', legacyColumn: 'bank_proof_filename' },
+  { form: 'idFile', column: 'id_filename', original: 'id_original_name', legacyOriginal: 'id_copy_original_name', userCol: 'id_document_filename' },
+  { form: 'taxFile', column: 'tax_filename', original: 'tax_original_name', legacyOriginal: 'tax_proof_original_name', userCol: 'tax_proof_filename' },
+  { form: 'bankFile', column: 'bank_filename', original: 'bank_original_name', legacyOriginal: 'bank_proof_original_name', userCol: 'bank_proof_filename' },
 ];
 
 
@@ -140,7 +140,10 @@ router.post(
                 cv_original_name, transcript_original_name,
                 COALESCE(id_filename, id_copy_filename) AS id_filename,
                 COALESCE(tax_filename, tax_proof_filename) AS tax_filename,
-                COALESCE(bank_filename, bank_proof_filename) AS bank_filename
+                COALESCE(bank_filename, bank_proof_filename) AS bank_filename,
+                id_copy_original_name AS id_original_name,
+                tax_proof_original_name AS tax_original_name,
+                bank_proof_original_name AS bank_original_name
          FROM applications WHERE user_id = $1`,
         [userId]
       );
@@ -160,6 +163,9 @@ router.post(
         id_filename: app.id_filename || null,
         tax_filename: app.tax_filename || null,
         bank_filename: app.bank_filename || null,
+        id_original_name: app.id_original_name || null,
+        tax_original_name: app.tax_original_name || null,
+        bank_original_name: app.bank_original_name || null,
       };
 
       const userSync = {};
@@ -177,17 +183,20 @@ router.post(
 
       await pool.query(
         `UPDATE applications
-         SET cv_filename = $1,
-             transcript_filename = $2,
-             cv_original_name = $3,
-             transcript_original_name = $4,
-             id_filename = $5,
-             tax_filename = $6,
-             bank_filename = $7,
-             id_copy_filename = COALESCE($5, id_copy_filename),
-             tax_proof_filename = COALESCE($6, tax_proof_filename),
-             bank_proof_filename = COALESCE($7, bank_proof_filename)
-         WHERE user_id = $8 AND status = 'incomplete'`,
+         SET cv_filename = $1::varchar,
+             transcript_filename = $2::varchar,
+             cv_original_name = $3::varchar,
+             transcript_original_name = $4::varchar,
+             id_filename = $5::text,
+             tax_filename = $6::text,
+             bank_filename = $7::text,
+             id_copy_filename = COALESCE($5::varchar, id_copy_filename),
+             tax_proof_filename = COALESCE($6::varchar, tax_proof_filename),
+             bank_proof_filename = COALESCE($7::varchar, bank_proof_filename),
+             id_copy_original_name = COALESCE($8::varchar, id_copy_original_name),
+             tax_proof_original_name = COALESCE($9::varchar, tax_proof_original_name),
+             bank_proof_original_name = COALESCE($10::varchar, bank_proof_original_name)
+         WHERE user_id = $11 AND status = 'incomplete'`,
         [
           next.cv_filename,
           next.transcript_filename,
@@ -196,6 +205,9 @@ router.post(
           next.id_filename,
           next.tax_filename,
           next.bank_filename,
+          next.id_original_name,
+          next.tax_original_name,
+          next.bank_original_name,
           userId,
         ]
       );
@@ -223,6 +235,9 @@ router.post(
         id_filename: next.id_filename,
         tax_filename: next.tax_filename,
         bank_filename: next.bank_filename,
+        id_original_name: next.id_original_name,
+        tax_original_name: next.tax_original_name,
+        bank_original_name: next.bank_original_name,
       });
     } catch (err) {
       console.error('Draft document upload error:', err.message);
@@ -355,6 +370,10 @@ router.post(
                 COALESCE(id_filename, id_copy_filename) AS id_filename,
                 COALESCE(tax_filename, tax_proof_filename) AS tax_filename,
                 COALESCE(bank_filename, bank_proof_filename) AS bank_filename,
+                id_copy_original_name AS id_original_name,
+                tax_proof_original_name AS tax_original_name,
+                bank_proof_original_name AS bank_original_name,
+                id_copy_original_name, tax_proof_original_name, bank_proof_original_name,
                 position_type
          FROM applications
          WHERE user_id = $1`,
@@ -412,9 +431,9 @@ router.post(
         app.transcript_filename,
         app.transcript_original_name
       );
-      const idCopy = await resolveDoc('idFile', app.id_filename, null);
-      const taxProof = await resolveDoc('taxFile', app.tax_filename, null);
-      const bankProof = await resolveDoc('bankFile', app.bank_filename, null);
+      const idCopy = await resolveDoc('idFile', app.id_filename, app.id_original_name || app.id_copy_original_name);
+      const taxProof = await resolveDoc('taxFile', app.tax_filename, app.tax_original_name || app.tax_proof_original_name);
+      const bankProof = await resolveDoc('bankFile', app.bank_filename, app.bank_original_name || app.bank_proof_original_name);
 
       const errors = [];
       if (!cv.storagePath) errors.push('CV (PDF) is required.');
@@ -520,23 +539,26 @@ router.post(
 
       await pool.query(
         `UPDATE applications
-         SET cv_filename              = $1,
-             transcript_filename      = $2,
-             cv_original_name         = $3,
-             transcript_original_name = $4,
-             id_filename              = $5,
-             tax_filename             = $6,
-             bank_filename            = $7,
-             id_copy_filename         = COALESCE($5, id_copy_filename),
-             tax_proof_filename       = COALESCE($6, tax_proof_filename),
-             bank_proof_filename      = COALESCE($7, bank_proof_filename),
+         SET cv_filename              = $1::varchar,
+             transcript_filename      = $2::varchar,
+             cv_original_name         = $3::varchar,
+             transcript_original_name = $4::varchar,
+             id_filename              = $5::text,
+             tax_filename             = $6::text,
+             bank_filename            = $7::text,
+             id_copy_filename         = COALESCE($5::varchar, id_copy_filename),
+             tax_proof_filename       = COALESCE($6::varchar, tax_proof_filename),
+             bank_proof_filename      = COALESCE($7::varchar, bank_proof_filename),
+             id_copy_original_name    = COALESCE($8::varchar, id_copy_original_name),
+             tax_proof_original_name  = COALESCE($9::varchar, tax_proof_original_name),
+             bank_proof_original_name = COALESCE($10::varchar, bank_proof_original_name),
              declared                 = TRUE,
-             status                   = $8,
-             rejection_reason         = $9,
-             cv_keyword_score         = $10,
-             screening_result         = $11,
+             status                   = $11,
+             rejection_reason         = $12,
+             cv_keyword_score         = $13,
+             screening_result         = $14,
              submitted_at             = NOW()
-         WHERE user_id = $12`,
+         WHERE user_id = $15`,
         [
           cv.storagePath,
           transcript.storagePath,
@@ -545,6 +567,9 @@ router.post(
           idCopy.storagePath,
           taxProof.storagePath,
           bankProof.storagePath,
+          idCopy.originalName,
+          taxProof.originalName,
+          bankProof.originalName,
           newStatus,
           rejectionReason,
           cvKeywordScore,
@@ -624,6 +649,9 @@ router.get(
            COALESCE(a.id_filename, a.id_copy_filename) AS id_filename,
            COALESCE(a.tax_filename, a.tax_proof_filename) AS tax_filename,
            COALESCE(a.bank_filename, a.bank_proof_filename) AS bank_filename,
+           a.id_copy_original_name AS id_original_name,
+           a.tax_proof_original_name AS tax_original_name,
+           a.bank_proof_original_name AS bank_original_name,
            a.declared,
            a.rejection_reason,
            a.responsibility_level,
@@ -704,6 +732,9 @@ router.get(
           COALESCE(a.id_filename, a.id_copy_filename) AS id_filename,
           COALESCE(a.tax_filename, a.tax_proof_filename) AS tax_filename,
           COALESCE(a.bank_filename, a.bank_proof_filename) AS bank_filename,
+          a.id_copy_original_name AS id_original_name,
+          a.tax_proof_original_name AS tax_original_name,
+          a.bank_proof_original_name AS bank_original_name,
           a.rejection_reason,
           a.responsibility_level,
           a.assigned_lecturer_id,

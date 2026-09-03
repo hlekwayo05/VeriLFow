@@ -2927,9 +2927,9 @@ function fillMobileApplicationDetail(app) {
   const recSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.5 2.5 3 6 3s6-1.5 6-3v-5"/></svg>';
   const cvName = app.cv_original_name || app.cv_filename || 'Not uploaded';
   const trName = app.transcript_original_name || app.transcript_filename || 'Not uploaded';
-  const idName = app.id_filename || 'Not uploaded';
-  const taxName = app.tax_filename || 'Not uploaded';
-  const bankName = app.bank_filename || 'Not uploaded';
+  const idName = app.id_original_name || app.id_filename || 'Not uploaded';
+  const taxName = app.tax_original_name || app.tax_filename || 'Not uploaded';
+  const bankName = app.bank_original_name || app.bank_filename || 'Not uploaded';
   const escFn = (f) => String(f || '').replace(/'/g, "\\'");
   const docRow = (label, fileLabel, filename, ico) => `
     <div class="ad-appd-doc-row">
@@ -3124,21 +3124,21 @@ function openApplicationDetail(id) {
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--text);">ID copy</div>
-        <div style="font-size:11px;color:var(--muted);">${app.id_filename || 'Not uploaded'}</div>
+        <div style="font-size:11px;color:var(--muted);">${app.id_original_name || app.id_filename || 'Not uploaded'}</div>
       </div>
       ${app.id_filename ? `<button class="btn-sm" onclick="openDocPanel('ID copy', '${app.id_filename}')">Review</button>` : ''}
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--text);">Tax number proof</div>
-        <div style="font-size:11px;color:var(--muted);">${app.tax_filename || 'Not uploaded'}</div>
+        <div style="font-size:11px;color:var(--muted);">${app.tax_original_name || app.tax_filename || 'Not uploaded'}</div>
       </div>
       ${app.tax_filename ? `<button class="btn-sm" onclick="openDocPanel('Tax number proof', '${app.tax_filename}')">Review</button>` : ''}
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
         <div style="font-size:12px;font-weight:700;color:var(--text);">Proof of banking</div>
-        <div style="font-size:11px;color:var(--muted);">${app.bank_filename || 'Not uploaded'}</div>
+        <div style="font-size:11px;color:var(--muted);">${app.bank_original_name || app.bank_filename || 'Not uploaded'}</div>
       </div>
       ${app.bank_filename ? `<button class="btn-sm" onclick="openDocPanel('Proof of banking', '${app.bank_filename}')">Review</button>` : ''}
     </div>

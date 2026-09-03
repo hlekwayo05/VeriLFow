@@ -324,19 +324,26 @@
       if (profile.account_holder) document.getElementById('accholder').value = profile.account_holder;
       if (profile.tax_number) document.getElementById('taxnum').value = profile.tax_number;
 
-      function markExisting(boxId, iconId, nameId, subId, label, filename) {
-        if (!filename) return;
+      function markExisting(boxId, iconId, nameId, subId, label, filename, originalName) {
+        if (!filename && !originalName) return;
         document.getElementById(boxId).classList.add('uploaded');
         document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
         document.getElementById(nameId).textContent = label + ' on file';
-        document.getElementById(subId).textContent = String(filename).split('/').pop() + ' · from application';
+        const display = originalName
+          || (filename ? String(filename).split('/').pop() : '');
+        document.getElementById(subId).textContent = display
+          ? (display + ' · from application')
+          : 'On file from application';
       }
       markExisting('idBox', 'idIcon', 'idName', 'idSub', 'Identity document',
-        profile.id_document_filename || app.id_copy_filename);
+        profile.id_document_filename || app.id_filename || app.id_copy_filename,
+        app.id_original_name || app.id_copy_original_name);
       markExisting('taxBox', 'taxIcon', 'taxName', 'taxSub', 'Tax number proof',
-        profile.tax_proof_filename || app.tax_proof_filename);
+        profile.tax_proof_filename || app.tax_filename || app.tax_proof_filename,
+        app.tax_original_name || app.tax_proof_original_name);
       markExisting('bankProofBox', 'bankProofIcon', 'bankProofName', 'bankProofSub', 'Bank account proof',
-        profile.bank_proof_filename || app.bank_proof_filename);
+        profile.bank_proof_filename || app.bank_filename || app.bank_proof_filename,
+        app.bank_original_name || app.bank_proof_original_name);
     } catch (err) {
       VF.toast(err.errors ? err.errors[0] : 'Could not load your profile.', 'err');
     }

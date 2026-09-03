@@ -2223,20 +2223,27 @@ function renderProfile() {
     return `<span class="profile-mono">${esc(t)}</span>`;
   };
 
-  function profileDocHtml(filename) {
-    if (!filename) {
+  function profileDocHtml(filename, originalName) {
+    if (!filename && !originalName) {
       return '<span class="profile-muted">Not uploaded</span>';
     }
-    const safe = String(filename).replace(/</g, '&lt;');
+    const label = originalName || String(filename || '').split('/').pop() || 'Document';
+    const safe = String(label).replace(/</g, '&lt;');
     const short = safe.length > 28
       ? `${safe.slice(0, 12)}…${safe.slice(-8)}`
       : safe;
+    if (!filename) {
+      return `<span class="profile-mono">${short}</span>`;
+    }
     return `<a class="profile-doc-link profile-mono" href="#" onclick="event.preventDefault(); VF.openUploadDocument(${JSON.stringify(filename)})">${short}</a>`;
   }
 
-  const idDoc = user?.id_document_filename || profile?.id_document_filename;
-  const taxDoc = user?.tax_proof_filename || profile?.tax_proof_filename;
-  const bankDoc = user?.bank_proof_filename || profile?.bank_proof_filename;
+  const idDoc = user?.id_document_filename || profile?.id_document_filename || app?.id_filename || app?.id_copy_filename;
+  const taxDoc = user?.tax_proof_filename || profile?.tax_proof_filename || app?.tax_filename || app?.tax_proof_filename;
+  const bankDoc = user?.bank_proof_filename || profile?.bank_proof_filename || app?.bank_filename || app?.bank_proof_filename;
+  const idDocName = app?.id_original_name || app?.id_copy_original_name;
+  const taxDocName = app?.tax_original_name || app?.tax_proof_original_name;
+  const bankDocName = app?.bank_original_name || app?.bank_proof_original_name;
 
   const studentNum = user?.student_number || u.studentNumber || app?.student_number;
   const idNum = ob.idnum || profile?.id_number;
@@ -2344,11 +2351,11 @@ function renderProfile() {
       ['GPA / average', esc(dash(gpaLabel))],
     ])}
     ${section('Documents & declaration', [
-      ['CV', profileDocHtml(app?.cv_filename)],
-      ['Academic record', profileDocHtml(app?.transcript_filename)],
-      ['ID document', profileDocHtml(idDoc)],
-      ['Tax proof', profileDocHtml(taxDoc)],
-      ['Bank letter', profileDocHtml(bankDoc)],
+      ['CV', profileDocHtml(app?.cv_filename, app?.cv_original_name)],
+      ['Academic record', profileDocHtml(app?.transcript_filename, app?.transcript_original_name)],
+      ['ID document', profileDocHtml(idDoc, idDocName)],
+      ['Tax proof', profileDocHtml(taxDoc, taxDocName)],
+      ['Bank letter', profileDocHtml(bankDoc, bankDocName)],
       ['Declaration', app?.declared ? 'Yes' : 'No'],
       ['Application status', esc(dash(app?.status || s.applicationStatus))],
       ['HR Staff Number', user?.staff_number || app?.staff_number
