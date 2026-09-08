@@ -6,8 +6,9 @@ const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
 const { adminActionLimiter } = require('../middleware/rateLimiter');
-const { getRateEntry } = require('../constants');
+const { getRateEntry, findCurriculumModule } = require('../constants');
 const { generateTempPassword } = require('../utils/tempPassword');
+const { studentNumberFromUmpEmail } = require('../utils/studentNumber');
 const {
   sendReferralNotificationEmail,
   sendReferralApprovalEmail,
@@ -17,10 +18,16 @@ const {
 
 const BCRYPT_COST = 12;
 
-const COURSE_MAP = {
-  BICT: 'BICT - Bachelor of ICT',
-  DICT: 'DICT - Diploma in ICT',
-};
+const ICT_FACULTY = 'Information & Communication Technology';
+
+/** Faculty + module year from the lecturer's curriculum module (not free-typed). */
+function academicFromLecturerModule(course, moduleCode, moduleName) {
+  const hit = findCurriculumModule(course, null, moduleName, moduleCode);
+  return {
+    faculty: ICT_FACULTY,
+    moduleYearLevel: hit?.yearKey || null,
+  };
+}
 
 const QUALIFICATION_MAP = {
   '3rd year student':            '3rd_year',
@@ -40,7 +47,6 @@ router.post(
       firstName,
       surname,
       email,
-      course,
       moduleCode,
       qualificationLevel,
     } = req.body;
@@ -54,11 +60,8 @@ router.post(
     if (!email     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.push('Valid email is required.');
     }
-    if (!course || !COURSE_MAP[course]) {
-      errors.push('Course must be BICT or DICT.');
-    }
     if (!moduleCode || moduleCode.trim().length === 0) {
-      errors.push('Module code is required.');
+      errors.push('Select a module tab before referring a tutor.');
     }
     if (!qualificationLevel || !QUALIFICATION_MAP[qualificationLevel]) {
       errors.push('Valid qualification level is required.');
@@ -66,35 +69,38 @@ router.post(
 
     if (errors.length > 0) return res.status(400).json({ errors });
 
-    const fullCourse       = COURSE_MAP[course];
     const qualEnum         = QUALIFICATION_MAP[qualificationLevel];
     const normalisedEmail  = email.toLowerCase().trim();
     const normalisedModule = moduleCode.trim().toUpperCase();
 
     try {
+      // Course + module name come from the lecturer's assignment (not free-typed).
       const modResult = await pool.query(
-        `SELECT module_name
+        `SELECT module_name, course, module_code
          FROM lecturer_modules
          WHERE lecturer_id = $1
-           AND course = $2
-           AND UPPER(module_code) = $3`,
-        [lecturerId, fullCourse, normalisedModule]
+           AND UPPER(module_code) = $2
+         ORDER BY id ASC
+         LIMIT 1`,
+        [lecturerId, normalisedModule]
       );
 
       if (modResult.rows.length === 0) {
         return res.status(403).json({
-          errors: ['You can only refer tutors for modules assigned to you.'],
+          errors: ['You can only refer tutors for modules assigned to you. Select your module tab and try again.'],
         });
       }
 
       const moduleName = modResult.rows[0].module_name;
+      const fullCourse = modResult.rows[0].course;
+      const storedModuleCode = String(modResult.rows[0].module_code || normalisedModule).toUpperCase();
 
       const pending = await pool.query(
         `SELECT id FROM referrals
          WHERE LOWER(email) = $1
            AND UPPER(module_code) = $2
            AND status = 'pending'`,
-        [normalisedEmail, normalisedModule]
+        [normalisedEmail, storedModuleCode]
       );
       if (pending.rows.length > 0) {
         return res.status(409).json({
@@ -130,7 +136,7 @@ router.post(
           surname.trim(),
           normalisedEmail,
           fullCourse,
-          normalisedModule,
+          storedModuleCode,
           moduleName,
           qualEnum,
         ]
@@ -148,7 +154,7 @@ router.post(
           studentEmail:     normalisedEmail,
           studentFirstName: firstName.trim(),
           lecturerName,
-          moduleCode:       normalisedModule,
+          moduleCode:       storedModuleCode,
           moduleName,
         });
         console.log(`Referral notification email sent to ${normalisedEmail}`);
@@ -317,15 +323,24 @@ router.patch(
         );
 
         const existingUser = await client.query(
-          `SELECT id FROM users WHERE LOWER(email) = LOWER($1)`,
+          `SELECT id, student_number FROM users WHERE LOWER(email) = LOWER($1)`,
           [referral.email]
         );
+
+        const studentNumber = studentNumberFromUmpEmail(referral.email);
 
         if (existingUser.rows.length > 0) {
           userId = existingUser.rows[0].id;
           await client.query(
-            `UPDATE users SET role = 'tutor' WHERE id = $1`,
-            [userId]
+            `UPDATE users
+             SET role = 'tutor',
+                 student_number = COALESCE(
+                   NULLIF(TRIM(student_number), ''),
+                   $2
+                 ),
+                 updated_at = NOW()
+             WHERE id = $1`,
+            [userId, studentNumber]
           );
         } else {
           isNewAccount = true;
@@ -334,18 +349,26 @@ router.patch(
 
           const userInsert = await client.query(
             `INSERT INTO users
-               (first_names, surname, email, password_hash, role, temp_password_flag)
-             VALUES ($1, $2, $3, $4, 'tutor', TRUE)
+               (first_names, surname, email, password_hash, role,
+                temp_password_flag, student_number)
+             VALUES ($1, $2, $3, $4, 'tutor', TRUE, $5)
              RETURNING id`,
             [
               referral.first_names,
               referral.surname,
               referral.email,
               passwordHash,
+              studentNumber,
             ]
           );
           userId = userInsert.rows[0].id;
         }
+
+        const academic = academicFromLecturerModule(
+          referral.course,
+          referral.module_code,
+          referral.module_name
+        );
 
         const appResult = await client.query(
           `SELECT id, status FROM applications WHERE user_id = $1`,
@@ -358,21 +381,25 @@ router.patch(
              SET status               = 'approved',
                  responsibility_level = $1,
                  assigned_lecturer_id = $2,
-                 course               = $3,
-                 module_code          = $4,
-                 module_name          = $5,
-                 qualification_level  = $6,
-                 cost_centre          = $7,
+                 faculty              = $3,
+                 course               = $4,
+                 module_code          = $5,
+                 module_name          = $6,
+                 module_year_level    = $7,
+                 qualification_level  = $8,
+                 cost_centre          = $9,
                  rejection_reason     = NULL,
                  reviewed_at          = NOW(),
                  submitted_at         = COALESCE(submitted_at, NOW())
-             WHERE id = $8`,
+             WHERE id = $10`,
             [
               responsibilityLevel,
               referral.lecturer_id,
+              academic.faculty,
               referral.course,
               referral.module_code,
               referral.module_name,
+              academic.moduleYearLevel,
               referral.qualification_level,
               costCentre,
               appResult.rows[0].id,
@@ -382,15 +409,17 @@ router.patch(
         } else {
           await client.query(
             `INSERT INTO applications
-               (user_id, course, module_code, module_name, qualification_level,
-                status, responsibility_level, assigned_lecturer_id, cost_centre,
-                submitted_at, reviewed_at)
-             VALUES ($1, $2, $3, $4, $5, 'approved', $6, $7, $8, NOW(), NOW())`,
+               (user_id, faculty, course, module_code, module_name, module_year_level,
+                qualification_level, status, responsibility_level, assigned_lecturer_id,
+                cost_centre, submitted_at, reviewed_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved', $8, $9, $10, NOW(), NOW())`,
             [
               userId,
+              academic.faculty,
               referral.course,
               referral.module_code,
               referral.module_name,
+              academic.moduleYearLevel,
               referral.qualification_level,
               responsibilityLevel,
               referral.lecturer_id,

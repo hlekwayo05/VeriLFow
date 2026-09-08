@@ -1,6 +1,7 @@
 'use strict';
 
 const puppeteer = require('puppeteer');
+const { getRateEntry } = require('../constants');
 
 function escapeHtml(value) {
   return String(value == null ? '' : value)
@@ -23,6 +24,56 @@ function formatZaDate(value) {
 
 function appointeeFullName(application) {
   return `${application.first_names || ''} ${application.surname || ''}`.trim();
+}
+
+function resolveHourlyRateDisplay(application) {
+  try {
+    if (!application?.qualification_level || !application?.responsibility_level) {
+      return '-';
+    }
+    const entry = getRateEntry(
+      application.qualification_level,
+      application.responsibility_level
+    );
+    return entry?.hourlyRate != null ? Number(entry.hourlyRate) : '-';
+  } catch {
+    return '-';
+  }
+}
+
+async function htmlToPdf(html, browser = null, pdfOptions = {}) {
+  const ownsBrowser = !browser;
+  const activeBrowser =
+    browser ||
+    (await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    }));
+
+  try {
+    const page = await activeBrowser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    return await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '10mm',
+        bottom: '10mm',
+        left: '0mm',
+        right: '0mm',
+      },
+      ...pdfOptions,
+    });
+  } finally {
+    if (ownsBrowser) await activeBrowser.close();
+  }
+}
+
+async function launchPdfBrowser() {
+  return puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
 }
 
 function appointeeSignatureBlocks(application) {
@@ -54,6 +105,7 @@ function appointeeSignatureBlocks(application) {
 async function generateAppointmentFormD({
   application,
   settings,
+  browser = null,
 }) {
   const startDate = settings.appointment_start_date
     ? new Date(settings.appointment_start_date)
@@ -86,21 +138,7 @@ async function generateAppointmentFormD({
     lead:     'High',
   };
 
-  const rateTable = {
-    '3rd_year':         { standard: 59.66 },
-    '4th_year_honours': { standard: 73.87 },
-    'masters':          { standard: 90.92 },
-    'masters_holder':   {
-      standard: 102.28, senior: 110.80, lead: 119.33
-    },
-    'phd':              {
-      standard: 110.80, senior: 119.33, lead: 127.84
-    },
-  };
-
-  const hourlyRate = rateTable[
-    application.qualification_level
-  ]?.[application.responsibility_level] || '-';
+  const hourlyRate = resolveHourlyRateDisplay(application);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -444,33 +482,13 @@ Demonstrator</h2>
 </body>
 </html>`;
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, {
-      waitUntil: 'networkidle0'
-    });
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '10mm', bottom: '10mm',
-        left: '0mm', right: '0mm',
-      },
-    });
-    return pdf;
-  } finally {
-    await browser.close();
-  }
+  return htmlToPdf(html, browser);
 }
 
 async function generateConfirmationForm({
   application,
   settings,
+  browser = null,
 }) {
   const startDate = settings.appointment_start_date
     ? new Date(settings.appointment_start_date)
@@ -485,21 +503,7 @@ async function generateConfirmationForm({
       })
     : '31 December 2026';
 
-  const rateTable = {
-    '3rd_year':         { standard: 59.66 },
-    '4th_year_honours': { standard: 73.87 },
-    'masters':          { standard: 90.92 },
-    'masters_holder':   {
-      standard: 102.28, senior: 110.80, lead: 119.33
-    },
-    'phd':              {
-      standard: 110.80, senior: 119.33, lead: 127.84
-    },
-  };
-
-  const hourlyRate = rateTable[
-    application.qualification_level
-  ]?.[application.responsibility_level] || '-';
+  const hourlyRate = resolveHourlyRateDisplay(application);
 
   const positionLabel =
     application.position_type === 'demonstrator'
@@ -699,31 +703,18 @@ async function generateConfirmationForm({
 </body>
 </html>`;
 
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  return htmlToPdf(html, browser, {
+    margin: {
+      top: '0mm',
+      bottom: '0mm',
+      left: '0mm',
+      right: '0mm',
+    },
   });
-
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, {
-      waitUntil: 'networkidle0'
-    });
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '0mm', bottom: '0mm',
-        left: '0mm', right: '0mm',
-      },
-    });
-    return pdf;
-  } finally {
-    await browser.close();
-  }
 }
 
 module.exports = {
   generateAppointmentFormD,
   generateConfirmationForm,
+  launchPdfBrowser,
 };

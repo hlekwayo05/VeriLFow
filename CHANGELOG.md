@@ -12,7 +12,31 @@ Versions follow chronological project milestones.
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Production hardening follow-ups (stronger JWT secrets, email routing)
-- Batch HR pack ZIP for admin handoff
+
+---
+
+## [0.7.0] - 2026-09-08
+
+### Added
+- Admin **Download HR packs (ZIP)** - separate tutor and demonstrator packs for accepted appointees without a staff number; each folder has Form D, Confirmation, `CV`, `Academic_Record`, `ID_Copy`, `Tax_Proof`, `Banking_Proof`, plus a staff-number return CSV (`GET /api/users/hr-packs.zip?positionType=`)
+- Shared appointment form data loader; tutor and admin HR PDFs both use Puppeteer `formGenerator` (same layout, cost-centre approver, filenames)
+- Demonstrators tab HR toolbar (staff-number CSV, ZIP pack, upload staff numbers) and Staff no. column
+- Post-approval HR document collection for referred (and any approved) tutors - CV, academic record, ID, tax, and banking proof on onboarding Step 2 and Profile; files write to `applications` (+ user ID/tax/bank sync)
+- Lecturer referral form auto-fills course/module from the selected module tab (lecturer only enters name, surname, email, qualification)
+- Referral approval sets `student_number` from numeric UMP emails (e.g. `230383025@ump.ac.za` → `230383025`)
+- Referral approval fills **Faculty** and **Module year level** from the lecturer's curriculum module
+
+### Changed
+- Staff-number CSV export only includes people who have clicked **I accept** (`offer_accepted_at`) and still lack a staff number; filtered by tutor vs demonstrator
+- Form D / Confirmation hourly rates read from shared `getRateEntry` instead of a duplicated table
+- HR pack supporting docs use stable filenames (no unreliable upload original names)
+- **I accept** requires all five HR documents on file (blocks incomplete referred packs)
+- Referral create resolves course/module name from `lecturer_modules` by module code (no client course mismatch)
+- Referral Approvals table no longer shows Average (referred tutors have no GPA)
+- Tutor dashboard appointment banner hides after the offer is accepted (forms stay on Profile)
+
+### Removed
+- Stop tracking `.cursor/` in git (local Cursor rules stay on disk; not published to GitHub)
 
 ---
 

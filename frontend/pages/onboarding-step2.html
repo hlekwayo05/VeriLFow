@@ -223,8 +223,20 @@
           <div class="form-error">Please enter your tax number.</div>
         </div>
 
-        <div class="sub-section" style="font-family:'Bebas Neue', sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin:22px 0 14px;">Supporting documents</div>
-        <p class="form-hint" style="margin:-6px 0 14px">Already uploaded with your application. Re-upload only if you need to replace a file.</p>
+        <div class="sub-section" style="font-family:'Bebas Neue', sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink-4);margin:22px 0 14px;">Required HR documents</div>
+        <p class="form-hint" style="margin:-6px 0 14px" id="docsHint">Upload CV, academic record, ID, tax proof and banking proof. Referred appointments must provide these here before your dashboard unlocks.</p>
+        <div class="upload-box" id="cvBox" onclick="document.getElementById('cvFile').click()">
+          <input type="file" class="file-input-hidden" id="cvFile" accept=".pdf,application/pdf" onchange="markFileSelected(this,'cvBox','cvIcon','cvName','cvSub','Curriculum Vitae')"/>
+          <i class="ti ti-file-cv upload-icon" id="cvIcon"></i>
+          <div class="upload-title" id="cvName">Curriculum Vitae (PDF)</div>
+          <div class="upload-sub" id="cvSub">PDF only · Max 5MB</div>
+        </div>
+        <div class="upload-box" id="acadBox" onclick="document.getElementById('transcriptFile').click()">
+          <input type="file" class="file-input-hidden" id="transcriptFile" accept=".pdf,application/pdf" onchange="markFileSelected(this,'acadBox','acadIcon','acadName','acadSub','Academic record')"/>
+          <i class="ti ti-school upload-icon" id="acadIcon"></i>
+          <div class="upload-title" id="acadName">Academic record (PDF)</div>
+          <div class="upload-sub" id="acadSub">PDF only · Max 5MB</div>
+        </div>
         <div class="upload-box" id="idBox" onclick="document.getElementById('idFile').click()">
           <input type="file" class="file-input-hidden" id="idFile" accept=".pdf,.jpg,.jpeg,.png" onchange="markFileSelected(this,'idBox','idIcon','idName','idSub','Identity document')"/>
           <i class="ti ti-id upload-icon" id="idIcon"></i>
@@ -267,6 +279,7 @@
       </div>
       <div class="info-sidebar-card">
         <div class="info-sidebar-title">Why we need this</div>
+        <div class="info-row"><i class="ti ti-file-cv"></i>CV and academic record are required for HR (including referred appointments that skipped the apply form).</div>
         <div class="info-row"><i class="ti ti-building-bank"></i>Your banking details are used exclusively to pay your monthly tutoring stipend.</div>
         <div class="info-row"><i class="ti ti-receipt-tax"></i>Your income tax number is required for SARS compliance and your IRP5 at year end.</div>
         <div class="info-row"><i class="ti ti-lock"></i>All financial information is stored securely and only accessible to authorised payroll staff.</div>
@@ -280,10 +293,18 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=14"></script>
+<script src="../js/app.js?v=21"></script>
 <script>
   VF.pageIn();
   VF.requireAuth('login.html');
+
+  let existingDocs = {
+    cv: false,
+    transcript: false,
+    id: false,
+    tax: false,
+    bank: false,
+  };
 
   (async function guardStep2() {
     try {
@@ -314,25 +335,43 @@
       if (profile.tax_number) document.getElementById('taxnum').value = profile.tax_number;
 
       function markExisting(boxId, iconId, nameId, subId, label, filename, originalName) {
-        if (!filename && !originalName) return;
+        if (!filename && !originalName) return false;
         document.getElementById(boxId).classList.add('uploaded');
         document.getElementById(iconId).className = 'ti ti-circle-check upload-icon';
         document.getElementById(nameId).textContent = label + ' on file';
         const display = originalName
           || (filename ? String(filename).split('/').pop() : '');
         document.getElementById(subId).textContent = display
-          ? (display + ' · from application')
-          : 'On file from application';
+          ? (display + ' · already on file')
+          : 'Already on file';
+        return true;
       }
-      markExisting('idBox', 'idIcon', 'idName', 'idSub', 'Identity document',
-        profile.id_document_filename || app.id_filename || app.id_copy_filename,
+      existingDocs.cv = markExisting('cvBox', 'cvIcon', 'cvName', 'cvSub', 'CV',
+        app.cv_filename, app.cv_original_name);
+      existingDocs.transcript = markExisting('acadBox', 'acadIcon', 'acadName', 'acadSub', 'Academic record',
+        app.transcript_filename, app.transcript_original_name);
+      existingDocs.id = markExisting('idBox', 'idIcon', 'idName', 'idSub', 'Identity document',
+        profile.id_document_filename || app.id_filename || app.id_copy_filename || app.id_document_filename,
         app.id_original_name || app.id_copy_original_name);
-      markExisting('taxBox', 'taxIcon', 'taxName', 'taxSub', 'Tax number proof',
-        profile.tax_proof_filename || app.tax_filename || app.tax_proof_filename,
+      existingDocs.tax = markExisting('taxBox', 'taxIcon', 'taxName', 'taxSub', 'Tax number proof',
+        profile.tax_proof_filename || app.tax_filename || app.tax_proof_filename || app.user_tax_proof_filename,
         app.tax_original_name || app.tax_proof_original_name);
-      markExisting('bankProofBox', 'bankProofIcon', 'bankProofName', 'bankProofSub', 'Bank account proof',
-        profile.bank_proof_filename || app.bank_filename || app.bank_proof_filename,
+      existingDocs.bank = markExisting('bankProofBox', 'bankProofIcon', 'bankProofName', 'bankProofSub', 'Bank account proof',
+        profile.bank_proof_filename || app.bank_filename || app.bank_proof_filename || app.user_bank_proof_filename,
         app.bank_original_name || app.bank_proof_original_name);
+
+      const missing = [];
+      if (!existingDocs.cv) missing.push('CV');
+      if (!existingDocs.transcript) missing.push('academic record');
+      if (!existingDocs.id) missing.push('ID');
+      if (!existingDocs.tax) missing.push('tax proof');
+      if (!existingDocs.bank) missing.push('banking proof');
+      const hint = document.getElementById('docsHint');
+      if (hint) {
+        hint.textContent = missing.length
+          ? ('Still needed: ' + missing.join(', ') + '. Direct applicants may already have some on file from apply Step 3.')
+          : 'All required documents are already on file. You can replace any file before submitting.';
+      }
     } catch (err) {
       VF.toast(err.errors ? err.errors[0] : 'Could not load your profile.', 'err');
     }
@@ -349,33 +388,51 @@
 
   async function handleSubmit(e) {
     e.preventDefault();
+    e.stopPropagation();
     const valid = VF.validateForm([
       { id:'bank',      check: v => v.length > 0,           msg:'Please select your bank.' },
       { id:'branch',    check: v => /^\d{6}$/.test(v),      msg:'Enter a 6-digit branch code.' },
       { id:'acctype',   check: v => v.length > 0,           msg:'Please select account type.' },
-      { id:'accnum',    check: v => v.length >= 8,          msg:'Enter a valid account number.' },
+      { id:'accnum',    check: v => v.replace(/\s/g,'').length >= 8, msg:'Enter a valid account number.' },
       { id:'accholder', check: v => v.length > 2,           msg:'Account holder name is required.' },
       { id:'taxnum',    check: v => v.replace(/\s/g,'').length >= 9, msg:'Enter a valid tax number.' },
     ]);
     if (!valid) return;
 
+    const cvFile = document.getElementById('cvFile')?.files[0];
+    const transcriptFile = document.getElementById('transcriptFile')?.files[0];
+    const idFile = document.getElementById('idFile')?.files[0];
+    const taxFile = document.getElementById('taxFile')?.files[0];
+    const bankFile = document.getElementById('bankProofFile')?.files[0];
+
+    const stillMissing = [];
+    if (!existingDocs.cv && !cvFile) stillMissing.push('CV');
+    if (!existingDocs.transcript && !transcriptFile) stillMissing.push('Academic record');
+    if (!existingDocs.id && !idFile) stillMissing.push('ID copy');
+    if (!existingDocs.tax && !taxFile) stillMissing.push('Tax proof');
+    if (!existingDocs.bank && !bankFile) stillMissing.push('Banking proof');
+    if (stillMissing.length) {
+      VF.toast('Upload required documents: ' + stillMissing.join(', '), 'err');
+      return;
+    }
+
     const btn = document.getElementById('submitBtn');
     const originalHTML = btn.innerHTML;
     btn.innerHTML = '<div class="spinner" style="width:17px;height:17px;border-width:2px"></div> Submitting…';
     btn.classList.add('btn-disabled');
+    btn.disabled = true;
 
     try {
       const formData = new FormData();
       formData.append('bank', document.getElementById('bank').value);
       formData.append('branch', document.getElementById('branch').value);
       formData.append('acctype', document.getElementById('acctype').value);
-      formData.append('accnum', document.getElementById('accnum').value);
+      formData.append('accnum', document.getElementById('accnum').value.replace(/\s/g, ''));
       formData.append('accholder', document.getElementById('accholder').value);
-      formData.append('taxnum', document.getElementById('taxnum').value);
+      formData.append('taxnum', document.getElementById('taxnum').value.replace(/\s/g, ''));
 
-      const idFile = document.getElementById('idFile')?.files[0];
-      const taxFile = document.getElementById('taxFile')?.files[0];
-      const bankFile = document.getElementById('bankProofFile')?.files[0];
+      if (cvFile) formData.append('cvFile', cvFile);
+      if (transcriptFile) formData.append('transcriptFile', transcriptFile);
       if (idFile) formData.append('id_document', idFile);
       if (taxFile) formData.append('tax_proof', taxFile);
       if (bankFile) formData.append('bank_proof', bankFile);
@@ -392,14 +449,54 @@
         onboarding: { step1: true, step2: true },
       });
       VF.toast(data.message || 'Profile complete. Opening your dashboard…', 'ok');
-      VF.routeTutor({
-        applicationStatus: data.applicationStatus || 'approved',
-        onboardingComplete: true,
-      });
+
+      // Prefer hard navigation so we never land back on an emptied Step 2 form.
+      const tokenState = VF.tutorStateFromToken() || {};
+      if (tokenState.onboardingComplete === false) {
+        // Should not happen after a successful step2 token, but keep a safe path.
+        VF.routeTutor({
+          applicationStatus: data.applicationStatus || 'approved',
+          onboardingComplete: true,
+        });
+        return;
+      }
+      try {
+        const payload = JSON.parse(
+          atob(String(VF.getToken() || '').split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        );
+        if (payload.tempFlag) {
+          window.location.href = 'change-password.html';
+          return;
+        }
+      } catch (_) { /* ignore */ }
+      window.location.href = 'dashboard.html';
     } catch (err) {
       btn.innerHTML = originalHTML;
       btn.classList.remove('btn-disabled');
+      btn.disabled = false;
       VF.toast(err.errors ? err.errors[0] : 'Could not save your profile. Please try again.', 'err');
+      // Re-sync "on file" markers after a partial save (banking may have saved).
+      try {
+        const app = await VF.apiFetch('/applications/me');
+        const profile = await VF.apiFetch('/users/me/tutor-profile');
+        existingDocs.cv = !!(app.cv_filename);
+        existingDocs.transcript = !!(app.transcript_filename);
+        existingDocs.id = !!(
+          profile.id_document_filename || app.id_filename || app.id_copy_filename || app.id_document_filename
+        );
+        existingDocs.tax = !!(
+          profile.tax_proof_filename || app.tax_filename || app.tax_proof_filename || app.user_tax_proof_filename
+        );
+        existingDocs.bank = !!(
+          profile.bank_proof_filename || app.bank_filename || app.bank_proof_filename || app.user_bank_proof_filename
+        );
+        if (profile.bank_name) document.getElementById('bank').value = profile.bank_name;
+        if (profile.branch_code) document.getElementById('branch').value = profile.branch_code;
+        if (profile.account_type) document.getElementById('acctype').value = profile.account_type;
+        if (profile.account_number) document.getElementById('accnum').value = profile.account_number;
+        if (profile.account_holder) document.getElementById('accholder').value = profile.account_holder;
+        if (profile.tax_number) document.getElementById('taxnum').value = profile.tax_number;
+      } catch (_) { /* ignore */ }
     }
   }
 </script>

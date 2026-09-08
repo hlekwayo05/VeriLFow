@@ -1109,13 +1109,9 @@
       </div>
       <div class="ns-section-label">Contact</div>
       <div class="ns-field"><label class="ns-label">Email address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
-      <div class="ns-section-label">Academic details</div>
-      <div class="ns-row">
-        <div class="ns-field">
-          <label class="ns-label">Course</label>
-          <div class="ns-select-wrap"><select class="ns-select" id="rt-course"><option value="" disabled selected>Select course…</option><option value="BICT">BICT - Bachelor of ICT</option><option value="DICT">DICT - Diploma in ICT</option></select><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
-        </div>
-        <div class="ns-field"><label class="ns-label">Module</label><input class="ns-input" id="rt-module" type="text" placeholder="e.g. DICT111, IS211…" /></div>
+      <div class="ns-section-label">Module</div>
+      <div class="ns-field">
+        <div class="ns-input" id="rt-module-display" style="display:flex;align-items:center;min-height:42px;color:var(--muted);">Select a module tab first</div>
       </div>
       <div class="ns-section-label">Qualification level</div>
       <div class="ns-field">
@@ -1222,7 +1218,7 @@
   })();
 </script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/lecturer-dashboard.js?v=64"></script>
+<script src="../js/lecturer-dashboard.js?v=65"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';

@@ -1804,7 +1804,7 @@ async function loadTutors() {
 async function loadDemonstrators() {
   const body = document.getElementById('demonstrators-body');
   const cards = document.getElementById('demonstrators-cards');
-  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(6, 5);
+  if (body && VF.skeleton) body.innerHTML = VF.skeleton.tbody(7, 5);
   if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.cards(4);
 
   try {
@@ -1815,7 +1815,7 @@ async function loadDemonstrators() {
     if (body) {
       body.innerHTML = demonstrators.length
         ? demonstrators.map((d) => renderTutorRow(d, 'demonstrator')).join('')
-        : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No approved demonstrators yet.</td></tr>';
+        : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved demonstrators yet.</td></tr>';
     }
     if (cards) {
       if (!demonstrators.length) {

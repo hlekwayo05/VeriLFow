@@ -651,6 +651,9 @@ router.get(
            a.id_copy_original_name AS id_original_name,
            a.tax_proof_original_name AS tax_original_name,
            a.bank_proof_original_name AS bank_original_name,
+           u.id_document_filename,
+           u.tax_proof_filename AS user_tax_proof_filename,
+           u.bank_proof_filename AS user_bank_proof_filename,
            a.declared,
            a.rejection_reason,
            a.responsibility_level,
@@ -684,7 +687,11 @@ router.get(
         return res.status(404).json({ error: 'Application not found.' });
       }
 
-      return res.status(200).json(result.rows[0]);
+      const row = result.rows[0];
+      const { hasRequiredHrDocuments, missingHrDocumentLabels } = require('../services/hrDocuments');
+      row.hr_documents_complete = hasRequiredHrDocuments(row);
+      row.hr_documents_missing = missingHrDocumentLabels(row);
+      return res.status(200).json(row);
 
     } catch (err) {
       console.error('Get application error:', err.message);
@@ -707,9 +714,21 @@ router.post(
            a.id,
            a.status,
            a.offer_accepted_at,
+           a.cv_filename,
+           a.transcript_filename,
+           a.id_filename,
+           a.id_copy_filename,
+           a.tax_filename,
+           a.tax_proof_filename,
+           a.bank_filename,
+           a.bank_proof_filename,
+           u.id_document_filename,
+           u.tax_proof_filename AS user_tax_proof_filename,
+           u.bank_proof_filename AS user_bank_proof_filename,
            COALESCE(tp.step1_complete, FALSE) AS step1_complete,
            COALESCE(tp.step2_complete, FALSE) AS step2_complete
          FROM applications a
+         JOIN users u ON u.id = a.user_id
          LEFT JOIN tutor_profiles tp ON tp.user_id = a.user_id
          WHERE a.user_id = $1`,
         [userId]
@@ -728,6 +747,17 @@ router.post(
       if (!app.step1_complete || !app.step2_complete) {
         return res.status(403).json({
           errors: ['Complete onboarding before accepting the offer.'],
+        });
+      }
+
+      const { hasRequiredHrDocuments, missingHrDocumentLabels } = require('../services/hrDocuments');
+      if (!hasRequiredHrDocuments(app)) {
+        const missing = missingHrDocumentLabels(app);
+        return res.status(403).json({
+          errors: [
+            `Upload required HR documents before accepting: ${missing.join(', ')}.`,
+          ],
+          missingDocuments: missing,
         });
       }
 

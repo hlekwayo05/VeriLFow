@@ -2238,12 +2238,25 @@ function renderProfile() {
     return `<a class="profile-doc-link profile-mono" href="#" onclick="event.preventDefault(); VF.openUploadDocument(${JSON.stringify(filename)})">${short}</a>`;
   }
 
-  const idDoc = user?.id_document_filename || profile?.id_document_filename || app?.id_filename || app?.id_copy_filename;
-  const taxDoc = user?.tax_proof_filename || profile?.tax_proof_filename || app?.tax_filename || app?.tax_proof_filename;
-  const bankDoc = user?.bank_proof_filename || profile?.bank_proof_filename || app?.bank_filename || app?.bank_proof_filename;
+  const idDoc = user?.id_document_filename || profile?.id_document_filename || app?.id_filename || app?.id_copy_filename || app?.id_document_filename;
+  const taxDoc = user?.tax_proof_filename || profile?.tax_proof_filename || app?.tax_filename || app?.tax_proof_filename || app?.user_tax_proof_filename;
+  const bankDoc = user?.bank_proof_filename || profile?.bank_proof_filename || app?.bank_filename || app?.bank_proof_filename || app?.user_bank_proof_filename;
+  const cvDoc = app?.cv_filename;
+  const transcriptDoc = app?.transcript_filename;
   const idDocName = app?.id_original_name || app?.id_copy_original_name;
   const taxDocName = app?.tax_original_name || app?.tax_proof_original_name;
   const bankDocName = app?.bank_original_name || app?.bank_proof_original_name;
+  const hrDocsMissing = Array.isArray(app?.hr_documents_missing)
+    ? app.hr_documents_missing
+    : [
+        !cvDoc && 'CV',
+        !transcriptDoc && 'Academic record',
+        !idDoc && 'ID copy',
+        !taxDoc && 'Tax proof',
+        !bankDoc && 'Banking proof',
+      ].filter(Boolean);
+  const hrDocsComplete = app?.hr_documents_complete === true
+    || (cvDoc && transcriptDoc && idDoc && taxDoc && bankDoc);
 
   const studentNum = user?.student_number || u.studentNumber || app?.student_number;
   const idNum = ob.idnum || profile?.id_number;
@@ -2262,7 +2275,14 @@ function renderProfile() {
       </div>`
     : '';
 
-  const qualLabel = app?.qualification_level || a.qualificationLevel;
+  const qualRaw = app?.qualification_level || a.qualificationLevel;
+  const qualLabel = ({
+    '3rd_year': '3rd year student',
+    '4th_year_honours': '4th year or Honours student',
+    'masters': 'Masters student',
+    'masters_holder': 'Masters Holder',
+    'phd': 'PhD Candidate or Holder',
+  })[qualRaw] || qualRaw;
   const titleLabel = u.title || app?.title;
   const roleLine = [titleLabel, moduleLabel, qualLabel ? `${qualLabel} student` : null]
     .filter(Boolean)
@@ -2348,7 +2368,7 @@ function renderProfile() {
       ['Faculty', esc(dash(app?.faculty || a.faculty))],
       ['Programme', esc(dash(courseLabel))],
       ['Qualification level', esc(dash(qualLabel))],
-      ['Module year level', esc(dash(app?.module_year || a.year))],
+      ['Module year level', esc(dash(app?.module_year_level || app?.module_year || a.year))],
       ['Module to tutor', esc(dash(moduleLabel))],
       ['Module code', monoVal(app?.module_code || currentModuleCode)],
       ['GPA / average', esc(dash(gpaLabel))],
@@ -2365,13 +2385,17 @@ function renderProfile() {
         ? esc(user?.staff_number || app?.staff_number)
         : '<span style="color:var(--yellow)">Not yet assigned - contact the Student Employment Office</span>'],
     ], 'profile-card--docs')}
-    ${(!idDoc || !taxDoc || !bankDoc) ? `
+    ${(!hrDocsComplete) ? `
     <div class="profile-card profile-card--upload" id="profile-doc-upload-card">
-      <div class="profile-section-title">Upload supporting documents</div>
+      <div class="profile-section-title">Upload required HR documents</div>
       <p class="profile-help">
-        Some onboarding documents were not saved. Upload any missing files below (PDF or image, max 5MB each).
+        ${hrDocsMissing.length
+          ? ('Still needed: ' + hrDocsMissing.join(', ') + '. Referred appointments must upload these before accepting the offer.')
+          : 'Upload any missing HR documents below (PDF or image, max 5MB; CV and academic record must be PDF).'}
       </p>
       <div class="um-grid one" style="gap:12px;">
+        ${!cvDoc ? `<div class="um-field"><div class="um-label">CV (PDF)</div><input type="file" id="profile-cv-file" class="um-input" accept=".pdf,application/pdf" style="padding:8px;height:auto"/></div>` : ''}
+        ${!transcriptDoc ? `<div class="um-field"><div class="um-label">Academic record (PDF)</div><input type="file" id="profile-transcript-file" class="um-input" accept=".pdf,application/pdf" style="padding:8px;height:auto"/></div>` : ''}
         ${!idDoc ? `<div class="um-field"><div class="um-label">ID document</div><input type="file" id="profile-id-file" class="um-input" accept=".pdf,.jpg,.jpeg,.png" style="padding:8px;height:auto"/></div>` : ''}
         ${!taxDoc ? `<div class="um-field"><div class="um-label">Tax proof</div><input type="file" id="profile-tax-file" class="um-input" accept=".pdf,.jpg,.jpeg,.png" style="padding:8px;height:auto"/></div>` : ''}
         ${!bankDoc ? `<div class="um-field"><div class="um-label">Bank letter</div><input type="file" id="profile-bank-file" class="um-input" accept=".pdf,.jpg,.jpeg,.png" style="padding:8px;height:auto"/></div>` : ''}
@@ -2420,10 +2444,13 @@ function renderProfile() {
           ? esc(`Accepted ${formatHrAcceptedDate(app.offer_accepted_at)}`)
           : 'Not accepted yet'}</span>
       </div>
-      ${app?.offer_accepted_at ? '' : `
+      ${app?.offer_accepted_at ? '' : (hrDocsComplete ? `
       <div class="um-actions" style="margin-top:14px;">
         <button type="button" class="btn-primary" onclick="acceptHrOffer()">I accept</button>
-      </div>`}
+      </div>` : `
+      <p class="profile-help" style="margin-top:12px;">
+        Upload all required HR documents above before you can accept the appointment.
+      </p>`)}
     </div>` : ''}
     <div class="profile-card profile-card--update" id="profile-update-card">
       <div class="profile-section-title">Update profile</div>
@@ -2529,11 +2556,13 @@ async function saveProfileUpdate() {
 }
 
 async function uploadProfileDocuments() {
+  const cvFile = document.getElementById('profile-cv-file')?.files[0];
+  const transcriptFile = document.getElementById('profile-transcript-file')?.files[0];
   const idFile = document.getElementById('profile-id-file')?.files[0];
   const taxFile = document.getElementById('profile-tax-file')?.files[0];
   const bankFile = document.getElementById('profile-bank-file')?.files[0];
 
-  if (!idFile && !taxFile && !bankFile) {
+  if (!cvFile && !transcriptFile && !idFile && !taxFile && !bankFile) {
     showToast('Select at least one file to upload');
     return;
   }
@@ -2545,6 +2574,8 @@ async function uploadProfileDocuments() {
   }
 
   const formData = new FormData();
+  if (cvFile) formData.append('cvFile', cvFile);
+  if (transcriptFile) formData.append('transcriptFile', transcriptFile);
   if (idFile) formData.append('id_document', idFile);
   if (taxFile) formData.append('tax_proof', taxFile);
   if (bankFile) formData.append('bank_proof', bankFile);
@@ -3034,19 +3065,19 @@ function updateHrFormsNotice() {
     || !!(tutorOnboardingProfile?.step1_complete && tutorOnboardingProfile?.step2_complete)
     || !!(VF.tutorStateFromToken()?.onboardingComplete);
   const hasStaffNumber = !!(user?.staff_number || app?.staff_number);
-  const show = approved && onboarded && !hasStaffNumber;
   const acceptedAt = app?.offer_accepted_at;
   const accepted = !!acceptedAt;
+  // Hide once the offer is accepted (forms remain available on Profile).
+  const show = approved && onboarded && !hasStaffNumber && !accepted;
 
   ['td-hub-hr-forms', 'td-desktop-hr-forms'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.hidden = !show;
   });
 
-  const title = accepted ? 'Appointment accepted' : 'Appointment forms';
-  const text = accepted
-    ? `You accepted this offer on ${formatHrAcceptedDate(acceptedAt)}. View the signed forms here. You cannot submit claims until a staff number is on file.`
-    : 'View your appointment forms here. Accept the offer from your profile. You cannot submit claims until a staff number is on file.';
+  const title = 'Appointment forms';
+  const text =
+    'View your appointment forms here. Accept the offer from your profile. You cannot submit claims until a staff number is on file.';
 
   document.querySelectorAll('[data-hr-forms-title]').forEach((el) => {
     el.textContent = title;

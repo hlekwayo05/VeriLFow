@@ -87,8 +87,7 @@ const validateOnboardingStep1 = [
 const validateOnboardingStep2 = [
   body('bank')
     .trim()
-    .notEmpty().withMessage('Bank name is required.')
-    .escape(),
+    .notEmpty().withMessage('Bank name is required.'),
   body('branch')
     .trim()
     .notEmpty().withMessage('Valid 6-digit branch code is required.')
@@ -98,16 +97,15 @@ const validateOnboardingStep2 = [
     .notEmpty().withMessage('Account type is required.')
     .isIn(['Cheque / Current', 'Savings', 'Transmission']).withMessage('Please select a valid account type.'),
   body('accnum')
-    .trim()
+    .customSanitizer((value) => String(value || '').replace(/\s/g, ''))
     .notEmpty().withMessage('Account number is required.')
     .isNumeric().withMessage('Account number must contain digits only.')
     .isLength({ min: 8, max: 13 }).withMessage('Account number must be between 8 and 13 digits.'),
   body('accholder')
     .trim()
-    .notEmpty().withMessage('Account holder name is required.')
-    .escape(),
+    .notEmpty().withMessage('Account holder name is required.'),
   body('taxnum')
-    .trim()
+    .customSanitizer((value) => String(value || '').replace(/\s/g, ''))
     .notEmpty().withMessage('Valid tax number is required.')
     .matches(/^\d{9,10}$/).withMessage('Tax number must be 9 or 10 digits.'),
   handleValidationErrors,

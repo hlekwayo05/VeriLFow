@@ -1734,10 +1734,19 @@ function openReferTutor() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  const courseEl = document.getElementById('rt-course');
-  const moduleEl = document.getElementById('rt-module');
-  if (courseEl) courseEl.value = courseShortCode(currentModuleCourse);
-  if (moduleEl) moduleEl.value = currentModuleCode || '';
+  const display = document.getElementById('rt-module-display');
+  if (display) {
+    if (currentModuleCode) {
+      const name = currentModuleName || getSelectedModule()?.name || '';
+      display.textContent = name
+        ? `${currentModuleCode} · ${name}`
+        : currentModuleCode;
+      display.style.color = 'var(--text)';
+    } else {
+      display.textContent = 'Select a module tab first';
+      display.style.color = 'var(--muted)';
+    }
+  }
   document.getElementById('rt-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('rt-name').focus(),300);
 }
@@ -1747,19 +1756,14 @@ async function submitReferral() {
   const n=document.getElementById('rt-name').value.trim();
   const s=document.getElementById('rt-surname').value.trim();
   const e=document.getElementById('rt-email').value.trim();
-  const c=document.getElementById('rt-course').value;
-  const m=document.getElementById('rt-module').value.trim();
   const q=document.getElementById('rt-qualification').value;
+  if (!currentModuleCode) {
+    showToast('Select a module tab before referring a tutor');
+    return;
+  }
   if (!n)   { hlt('rt-name');    return; }
   if (!s)   { hlt('rt-surname'); return; }
   if (!e||!e.includes('@')) { hlt('rt-email'); return; }
-  if (!c)   { hlt('rt-course'); return; }
-  if (!m)   { hlt('rt-module'); return; }
-  if (m.includes(' ') && m.length > 10) {
-    showToast('Please enter a module code (e.g. DICT111), not a full module name');
-    hlt('rt-module');
-    return;
-  }
   if (!q)   { hlt('rt-qualification'); return; }
   try {
     await VF.apiFetch('/referrals', {
@@ -1768,8 +1772,7 @@ async function submitReferral() {
         firstName: n,
         surname: s,
         email: e,
-        course: c,
-        moduleCode: m,
+        moduleCode: currentModuleCode,
         qualificationLevel: q,
       },
     });

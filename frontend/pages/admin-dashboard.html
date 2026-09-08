@@ -403,9 +403,9 @@
     </div>
     <div class="ad-rec-list ad-mobile-only" id="referrals-cards"></div>
     <table class="data-table">
-      <thead><tr><th>Student</th><th>Referred by</th><th>Module</th><th>Programme</th><th>Qualification</th><th>Average</th><th>Action</th></tr></thead>
+      <thead><tr><th>Student</th><th>Referred by</th><th>Module</th><th>Programme</th><th>Qualification</th><th>Action</th></tr></thead>
       <tbody id="referrals-tbody">
-        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
+        <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -549,8 +549,9 @@
     </div>
     <div id="tab-tutors-u" class="tab-pane">
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <button class="btn-sm" onclick="exportTutorsForHR()">Export for HR (CSV)</button>
-        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;">
+        <button class="btn-sm" title="Spreadsheet for HR to fill staff_number and return for import. The ZIP already includes this list plus all documents." onclick="exportStaffNumbersForHR('tutor')">Staff-number list (CSV)</button>
+        <button class="btn-sm" title="Full document pack for HR: forms + CV, ID, tax, bank, transcript" onclick="downloadHrPacksZip('tutor')">Download tutor HR packs (ZIP)</button>
+        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;" title="Import staff numbers HR returned">
           Upload HR Staff Numbers (CSV)
           <input type="file" accept=".csv" style="display:none;" onchange="importStaffNumbers(this)"/>
         </label>
@@ -562,10 +563,18 @@
       </table>
     </div>
     <div id="tab-demonstrators-u" class="tab-pane">
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="btn-sm" title="Spreadsheet for HR to fill staff_number and return for import. The ZIP already includes this list plus all documents." onclick="exportStaffNumbersForHR('demonstrator')">Staff-number list (CSV)</button>
+        <button class="btn-sm" title="Full document pack for HR: forms + CV, ID, tax, bank, transcript" onclick="downloadHrPacksZip('demonstrator')">Download demonstrator HR packs (ZIP)</button>
+        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;" title="Import staff numbers HR returned">
+          Upload HR Staff Numbers (CSV)
+          <input type="file" accept=".csv" style="display:none;" onchange="importStaffNumbers(this)"/>
+        </label>
+      </div>
       <div class="ad-rec-list ad-mobile-only" id="demonstrators-cards"></div>
       <table class="data-table">
-        <thead><tr><th>Name</th><th>Student no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
-        <tbody id="demonstrators-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
+        <thead><tr><th>Name</th><th>Student no.</th><th>Staff no.</th><th>Module</th><th>Lecturer</th><th>Responsibility</th><th>Action</th></tr></thead>
+        <tbody id="demonstrators-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr></tbody>
       </table>
     </div>
     <div id="tab-students-u" class="tab-pane">
@@ -1466,7 +1475,7 @@
 <script src="../js/app.js?v=20"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=35"></script>
+<script src="../js/admin-dashboard-api.js?v=36"></script>
 <script>
   if (!VF.requireAuth('login.html')) { /* stop - requireAuth already redirected */ }
   if (!VF.requireRole('admin', 'login.html')) { /* stop - requireRole already redirected */ }
@@ -1851,16 +1860,12 @@ function referralActions(id, status) {
 }
 
 function renderReferralRow(ref) {
-  const gpa = ref.gpa != null ? Number(ref.gpa) : null;
-  const gpaColor = gpa == null ? 'var(--muted)' : (gpa >= 70 ? 'var(--green)' : 'var(--yellow)');
-  const gpaText = gpa != null ? gpa + '%' : '-';
   return `<tr>
     <td style="font-weight:600;color:var(--text)">${ref.first_names} ${ref.surname}</td>
     <td style="color:var(--muted)">${formatLecturerName(ref)}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--muted)">${ref.module_code}</td>
     <td style="color:var(--muted)">${courseShort(ref.course)}</td>
     <td>${qualificationChip(ref.qualification_level)}</td>
-    <td style="font-family:'DM Mono',monospace;color:${gpaColor}">${gpaText}</td>
     <td>${referralActions(ref.id, ref.status)}</td>
   </tr>`;
 }
@@ -1880,7 +1885,7 @@ async function loadReferrals() {
   const tbody = document.getElementById('referrals-tbody');
   const cards = document.getElementById('referrals-cards');
   if (overviewBody && VF.skeleton) overviewBody.innerHTML = VF.skeleton.tbody(5, 4);
-  if (tbody && VF.skeleton) tbody.innerHTML = VF.skeleton.tbody(7, 6);
+  if (tbody && VF.skeleton) tbody.innerHTML = VF.skeleton.tbody(6, 6);
   if (cards && VF.skeleton) cards.innerHTML = VF.skeleton.claimCards(4);
 
   try {
@@ -1917,19 +1922,17 @@ async function loadReferrals() {
     if (tbody) {
       tbody.innerHTML = refs.length
         ? refs.map(renderReferralRow).join('')
-        : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No referrals yet</td></tr>';
+        : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No referrals yet</td></tr>';
     }
 
     if (cards) {
       cards.innerHTML = refs.length
         ? refs.map((ref) => {
-          const gpa = ref.gpa != null ? `${Number(ref.gpa).toFixed(2)}%` : '-';
           return `<div class="ad-rec-card">
             <div class="ad-rec-name">${ref.first_names} ${ref.surname}</div>
             <div class="ad-rec-sub">${formatLecturerName(ref)} · ${ref.module_code || '-'}</div>
             <div class="ad-rec-grid">
               <div class="item"><div class="k">${qualificationPlain(ref.qualification_level)}</div><div class="l">Qualification</div></div>
-              <div class="item"><div class="k">${gpa}</div><div class="l">Average</div></div>
               <div class="item"><div class="k">${courseShort(ref.course)}</div><div class="l">Programme</div></div>
             </div>
             <div style="margin-top:12px">${referralActions(ref.id, ref.status)}</div>
@@ -2365,13 +2368,23 @@ async function viewAppointmentForm(applicationId, kind) {
   }
 }
 
-async function exportTutorsForHR() {
+async function exportStaffNumbersForHR(positionType) {
+  const role =
+    positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
+  const rolePlural = role === 'demonstrator' ? 'demonstrators' : 'tutors';
   try {
-    const tutors = await VF.apiFetch('/users/tutors');
-    const noStaffNumber = tutors.filter((t) => !t.staff_number);
+    const people = await VF.apiFetch(
+      '/users/tutors?positionType=' + encodeURIComponent(role)
+    );
+    const readyForHr = people.filter(
+      (t) => !t.staff_number && t.offer_accepted_at
+    );
 
-    if (!noStaffNumber.length) {
-      VF.toast('All tutors already have staff numbers', 'ok');
+    if (!readyForHr.length) {
+      VF.toast(
+        'No accepted ' + rolePlural + ' without a staff number to export',
+        'ok'
+      );
       return;
     }
 
@@ -2380,18 +2393,20 @@ async function exportTutorsForHR() {
       'first_names',
       'surname',
       'email',
+      'position_type',
       'qualification_level',
       'module_name',
       'cost_centre',
       'staff_number',
     ].join(',');
 
-    const rows = noStaffNumber.map((t) =>
+    const rows = readyForHr.map((t) =>
       [
         t.student_number || '',
         t.first_names || '',
         t.surname || '',
         t.email || '',
+        t.position_type || role,
         t.qualification_level || '',
         t.module_name || '',
         t.cost_centre || '',
@@ -2406,14 +2421,82 @@ async function exportTutorsForHR() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'VeriFlow_HR_Export_' + new Date().toISOString().slice(0, 10) + '.csv';
+    const kind = role === 'demonstrator' ? 'Demonstrators' : 'Tutors';
+    a.download =
+      'VeriFlow_HR_StaffNumbers_' +
+      kind +
+      '_' +
+      new Date().toISOString().slice(0, 10) +
+      '.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    VF.toast(noStaffNumber.length + ' tutors exported for HR');
+    VF.toast(
+      readyForHr.length +
+        ' accepted ' +
+        rolePlural +
+        ' listed for staff-number return'
+    );
   } catch (err) {
-    VF.toast('Could not export tutors', 'err');
+    VF.toast('Could not export staff-number list', 'err');
+  }
+}
+
+/** @deprecated use exportStaffNumbersForHR */
+async function exportTutorsForHR() {
+  return exportStaffNumbersForHR('tutor');
+}
+
+async function downloadHrPacksZip(positionType) {
+  const token = VF.getToken();
+  if (!token) {
+    VF.toast('Please log in again.', 'err');
+    return;
+  }
+
+  const role =
+    positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
+  const kind = role === 'demonstrator' ? 'Demonstrators' : 'Tutors';
+
+  VF.toast(
+    'Building ' + kind.toLowerCase() + ' HR pack ZIP… this may take a minute',
+    'ok'
+  );
+  try {
+    const qs = '?positionType=' + encodeURIComponent(role);
+    const res = await fetch(VF.API_BASE + '/users/hr-packs.zip' + qs, {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    if (!res.ok) {
+      let msg = 'Could not build HR pack.';
+      try {
+        const data = await res.json();
+        if (data.errors && data.errors[0]) msg = data.errors[0];
+      } catch (_) { /* ignore */ }
+      throw new Error(msg);
+    }
+    const blob = await res.blob();
+    const cd = res.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename="?([^"]+)"?/i);
+    const filename =
+      match?.[1] ||
+      'VeriFlow_HR_Packs_' +
+        kind +
+        '_' +
+        new Date().toISOString().slice(0, 10) +
+        '.zip';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    VF.toast(kind + ' HR pack download started.', 'ok');
+  } catch (err) {
+    VF.toast(err.message || 'Could not download HR pack.', 'err');
   }
 }
 

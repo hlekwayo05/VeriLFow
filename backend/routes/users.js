@@ -26,6 +26,9 @@ const {
 } = require('../services/mailer');
 const { uploadFile } = require('../services/storage');
 const {
+  loadHrDocumentStatus,
+} = require('../services/hrDocuments');
+const {
   validateOnboardingStep1,
   validateOnboardingStep2,
   validateOnboardingDocuments,
@@ -178,12 +181,30 @@ const onboardingStorage = multer.diskStorage({
 });
 
 const onboardingFileFilter = (req, file, cb) => {
-  const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
-  if (allowed.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF or image files are accepted.'), false);
+  const mime = String(file.mimetype || '').toLowerCase();
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const pdfOnly = ['cvFile', 'transcriptFile'];
+
+  const looksPdf =
+    mime === 'application/pdf' ||
+    ((mime === 'application/octet-stream' || mime === '' || mime === 'binary/octet-stream') &&
+      ext === '.pdf') ||
+    ext === '.pdf';
+
+  const looksImage =
+    mime === 'image/jpeg' ||
+    mime === 'image/jpg' ||
+    mime === 'image/png' ||
+    ((mime === 'application/octet-stream' || mime === '') &&
+      ['.jpg', '.jpeg', '.png'].includes(ext));
+
+  if (pdfOnly.includes(file.fieldname)) {
+    if (looksPdf) return cb(null, true);
+    return cb(new Error('CV and academic record must be PDF files.'), false);
   }
+
+  if (looksPdf || looksImage) return cb(null, true);
+  return cb(new Error('Only PDF or image files are accepted.'), false);
 };
 
 const onboardingUpload = multer({
@@ -192,61 +213,160 @@ const onboardingUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+const ONBOARDING_DOC_FIELDS = [
+  { name: 'cvFile', maxCount: 1 },
+  { name: 'transcriptFile', maxCount: 1 },
+  { name: 'id_document', maxCount: 1 },
+  { name: 'tax_proof', maxCount: 1 },
+  { name: 'bank_proof', maxCount: 1 },
+];
+
 function maybeMultipartOnboarding(req, res, next) {
   const ct = req.headers['content-type'] || '';
-  if (ct.includes('multipart/form-data')) {
-    return onboardingUpload.fields([
-      { name: 'id_document', maxCount: 1 },
-      { name: 'tax_proof', maxCount: 1 },
-      { name: 'bank_proof', maxCount: 1 },
-    ])(req, res, next);
+  if (!ct.includes('multipart/form-data')) {
+    return next();
   }
-  return next();
+  return onboardingUpload.fields(ONBOARDING_DOC_FIELDS)(req, res, (err) => {
+    if (err) {
+      console.error('Onboarding upload error:', err.message);
+      const msg =
+        err.code === 'LIMIT_FILE_SIZE'
+          ? 'Each document must be 5MB or smaller.'
+          : err.message ||
+            'Could not upload documents. Use PDF for CV/academic record, and PDF or image for ID/tax/bank.';
+      return res.status(400).json({ errors: [msg] });
+    }
+    return next();
+  });
 }
 
-async function applyOnboardingDocumentUploads(userId, files) {
-  if (!files) return null;
-  const updates = [];
-  const values = [];
-  let idx = 1;
+function safeOriginalFilename(originalname) {
+  const base = path.basename(String(originalname || '').trim());
+  return base ? base.slice(0, 255) : null;
+}
 
-  const docs = [
-    { field: 'id_document', column: 'id_document_filename' },
-    { field: 'tax_proof', column: 'tax_proof_filename' },
-    { field: 'bank_proof', column: 'bank_proof_filename' },
+/**
+ * Persist appointment HR docs for an approved tutor.
+ * Writes into applications (+ users for ID/tax/bank) so HR packs can find them.
+ */
+async function applyAppointmentDocumentUploads(userId, files) {
+  if (!files) return null;
+
+  const fieldMap = [
+    {
+      fields: ['cvFile'],
+      appCol: 'cv_filename',
+      origCol: 'cv_original_name',
+      userCol: null,
+      legacyAppCol: null,
+    },
+    {
+      fields: ['transcriptFile'],
+      appCol: 'transcript_filename',
+      origCol: 'transcript_original_name',
+      userCol: null,
+      legacyAppCol: null,
+    },
+    {
+      fields: ['id_document', 'idFile'],
+      appCol: 'id_filename',
+      origCol: 'id_copy_original_name',
+      userCol: 'id_document_filename',
+      legacyAppCol: 'id_copy_filename',
+    },
+    {
+      fields: ['tax_proof', 'taxFile'],
+      appCol: 'tax_filename',
+      origCol: 'tax_proof_original_name',
+      userCol: 'tax_proof_filename',
+      legacyAppCol: 'tax_proof_filename',
+    },
+    {
+      fields: ['bank_proof', 'bankFile'],
+      appCol: 'bank_filename',
+      origCol: 'bank_proof_original_name',
+      userCol: 'bank_proof_filename',
+      legacyAppCol: 'bank_proof_filename',
+    },
   ];
 
-  for (const { field, column } of docs) {
-    const file = files[field]?.[0];
-    if (!file) continue;
+  const appSets = [];
+  const appVals = [];
+  const userSets = [];
+  const userVals = [];
+  let appIdx = 1;
+  let userIdx = 1;
+  let uploadedAny = false;
 
-    const storagePath = 'onboarding/' + file.filename;
+  for (const spec of fieldMap) {
+    let file = null;
+    for (const name of spec.fields) {
+      if (files[name]?.[0]) {
+        file = files[name][0];
+        break;
+      }
+    }
+    if (!file) continue;
+    uploadedAny = true;
+
+    const storagePath = 'applications/' + file.filename;
     try {
-      await uploadFile(file.path, storagePath, file.mimetype || 'application/octet-stream');
-      console.log(`${field} uploaded to Supabase Storage:`, storagePath);
+      await uploadFile(
+        file.path,
+        storagePath,
+        file.mimetype || 'application/octet-stream'
+      );
     } catch (storageErr) {
       console.error('Storage upload failed:', storageErr.message);
-      // Continue anyway - local file still saved as fallback
     }
 
-    updates.push(`${column} = $${idx++}`);
-    values.push(storagePath);
+    const original = safeOriginalFilename(file.originalname);
+    appSets.push(`${spec.appCol} = $${appIdx++}`);
+    appVals.push(storagePath);
+    if (spec.origCol) {
+      appSets.push(`${spec.origCol} = COALESCE($${appIdx++}, ${spec.origCol})`);
+      appVals.push(original);
+    }
+    if (spec.legacyAppCol && spec.legacyAppCol !== spec.appCol) {
+      appSets.push(
+        `${spec.legacyAppCol} = COALESCE($${appIdx++}, ${spec.legacyAppCol})`
+      );
+      appVals.push(storagePath);
+    }
+    if (spec.userCol) {
+      userSets.push(`${spec.userCol} = $${userIdx++}`);
+      userVals.push(storagePath);
+    }
   }
 
-  if (!updates.length) return null;
+  if (!uploadedAny) return null;
 
-  values.push(userId);
-  await pool.query(
-    `UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $${idx}`,
-    values
-  );
+  if (appSets.length) {
+    appVals.push(userId);
+    await pool.query(
+      `UPDATE applications
+       SET ${appSets.join(', ')}, updated_at = NOW()
+       WHERE user_id = $${appIdx} AND status = 'approved'`,
+      appVals
+    );
+  }
 
-  const result = await pool.query(
-    `SELECT id_document_filename, tax_proof_filename, bank_proof_filename
-     FROM users WHERE id = $1`,
-    [userId]
-  );
-  return result.rows[0] || null;
+  if (userSets.length) {
+    userVals.push(userId);
+    await pool.query(
+      `UPDATE users
+       SET ${userSets.join(', ')}, updated_at = NOW()
+       WHERE id = $${userIdx}`,
+      userVals
+    );
+  }
+
+  return loadHrDocumentStatus(pool, userId);
+}
+
+/** @deprecated alias — ID/tax/bank + CV/transcript for approved tutors */
+async function applyOnboardingDocumentUploads(userId, files) {
+  return applyAppointmentDocumentUploads(userId, files);
 }
 
 
@@ -428,27 +548,54 @@ router.patch(
              account_number  = $4,
              account_holder  = $5,
              tax_number      = $6,
-             step2_complete  = TRUE,
              updated_at      = NOW()
          WHERE user_id = $7`,
         [
-          bank.trim(),
-          String(branch).trim(),
-          acctype.trim(),
-          String(accnum).trim(),
-          accholder.trim(),
-          String(taxnum).replace(/\s/g, ''),
+          String(bank || '').trim(),
+          String(branch || '').trim(),
+          String(acctype || '').trim(),
+          String(accnum || '').replace(/\s/g, '').trim(),
+          String(accholder || '').trim(),
+          String(taxnum || '').replace(/\s/g, '').trim(),
           userId,
         ]
       );
 
       let documents = null;
       try {
-        documents = await applyOnboardingDocumentUploads(userId, req.files);
+        documents = await applyAppointmentDocumentUploads(userId, req.files);
       } catch (docErr) {
-        // Profile is already complete - don't block unlock if optional docs fail
         console.error('Onboarding step2 document upload error:', docErr.message);
+        return res.status(400).json({
+          errors: [docErr.message || 'Could not save documents. Please try again.'],
+        });
       }
+
+      const docStatus =
+        documents || (await loadHrDocumentStatus(pool, userId));
+      if (!docStatus || !docStatus.complete) {
+        const missing = (docStatus && docStatus.missing) || [
+          'CV',
+          'Academic record',
+          'ID copy',
+          'Tax proof',
+          'Banking proof',
+        ];
+        return res.status(400).json({
+          errors: [
+            `Upload all required HR documents before finishing: ${missing.join(', ')}.`,
+          ],
+          missingDocuments: missing,
+          bankingSaved: true,
+        });
+      }
+
+      await pool.query(
+        `UPDATE tutor_profiles
+         SET step2_complete = TRUE, updated_at = NOW()
+         WHERE user_id = $1`,
+        [userId]
+      );
 
       const userRow = await pool.query(
         'SELECT email, first_names, surname FROM users WHERE id = $1',
@@ -469,12 +616,9 @@ router.patch(
         token,
         onboardingComplete:  true,
         applicationStatus:   'approved',
-        documents,
+        documents: docStatus,
       });
-    } /*catch (err) {
-      console.error('Onboarding step2 error:', err.message);
-      return res.status(500).json({ errors: ['Server error.'] });
-    }*/ catch (err) {
+    } catch (err) {
   console.error('Onboarding step2 error:', err.message);
   console.error('  → column:', err.column, '| table:', err.table, '| detail:', err.detail);
   return res.status(500).json({ errors: ['Server error.'] });
@@ -487,37 +631,50 @@ router.post(
   '/me/onboarding/documents',
   authenticate,
   requireRole('tutor'),
-  onboardingUpload.fields([
-    { name: 'id_document', maxCount: 1 },
-    { name: 'tax_proof', maxCount: 1 },
-    { name: 'bank_proof', maxCount: 1 },
-  ]),
+  onboardingUpload.fields(ONBOARDING_DOC_FIELDS),
   validateOnboardingDocuments,
   async (req, res) => {
     const userId = req.user.userId;
 
     try {
-      const files = req.files || {};
-      const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-      const fileFields = ['id_document', 'tax_proof', 'bank_proof'];
+      const appCheck = await pool.query(
+        `SELECT status FROM applications WHERE user_id = $1 AND status = 'approved' LIMIT 1`,
+        [userId]
+      );
+      if (!appCheck.rows.length) {
+        return res.status(403).json({
+          errors: ['Document upload is only available after your appointment is approved.'],
+        });
+      }
 
-      for (const field of fileFields) {
+      const files = req.files || {};
+      const allowedPdf = ['application/pdf'];
+      const allowedAny = ['application/pdf', 'image/jpeg', 'image/png'];
+      const checks = [
+        { field: 'cvFile', allowed: allowedPdf },
+        { field: 'transcriptFile', allowed: allowedPdf },
+        { field: 'id_document', allowed: allowedAny },
+        { field: 'tax_proof', allowed: allowedAny },
+        { field: 'bank_proof', allowed: allowedAny },
+      ];
+
+      for (const { field, allowed } of checks) {
         const file = files[field]?.[0];
         if (!file) continue;
-        const validation = await validateUploadedFile(file, allowedMimeTypes);
+        const validation = await validateUploadedFile(file, allowed);
         if (!validation.valid) {
           return res.status(400).json({ error: 'Invalid file type.' });
         }
       }
 
-      const documents = await applyOnboardingDocumentUploads(userId, req.files);
+      const documents = await applyAppointmentDocumentUploads(userId, req.files);
       if (!documents) {
         return res.status(400).json({ errors: ['No files uploaded.'] });
       }
       return res.status(200).json(documents);
     } catch (err) {
       console.error('Onboarding documents error:', err.message);
-      return res.status(500).json({ errors: ['Server error.'] });
+      return res.status(500).json({ errors: ['Could not save documents.'] });
     }
   }
 );
@@ -981,6 +1138,8 @@ router.get(
            u.cell,
            u.student_number,
            u.staff_number,
+           a.id AS application_id,
+           a.offer_accepted_at,
            a.qualification_level,
            a.module_name,
            a.responsibility_level,
@@ -1289,6 +1448,47 @@ router.post(
     } catch (err) {
       console.error('Staff number import error:', err.message);
       return res.status(500).json({ errors: ['Could not import staff numbers.'] });
+    }
+  }
+);
+
+// GET /api/users/hr-packs.zip — accepted tutors without staff number
+router.get(
+  '/hr-packs.zip',
+  authenticate,
+  requireRole('admin'),
+  async (req, res) => {
+    try {
+      req.setTimeout(15 * 60 * 1000);
+      res.setTimeout(15 * 60 * 1000);
+
+      const idsRaw = String(req.query.applicationIds || '').trim();
+      const applicationIds = idsRaw
+        ? idsRaw
+            .split(',')
+            .map((v) => parseInt(v, 10))
+            .filter((n) => Number.isFinite(n) && n > 0)
+        : undefined;
+      const positionTypeRaw = String(req.query.positionType || '')
+        .trim()
+        .toLowerCase();
+      const positionType =
+        positionTypeRaw === 'demonstrator' || positionTypeRaw === 'tutor'
+          ? positionTypeRaw
+          : undefined;
+
+      const { streamHrPacksZip } = require('../services/hrPacks');
+      await streamHrPacksZip(pool, res, { applicationIds, positionType });
+    } catch (err) {
+      const status = err.status || 500;
+      if (res.headersSent) {
+        console.error('HR pack stream error:', err.message);
+        return res.end();
+      }
+      if (status >= 500) console.error('HR pack error:', err.message);
+      return res.status(status).json({
+        errors: [err.message || 'Could not build HR pack.'],
+      });
     }
   }
 );
