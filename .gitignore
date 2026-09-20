@@ -31,3 +31,7 @@ Thumbs.db
 dist/
 build/
 veriflow.session.sql
+
+# Local writing drafts (not product docs)
+docs/*-draft.md
+docs/SDD-Section4-draft.md

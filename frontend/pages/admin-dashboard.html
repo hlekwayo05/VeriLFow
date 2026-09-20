@@ -1044,7 +1044,7 @@
           <option value="school_of_computing">School of Computing</option>
           <option value="ucdg">UCDG</option>
         </select>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;">
+        <div id="approval-cost-centre-hint" style="font-size:11px;color:var(--muted);margin-top:6px;">
           School of Computing - funded from school budget, approved by Head of School.<br/>
           UCDG - university-wide fund managed by Mr. Machava (Building 10).
         </div>
@@ -1767,6 +1767,10 @@ let pendingApprovalId = null;
 let pendingReferralApprovalId = null;
 let pendingRejectId   = null;
 let pendingReferralRejectId = null;
+let cachedAppSettings = {
+  school_approver_name: 'Prof. Wayi',
+  ucdg_approver_name: 'Mr. Machava',
+};
 
 // Maps backend qualification_level ENUM codes to the friendly
 // labels shown elsewhere in the app (e.g. apply-step2.html).
@@ -1796,9 +1800,23 @@ function positionTypeChip(positionType) {
 }
 
 function formatCostCentre(costCentre) {
-  if (costCentre === 'ucdg') return 'UCDG (Mr. Machava, Building 10)';
-  if (costCentre === 'school_of_computing') return 'School of Computing (Head of School)';
+  const schoolName = cachedAppSettings.school_approver_name || 'Prof. Wayi';
+  const ucdgName = cachedAppSettings.ucdg_approver_name || 'Mr. Machava';
+  if (costCentre === 'ucdg') return `UCDG (${ucdgName}, Building 10)`;
+  if (costCentre === 'school_of_computing') {
+    return `School of Computing (${schoolName})`;
+  }
   return '';
+}
+
+function updateApprovalCostCentreHint() {
+  const hint = document.getElementById('approval-cost-centre-hint');
+  if (!hint) return;
+  const schoolName = cachedAppSettings.school_approver_name || 'Prof. Wayi';
+  const ucdgName = cachedAppSettings.ucdg_approver_name || 'Mr. Machava';
+  hint.innerHTML =
+    `School of Computing - funded from school budget, approved by ${schoolName}.<br/>` +
+    `UCDG - university-wide fund managed by ${ucdgName} (Building 10).`;
 }
 
 function getPreferenceTier(gpa) {
@@ -2098,6 +2116,12 @@ function formatScreeningBlock(app) {
 async function loadSettings() {
   try {
     const s = await VF.apiFetch('/settings');
+    cachedAppSettings = {
+      ...cachedAppSettings,
+      school_approver_name: s.school_approver_name || 'Prof. Wayi',
+      ucdg_approver_name: s.ucdg_approver_name || 'Mr. Machava',
+    };
+    updateApprovalCostCentreHint();
     const kw = document.getElementById('setting-cv-keywords');
     const avg = document.getElementById('setting-min-average');
     const mod = document.getElementById('setting-module-pass');
@@ -2201,6 +2225,12 @@ async function saveSettings() {
         ucdg_approver_name: document.getElementById('setting-ucdg-approver')?.value || '',
       },
     });
+    cachedAppSettings = {
+      ...cachedAppSettings,
+      school_approver_name: s.school_approver_name || 'Prof. Wayi',
+      ucdg_approver_name: s.ucdg_approver_name || 'Mr. Machava',
+    };
+    updateApprovalCostCentreHint();
     const appsOpen = document.getElementById('setting-applications-open');
     if (appsOpen) appsOpen.classList.toggle('on', settingsBool(s.applications_open));
     VF.toast('Settings saved', 'ok');
@@ -2750,6 +2780,7 @@ function openApprovalModal(id) {
   document.getElementById('approval-cost-centre').value = '';
   const costCentreGroup = document.getElementById('approval-cost-centre-group');
   if (costCentreGroup) costCentreGroup.style.display = '';
+  updateApprovalCostCentreHint();
   document.getElementById('approval-pay-rate').textContent = 'Select a responsibility level';
   document.getElementById('approval-pay-breakdown').textContent = 'No responsibility level selected yet.';
   document.getElementById('approval-confirm-btn').disabled = true;
@@ -2768,6 +2799,7 @@ function openReferralApprovalModal(id) {
   document.getElementById('approval-cost-centre').value = '';
   const costCentreGroup = document.getElementById('approval-cost-centre-group');
   if (costCentreGroup) costCentreGroup.style.display = '';
+  updateApprovalCostCentreHint();
   document.getElementById('approval-pay-rate').textContent = 'Select a responsibility level';
   document.getElementById('approval-pay-breakdown').textContent = 'No responsibility level selected yet.';
   document.getElementById('approval-confirm-btn').disabled = true;

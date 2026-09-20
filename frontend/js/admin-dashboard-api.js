@@ -2524,6 +2524,7 @@ async function initAdminApiDashboard() {
       loadDashboardOverview(),
       loadReferrals(),
       loadFlaggedSessions(),
+      (typeof loadSettings === 'function' ? loadSettings() : Promise.resolve()),
     ]);
     if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
   } catch (err) {

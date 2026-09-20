@@ -70,6 +70,8 @@ router.get('/settings-extended', async (req, res) => {
       rate_undergrad: row.rate_undergrad != null ? parseFloat(row.rate_undergrad) : 59.66,
       rate_honours:   row.rate_honours != null ? parseFloat(row.rate_honours) : 73.87,
       rate_masters:   row.rate_masters != null ? parseFloat(row.rate_masters) : 90.92,
+      school_approver_name: row.school_approver_name || 'Prof. Wayi',
+      ucdg_approver_name: row.ucdg_approver_name || 'Mr. Machava',
     });
   } catch (err) {
     console.error('Public settings-extended error:', err.message);

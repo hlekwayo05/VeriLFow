@@ -15,6 +15,13 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.7.1] - 2026-09-20
+
+### Changed
+- Form D refuses to generate when `cost_centre` is missing/invalid (no silent school default); prints human-readable Cost Centre next to Institutional Approval; tutor/admin cost-centre labels use Settings approver names
+
+---
+
 ## [0.7.0] - 2026-09-08
 
 ### Added

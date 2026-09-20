@@ -29,6 +29,10 @@ const MONTH_SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
 
 const SEMESTER_HOURS_DEFAULT = 160;
 let semesterHoursCap = SEMESTER_HOURS_DEFAULT;
+let appointmentApproverSettings = {
+  school_approver_name: 'Prof. Wayi',
+  ucdg_approver_name: 'Mr. Machava',
+};
 
 function getSemesterHoursCap() {
   return semesterHoursCap;
@@ -39,6 +43,12 @@ async function loadSemesterHours() {
     const s = await VF.apiFetch('/public/settings-extended');
     if (s.max_hours_per_semester) {
       semesterHoursCap = Number(s.max_hours_per_semester) || SEMESTER_HOURS_DEFAULT;
+    }
+    if (s.school_approver_name) {
+      appointmentApproverSettings.school_approver_name = s.school_approver_name;
+    }
+    if (s.ucdg_approver_name) {
+      appointmentApproverSettings.ucdg_approver_name = s.ucdg_approver_name;
     }
   } catch (err) {
     semesterHoursCap = SEMESTER_HOURS_DEFAULT;
@@ -2184,14 +2194,26 @@ function closeTutorSidebar() {
 }
 
 function formatCostCentreLabel(costCentre) {
-  if (costCentre === 'ucdg') return 'UCDG (Mr. Machava, Building 10)';
-  if (costCentre === 'school_of_computing') return 'School of Computing (Head of School)';
+  if (costCentre === 'ucdg') {
+    const name = appointmentApproverSettings.ucdg_approver_name || 'Mr. Machava';
+    return `UCDG (${name}, Building 10)`;
+  }
+  if (costCentre === 'school_of_computing') {
+    const name = appointmentApproverSettings.school_approver_name || 'Prof. Wayi';
+    return `School of Computing (${name})`;
+  }
   return 'Not assigned yet';
 }
 
 function costCentreContact(costCentre) {
-  if (costCentre === 'ucdg') return 'Mr. Machava, Building 10';
-  if (costCentre === 'school_of_computing') return 'Head of School, School of Computing';
+  if (costCentre === 'ucdg') {
+    const name = appointmentApproverSettings.ucdg_approver_name || 'Mr. Machava';
+    return `${name}, Building 10`;
+  }
+  if (costCentre === 'school_of_computing') {
+    const name = appointmentApproverSettings.school_approver_name || 'Prof. Wayi';
+    return `${name}, School of Computing`;
+  }
   return 'Contact the Student Employment Office';
 }
 

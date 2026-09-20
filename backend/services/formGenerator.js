@@ -120,9 +120,23 @@ async function generateAppointmentFormD({
       })
     : '-';
 
-  const approver = application.cost_centre === 'ucdg'
-    ? (settings.ucdg_approver_name || 'Mr. Machava')
-    : (settings.school_approver_name || 'Prof. Wayi');
+  const costCentre = String(application.cost_centre || '').trim();
+  const COST_CENTRE_LABELS = {
+    ucdg: 'UCDG',
+    school_of_computing: 'School of Computing',
+  };
+  if (!Object.prototype.hasOwnProperty.call(COST_CENTRE_LABELS, costCentre)) {
+    const err = new Error(
+      `Cannot generate Form D: application ${application.id != null ? application.id : '(unknown)'} has invalid or missing cost_centre`
+    );
+    err.status = 400;
+    throw err;
+  }
+  const costCentreLabel = COST_CENTRE_LABELS[costCentre];
+  const approver =
+    costCentre === 'ucdg'
+      ? (settings.ucdg_approver_name || 'Mr. Machava')
+      : (settings.school_approver_name || 'Prof. Wayi');
 
   const qualDisplay = {
     '3rd_year':         '3rd Year Student',
@@ -436,6 +450,10 @@ Demonstrator</h2>
 <div class="institutional-box">
   <div class="institutional-title">
     Institutional Approval
+  </div>
+  <div class="field-row">
+    <span class="field-label">Cost Centre:</span>
+    <span class="field-value">${costCentreLabel}</span>
   </div>
   <div class="field-row">
     <span class="field-label">Approved by:</span>
