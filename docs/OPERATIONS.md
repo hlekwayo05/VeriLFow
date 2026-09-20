@@ -147,7 +147,9 @@ Current partner deployment:
 
 ### Backend service
 
-- Root / start: `backend` → `npm start` (or `node server.js`)
+- Root Directory: `backend`
+- Build Command: `npm install` (runs `postinstall` → downloads Chrome for Puppeteer into `backend/.cache/puppeteer`)
+- Start Command: `npm start` (or `node server.js`)
 - `NODE_ENV=production`
 - Set all required env vars above
 - Example CORS:
@@ -159,6 +161,8 @@ Current partner deployment:
 
 - Leave `EMAIL_OVERRIDE` empty for real recipient delivery
 - Verify Resend domain before expecting `@ump.ac.za` inbox delivery
+
+**Puppeteer / HR PDFs on Render:** Chrome must be installed at build time. Config is `backend/.puppeteerrc.cjs` (cache under the project so it survives to runtime). After first deploy of this change, use **Manual Deploy → Clear build cache & deploy** once so `npx puppeteer browsers install chrome` actually runs.
 
 ### Frontend service
 
@@ -186,6 +190,7 @@ If the API hostname changes, update those constants and redeploy the frontend.
 
 | Symptom | Likely cause |
 |---------|----------------|
+| HR ZIP / Form D: Could not find Chrome | Puppeteer browser missing on Render - clear build cache & redeploy; confirm Build Command is `npm install` in `backend` |
 | Login fails after wipe | Admin row gone - run `node seed.js` |
 | CORS errors in browser | Origin missing from `CORS_ORIGIN` or trailing slash mismatch |
 | Rate limit / wrong IP bans | `TRUST_PROXY` not set behind Render |

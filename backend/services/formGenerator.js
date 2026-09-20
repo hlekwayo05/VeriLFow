@@ -41,14 +41,23 @@ function resolveHourlyRateDisplay(application) {
   }
 }
 
+function pdfBrowserLaunchOptions() {
+  return {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--font-render-hinting=none',
+    ],
+  };
+}
+
 async function htmlToPdf(html, browser = null, pdfOptions = {}) {
   const ownsBrowser = !browser;
   const activeBrowser =
-    browser ||
-    (await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    }));
+    browser || (await puppeteer.launch(pdfBrowserLaunchOptions()));
 
   try {
     const page = await activeBrowser.newPage();
@@ -70,10 +79,7 @@ async function htmlToPdf(html, browser = null, pdfOptions = {}) {
 }
 
 async function launchPdfBrowser() {
-  return puppeteer.launch({
-    headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
+  return puppeteer.launch(pdfBrowserLaunchOptions());
 }
 
 function appointeeSignatureBlocks(application) {

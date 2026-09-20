@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "postinstall": "npx puppeteer browsers install chrome",
     "db:schema": "node scripts/apply-schema.js",
     "db:modules": "node scripts/seed-modules.js",
     "db:migrate-pending": "node scripts/migrate-pending.js",

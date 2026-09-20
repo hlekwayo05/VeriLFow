@@ -27,6 +27,9 @@ Thumbs.db
 .idea/
 .cursor/
 
+# Puppeteer Chrome cache (installed on deploy / postinstall)
+backend/.cache/
+
 # Build output
 dist/
 build/

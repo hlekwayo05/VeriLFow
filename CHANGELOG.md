@@ -15,6 +15,13 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.7.3] - 2026-09-20
+
+### Fixed
+- Puppeteer Chrome install for Render (HR Form D / Confirmation / ZIP packs): project-local cache via `.puppeteerrc.cjs`, `postinstall` browser download, and Linux-friendly launch flags
+
+---
+
 ## [0.7.2] - 2026-09-20
 
 ### Fixed
