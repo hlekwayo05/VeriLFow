@@ -59,9 +59,11 @@ async function htmlToPdf(html, browser = null, pdfOptions = {}) {
   const activeBrowser =
     browser || (await puppeteer.launch(pdfBrowserLaunchOptions()));
 
+  let page;
   try {
-    const page = await activeBrowser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    page = await activeBrowser.newPage();
+    // Self-contained HTML — avoid networkidle0 (hangs/timeouts on Render).
+    await page.setContent(html, { waitUntil: 'load', timeout: 120000 });
     return await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -74,6 +76,7 @@ async function htmlToPdf(html, browser = null, pdfOptions = {}) {
       ...pdfOptions,
     });
   } finally {
+    if (page) await page.close().catch(() => {});
     if (ownsBrowser) await activeBrowser.close();
   }
 }

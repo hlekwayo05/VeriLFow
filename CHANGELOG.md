@@ -15,6 +15,13 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.7.4] - 2026-09-20
+
+### Fixed
+- HR Form D / Confirmation PDF generation no longer times out on Render (`setContent` uses `load` instead of `networkidle0`, longer timeout, pages closed after each PDF)
+
+---
+
 ## [0.7.3] - 2026-09-20
 
 ### Fixed
