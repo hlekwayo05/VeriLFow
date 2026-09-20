@@ -15,6 +15,13 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.7.2] - 2026-09-20
+
+### Fixed
+- HR pack ZIP download no longer streams a truncated archive (Windows "invalid ZIP"); build completes before send and the admin UI rejects incomplete downloads
+
+---
+
 ## [0.7.1] - 2026-09-20
 
 ### Changed

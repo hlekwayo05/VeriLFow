@@ -76,14 +76,20 @@ function extensionFromName(name, fallback = '.pdf') {
   return fallback;
 }
 
-/** Stable HR pack filenames — ignore unreliable upload original names. */
-async function appendStoredDoc(archive, folder, label, storagePath) {
-  if (!storagePath) return false;
+async function readDocEntry(label, storagePath) {
+  if (!storagePath) {
+    return { ok: false, reason: `no ${label} on file` };
+  }
   const buf = await readStoredFile(storagePath);
-  if (!buf) return false;
+  if (!buf) {
+    return { ok: false, reason: `missing ${label}` };
+  }
   const ext = extensionFromName(storagePath);
-  archive.append(buf, { name: `${folder}/${label}${ext}` });
-  return true;
+  return {
+    ok: true,
+    name: `${label}${ext}`,
+    buffer: buf,
+  };
 }
 
 function csvEscape(value) {
@@ -132,7 +138,45 @@ function buildManifestCsv(rows) {
 }
 
 /**
+ * Build a complete ZIP buffer (do not stream to res mid-build — truncated
+ * responses look like "invalid ZIP" in Windows Explorer).
+ */
+function zipEntriesToBuffer(entries) {
+  return new Promise((resolve, reject) => {
+    const archive = new ZipArchive({ zlib: { level: 9 } });
+    const chunks = [];
+    let settled = false;
+
+    const fail = (err) => {
+      if (settled) return;
+      settled = true;
+      reject(err);
+    };
+
+    archive.on('data', (chunk) => chunks.push(chunk));
+    archive.on('error', fail);
+    archive.on('warning', (err) => {
+      if (err && err.code !== 'ENOENT') console.warn('HR pack zip warning:', err.message);
+    });
+
+    for (const entry of entries) {
+      archive.append(entry.data, { name: entry.name });
+    }
+
+    archive
+      .finalize()
+      .then(() => {
+        if (settled) return;
+        settled = true;
+        resolve(Buffer.concat(chunks));
+      })
+      .catch(fail);
+  });
+}
+
+/**
  * Stream an HR pack ZIP for accepted appointees still missing a staff number.
+ * Builds the archive fully first, then sends bytes (avoids truncated/invalid ZIPs).
  * @param {import('pg').Pool} pool
  * @param {import('express').Response} res
  * @param {{ applicationIds?: number[], positionType?: 'tutor'|'demonstrator' }} [options]
@@ -185,28 +229,10 @@ async function streamHrPacksZip(pool, res, options = {}) {
   const filename = `VeriFlow_HR_Packs_${packKind}_${dateStamp}.zip`;
   const csvName = `VeriFlow_HR_StaffNumbers_${packKind}_${dateStamp}.csv`;
 
-  res.setHeader('Content-Type', 'application/zip');
-  res.setHeader(
-    'Content-Disposition',
-    `attachment; filename="${filename}"`
-  );
-
-  const archive = new ZipArchive({ zlib: { level: 9 } });
-  archive.on('error', (err) => {
-    console.error('HR pack archive error:', err.message);
-    if (!res.headersSent) {
-      res.status(500).json({ errors: ['Could not build HR pack.'] });
-    } else {
-      res.end();
-    }
-  });
-  archive.pipe(res);
-
-  archive.append(buildManifestCsv(rows), { name: csvName });
-
+  const entries = [{ name: csvName, data: buildManifestCsv(rows) }];
   const missingNotes = [];
-  const browser = await launchPdfBrowser();
 
+  const browser = await launchPdfBrowser();
   try {
     for (const row of rows) {
       const folder = packFolderName(row);
@@ -222,8 +248,9 @@ async function streamHrPacksZip(pool, res, options = {}) {
           settings,
           browser,
         });
-        archive.append(Buffer.from(formD), {
+        entries.push({
           name: `${folder}/${names.formD}`,
+          data: Buffer.from(formD),
         });
       } catch (err) {
         missingNotes.push(`${folder}: Form D failed (${err.message})`);
@@ -235,8 +262,9 @@ async function streamHrPacksZip(pool, res, options = {}) {
           settings,
           browser,
         });
-        archive.append(Buffer.from(confirmation), {
+        entries.push({
           name: `${folder}/${names.confirmation}`,
+          data: Buffer.from(confirmation),
         });
       } catch (err) {
         missingNotes.push(
@@ -271,30 +299,42 @@ async function streamHrPacksZip(pool, res, options = {}) {
       ];
 
       for (const doc of docs) {
-        const ok = await appendStoredDoc(
-          archive,
-          folder,
-          doc.label,
-          doc.path
-        );
-        if (!ok && doc.path) {
-          missingNotes.push(`${folder}: missing ${doc.label}`);
-        } else if (!doc.path) {
-          missingNotes.push(`${folder}: no ${doc.label} on file`);
+        const entry = await readDocEntry(doc.label, doc.path);
+        if (entry.ok) {
+          entries.push({
+            name: `${folder}/${entry.name}`,
+            data: entry.buffer,
+          });
+        } else {
+          missingNotes.push(`${folder}: ${entry.reason}`);
         }
       }
     }
   } finally {
-    await browser.close();
+    try {
+      await browser.close();
+    } catch (_) {
+      /* ignore close errors */
+    }
   }
 
   if (missingNotes.length) {
-    archive.append(missingNotes.join('\n') + '\n', {
+    entries.push({
       name: 'MISSING_DOCUMENTS.txt',
+      data: missingNotes.join('\n') + '\n',
     });
   }
 
-  await archive.finalize();
+  const zipBuffer = await zipEntriesToBuffer(entries);
+
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${filename}"`
+  );
+  res.setHeader('Content-Length', String(zipBuffer.length));
+  res.status(200).end(zipBuffer);
+
   return { count: rows.length, roleLabelSingular };
 }
 

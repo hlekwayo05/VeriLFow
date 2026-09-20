@@ -2506,7 +2506,38 @@ async function downloadHrPacksZip(positionType) {
       } catch (_) { /* ignore */ }
       throw new Error(msg);
     }
-    const blob = await res.blob();
+    const ctype = (res.headers.get('Content-Type') || '').toLowerCase();
+    if (ctype.includes('application/json')) {
+      const data = await res.json();
+      throw new Error(
+        (data.errors && data.errors[0]) || 'Could not build HR pack.'
+      );
+    }
+    const buf = await res.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    const isZip =
+      bytes.length >= 4 &&
+      bytes[0] === 0x50 &&
+      bytes[1] === 0x4b &&
+      (bytes[2] === 0x03 || bytes[2] === 0x05 || bytes[2] === 0x07);
+    let hasEocd = false;
+    for (let i = Math.max(0, bytes.length - 22 - 65536); i <= bytes.length - 4; i++) {
+      if (
+        bytes[i] === 0x50 &&
+        bytes[i + 1] === 0x4b &&
+        bytes[i + 2] === 0x05 &&
+        bytes[i + 3] === 0x06
+      ) {
+        hasEocd = true;
+        break;
+      }
+    }
+    if (!isZip || !hasEocd) {
+      throw new Error(
+        'Download was incomplete or not a valid ZIP. Try again (PDF generation can take a minute).'
+      );
+    }
+    const blob = new Blob([buf], { type: 'application/zip' });
     const cd = res.headers.get('Content-Disposition') || '';
     const match = cd.match(/filename="?([^"]+)"?/i);
     const filename =
