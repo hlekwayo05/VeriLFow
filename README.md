@@ -137,7 +137,7 @@ State machines and table relationships are detailed in [docs/ARCHITECTURE.md](do
 - Global + route-specific rate limits (login, register, attendance, uploads, admin actions, …)
 - `express-validator` on auth and other write paths
 - Upload magic-byte checks (`file-type`); authenticated file download with ownership checks
-- Production boot fails if required env vars are missing; warns on weak `JWT_SECRET`
+- Production boot fails if required env vars are missing or `JWT_SECRET` is weak/default
 
 ---
 

@@ -11,7 +11,14 @@ Versions follow chronological project milestones.
 
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
-- Production hardening follow-ups (stronger JWT secrets, email routing)
+- Email routing follow-up (clear production `EMAIL_OVERRIDE` when ready for real recipients)
+
+---
+
+## [0.7.5] - 2026-09-20
+
+### Changed
+- Production boot fails on a weak/default `JWT_SECRET` (still warns only in development); email routing left unchanged for now
 
 ---
 

@@ -51,6 +51,16 @@ function isPrivateLanOrigin(origin) {
   }
 }
 
+function isWeakJwtSecret(value) {
+  const secret = String(value || '');
+  return (
+    !secret ||
+    secret.length < 32 ||
+    /change_this/i.test(secret) ||
+    /(^|[^a-z])secret([^a-z]|$)/i.test(secret)
+  );
+}
+
 function validateEnvironment() {
   const isProduction = process.env.NODE_ENV === 'production';
   const requiredProductionVars = [
@@ -80,6 +90,16 @@ function validateEnvironment() {
     missingProductionVars.forEach((name) => {
       console.warn(`- ${name} is not set. Local development will continue, but production deployment requires it.`);
     });
+  }
+
+  if (isWeakJwtSecret(process.env.JWT_SECRET)) {
+    const message =
+      'JWT_SECRET is weak or default. Use a strong random value (≥32 chars), e.g. openssl rand -hex 32.';
+    if (isProduction) {
+      console.error(`\nStartup configuration error:\n- ${message}`);
+      process.exit(1);
+    }
+    console.warn(`\nStartup configuration warning:\n- ${message}`);
   }
 }
 
@@ -242,18 +262,6 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     );
   } else {
     console.log('  Email: sending to real recipients (production mode)');
-  }
-
-  if (
-    !process.env.JWT_SECRET ||
-    process.env.JWT_SECRET.length < 32 ||
-    process.env.JWT_SECRET.includes('change_this') ||
-    process.env.JWT_SECRET.includes('secret')
-  ) {
-    console.warn(
-      '⚠️  WARNING: JWT_SECRET is weak or default.' +
-      ' Set a strong random secret in .env before deployment.'
-    );
   }
 });
 

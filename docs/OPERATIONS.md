@@ -17,7 +17,7 @@ Boot fails if these are missing when `NODE_ENV=production` (`server.js`):
 | `DATABASE_URL` | Postgres (prefer Supabase **session** pooler, port 5432) |
 | `SUPABASE_URL` | Project URL |
 | `SUPABASE_SERVICE_KEY` | **service_role** key - never the anon key, never ship to the browser |
-| `JWT_SECRET` | ≥32 random characters (`openssl rand -hex 32`) |
+| `JWT_SECRET` | ≥32 random characters (`openssl rand -hex 32`). Production **refuses to start** if missing, shorter than 32, or a weak default (`change_this` / containing `secret`) |
 | `CORS_ORIGIN` | Comma-separated exact origins (no trailing slash) |
 
 ### Strongly recommended
