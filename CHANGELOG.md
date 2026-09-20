@@ -12,6 +12,14 @@ Versions follow chronological project milestones.
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Email routing follow-up (clear production `EMAIL_OVERRIDE` when ready for real recipients)
+- Application process / tutor / lecturer dashboard audits (next phases)
+
+---
+
+## [0.7.6] - 2026-09-20
+
+### Fixed
+- Admin audit remediation: omit temp passwords from API JSON; block referral approve from demoting admin/lecturer; enforce application approve/reject status transitions; halt admin dashboard init when role gate fails; mobile HR ZIP/CSV CTAs; remove dead Flagged investigate controls and decorative System Flags; staff-number import conflict checks + unique index; persist flag resolution notes; rate-limit sensitive admin mutations; stricter settings PATCH validation; generic PDF/ZIP 500 errors; clearer mobile bottom-nav active state
 
 ---
 

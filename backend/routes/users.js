@@ -938,7 +938,7 @@ router.post(
           lecturerId,
           email:      lecturerEmail,
           emailSent,
-          tempPassword,
+          // tempPassword intentionally omitted from response
         });
 
       } catch (txErr) {
@@ -1325,7 +1325,7 @@ router.patch(
         message: 'Password reset successfully.',
         email:   user.email,
         emailSent,
-        tempPassword,
+        // tempPassword intentionally omitted from response
       });
 
     } catch (err) {
@@ -1420,15 +1420,38 @@ router.post(
     if (!updates.length) {
       return res.status(400).json({ errors: ['No staff number updates provided.'] });
     }
+    if (updates.length > 500) {
+      return res.status(400).json({
+        errors: ['Too many rows in one import (max 500). Split the file and try again.'],
+      });
+    }
 
     try {
       let updated = 0;
       const notFound = [];
+      const conflicts = [];
 
       for (const row of updates) {
         const studentNumber = String(row.studentNumber || '').trim();
         const staffNumber = String(row.staffNumber || '').trim();
         if (!studentNumber || !staffNumber) continue;
+
+        const taken = await pool.query(
+          `SELECT student_number FROM users
+           WHERE staff_number = $1
+             AND role = 'tutor'
+             AND student_number IS DISTINCT FROM $2
+           LIMIT 1`,
+          [staffNumber, studentNumber]
+        );
+        if (taken.rows.length > 0) {
+          conflicts.push({
+            studentNumber,
+            staffNumber,
+            heldBy: taken.rows[0].student_number,
+          });
+          continue;
+        }
 
         const result = await pool.query(
           `UPDATE users
@@ -1444,7 +1467,7 @@ router.post(
         }
       }
 
-      return res.status(200).json({ updated, notFound });
+      return res.status(200).json({ updated, notFound, conflicts });
     } catch (err) {
       console.error('Staff number import error:', err.message);
       return res.status(500).json({ errors: ['Could not import staff numbers.'] });
@@ -1455,6 +1478,7 @@ router.post(
 // GET /api/users/hr-packs.zip — accepted tutors without staff number
 router.get(
   '/hr-packs.zip',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -1486,9 +1510,11 @@ router.get(
         return res.end();
       }
       if (status >= 500) console.error('HR pack error:', err.message);
-      return res.status(status).json({
-        errors: [err.message || 'Could not build HR pack.'],
-      });
+      const clientMessage =
+        status >= 500
+          ? 'Could not build HR pack.'
+          : err.message || 'Could not build HR pack.';
+      return res.status(status).json({ errors: [clientMessage] });
     }
   }
 );

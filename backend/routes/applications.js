@@ -4,7 +4,7 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
-const { uploadLimiter } = require('../middleware/rateLimiter');
+const { uploadLimiter, adminActionLimiter } = require('../middleware/rateLimiter');
 const { isApplicationsOpenFromDb } = require('./public');
 const multer       = require('multer');
 const path         = require('path');
@@ -884,6 +884,7 @@ router.get(
 
 router.patch(
   '/:id/under-review',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -917,6 +918,7 @@ router.patch(
 
 router.patch(
   '/:id/shortlist',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -950,6 +952,7 @@ router.patch(
 
 router.patch(
   '/:id/approve',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -971,7 +974,7 @@ router.patch(
     try {
       // Load the full application to validate qualification + find matching lecturer
       const appResult = await pool.query(
-        `SELECT a.qualification_level, a.course, a.module_name, a.position_type,
+        `SELECT a.status, a.qualification_level, a.course, a.module_name, a.position_type,
                 a.user_id, u.email, u.first_names, u.surname
          FROM applications a
          JOIN users u ON u.id = a.user_id
@@ -983,6 +986,11 @@ router.patch(
       }
 
       const app = appResult.rows[0];
+      if (app.status !== 'shortlisted') {
+        return res.status(409).json({
+          errors: ['Application must be shortlisted before it can be approved.'],
+        });
+      }
 
       // Validate the responsibility level is valid for this tutor's qualification
       const { getRateEntry } = require('../constants');
@@ -1013,16 +1021,23 @@ router.patch(
 
       const assignedLecturerId = lecturerResult.rows[0].lecturer_id;
 
-      await pool.query(
+      const updateResult = await pool.query(
         `UPDATE applications
          SET status                = 'approved',
              responsibility_level  = $1,
              assigned_lecturer_id  = $2,
              cost_centre           = $3,
              reviewed_at           = NOW()
-         WHERE id = $4`,
+         WHERE id = $4 AND status = 'shortlisted'
+         RETURNING id`,
         [responsibilityLevel, assignedLecturerId, costCentre, appId]
       );
+
+      if (updateResult.rows.length === 0) {
+        return res.status(409).json({
+          errors: ['Application must be shortlisted before it can be approved.'],
+        });
+      }
 
       const userResult = await pool.query(
         `SELECT user_id FROM applications WHERE id = $1`,
@@ -1065,6 +1080,7 @@ router.patch(
 
 router.patch(
   '/:id/reject',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -1077,7 +1093,7 @@ router.patch(
 
     try {
       const appResult = await pool.query(
-        `SELECT a.module_name, u.email, u.first_names
+        `SELECT a.module_name, a.status, u.email, u.first_names
          FROM applications a
          JOIN users u ON u.id = a.user_id
          WHERE a.id = $1`,
@@ -1087,15 +1103,27 @@ router.patch(
         return res.status(404).json({ errors: ['Application not found.'] });
       }
       const app = appResult.rows[0];
+      if (!['submitted', 'under_review', 'shortlisted'].includes(app.status)) {
+        return res.status(409).json({
+          errors: ['Only submitted, under-review, or shortlisted applications can be rejected.'],
+        });
+      }
 
-      await pool.query(
+      const updateResult = await pool.query(
         `UPDATE applications
          SET status           = 'rejected',
              rejection_reason = $1,
              reviewed_at      = NOW()
-         WHERE id = $2`,
+         WHERE id = $2 AND status IN ('submitted', 'under_review', 'shortlisted')
+         RETURNING id`,
         [reason.trim(), appId]
       );
+
+      if (updateResult.rows.length === 0) {
+        return res.status(409).json({
+          errors: ['Only submitted, under-review, or shortlisted applications can be rejected.'],
+        });
+      }
 
       sendApplicationRejectedEmail({
         studentEmail:     app.email,

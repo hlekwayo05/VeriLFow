@@ -712,15 +712,18 @@ async function confirmResolution() {
   if (!session) return;
   const outcome = document.getElementById('resolve-outcome').value;
   const note = document.getElementById('resolve-note').value.trim();
+  if (!outcome) {
+    showToast('Select a resolution outcome');
+    return;
+  }
   const outcomeLabels = {
     confirmed: 'Session confirmed',
     invalid: 'Session invalid',
     warned: 'Tutor warned',
   };
-  const parts = [];
-  if (outcome) parts.push(outcomeLabels[outcome] || outcome);
+  const parts = [outcomeLabels[outcome] || outcome];
   if (note) parts.push(note);
-  const fullNote = parts.join(' - ') || null;
+  const fullNote = parts.join(' - ');
   try {
     await VF.apiFetch(`/sessions/${activeResolveId}/resolve-flag`, {
       method: 'PATCH',
@@ -736,15 +739,10 @@ async function confirmResolution() {
   }
 }
 
-function sendFlagMessage() {
-  showToast('Open Messages to reply in the tutor-lecturer thread');
+function openMessagesFromFlag() {
   closeFlagModal();
   showPage('messages', document.querySelector('.nav-item[onclick*="messages"]'));
   if (typeof loadMessageThreads === 'function') loadMessageThreads();
-}
-
-function markFlagInvestigating() {
-  showToast('Investigation noted - use Messages to contact the tutor or lecturer');
 }
 
 async function loadDashboardOverview() {
@@ -1941,17 +1939,11 @@ function handleCredentialResult(result, { successMessage, fallbackMessage } = {}
     adToast(successMessage || `Login credentials emailed to ${result.email}`);
     return;
   }
-  if (result.tempPassword) {
-    showCredentialModal(result.email, result.tempPassword);
-    adToast(
-      fallbackMessage || 'Email could not be sent - share the password manually.',
-      !fallbackMessage
-    );
-    return;
-  }
-  if (successMessage) {
-    adToast(successMessage);
-  }
+  adToast(
+    fallbackMessage ||
+      `Account ready for ${result.email || 'user'}, but the credentials email failed. Use Reset password to resend.`,
+    true
+  );
 }
 
 function closeCredentialModal(e) {
@@ -2550,8 +2542,7 @@ window.resolveFlaggedSession = resolveFlaggedSession;
 window.openFlagModal = openFlagModal;
 window.openResolveModal = openResolveModal;
 window.confirmResolution = confirmResolution;
-window.sendFlagMessage = sendFlagMessage;
-window.markFlagInvestigating = markFlagInvestigating;
+window.openMessagesFromFlag = openMessagesFromFlag;
 window.loadDashboardOverview = loadDashboardOverview;
 window.loadAnalysis = loadAnalysis;
 window.loadSupportTickets = loadSupportTickets;

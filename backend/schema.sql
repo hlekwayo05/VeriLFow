@@ -244,6 +244,9 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS id_document_filename TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS tax_proof_filename TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bank_proof_filename TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS staff_number VARCHAR(20);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_staff_number_unique
+  ON users (staff_number)
+  WHERE staff_number IS NOT NULL AND BTRIM(staff_number) <> '';
 
 -- Fast lookup by email (used on every login)
 CREATE INDEX idx_users_email ON users (email);
@@ -588,6 +591,7 @@ CREATE TABLE sessions (
   code_expires_at       TIMESTAMPTZ,
 
   status                session_status NOT NULL DEFAULT 'scheduled',
+  flag_resolution_note  TEXT,
   created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );

@@ -38,7 +38,11 @@ router.get(
       const status = err.status || 500;
       if (status >= 500) console.error('Form D generation error:', err.message);
       return res.status(status).json({
-        errors: [err.message || 'Could not generate form.'],
+        errors: [
+          status >= 500
+            ? 'Could not generate form.'
+            : err.message || 'Could not generate form.',
+        ],
       });
     }
   }
@@ -68,7 +72,11 @@ router.get(
       const status = err.status || 500;
       if (status >= 500) console.error('Confirmation form error:', err.message);
       return res.status(status).json({
-        errors: [err.message || 'Could not generate form.'],
+        errors: [
+          status >= 500
+            ? 'Could not generate form.'
+            : err.message || 'Could not generate form.',
+        ],
       });
     }
   }

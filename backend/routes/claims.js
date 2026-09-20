@@ -16,6 +16,7 @@ const {
 } = require('../validators/claimValidator');
 const { parsePagination, sendList } = require('../utils/pagination');
 const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
+const { adminActionLimiter } = require('../middleware/rateLimiter');
 
 function invalidateClaimCaches() {
   cacheDelPrefix('claims:');
@@ -1033,6 +1034,7 @@ router.patch(
 
 router.patch(
   '/:id/coordinator-approve',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -1086,6 +1088,7 @@ router.patch(
 
 router.patch(
   '/:id/coordinator-return',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   validateClaimNote,

@@ -14,6 +14,7 @@ const {
 const QRCode = require('qrcode');
 const { parsePagination, sendList } = require('../utils/pagination');
 const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
+const { adminActionLimiter } = require('../middleware/rateLimiter');
 
 
 function generateSessionCode() {
@@ -826,13 +827,19 @@ router.patch(
 
 router.patch(
   '/:id/resolve-flag',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
-    const note = req.body.note ? String(req.body.note).trim() : null;
+    const note = req.body.note ? String(req.body.note).trim() : '';
 
     if (!sessionId) return res.status(400).json({ errors: ['Invalid session id.'] });
+    if (!note) {
+      return res.status(400).json({
+        errors: ['Resolution outcome/note is required.'],
+      });
+    }
 
     try {
       const check = await pool.query(
@@ -850,9 +857,10 @@ router.patch(
         `UPDATE sessions
          SET status = 'completed',
              session_code = NULL,
-             code_expires_at = NULL
+             code_expires_at = NULL,
+             flag_resolution_note = $2
          WHERE id = $1`,
-        [sessionId]
+        [sessionId, note]
       );
 
       return res.status(200).json({

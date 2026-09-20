@@ -694,7 +694,7 @@
     gap: 5px;
   }
 
-  body.admin-dash #page-users .tab-pane > div[style*="justify-content"] {
+  body.admin-dash #page-users .tab-pane > .ad-hr-toolbar {
     display: none !important;
   }
 

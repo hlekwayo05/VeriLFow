@@ -3,6 +3,7 @@
 const router       = require('express').Router();
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
+const { adminActionLimiter } = require('../middleware/rateLimiter');
 const { getAppSettings, updateSettings } = require('../services/settings');
 const { sendAnnouncementEmail } = require('../services/mailer');
 
@@ -30,6 +31,38 @@ const ALLOWED_FIELDS = [
   'ucdg_approver_name',
 ];
 
+const STRING_LIMITS = {
+  cv_keywords: 2000,
+  announcement_subject: 200,
+  announcement_body: 5000,
+  director_name: 200,
+  director_title: 200,
+  director_email: 200,
+  school_approver_name: 200,
+  ucdg_approver_name: 200,
+};
+
+const DATE_FIELDS = [
+  'closing_date',
+  'appointment_period_start',
+  'appointment_period_end',
+  'appointment_start_date',
+  'appointment_end_date',
+];
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function asBoolean(value) {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true' || value === '1') return true;
+  if (value === 'false' || value === '0') return false;
+  return null;
+}
+
+function isIsoDate(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value));
+}
+
 router.get('/', authenticate, requireRole('admin'), async (req, res) => {
   try {
     const settings = await getAppSettings();
@@ -40,7 +73,12 @@ router.get('/', authenticate, requireRole('admin'), async (req, res) => {
   }
 });
 
-router.patch('/', authenticate, requireRole('admin'), async (req, res) => {
+router.patch(
+  '/',
+  adminActionLimiter,
+  authenticate,
+  requireRole('admin'),
+  async (req, res) => {
   const updates = {};
   for (const field of ALLOWED_FIELDS) {
     if (req.body[field] !== undefined) updates[field] = req.body[field];
@@ -48,6 +86,14 @@ router.patch('/', authenticate, requireRole('admin'), async (req, res) => {
 
   if (!Object.keys(updates).length) {
     return res.status(400).json({ errors: ['No valid settings provided.'] });
+  }
+
+  if (updates.applications_open !== undefined) {
+    const coerced = asBoolean(updates.applications_open);
+    if (coerced === null) {
+      return res.status(400).json({ errors: ['applications_open must be true or false.'] });
+    }
+    updates.applications_open = coerced;
   }
 
   if (updates.min_average != null) {
@@ -87,11 +133,42 @@ router.patch('/', authenticate, requireRole('admin'), async (req, res) => {
     }
   }
 
+  for (const [field, maxLen] of Object.entries(STRING_LIMITS)) {
+    if (updates[field] == null) continue;
+    const value = String(updates[field]);
+    if (value.length > maxLen) {
+      return res.status(400).json({
+        errors: [`${field} must be at most ${maxLen} characters.`],
+      });
+    }
+    updates[field] = value;
+  }
+
+  if (updates.director_email != null && String(updates.director_email).trim()) {
+    const email = String(updates.director_email).trim();
+    if (!EMAIL_RE.test(email)) {
+      return res.status(400).json({ errors: ['Director email is not valid.'] });
+    }
+    updates.director_email = email;
+  }
+
+  for (const field of DATE_FIELDS) {
+    if (updates[field] === undefined) continue;
+    if (updates[field] === null || updates[field] === '') {
+      updates[field] = null;
+      continue;
+    }
+    if (!isIsoDate(updates[field])) {
+      return res.status(400).json({
+        errors: [`${field} must be a date in YYYY-MM-DD format.`],
+      });
+    }
+  }
+
   try {
     const previous = await getAppSettings();
     const applicationsJustOpened =
-      !previous.applications_open &&
-      (updates.applications_open === true || updates.applications_open === 'true');
+      !previous.applications_open && updates.applications_open === true;
 
     const settings = await updateSettings(updates);
 

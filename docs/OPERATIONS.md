@@ -75,6 +75,14 @@ npm run db:migrate-pending
 - `017_session_tutors_tutor_index.sql`
 - `018_session_cancelled_status.sql`
 - `019_perf_indexes_partition.sql`
+- `020_update_2026_tariff_rates.sql`
+- `021_position_type_cost_centre.sql`
+- `022_document_original_names.sql`
+- `023_password_reset_tokens.sql`
+- `024_hr_docs_appointment_settings.sql`
+- `025_hr_appointment_staff_number.sql`
+- `026_offer_accepted_at.sql`
+- `027_admin_audit_hardening.sql`
 
 When you add a migration that older environments need, append it to that list **and** fold the change into `schema.sql` for greenfield installs.
 

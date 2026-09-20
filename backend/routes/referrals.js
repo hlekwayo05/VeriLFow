@@ -323,14 +323,22 @@ router.patch(
         );
 
         const existingUser = await client.query(
-          `SELECT id, student_number FROM users WHERE LOWER(email) = LOWER($1)`,
+          `SELECT id, student_number, role FROM users WHERE LOWER(email) = LOWER($1)`,
           [referral.email]
         );
 
         const studentNumber = studentNumberFromUmpEmail(referral.email);
 
         if (existingUser.rows.length > 0) {
-          userId = existingUser.rows[0].id;
+          const existing = existingUser.rows[0];
+          if (existing.role === 'admin' || existing.role === 'lecturer') {
+            const conflict = new Error(
+              `Cannot approve referral: ${referral.email} already belongs to a ${existing.role} account.`
+            );
+            conflict.status = 409;
+            throw conflict;
+          }
+          userId = existing.id;
           await client.query(
             `UPDATE users
              SET role = 'tutor',
@@ -484,6 +492,9 @@ router.patch(
       });
 
     } catch (err) {
+      if (err.status === 409) {
+        return res.status(409).json({ errors: [err.message] });
+      }
       console.error('Approve referral error:', err.message);
       return res.status(500).json({ errors: ['Server error.'] });
     }
