@@ -103,49 +103,21 @@ async function userOwnsFilename(userId, basename, storagePath) {
 }
 
 async function lecturerCanAccessFilename(lecturerId, basename, storagePath) {
+  // Teaching docs only (CV / transcript). Bank/tax/ID stay out of lecturer scope.
+  // Assigned tutors only — never grant access merely by shared module_code.
   const result = await pool.query(
     `SELECT 1
      FROM applications a
      WHERE (
          ${fileMatchSql('a.cv_filename', 1)}
          OR ${fileMatchSql('a.transcript_filename', 1)}
-         OR ${fileMatchSql('a.id_copy_filename', 1)}
-         OR ${fileMatchSql('a.tax_proof_filename', 1)}
-         OR ${fileMatchSql('a.bank_proof_filename', 1)}
-         OR ${fileMatchSql('a.id_filename', 1)}
-         OR ${fileMatchSql('a.tax_filename', 1)}
-         OR ${fileMatchSql('a.bank_filename', 1)}
        )
-       AND (
-         a.assigned_lecturer_id = $3
-         OR a.module_code IN (
-           SELECT module_code FROM lecturer_modules WHERE lecturer_id = $3
-         )
-       )
+       AND a.assigned_lecturer_id = $3
+       AND a.status = 'approved'
      LIMIT 1`,
     [basename, storagePath, lecturerId]
   );
-  if (result.rows.length > 0) return true;
-
-  const onboarding = await pool.query(
-    `SELECT 1
-     FROM users u
-     JOIN applications a ON a.user_id = u.id AND a.status = 'approved'
-     WHERE (
-         ${fileMatchSql('u.id_document_filename', 1)}
-         OR ${fileMatchSql('u.tax_proof_filename', 1)}
-         OR ${fileMatchSql('u.bank_proof_filename', 1)}
-       )
-       AND (
-         a.assigned_lecturer_id = $3
-         OR a.module_code IN (
-           SELECT module_code FROM lecturer_modules WHERE lecturer_id = $3
-         )
-       )
-     LIMIT 1`,
-    [basename, storagePath, lecturerId]
-  );
-  return onboarding.rows.length > 0;
+  return result.rows.length > 0;
 }
 
 async function canAccessFile(user, basename, storagePath) {

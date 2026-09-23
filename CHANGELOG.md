@@ -12,7 +12,15 @@ Versions follow chronological project milestones.
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Email routing follow-up (clear production `EMAIL_OVERRIDE` when ready for real recipients)
-- Application process / tutor / lecturer dashboard audits (next phases)
+
+---
+
+## [0.7.7] - 2026-09-23
+
+### Fixed
+- Application process audit remediation: screening fails closed on errors; draft docs resolved from Supabase for submit; `closing_date` enforced via `accepting_applications`; incomplete apps may finish after window close; draft upload rate-limit + magic-byte checks; academic/submit status locks; posting mins validated before academic save; apply steps require tutor role; demonstrator module pass checks; CV keyword word-boundary matching; tighter student-number + qualification validators; UX copy / cache version cleanup
+- Tutor / demonstrator dashboard audit remediation: claim sessions filtered to period + `confirmed_at`; staff-number gate on create/resubmit; pending claims locked (no mid-review update); reject partial session ID lists; disable submit UI without staff number; onboarding pages require tutor role; demonstrator nav/title branding; support ticket thread + reply UX; remove dead lecturer-message modal; enable mobile calendar month nav; profile student-number / SA cell validation
+- Lecturer dashboard audit remediation: assigned-only CV/transcript file access; validate session tutorIds; approve submitted claim lines without silent rewrite; session activate/complete status machine; class-list upsert (no default wipe) + import caps; live session code/QR/register UI; mobile calendar nav; real nav badges; referral list no longer mutates orphans; filter/session/claim UX fixes; claims CSV export; support ticket threads; XSS escapes; message/support body limits
 
 ---
 

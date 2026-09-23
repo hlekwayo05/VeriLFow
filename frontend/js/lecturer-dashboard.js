@@ -149,10 +149,10 @@ function syncLecBottomNav(pageId) {
     dashboard: 'dashboard',
     sessions: 'sessions',
     claims: 'claims',
-    calendar: null,
-    classlist: null,
-    support: null,
-    report: null,
+    calendar: 'sessions',
+    classlist: 'tutors',
+    support: 'dashboard',
+    report: 'dashboard',
     messages: 'messages',
     tutors: 'tutors',
   };
@@ -203,6 +203,8 @@ function updateLecMobileHubNext(sessions) {
   if (heroEl) heroEl.setAttribute('aria-label', aria);
 }
 
+let moduleRefreshSeq = 0;
+
 function switchModule(btn) {
   currentModuleCode = btn.dataset.code;
   currentModuleName = btn.dataset.name || btn.dataset.code;
@@ -216,6 +218,7 @@ function switchModule(btn) {
 
 async function refreshModuleData() {
   if (!currentModuleCode) return;
+  const seq = ++moduleRefreshSeq;
   applyModuleUi();
   // Sessions + tutors + claims + class list count for hub
   await Promise.all([
@@ -224,6 +227,7 @@ async function refreshModuleData() {
     loadClaims(),
     loadClassList(),
   ]);
+  if (seq !== moduleRefreshSeq) return;
   renderModuleReport(Object.values(SESSIONS), moduleTutorPool);
   if (typeof refreshUnreadBadge === 'function') refreshUnreadBadge();
 }
@@ -618,7 +622,7 @@ function formatClaimPeriod(c) {
 function claimUiStatus(status) {
   if (status === 'pending_lecturer') return 'needs-review';
   if (status === 'pending_coordinator') return 'under-review';
-  if (status === 'returned_by_lecturer' || status === 'returned_by_coordinator') return 'rejected';
+  if (status === 'returned_by_lecturer' || status === 'returned_by_coordinator') return 'returned';
   return status;
 }
 
@@ -635,6 +639,18 @@ function claimStatusTag(status) {
 function formatClaimAmount(amount) {
   if (amount == null) return '-';
   return 'R' + Number(amount).toLocaleString('en-ZA');
+}
+
+function setClaimsBadge(pendingCount) {
+  const el = document.getElementById('claims-badge');
+  if (!el) return;
+  if (pendingCount > 0) {
+    el.hidden = false;
+    el.textContent = String(pendingCount);
+  } else {
+    el.hidden = true;
+    el.textContent = '0';
+  }
 }
 
 function formatClaimReviewDate(iso) {
@@ -679,21 +695,17 @@ function lecStepIcon(state) {
 }
 
 function lecApprovalStep(role, subtitle, state, date, note, isLast) {
-  const noteHtml = note ? `<div class="at-note">${note}</div>` : '';
-  const dateHtml = date ? `<div class="at-date">${date}</div>` : '';
+  const noteHtml = note ? `<div class="at-note">${escapeHtml(note)}</div>` : '';
+  const dateHtml = date ? `<div class="at-date">${escapeHtml(date)}</div>` : '';
   return `<div class="at-step at-step--${state}${isLast ? ' at-step--last' : ''}">
     <div class="at-rail">
       <div class="at-dot at-dot--${state}">${lecStepIcon(state)}</div>
       ${isLast ? '' : `<div class="at-line at-line--${state === 'approved' ? 'done' : 'idle'}"></div>`}
     </div>
     <div class="at-body">
-      <div class="at-head">
-        <div class="at-role">${role}</div>
-        <span class="at-badge at-badge--${state}">${lecStepBadge(state)}</span>
-      </div>
-      ${subtitle ? `<div class="at-sub">${subtitle}</div>` : ''}
-      ${dateHtml}
-      ${noteHtml}
+      <div class="at-role">${escapeHtml(role)} <span class="at-badge at-badge--${state}">${lecStepBadge(state)}</span></div>
+      <div class="at-sub">${escapeHtml(subtitle || '')}</div>
+      ${dateHtml}${noteHtml}
     </div>
   </div>`;
 }
@@ -750,10 +762,12 @@ function renderDashboardClaimApprovals(claims) {
   wrap.innerHTML = pending.slice(0, 2).map((c, i) => {
     const last = i === Math.min(pending.length, 2) - 1 ? ' style="border-bottom:none;padding-bottom:0;"' : '';
     const dot = 'new';
-    return `<div class="approval-item"${last}>
+    const name = escapeHtml(tutorShortName(c.tutor_first_names, c.tutor_surname));
+    const mod = escapeHtml(c.module_code || currentModuleCode || '-');
+    return `<div class="approval-item" role="button" tabindex="0" onclick="openClaimDetail(${c.id})" onkeydown="if(event.key==='Enter')openClaimDetail(${c.id})"${last}>
       <div class="appr-dot ${dot}"></div>
       <div class="appr-info">
-        <div class="appr-name">${tutorShortName(c.tutor_first_names, c.tutor_surname)} - ${c.module_code || currentModuleCode || '-'} · ${formatClaimPeriod(c)}</div>
+        <div class="appr-name">${name} - ${mod} · ${formatClaimPeriod(c)}</div>
         <div class="appr-sub">${Number(c.total_hours || 0)} hrs · Submitted ${c.submitted_at ? new Date(c.submitted_at).toLocaleDateString('en-ZA') : '-'}</div>
       </div>
       <div style="text-align:right;">
@@ -826,8 +840,7 @@ function updateClaimsStats(claims) {
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  setText('#pending-count', String(pending.length));
-  setText('#claims-badge', pending.length ? String(pending.length) : '');
+  setClaimsBadge(pending.length);
   setText('#lec-hub-claims-sub', pending.length ? `${pending.length} to review` : 'Approvals');
 
   setText('#claims-hero-sem', `${MONTH_SHORT[month]} ${year}`);
@@ -940,15 +953,31 @@ function parseTutorNames(namesStr) {
 }
 
 function formatSessionDateParts(s) {
-  if (!s.session_date) return { date: '-', time: '-' };
+  if (!s.session_date) return { date: '-', time: '-', durationLabel: '-' };
   const d = new Date(s.session_date);
   const date = d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
-  if (!s.start_time) return { date, time: '-' };
+  if (!s.start_time) return { date, time: '-', durationLabel: '-' };
   const start = String(s.start_time).slice(0, 5);
-  const [h, m] = start.split(':').map(Number);
-  const endH = (h + 2) % 24;
-  const end = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  return { date, time: `${start} - ${end}` };
+  let end = s.end_time ? String(s.end_time).slice(0, 5) : null;
+  if (!end) {
+    const [h, m] = start.split(':').map(Number);
+    const add = s.session_type === 'practical' ? 3 : 2;
+    const endH = (h + add) % 24;
+    end = `${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  }
+  const startMins = (() => {
+    const [h, m] = start.split(':').map(Number);
+    return h * 60 + m;
+  })();
+  const endMins = (() => {
+    const [h, m] = end.split(':').map(Number);
+    return h * 60 + m;
+  })();
+  let durMins = endMins - startMins;
+  if (durMins < 0) durMins += 24 * 60;
+  const hours = Math.round((durMins / 60) * 10) / 10;
+  const durationLabel = `${hours} hr${hours === 1 ? '' : 's'}`;
+  return { date, time: `${start} - ${end}`, durationLabel };
 }
 
 function isSessionToday(s) {
@@ -998,7 +1027,12 @@ function sessionActionButton(s) {
     actions.push(`<button type="button" class="sess-act-btn activate lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); activateSession(${s.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg> Activate</button>`);
   }
   if (s.status === 'active') {
+    actions.push(`<button type="button" class="sess-act-btn activate" onclick="event.stopPropagation(); openLiveSessionPanel(${s.id})">Code / QR</button>`);
+    actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openRegister(${s.id})">Register</button>`);
     actions.push(`<button type="button" class="sess-act-btn end lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); endSession(${s.id})">■ End Session</button>`);
+  }
+  if (s.status === 'completed' || s.status === 'flagged') {
+    actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openRegister(${s.id})">Register</button>`);
   }
   if (s.status === 'scheduled' || s.status === 'active') {
     actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openPostponeSession(${s.id})">Postpone</button>`);
@@ -1024,38 +1058,41 @@ function renderSessionRows(sessions) {
   }
 
   container.innerHTML = sessions.map(s => {
-    const { date, time } = formatSessionDateParts(s);
+    const { date, time, durationLabel } = formatSessionDateParts(s);
     const metrics = getTutorMetrics(s);
     const badge = sessionStatusBadge(s);
     const warnCount = metrics.assignedCount === 0
       || (metrics.confirmedCount < metrics.assignedCount);
     const avatars = metrics.assigned.length
-      ? metrics.assigned.slice(0, 3).map(t => `<div class="s-av">${t.initials}</div>`).join('')
+      ? metrics.assigned.slice(0, 3).map(t => `<div class="s-av">${escapeHtml(t.initials)}</div>`).join('')
       : '<div class="s-av">-</div>';
     const countLabel = metrics.assignedCount
       ? `${metrics.confirmedCount} / ${metrics.assignedCount}`
       : '0 / 0';
     const liveClass = s.status === 'active' ? ' is-live' : '';
-    const title = (s.topic || `${s.module_code} - ${sessionTypeDisplay(s.session_type)}`).replace(/</g, '&lt;');
-    const desc = `${date} · ${time}`.replace(/</g, '&lt;');
-    const due = (time || '-').replace(/</g, '&lt;');
-    const typeLabel = `${sessionTypeDisplay(s.session_type)} Session`.replace(/</g, '&lt;');
+    const title = escapeHtml(s.topic || `${s.module_code} - ${sessionTypeDisplay(s.session_type)}`);
+    const desc = escapeHtml(`${date} · ${time}`);
+    const due = escapeHtml(time || '-');
+    const typeLabel = escapeHtml(`${sessionTypeDisplay(s.session_type)} Session`);
     const awaitLabel = metrics.assignedCount
       ? (metrics.confirmedCount < metrics.assignedCount
           ? `Awaiting ${metrics.assignedCount - metrics.confirmedCount}`
           : 'Confirmed')
       : 'No tutors';
+    const codeHint = s.status === 'active' && s.session_code
+      ? `<div class="s-module">Code: <strong>${escapeHtml(s.session_code)}</strong></div>`
+      : `<div class="s-module">${escapeHtml(s.topic || '-')}</div>`;
 
     return `
       <div class="session-row${liveClass}" id="sess-${s.id}" data-type="${sessionFilterType(s.status)}" onclick="openSessionDetail(${s.id})">
         <div class="session-row-desktop">
           <div>
-            <div class="s-date">${date}</div>
-            <div class="s-time">${time}</div>
+            <div class="s-date">${escapeHtml(date)}</div>
+            <div class="s-time">${escapeHtml(time)}</div>
           </div>
           <div>
-            <div class="s-title">${s.module_code} - ${sessionTypeDisplay(s.session_type)}</div>
-            <div class="s-module">${s.topic || '-'}</div>
+            <div class="s-title">${escapeHtml(s.module_code)} - ${escapeHtml(sessionTypeDisplay(s.session_type))}</div>
+            ${codeHint}
           </div>
           <div>
             <div class="s-tutors-label">${metrics.label}</div>
@@ -1067,7 +1104,7 @@ function renderSessionRows(sessions) {
               </div>
             </div>
           </div>
-          <div class="s-dur">2 hrs</div>
+          <div class="s-dur">${escapeHtml(durationLabel)}</div>
           <div><span class="status-chip ${badge.cls}" id="sess-${s.id}-status">${badge.text}</span></div>
           <div class="sess-actions">${sessionActionButton(s)}</div>
         </div>
@@ -1075,7 +1112,7 @@ function renderSessionRows(sessions) {
           <div class="vf-sess-card-top">
             <div class="vf-sess-card-copy">
               <h3 class="vf-sess-card-title">${title}</h3>
-              <p class="vf-sess-card-desc">${desc}</p>
+              <p class="vf-sess-card-desc">${desc}${s.status === 'active' && s.session_code ? ` · Code ${escapeHtml(s.session_code)}` : ''}</p>
             </div>
             <div class="vf-sess-confirm">
               <span class="vf-sess-confirm-label">Confirm tutors</span>
@@ -1095,26 +1132,42 @@ function renderSessionRows(sessions) {
 }
 
 async function activateSession(id) {
+  const btn = document.getElementById(`sess-${id}-act`);
+  if (btn) btn.disabled = true;
   try {
     const result = await VF.apiFetch(`/sessions/${id}/activate`, { method: 'PATCH' });
-    SESSIONS[id] = { ...SESSIONS[id], status: 'active', session_code: result.sessionCode };
-    showToast('Session activated - code: ' + result.sessionCode);
+    SESSIONS[id] = {
+      ...SESSIONS[id],
+      status: 'active',
+      session_code: result.sessionCode,
+      code_expires_at: result.codeExpiresAt || null,
+    };
     renderSessionRows(Object.values(SESSIONS));
     renderTodayCard(Object.values(SESSIONS));
+    await openLiveSessionPanel(id);
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not activate session');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
 async function endSession(id) {
+  const btn = document.getElementById(`sess-${id}-act`);
+  if (btn) btn.disabled = true;
   try {
-    await VF.apiFetch(`/sessions/${id}/complete`, { method: 'PATCH' });
-    SESSIONS[id] = { ...SESSIONS[id], status: 'completed', session_code: null };
-    showToast('Session ended - moved to Past');
+    const result = await VF.apiFetch(`/sessions/${id}/complete`, { method: 'PATCH' });
+    const status = result.status || 'completed';
+    SESSIONS[id] = { ...SESSIONS[id], status, session_code: null };
+    showToast(status === 'flagged'
+      ? 'Session flagged — no tutor confirmed availability'
+      : 'Session ended - moved to Past');
     renderSessionRows(Object.values(SESSIONS));
     renderTodayCard(Object.values(SESSIONS));
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not end session');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -1249,7 +1302,7 @@ window.closePostponeSession = closePostponeSession;
 window.submitPostponeSession = submitPostponeSession;
 
 function filterSessions(type, btn) {
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#view-sessions .filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const all = Object.values(SESSIONS);
   let filtered;
@@ -1261,11 +1314,78 @@ function filterSessions(type, btn) {
   renderSessionRows(filtered);
 }
 
+let liveSessionId = null;
+
+async function openLiveSessionPanel(id) {
+  const s = SESSIONS[id];
+  if (!s) return;
+  liveSessionId = id;
+  const overlay = document.getElementById('live-session-overlay');
+  const title = document.getElementById('live-session-title');
+  const codeEl = document.getElementById('live-session-code');
+  const hint = document.getElementById('live-session-hint');
+  const qrImg = document.getElementById('live-session-qr');
+  const qrFallback = document.getElementById('live-session-qr-fallback');
+  if (title) title.textContent = s.topic || s.module_code || 'Live session';
+  if (codeEl) codeEl.textContent = s.session_code || '------';
+  if (hint) {
+    hint.textContent = s.code_expires_at
+      ? `Code expires ${new Date(s.code_expires_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}.`
+      : 'Students use this code or scan the QR to sign in.';
+  }
+  if (qrImg) {
+    qrImg.hidden = true;
+    qrImg.removeAttribute('src');
+  }
+  if (qrFallback) {
+    qrFallback.hidden = false;
+    qrFallback.textContent = 'Loading QR…';
+  }
+  overlay?.classList.add('open');
+
+  try {
+    const qr = await VF.apiFetch(`/sessions/${id}/qr`);
+    if (qr?.qrDataUrl && qrImg) {
+      qrImg.src = qr.qrDataUrl;
+      qrImg.hidden = false;
+      if (qrFallback) qrFallback.hidden = true;
+    } else if (qr?.attendanceUrl && qrImg) {
+      // Fallback: some responses may only return URL — still show code.
+      if (qrFallback) qrFallback.textContent = 'QR ready — use code above if image missing.';
+    } else if (qrFallback) {
+      qrFallback.textContent = s.session_code
+        ? `Use code ${s.session_code}`
+        : 'QR unavailable';
+    }
+  } catch (err) {
+    if (qrFallback) {
+      qrFallback.textContent = err.errors?.[0] || 'Could not load QR — code still works';
+    }
+  }
+}
+
+function closeLiveSessionPanel(e) {
+  if (e && e.target !== document.getElementById('live-session-overlay')) return;
+  document.getElementById('live-session-overlay')?.classList.remove('open');
+  liveSessionId = null;
+}
+
+function openLiveSessionRegister() {
+  if (liveSessionId) openRegister(liveSessionId);
+}
+
 function openSessionDetail(id) {
   const s = SESSIONS[id];
   if (!s) return;
-  showToast('Session: ' + (s.topic || s.module_code));
-  // Full detail modal can be built later - for now just a toast
+  if (s.status === 'active') {
+    openLiveSessionPanel(id);
+    return;
+  }
+  if (s.status === 'completed' || s.status === 'flagged') {
+    openRegister(id);
+    return;
+  }
+  showToast(`${s.topic || s.module_code || 'Session'} · ${sessionStatusBadge(s).text}`);
 }
 
 let nsPrefilledDate = null;
@@ -1473,7 +1593,7 @@ const NS_MONTHS = ['January','February','March','April','May','June','July','Aug
 function isoToDisplayDate(iso) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
   const [y, m, d] = iso.split('-');
-  return `${m}/${d}/${y}`;
+  return `${d}/${m}/${y}`;
 }
 function setNsDateValue(iso) {
   const hidden = document.getElementById('ns-date');
@@ -1629,6 +1749,9 @@ async function createSession() {
     .map(r => parseInt(r.dataset.tutor))
     .filter(Boolean);
 
+  const submitBtn = document.getElementById('ns-create-btn') || document.querySelector('#ns-overlay .btn-primary');
+  if (submitBtn) submitBtn.disabled = true;
+
   try {
     await VF.apiFetch('/sessions', {
       method: 'POST',
@@ -1647,7 +1770,9 @@ async function createSession() {
     loadSessions();
     showToast('Session created - ' + topic);
   } catch (err) {
-    showToast('Could not create session');
+    showToast(err.errors ? err.errors[0] : 'Could not create session');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -1842,6 +1967,8 @@ function filterClaims(status, btn) {
 }
 
 async function verifyAndForwardClaim(claimId) {
+  const btn = document.querySelector('#cd-footer .cl-btn.approve, #cd-footer .btn-primary');
+  if (btn) btn.disabled = true;
   try {
     await VF.apiFetch(`/claims/${claimId}/lecturer-approve`, { method: 'PATCH', body: {} });
     showToast('Claim forwarded to coordinator');
@@ -1849,6 +1976,8 @@ async function verifyAndForwardClaim(claimId) {
     await loadLecturerClaims();
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not forward claim');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -1915,9 +2044,46 @@ async function confirmReturnClaim() {
 
 function updatePendingCount() {
   const pending = LECTURER_CLAIMS.filter(c => c.status === 'pending_lecturer').length;
-  setText('#pending-count', String(pending));
-  setText('#claims-badge', pending ? String(pending) : '');
+  setClaimsBadge(pending);
   setText('#lec-hub-claims-sub', pending ? `${pending} to review` : 'Approvals');
+}
+
+function exportLecturerClaimsCsv() {
+  const claims = Array.isArray(LECTURER_CLAIMS) ? LECTURER_CLAIMS : [];
+  if (!claims.length) {
+    showToast('No claims to export for this module');
+    return;
+  }
+  const headers = [
+    'id', 'tutor', 'module', 'period_month', 'period_year',
+    'total_hours', 'total_amount', 'status', 'submitted_at',
+  ];
+  const rows = claims.map((c) => [
+    c.id,
+    `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim(),
+    c.module_code || '',
+    c.period_month,
+    c.period_year,
+    c.total_hours,
+    c.total_amount,
+    c.status,
+    c.submitted_at || '',
+  ]);
+  const escapeCell = (v) => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = [headers.join(','), ...rows.map((r) => r.map(escapeCell).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `VeriFlow_Claims_${currentModuleCode || 'module'}_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Claims exported');
 }
 
 const RESP_DISPLAY = {
@@ -2302,19 +2468,103 @@ function renderLecturerTickets(tickets) {
     const date = t.created_at
       ? new Date(t.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
       : '-';
-    const details = String(t.details || '-').replace(/</g, '&lt;');
-    const subject = String(t.subject || '-').replace(/</g, '&lt;');
-    return `<div class="lec-ticket-card">
+    const details = escapeHtml(t.details || '-');
+    const subject = escapeHtml(t.subject || '-');
+    const replies = t.reply_count
+      ? `${t.reply_count} repl${t.reply_count === 1 ? 'y' : 'ies'}`
+      : null;
+    const sub = [t.priority ? `${escapeHtml(t.priority)} priority` : null, date, replies]
+      .filter(Boolean)
+      .join(' · ');
+    return `<div class="lec-ticket-card" role="button" tabindex="0" onclick="openLecturerTicketDetail(${t.id})" onkeydown="if(event.key==='Enter')openLecturerTicketDetail(${t.id})">
       <div class="lec-ticket-top">
         <div>
           <div class="lec-ticket-title">#${t.id} · ${subject}</div>
-          <div class="lec-ticket-sub">${t.priority} priority · ${date}</div>
+          <div class="lec-ticket-sub">${sub}</div>
         </div>
         <span class="lec-ticket-status ${statusCls}">${statusLabel}</span>
       </div>
       <div class="lec-ticket-body">${details}</div>
     </div>`;
   }).join('');
+}
+
+let activeLecTicketId = null;
+let activeLecTicketCache = null;
+
+function renderLecTicketThread(replies, containerEl) {
+  if (!containerEl) return;
+  if (!replies || !replies.length) {
+    containerEl.innerHTML = '<div class="lec-ticket-thread-empty">No replies yet.</div>';
+    return;
+  }
+  containerEl.innerHTML = replies.map((r) => {
+    const mine = r.author_role === 'lecturer';
+    const meta = `${escapeHtml(r.author_name || r.author_role || '-')} · ${
+      r.created_at
+        ? new Date(r.created_at).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        : '-'
+    }`;
+    return `<div class="lec-thread-msg${mine ? ' mine' : ''}">
+      <div class="lec-thread-meta">${meta}</div>
+      <div class="lec-thread-bubble">${escapeHtml(r.message)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function openLecturerTicketDetail(ticketId) {
+  try {
+    const ticket = await VF.apiFetch(`/support/tickets/${ticketId}`);
+    activeLecTicketId = ticketId;
+    activeLecTicketCache = ticket;
+    setText('#lec-ticket-detail-title', `Ticket #${ticket.id}`);
+    setText('#lec-ticket-detail-subject', ticket.subject || '-');
+    const detailsEl = document.getElementById('lec-ticket-detail-details');
+    if (detailsEl) detailsEl.textContent = ticket.details || '';
+    renderLecTicketThread(ticket.replies, document.getElementById('lec-ticket-detail-thread'));
+    const replyWrap = document.getElementById('lec-ticket-detail-reply-wrap');
+    if (replyWrap) replyWrap.hidden = ticket.status === 'resolved';
+    const msg = document.getElementById('lec-ticket-detail-message');
+    if (msg) msg.value = '';
+    document.getElementById('lec-ticket-detail-overlay')?.classList.add('open');
+  } catch (err) {
+    showToast(err.errors ? err.errors[0] : 'Could not open ticket');
+  }
+}
+
+function closeLecturerTicketDetail(e) {
+  if (e && e.target !== document.getElementById('lec-ticket-detail-overlay')) return;
+  document.getElementById('lec-ticket-detail-overlay')?.classList.remove('open');
+  activeLecTicketId = null;
+  activeLecTicketCache = null;
+}
+
+async function sendLecturerTicketReply() {
+  if (!activeLecTicketId) return;
+  const message = document.getElementById('lec-ticket-detail-message')?.value.trim();
+  if (!message) {
+    document.getElementById('lec-ticket-detail-message')?.focus();
+    return;
+  }
+  const btn = document.getElementById('lec-ticket-detail-send-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const reply = await VF.apiFetch(`/support/tickets/${activeLecTicketId}/reply`, {
+      method: 'POST',
+      body: { message },
+    });
+    if (!activeLecTicketCache) activeLecTicketCache = { replies: [] };
+    if (!activeLecTicketCache.replies) activeLecTicketCache.replies = [];
+    activeLecTicketCache.replies.push(reply);
+    renderLecTicketThread(activeLecTicketCache.replies, document.getElementById('lec-ticket-detail-thread'));
+    document.getElementById('lec-ticket-detail-message').value = '';
+    showToast('Reply sent');
+    loadLecturerTickets();
+  } catch (err) {
+    showToast(err.errors ? err.errors[0] : 'Could not send reply');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function openLecturerTicketModal() {
@@ -2360,6 +2610,13 @@ window.loadLecturerTickets = loadLecturerTickets;
 window.openLecturerTicketModal = openLecturerTicketModal;
 window.closeLecturerTicketModal = closeLecturerTicketModal;
 window.submitLecturerTicket = submitLecturerTicket;
+window.openLecturerTicketDetail = openLecturerTicketDetail;
+window.closeLecturerTicketDetail = closeLecturerTicketDetail;
+window.sendLecturerTicketReply = sendLecturerTicketReply;
+window.openLiveSessionPanel = openLiveSessionPanel;
+window.closeLiveSessionPanel = closeLiveSessionPanel;
+window.openLiveSessionRegister = openLiveSessionRegister;
+window.exportLecturerClaimsCsv = exportLecturerClaimsCsv;
 
 /* TOAST */
 let toastTmt;
@@ -2891,12 +3148,12 @@ function sessionToCalType(status) {
   if (status === 'active') return 'today';
   if (status === 'flagged') return 'flagged';
   if (status === 'completed') return 'confirmed';
-  if (status === 'cancelled') return 'confirmed';
+  if (status === 'cancelled') return 'cancelled';
   return 'upcoming';
 }
 
 function calTypePriority(type) {
-  return ({ today: 4, flagged: 3, confirmed: 2, upcoming: 1 })[type] || 0;
+  return ({ today: 4, flagged: 3, confirmed: 2, upcoming: 1, cancelled: 0 })[type] || 0;
 }
 
 function sessionToLecCalEvent(s) {
@@ -3063,7 +3320,7 @@ function buildCalGrid() {
   if (!grid) return;
   grid.innerHTML = '';
   const titleEl = document.getElementById('cal-month-title');
-  if (titleEl) titleEl.textContent = monthNames[calMonth];
+  if (titleEl) titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
 
   const firstDay = new Date(calYear, calMonth, 1).getDay();
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();

@@ -22,12 +22,47 @@ const {
 } = require('../services/mailer');
 const { screenApplication } = require('../services/documentScanner');
 const { getSettings } = require('../services/settings');
-const { uploadFile } = require('../services/storage');
+const { uploadFile, readStoredFile } = require('../services/storage');
 const { validateUploadedFile } = require('../utils/fileValidation');
 const { validateAcademicSave, validateSubmitApplication } = require('../validators/applicationValidator');
 
 const UPLOAD_TMP_DIR = path.join(os.tmpdir(), 'veriflow-uploads');
 fs.mkdirSync(UPLOAD_TMP_DIR, { recursive: true });
+
+/** Open window, or tutor already has an incomplete application (may finish after close). */
+async function tutorMayEditIncompleteApplication(userId) {
+  if (await isApplicationsOpenFromDb()) return true;
+  const result = await pool.query(
+    `SELECT 1 FROM applications
+     WHERE user_id = $1 AND status = 'incomplete'
+     LIMIT 1`,
+    [userId]
+  );
+  return result.rows.length > 0;
+}
+
+async function materializeStoredDoc(storedPath) {
+  const buf = await readStoredFile(storedPath);
+  if (!buf) return null;
+  const base = path.basename(String(storedPath));
+  const tmp = path.join(
+    UPLOAD_TMP_DIR,
+    `screen_${Date.now()}_${base.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+  );
+  fs.writeFileSync(tmp, buf);
+  return tmp;
+}
+
+function cleanupTempFiles(paths) {
+  for (const p of paths) {
+    if (!p) continue;
+    try {
+      if (fs.existsSync(p)) fs.unlinkSync(p);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -115,13 +150,14 @@ const DOC_FIELDS = [
 
 router.post(
   '/me/documents',
+  uploadLimiter,
   authenticate,
   requireRole('tutor'),
   multerFields(DOC_FIELDS.map((d) => ({ name: d.form, maxCount: 1 }))),
   async (req, res) => {
     const userId = req.user.userId;
 
-    if (!(await isApplicationsOpenFromDb())) {
+    if (!(await tutorMayEditIncompleteApplication(userId))) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
 
@@ -133,6 +169,20 @@ router.post(
     }
 
     try {
+      for (const d of uploaded) {
+        const file = req.files[d.form][0];
+        const allowed =
+          d.form === 'cvFile' || d.form === 'transcriptFile'
+            ? ['application/pdf']
+            : ['application/pdf', 'image/jpeg', 'image/png'];
+        const validation = await validateUploadedFile(file, allowed);
+        if (!validation.valid) {
+          return res.status(400).json({
+            errors: [`${d.form} failed validation. Upload a valid PDF or image.`],
+          });
+        }
+      }
+
       const appResult = await pool.query(
         `SELECT id, status,
                 cv_filename, transcript_filename,
@@ -180,7 +230,7 @@ router.post(
         if (d.userCol) userSync[d.userCol] = storagePath;
       }
 
-      await pool.query(
+      const updateResult = await pool.query(
         `UPDATE applications
          SET cv_filename = $1::varchar,
              transcript_filename = $2::varchar,
@@ -195,7 +245,8 @@ router.post(
              id_copy_original_name = COALESCE($8::varchar, id_copy_original_name),
              tax_proof_original_name = COALESCE($9::varchar, tax_proof_original_name),
              bank_proof_original_name = COALESCE($10::varchar, bank_proof_original_name)
-         WHERE user_id = $11 AND status = 'incomplete'`,
+         WHERE user_id = $11 AND status = 'incomplete'
+         RETURNING id`,
         [
           next.cv_filename,
           next.transcript_filename,
@@ -210,6 +261,10 @@ router.post(
           userId,
         ]
       );
+
+      if (updateResult.rows.length === 0) {
+        return res.status(409).json({ errors: ['Application has already been submitted.'] });
+      }
 
       if (Object.keys(userSync).length) {
         const cols = Object.keys(userSync);
@@ -239,8 +294,8 @@ router.post(
         bank_original_name: next.bank_original_name,
       });
     } catch (err) {
-      console.error('Draft document upload error:', err.message);
-      return res.status(500).json({ errors: ['Could not save document. Please try again.'] });
+      console.error('Document upload error:', err.message);
+      return res.status(500).json({ errors: ['Server error. Please try again.'] });
     }
   }
 );
@@ -255,7 +310,7 @@ router.patch(
     const { faculty, course, qualificationLevel, moduleYearLevel, moduleName, moduleCode, gpa, positionType } = req.body;
     const userId = req.user.userId;
 
-    if (!(await isApplicationsOpenFromDb())) {
+    if (!(await tutorMayEditIncompleteApplication(userId))) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
 
@@ -296,7 +351,38 @@ router.patch(
       if (dbModule.rows.length === 0) {
         return res.status(400).json({ errors: [`Module code "${savedCode}" is not in the curriculum registry.`] });
       }
-      // Confirm the application exists and belongs to this tutor
+
+      const programme = courseToProgramme(savedCourse);
+      const postingResult = await pool.query(
+        `SELECT id, min_average, min_year_level
+         FROM postings
+         WHERE programme = $1
+           AND module_name = $2
+         LIMIT 1`,
+        [programme, savedName]
+      );
+      if (postingResult.rows.length === 0) {
+        return res.status(400).json({
+          errors: ['No open posting exists for this module.'],
+        });
+      }
+      const posting = postingResult.rows[0];
+      const requiredQual = minYearLevelToQualEnum(posting.min_year_level);
+      if (!meetsMinimumQualification(qualificationLevel, requiredQual)) {
+        return res.status(400).json({
+          errors: [
+            'Your qualification level does not meet the minimum required for this posting.',
+          ],
+        });
+      }
+      if (gpaNum < parseFloat(posting.min_average)) {
+        return res.status(400).json({
+          errors: [
+            `This posting requires a minimum average of ${posting.min_average}%.`,
+          ],
+        });
+      }
+
       const appCheck = await pool.query(
         'SELECT id, status FROM applications WHERE user_id = $1',
         [userId]
@@ -305,14 +391,13 @@ router.patch(
         return res.status(404).json({ errors: ['Application record not found.'] });
       }
 
-      // Don't allow edits if already submitted
       if (!['incomplete'].includes(appCheck.rows[0].status)) {
         return res.status(409).json({
           errors: ['Application has already been submitted and cannot be edited.'],
         });
       }
 
-      await pool.query(
+      const updateResult = await pool.query(
         `UPDATE applications
          SET faculty             = $1,
              course              = $2,
@@ -322,7 +407,8 @@ router.patch(
              module_code         = $6,
              gpa                 = $7,
              position_type       = $8
-         WHERE user_id = $9`,
+         WHERE user_id = $9 AND status = 'incomplete'
+         RETURNING id`,
         [
           faculty.trim(),
           savedCourse,
@@ -335,6 +421,12 @@ router.patch(
           userId,
         ]
       );
+
+      if (updateResult.rows.length === 0) {
+        return res.status(409).json({
+          errors: ['Application has already been submitted and cannot be edited.'],
+        });
+      }
 
       return res.status(200).json({ message: 'Academic info saved.' });
 
@@ -358,10 +450,11 @@ router.post(
     const { declared } = req.body;
     const fs = require('fs');
 
-    if (!(await isApplicationsOpenFromDb())) {
+    if (!(await tutorMayEditIncompleteApplication(userId))) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
     }
 
+    const materializedTemps = [];
     try {
       const appResult = await pool.query(
         `SELECT id, status, qualification_level, module_year_level, module_name, gpa, course,
@@ -397,8 +490,6 @@ router.post(
         });
       }
 
-      const uploadsDir = path.join(__dirname, '../uploads');
-
       async function resolveDoc(formName, storedPath, storedOriginal) {
         const fresh = req.files && req.files[formName] && req.files[formName][0];
         if (fresh) {
@@ -411,17 +502,27 @@ router.post(
             storagePath,
             originalName: safeOriginalFilename(fresh.originalname),
             fresh,
+            materialized: false,
           };
         }
         if (storedPath) {
+          const localPath = await materializeStoredDoc(storedPath);
+          if (localPath) materializedTemps.push(localPath);
           return {
-            localPath: path.join(uploadsDir, path.basename(storedPath)),
+            localPath,
             storagePath: storedPath,
             originalName: storedOriginal || null,
             fresh: null,
+            materialized: !!localPath,
           };
         }
-        return { localPath: null, storagePath: null, originalName: null, fresh: null };
+        return {
+          localPath: null,
+          storagePath: null,
+          originalName: null,
+          fresh: null,
+          materialized: false,
+        };
       }
 
       const cv = await resolveDoc('cvFile', app.cv_filename, app.cv_original_name);
@@ -443,11 +544,15 @@ router.post(
       if (!declared || declared !== 'true') {
         errors.push('You must accept the declaration before submitting.');
       }
-      if (errors.length > 0) return res.status(400).json({ errors });
+      if (errors.length > 0) {
+        cleanupTempFiles(materializedTemps);
+        return res.status(400).json({ errors });
+      }
 
-      // Screening only needs CV + transcript locally
+      // Screening only needs CV + transcript locally (fresh upload or materialized from storage)
       if (!cv.localPath || !transcript.localPath ||
           !fs.existsSync(cv.localPath) || !fs.existsSync(transcript.localPath)) {
+        cleanupTempFiles(materializedTemps);
         return res.status(400).json({
           errors: ['Uploaded documents are missing on the server. Please upload your PDFs again.'],
         });
@@ -456,13 +561,34 @@ router.post(
       if (cv.fresh) {
         const cvValidation = await validateUploadedFile(cv.fresh, ['application/pdf']);
         if (!cvValidation.valid) {
-          return res.status(400).json({ error: 'Invalid file type.' });
+          cleanupTempFiles(materializedTemps);
+          return res.status(400).json({ errors: ['Invalid CV file type.'] });
         }
       }
       if (transcript.fresh) {
         const transcriptValidation = await validateUploadedFile(transcript.fresh, ['application/pdf']);
         if (!transcriptValidation.valid) {
-          return res.status(400).json({ error: 'Invalid file type.' });
+          cleanupTempFiles(materializedTemps);
+          return res.status(400).json({ errors: ['Invalid transcript file type.'] });
+        }
+      }
+      for (const doc of [
+        { entry: idCopy, label: 'ID copy' },
+        { entry: taxProof, label: 'Tax proof' },
+        { entry: bankProof, label: 'Banking proof' },
+      ]) {
+        if (doc.entry.fresh) {
+          const validation = await validateUploadedFile(doc.entry.fresh, [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+          ]);
+          if (!validation.valid) {
+            cleanupTempFiles(materializedTemps);
+            return res.status(400).json({
+              errors: [`Invalid ${doc.label} file type.`],
+            });
+          }
         }
       }
 
@@ -524,6 +650,9 @@ router.post(
           }
         } catch (scanErr) {
           console.error('Document screening error:', scanErr.message);
+          eligibilityPass = false;
+          rejectionReason = 'Document screening could not be completed. Please try submitting again.';
+          rejectionDetail = 'If this keeps happening, re-upload your CV and academic record, then submit again.';
           screening = {
             error: true,
             note: 'Document screening could not be completed: ' + scanErr.message,
@@ -536,7 +665,7 @@ router.post(
         ? { ...screening, rejectionDetail: rejectionDetail || null }
         : null;
 
-      await pool.query(
+      const updateResult = await pool.query(
         `UPDATE applications
          SET cv_filename              = $1::varchar,
              transcript_filename      = $2::varchar,
@@ -553,11 +682,13 @@ router.post(
              bank_proof_original_name = COALESCE($10::varchar, bank_proof_original_name),
              declared                 = TRUE,
              status                   = $11,
-             rejection_reason         = $12,
+             screening_result         = $12,
              cv_keyword_score         = $13,
-             screening_result         = $14,
-             submitted_at             = NOW()
-         WHERE user_id = $15`,
+             rejection_reason         = $14,
+             submitted_at             = NOW(),
+             reviewed_at              = CASE WHEN $11 = 'rejected' THEN NOW() ELSE reviewed_at END
+         WHERE user_id = $15 AND status = 'incomplete'
+         RETURNING id, status`,
         [
           cv.storagePath,
           transcript.storagePath,
@@ -570,12 +701,20 @@ router.post(
           taxProof.originalName,
           bankProof.originalName,
           newStatus,
-          rejectionReason,
-          cvKeywordScore,
           screeningPayload ? JSON.stringify(screeningPayload) : null,
+          cvKeywordScore,
+          eligibilityPass ? null : rejectionReason,
           userId,
         ]
       );
+
+      cleanupTempFiles(materializedTemps);
+
+      if (updateResult.rows.length === 0) {
+        return res.status(409).json({
+          errors: ['Application has already been submitted.'],
+        });
+      }
 
       await pool.query(
         `UPDATE users
@@ -606,6 +745,7 @@ router.post(
 
     } catch (err) {
       console.error('Submit error:', err.message);
+      cleanupTempFiles(materializedTemps);
       return res.status(500).json({ errors: ['Server error. Please try again.'] });
     }
   }

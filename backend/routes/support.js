@@ -108,9 +108,13 @@ router.post(
 
     if (!subject || !String(subject).trim()) {
       errors.push('Subject is required.');
+    } else if (String(subject).trim().length > 200) {
+      errors.push('Subject must be 200 characters or fewer.');
     }
     if (!details || !String(details).trim()) {
       errors.push('Details are required.');
+    } else if (String(details).trim().length > 5000) {
+      errors.push('Details must be 5000 characters or fewer.');
     }
 
     const prio = (priority || 'medium').toLowerCase();
@@ -129,8 +133,8 @@ router.post(
         [
           req.user.userId,
           req.user.role,
-          String(subject).trim(),
-          String(details).trim(),
+          String(subject).trim().slice(0, 200),
+          String(details).trim().slice(0, 5000),
           prio,
         ]
       );
@@ -205,6 +209,9 @@ router.post(
     if (!ticketId) return res.status(400).json({ errors: ['Invalid ticket id.'] });
     if (!message || !String(message).trim()) {
       return res.status(400).json({ errors: ['Message is required.'] });
+    }
+    if (String(message).trim().length > 5000) {
+      return res.status(400).json({ errors: ['Reply must be 5000 characters or fewer.'] });
     }
 
     try {

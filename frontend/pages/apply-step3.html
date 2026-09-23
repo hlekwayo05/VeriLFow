@@ -75,7 +75,7 @@
         <input type="file" class="file-input-overlay" id="cvInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'cv')"/>
         <i class="ti ti-file-cv upload-icon" id="cvIcon"></i>
         <div class="upload-title" id="cvName">Curriculum Vitae (PDF)</div>
-        <div class="upload-sub" id="cvSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
+        <div class="upload-sub" id="cvSub">Click to browse · PDF only · Max 5MB</div>
       </div>
 
       <!-- ACADEMIC RECORD UPLOAD -->
@@ -83,7 +83,7 @@
         <input type="file" class="file-input-overlay" id="acadInput" accept=".pdf,application/pdf" onchange="handleFile(this, 'acad')"/>
         <i class="ti ti-school upload-icon" id="acadIcon"></i>
         <div class="upload-title" id="acadName">Academic Record (PDF)</div>
-        <div class="upload-sub" id="acadSub">Click to browse or drag and drop · PDF only · Max 5MB</div>
+        <div class="upload-sub" id="acadSub">Click to browse · PDF only · Max 5MB</div>
       </div>
 
       <!-- ID COPY -->
@@ -167,22 +167,23 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=20"></script>
+<script src="../js/app.js?v=21"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) throw new Error('Not authenticated');
+  if (!VF.requireRole('tutor', 'login.html')) throw new Error('Not tutor');
 
   const DOC_META = {
     cv: {
       key: 'cv', field: 'cvFile', box: 'cvBox', icon: 'cvIcon', name: 'cvName', sub: 'cvSub',
       chk: 'chk-cv', input: 'cvInput', iconClass: 'ti ti-file-cv',
-      title: 'Curriculum Vitae (PDF)', hint: 'Click to browse or drag and drop · PDF only · Max 5MB',
+      title: 'Curriculum Vitae (PDF)', hint: 'Click to browse · PDF only · Max 5MB',
       label: 'CV', savedCol: 'cv_filename', originalCol: 'cv_original_name', pdfOnly: true,
     },
     acad: {
       key: 'acad', field: 'transcriptFile', box: 'acadBox', icon: 'acadIcon', name: 'acadName', sub: 'acadSub',
       chk: 'chk-acad', input: 'acadInput', iconClass: 'ti ti-school',
-      title: 'Academic Record (PDF)', hint: 'Click to browse or drag and drop · PDF only · Max 5MB',
+      title: 'Academic Record (PDF)', hint: 'Click to browse · PDF only · Max 5MB',
       label: 'Academic record', savedCol: 'transcript_filename', originalCol: 'transcript_original_name', pdfOnly: true,
     },
     id: {
@@ -475,7 +476,7 @@
       } catch (err) {
         VF.toast(err.errors ? err.errors[0] : 'Could not load your application.', 'err');
       }
-    });
+    }, { allowIncompleteContinue: true });
   })();
 </script>
 </body>

@@ -178,11 +178,13 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=17"></script>
+<script src="../js/app.js?v=21"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script>
   VF.pageIn();
-  if (!VF.requireAuth('login.html')) { /* stop - requireAuth already redirected */ }
+  if (!VF.requireAuth('login.html')) { /* redirected */ }
+  else if (!VF.requireRole('tutor', 'login.html')) { /* redirected */ }
+  else {
 
   VF.bindResponsiveBtnLabel({
     btnId: 'nextBtn',
@@ -217,7 +219,7 @@
       VF.bindApplyFormProgress([
         'faculty', 'course', 'qualificationLevel', 'position-type', 'year', 'module', 'gpa',
       ]);
-    });
+    }, { allowIncompleteContinue: true });
   })();
 
   const COURSES = {
@@ -235,16 +237,9 @@
     'PhD Candidate or Holder':          'phd',
   };
 
-  const INELIGIBLE_LEVELS = new Set([]);
-
   function checkQualificationEligibility() {
-    const val     = document.getElementById('qualificationLevel').value;
     const warning = document.getElementById('qlWarning');
-    if (val && INELIGIBLE_LEVELS.has(val)) {
-      warning.classList.add('visible');
-    } else {
-      warning.classList.remove('visible');
-    }
+    if (warning) warning.classList.remove('visible');
   }
 
   function handlePositionTypeChange() {
@@ -254,12 +249,12 @@
     if (type === 'demonstrator') {
       if (moduleHint) {
         moduleHint.textContent =
-          'As a demonstrator, you are assessed on your academic average only.';
+          'As a demonstrator, you must have passed this module and meet the minimum academic average.';
       }
     } else {
       if (moduleHint) {
         moduleHint.textContent =
-          'You must have passed this module to tutor it.';
+          'You must have passed this module at the required mark and meet the minimum academic average.';
       }
     }
   }
@@ -285,7 +280,6 @@
     curriculumYearSemesters(course).forEach(y => {
       ysel.innerHTML += `<option>${y}</option>`;
     });
-    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function populateModules() {
@@ -297,13 +291,11 @@
     curriculumModulesForYear(course, year).forEach(m => {
       msel.innerHTML += moduleSelectOptionHtml(m);
     });
-    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function onModuleSelected() {
     const msel = document.getElementById('module');
     document.getElementById('input-module-code').value = readModuleCodeFromSelect(msel);
-    document.getElementById('moduleHint')?.classList?.remove('visible');
   }
 
   function populateFromApp(app) {
@@ -403,21 +395,6 @@
     btn.classList.add('btn-disabled');
 
     try {
-      await VF.apiFetch('/applications/me/academic', {
-        method: 'PATCH',
-        body: {
-          faculty,
-          course,
-          qualificationLevel,
-          moduleYearLevel: year,
-          moduleName:      module,
-          moduleCode,
-          gpa,
-          positionType,
-        },
-      });
-
-      // Verify a posting exists and the student meets its minimums
       const programme = course.startsWith('BICT') ? 'BICT' : 'DICT';
       let posting;
       try {
@@ -447,6 +424,20 @@
         return;
       }
 
+      await VF.apiFetch('/applications/me/academic', {
+        method: 'PATCH',
+        body: {
+          faculty,
+          course,
+          qualificationLevel,
+          moduleYearLevel: year,
+          moduleName:      module,
+          moduleCode,
+          gpa,
+          positionType,
+        },
+      });
+
       VF.setState({
         academic: {
           faculty,
@@ -469,6 +460,7 @@
       VF.toast(err.errors ? err.errors[0] : 'Could not save academic information. Please try again.', 'err');
     }
   }
+  } // requireRole tutor
 </script>
 </body>
 </html>

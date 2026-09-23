@@ -254,7 +254,7 @@
 <script src="../js/app.js?v=14"></script>
 <script>
   VF.pageIn();
-  VF.requireAuth('login.html');
+  if (!VF.requireRole('tutor', 'login.html')) throw new Error('role-gate');
 
   (async function guardOnboarding() {
     try {

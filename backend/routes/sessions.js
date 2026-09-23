@@ -140,10 +140,21 @@ router.post(
     if (!moduleCode   || moduleCode.trim().length === 0)   errors.push('Module code is required.');
     if (!sessionType)                                       errors.push('Session type is required.');
     if (!sessionDate)                                       errors.push('Session date is required.');
+    if (!startTime)                                         errors.push('Start time is required.');
 
     const validTypes = ['tutorial', 'practical', 'online', 'revision', 'lecture'];
     if (sessionType && !validTypes.includes(sessionType)) {
       errors.push(`Session type must be one of: ${validTypes.join(', ')}.`);
+    }
+
+    if (sessionDate && !/^\d{4}-\d{2}-\d{2}$/.test(String(sessionDate).trim())) {
+      errors.push('Session date must be YYYY-MM-DD.');
+    }
+    if (topic != null && String(topic).trim().length > 200) {
+      errors.push('Topic must be 200 characters or fewer.');
+    }
+    if (venue != null && String(venue).trim().length > 120) {
+      errors.push('Venue must be 120 characters or fewer.');
     }
 
     if (errors.length > 0) return res.status(400).json({ errors });
@@ -163,17 +174,54 @@ router.post(
     }
     if (errors.length > 0) return res.status(400).json({ errors });
 
+    const mod = moduleCode.trim().toUpperCase();
+    let validatedTutorIds = [];
+    if (tutorIds != null) {
+      if (!Array.isArray(tutorIds)) {
+        return res.status(400).json({ errors: ['tutorIds must be an array.'] });
+      }
+      validatedTutorIds = [...new Set(
+        tutorIds.map((id) => parseInt(id, 10)).filter((n) => Number.isFinite(n) && n > 0)
+      )];
+      if (validatedTutorIds.length > 30) {
+        return res.status(400).json({ errors: ['You can assign at most 30 tutors to a session.'] });
+      }
+      if (validatedTutorIds.length !== tutorIds.length) {
+        return res.status(400).json({ errors: ['One or more tutor IDs are invalid.'] });
+      }
+    }
+
     try {
       const ownedModule = await pool.query(
         `SELECT module_code FROM lecturer_modules
          WHERE lecturer_id = $1 AND module_code = $2
          LIMIT 1`,
-        [lecturerId, moduleCode.trim().toUpperCase()]
+        [lecturerId, mod]
       );
       if (ownedModule.rows.length === 0) {
         return res.status(403).json({
           errors: ['You are not assigned to this module.'],
         });
+      }
+
+      if (validatedTutorIds.length) {
+        const linked = await pool.query(
+          `SELECT u.id
+           FROM users u
+           JOIN applications a ON a.user_id = u.id AND a.status = 'approved'
+           WHERE u.id = ANY($1::int[])
+             AND u.role = 'tutor'
+             AND a.assigned_lecturer_id = $2
+             AND UPPER(TRIM(a.module_code)) = $3`,
+          [validatedTutorIds, lecturerId, mod]
+        );
+        if (linked.rows.length !== validatedTutorIds.length) {
+          return res.status(400).json({
+            errors: [
+              'Each assigned tutor must be an approved tutor linked to you for this module.',
+            ],
+          });
+        }
       }
 
       const client = await pool.connect();
@@ -188,28 +236,25 @@ router.post(
            RETURNING id`,
           [
             lecturerId,
-            moduleCode.trim().toUpperCase(),
-            topic ? topic.trim() : null,
+            mod,
+            topic ? String(topic).trim() : null,
             sessionType,
-            sessionDate,
+            String(sessionDate).trim(),
             startTime || null,
             resolvedEndTime,
-            venue ? venue.trim() : null,
+            venue ? String(venue).trim() : null,
           ]
         );
 
         const sessionId = sessionResult.rows[0].id;
 
-        // Assign tutors if provided
-        if (tutorIds && Array.isArray(tutorIds) && tutorIds.length > 0) {
-          for (const tutorId of tutorIds) {
-            await client.query(
-              `INSERT INTO session_tutors (session_id, tutor_id)
-               VALUES ($1, $2)
-               ON CONFLICT DO NOTHING`,
-              [sessionId, tutorId]
-            );
-          }
+        for (const tutorId of validatedTutorIds) {
+          await client.query(
+            `INSERT INTO session_tutors (session_id, tutor_id)
+             VALUES ($1, $2)
+             ON CONFLICT DO NOTHING`,
+            [sessionId, tutorId]
+          );
         }
 
         await client.query('COMMIT');
@@ -238,6 +283,7 @@ router.post(
 router.get(
   '/',
   authenticate,
+  requireRole('admin', 'lecturer', 'tutor'),
   async (req, res) => {
     const { userId, role } = req.user;
     const moduleCode = req.query.moduleCode
@@ -576,8 +622,10 @@ router.patch(
       const s = await assertSessionAccess(req, res, sessionId);
       if (!s) return;
 
-      if (s.status === 'completed') {
-        return res.status(409).json({ errors: ['Session is already completed.'] });
+      if (s.status !== 'scheduled' && s.status !== 'active') {
+        return res.status(409).json({
+          errors: [`Only scheduled sessions can be activated (current status: ${s.status}).`],
+        });
       }
 
       // Generate a unique session code
@@ -595,14 +643,18 @@ router.patch(
       // Code expires 4 hours from now - enough for any session type
       const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
 
-      await pool.query(
+      const updated = await pool.query(
         `UPDATE sessions
          SET session_code    = $1,
              code_expires_at = $2,
              status          = 'active'
-         WHERE id = $3`,
+         WHERE id = $3 AND status IN ('scheduled', 'active')
+         RETURNING id`,
         [code, expiresAt, sessionId]
       );
+      if (!updated.rows.length) {
+        return res.status(409).json({ errors: ['Session could not be activated.'] });
+      }
 
       invalidateSessionCaches();
       return res.status(200).json({
@@ -631,8 +683,10 @@ router.patch(
       const s = await assertSessionAccess(req, res, sessionId);
       if (!s) return;
 
-      if (s.status === 'completed') {
-        return res.status(409).json({ errors: ['Session is already completed.'] });
+      if (s.status !== 'active') {
+        return res.status(409).json({
+          errors: [`Only active sessions can be completed (current status: ${s.status}).`],
+        });
       }
 
       const confirmedResult = await pool.query(
@@ -644,14 +698,18 @@ router.patch(
       const autoFlag = await shouldAutoFlagNoConfirmation();
       const finalStatus = autoFlag && confirmedCount === 0 ? 'flagged' : 'completed';
 
-      await pool.query(
+      const updated = await pool.query(
         `UPDATE sessions
          SET status          = $2,
              session_code    = NULL,
              code_expires_at = NULL
-         WHERE id = $1`,
+         WHERE id = $1 AND status = 'active'
+         RETURNING id`,
         [sessionId, finalStatus]
       );
+      if (!updated.rows.length) {
+        return res.status(409).json({ errors: ['Session could not be completed.'] });
+      }
 
       if (finalStatus === 'flagged') {
         console.log(`Session ${sessionId} flagged: no tutor confirmed availability.`);
@@ -733,6 +791,12 @@ router.patch(
       }
       if (!sessionDate) {
         return res.status(400).json({ errors: ['New session date is required.'] });
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(sessionDate).trim())) {
+        return res.status(400).json({ errors: ['Session date must be YYYY-MM-DD.'] });
+      }
+      if (venue != null && String(venue).trim().length > 120) {
+        return res.status(400).json({ errors: ['Venue must be 120 characters or fewer.'] });
       }
 
       const errors = [];

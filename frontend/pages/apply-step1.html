@@ -138,7 +138,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=20"></script>
+<script src="../js/app.js?v=21"></script>
 <script>
   VF.pageIn();
   VF.bindPasswordChecklist('password', 'pwdChecklist');
@@ -203,7 +203,7 @@
       { id: 'firstNames',    check: v => v.length > 0,                          msg: 'First name(s) are required.' },
       { id: 'email',         check: v => /^[a-zA-Z0-9._%+-]+@ump\.ac\.za$/i.test(v), msg: 'Use your student email ending in @ump.ac.za (e.g. 230383025@ump.ac.za).' },
       { id: 'cell',          check: v => VF.isValidSaCellPhone(v),                   msg: 'Enter a 10-digit SA cell number (e.g. 082 456 7890).' },
-      { id: 'studentNumber', check: v => v.length >= 5,                         msg: 'Student number is required.' },
+      { id: 'studentNumber', check: v => /^\d{8,12}$/.test(String(v).trim()), msg: 'Enter your numeric UMP student number (8–12 digits).' },
       { id: 'password',      check: v => VF.isStrongPassword(v),                 msg: VF.passwordErrorMessage(pwd) || 'Password is not strong enough.' },
       { id: 'confirm',       check: v => v === pwd,                             msg: 'Passwords do not match.' },
     ]);

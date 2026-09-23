@@ -491,17 +491,6 @@ const VF = (() => {
   }
 
   function runEligibilityCheck() {
-    // In production this hits an API.
-    // For demo: always passes unless the module is COS1512 (demo rejection path).
-    const s = getState();
-    const mod = s.academic?.module || '';
-    if (mod.includes('COS1512')) {
-      return {
-        pass: false,
-        reason: 'You have not passed the required prerequisite module for this tutor position.',
-        detail: 'Required pass: COS1511 - Introduction to Programming. Our records show this module has not been completed with a mark of 65% or above.'
-      };
-    }
     return { pass: true };
   }
 
@@ -612,17 +601,41 @@ const VF = (() => {
   }
 
   /**
-   * Gate apply-step pages on applications_open (matches index.html behaviour).
-   * When closed: hide step content and show a standalone closed message.
-   * When open: show "Applications open" badge and run onOpen (e.g. mount progress).
+   * Gate apply-step pages on accepting_applications (toggle + closing_date).
+   * Options.allowIncompleteContinue: authenticated tutors with an incomplete
+   * application may finish after the window closes (register still blocked).
    */
-  async function gateApplicationWindow(onOpen) {
-    let applicationsOpen = false;
+  async function gateApplicationWindow(onOpen, options = {}) {
+    const { allowIncompleteContinue = false } = options;
+    let accepting = false;
+    let closingDate = null;
     try {
       const settings = await apiFetch('/public/settings');
-      applicationsOpen = !!settings.applications_open;
+      accepting = !!(
+        settings.accepting_applications ??
+        settings.applications_open
+      );
+      closingDate = settings.closing_date || null;
+      if (
+        settings.accepting_applications == null &&
+        settings.applications_open &&
+        closingDate
+      ) {
+        const today = new Date();
+        const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        if (iso > String(closingDate).slice(0, 10)) accepting = false;
+      }
     } catch (e) {
-      applicationsOpen = false;
+      accepting = false;
+    }
+
+    if (!accepting && allowIncompleteContinue && isAuthenticated()) {
+      try {
+        const app = await apiFetch('/applications/me');
+        if (app && app.status === 'incomplete') accepting = true;
+      } catch (_) {
+        /* stay closed */
+      }
     }
 
     const badge   = document.getElementById('applicationsOpenBadge');
@@ -630,7 +643,7 @@ const VF = (() => {
     const content = document.getElementById('applyStepContent');
     const sidebar = document.getElementById('applySidebar');
 
-    if (!applicationsOpen) {
+    if (!accepting) {
       if (badge)   badge.style.display   = 'none';
       if (content) content.style.display = 'none';
       if (sidebar) sidebar.style.display = 'none';

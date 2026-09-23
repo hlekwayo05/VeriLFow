@@ -1443,3 +1443,38 @@ body.lec-dash .lec-bottom-nav{display:none;}
   body.lec-dash .reg-dl-btn{width:100%;justify-content:center;}
   body.lec-dash .toast{left:16px;right:16px;bottom:calc(88px + env(safe-area-inset-bottom,0px));text-align:center;}
 }
+
+/* Live session + ticket thread (lecturer audit L6/L13) */
+body.lec-dash .live-session-body { display:flex; flex-direction:column; gap:12px; padding:4px 2px 8px; }
+body.lec-dash .live-session-code {
+  font-family:'DM Mono',monospace; font-size:28px; font-weight:700; letter-spacing:.18em;
+  text-align:center; padding:14px; border:1px solid var(--border); border-radius:12px;
+  background:rgba(43,82,89,.05);
+}
+body.lec-dash .live-session-hint { font-size:12px; color:var(--muted); text-align:center; margin:0; }
+body.lec-dash .live-session-qr-wrap {
+  display:flex; align-items:center; justify-content:center; min-height:180px;
+  border:1px dashed var(--border); border-radius:12px; padding:12px;
+}
+body.lec-dash .live-session-qr-wrap img { max-width:220px; height:auto; }
+body.lec-dash .live-session-qr-fallback { font-size:12px; color:var(--muted); text-align:center; }
+body.lec-dash .lec-ticket-card { cursor:pointer; }
+body.lec-dash .lec-ticket-detail-body { display:flex; flex-direction:column; gap:12px; }
+body.lec-dash .lec-ticket-detail-original {
+  font-size:13px; line-height:1.55; white-space:pre-wrap;
+  background:rgba(43,82,89,.04); border:1px solid var(--border); border-radius:12px; padding:12px 14px;
+}
+body.lec-dash .lec-ticket-thread { display:flex; flex-direction:column; gap:10px; max-height:min(40vh,300px); overflow:auto; }
+body.lec-dash .lec-ticket-thread-empty { font-size:12px; color:var(--muted); }
+body.lec-dash .lec-thread-msg { display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
+body.lec-dash .lec-thread-msg.mine { align-items:flex-end; }
+body.lec-dash .lec-thread-meta { font-size:10px; font-family:'DM Mono',monospace; color:var(--muted); }
+body.lec-dash .lec-thread-bubble {
+  max-width:min(100%,420px); padding:10px 12px; border-radius:12px; border:1px solid var(--border);
+  background:var(--card); font-size:12px; line-height:1.55; white-space:pre-wrap;
+}
+body.lec-dash .lec-thread-msg.mine .lec-thread-bubble {
+  background:rgba(43,82,89,.08); border-color:rgba(43,82,89,.16);
+}
+body.lec-dash .cal-cell .dot.cancelled,
+body.lec-dash .cal-dot.cancelled { background:var(--muted); opacity:.55; }

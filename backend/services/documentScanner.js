@@ -21,7 +21,12 @@ async function scanCv(cvPath, keywords) {
   const missing = [];
 
   for (const keyword of list) {
-    if (haystack.includes(keyword.toLowerCase())) {
+    const escaped = keyword
+      .toLowerCase()
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\s+/g, '\\s+');
+    const re = new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`, 'i');
+    if (re.test(haystack)) {
       matched.push(keyword);
     } else {
       missing.push(keyword);
@@ -267,21 +272,24 @@ function evaluateScreening(cvScan, transcriptScan, settings, positionType = 'tut
     };
   }
 
-  if (!isDemo && !transcriptScan.tutorModuleFound) {
+  // Tutors and demonstrators must have passed the selected module
+  if (!transcriptScan.tutorModuleFound) {
     return {
       pass: false,
       reason: `No passed record found for "${transcriptScan.tutorModuleName || 'your selected module'}" on your academic record.`,
-      detail: 'The module you applied to tutor must appear on your transcript with a pass result.',
+      detail: isDemo
+        ? 'The module you applied to demonstrate must appear on your transcript.'
+        : 'The module you applied to tutor must appear on your transcript with a pass result.',
       screening,
     };
   }
 
-  if (!isDemo && !transcriptScan.tutorModulePassed) {
+  if (!transcriptScan.tutorModulePassed) {
     const tm = transcriptScan.tutorModule;
     return {
       pass: false,
       reason: `You have not achieved the required mark in ${tm.name}.`,
-      detail: `Your final mark is ${tm.finalMark}% (minimum ${modulePassMark}% required to tutor this module). Result: ${tm.result}.`,
+      detail: `Your final mark is ${tm.finalMark}% (minimum ${modulePassMark}% required). Result: ${tm.result}.`,
       screening,
     };
   }

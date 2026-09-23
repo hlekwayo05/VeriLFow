@@ -15,7 +15,14 @@ const validateAcademicSave = [
     .notEmpty().withMessage('Course is required.')
     .escape(),
   body('qualificationLevel')
-    .notEmpty().withMessage('Qualification level is required.'),
+    .notEmpty().withMessage('Qualification level is required.')
+    .isIn([
+      '3rd_year',
+      '4th_year_honours',
+      'masters',
+      'masters_holder',
+      'phd',
+    ]).withMessage('Invalid qualification level.'),
   body('moduleYearLevel')
     .trim()
     .notEmpty().withMessage('Year/semester level is required.')

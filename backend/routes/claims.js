@@ -125,7 +125,35 @@ async function assertClaimAccess(claim, userId, role) {
   return false;
 }
 
-async function loadValidatedSessions(tutorId, sessionIds, moduleCode) {
+async function assertTutorHasStaffNumber(tutorId) {
+  const userResult = await pool.query(
+    'SELECT staff_number FROM users WHERE id = $1',
+    [tutorId]
+  );
+  const staffNumber = userResult.rows[0]?.staff_number;
+  if (!staffNumber || !String(staffNumber).trim()) {
+    const err = new Error(
+      'You cannot submit claims until HR has assigned your staff number. Please contact the Student Employment Office.'
+    );
+    err.status = 403;
+    throw err;
+  }
+}
+
+async function loadValidatedSessions(
+  tutorId,
+  sessionIds,
+  moduleCode,
+  periodMonth,
+  periodYear
+) {
+  const ids = [...new Set(
+    (Array.isArray(sessionIds) ? sessionIds : [])
+      .map((id) => parseInt(id, 10))
+      .filter((n) => Number.isFinite(n) && n > 0)
+  )];
+  if (!ids.length) return { sessions: [], requestedCount: 0 };
+
   const result = await pool.query(
     `SELECT s.id, s.session_type, s.session_date, s.module_code, s.status
      FROM sessions s
@@ -133,10 +161,13 @@ async function loadValidatedSessions(tutorId, sessionIds, moduleCode) {
      WHERE s.id = ANY($1::int[])
        AND st.tutor_id = $2
        AND s.module_code = $3
-       AND s.status = 'completed'`,
-    [sessionIds, tutorId, moduleCode]
+       AND s.status = 'completed'
+       AND st.confirmed_at IS NOT NULL
+       AND EXTRACT(MONTH FROM s.session_date) = $4
+       AND EXTRACT(YEAR FROM s.session_date) = $5`,
+    [ids, tutorId, moduleCode, periodMonth, periodYear]
   );
-  return result.rows;
+  return { sessions: result.rows, requestedCount: ids.length };
 }
 
 function buildSessionLineItems(sessions, payRate) {
@@ -189,36 +220,12 @@ async function loadCompletedSessionsForPeriod(tutorId, moduleCode, periodMonth, 
        AND EXTRACT(YEAR FROM s.session_date) = $3
        AND s.module_code = $4
        AND s.status = 'completed'
+       AND st.confirmed_at IS NOT NULL
      GROUP BY s.id
      ORDER BY s.session_date ASC, s.start_time ASC NULLS LAST`,
     [tutorId, periodMonth, periodYear, moduleCode]
   );
   return result.rows;
-}
-
-async function syncClaimToCompletedSessions(client, claim, tutorId) {
-  const sessions = await loadCompletedSessionsForPeriod(
-    tutorId,
-    claim.module_code,
-    claim.period_month,
-    claim.period_year,
-    client
-  );
-  if (!sessions.length) return null;
-
-  const app = await loadTutorApplication(tutorId);
-  const payRate = Number(claim.pay_rate) || await resolvePayRate(app);
-  const { lineItems, totalHours, totalAmount } = buildSessionLineItems(sessions, payRate);
-
-  await client.query(
-    `UPDATE claims
-     SET total_hours = $1, total_amount = $2, pay_rate = $3
-     WHERE id = $4`,
-    [totalHours, totalAmount, payRate, claim.id]
-  );
-  await replaceClaimSessions(client, claim.id, lineItems);
-
-  return { lineItems, totalHours, totalAmount, sessionCount: sessions.length };
 }
 
 
@@ -303,15 +310,24 @@ router.get(
       const lecturerId = app.assigned_lecturer_id || null;
       const pastDue = new Date() > new Date(periodYear, periodMonth - 1, 15, 23, 59, 59);
 
+      const staffResult = await pool.query(
+        'SELECT staff_number FROM users WHERE id = $1',
+        [tutorId]
+      );
+      const hasStaffNumber = !!(
+        staffResult.rows[0]?.staff_number &&
+        String(staffResult.rows[0].staff_number).trim()
+      );
+
       const canSubmit = (
-        (!existingClaim && sessions.length > 0)
-        || (existingClaim && RETURNED_STATUSES.includes(existingClaim.status))
+        hasStaffNumber
+        && (
+          (!existingClaim && sessions.length > 0)
+          || (existingClaim && RETURNED_STATUSES.includes(existingClaim.status))
+        )
       );
-      const canUpdate = Boolean(
-        existingClaim
-        && existingClaim.status === 'pending_lecturer'
-        && unclaimedSessions.length > 0
-      );
+      // Pending claims stay locked until returned (no mid-review rewrite)
+      const canUpdate = false;
 
       return res.status(200).json({
         periodMonth,
@@ -331,6 +347,7 @@ router.get(
         totalAmount,
         canSubmit,
         canUpdate,
+        hasStaffNumber,
         pastDue,
         ratePerHour: payRate,
       });
@@ -621,16 +638,10 @@ router.post(
         });
       }
 
-      const userResult = await pool.query(
-        'SELECT staff_number FROM users WHERE id = $1',
-        [tutorId]
-      );
-      if (!userResult.rows[0]?.staff_number) {
-        return res.status(403).json({
-          errors: [
-            'You cannot submit claims until HR has assigned your staff number. Please contact the Student Employment Office.',
-          ],
-        });
+      try {
+        await assertTutorHasStaffNumber(tutorId);
+      } catch (staffErr) {
+        return res.status(staffErr.status || 403).json({ errors: [staffErr.message] });
       }
 
       const app = await loadTutorApplication(tutorId);
@@ -649,9 +660,32 @@ router.post(
         return res.status(400).json({ errors: ['Lecturer does not match your assigned lecturer.'] });
       }
 
-      const sessions = await loadValidatedSessions(tutorId, sessionIds, mod);
+      if (app.module_code && String(app.module_code).trim().toUpperCase() !== mod) {
+        return res.status(400).json({
+          errors: ['Module code does not match your approved application module.'],
+        });
+      }
+
+      const { sessions, requestedCount } = await loadValidatedSessions(
+        tutorId,
+        sessionIds,
+        mod,
+        periodMonth,
+        periodYear
+      );
       if (!sessions.length) {
-        return res.status(400).json({ errors: ['No valid completed sessions found for this claim.'] });
+        return res.status(400).json({
+          errors: [
+            'No valid completed sessions found for this claim. Sessions must be completed, confirmed by you, and in this month.',
+          ],
+        });
+      }
+      if (sessions.length !== requestedCount) {
+        return res.status(400).json({
+          errors: [
+            'Some selected sessions are not eligible for this claim (wrong month, not completed, or not confirmed).',
+          ],
+        });
       }
 
       const { lineItems, totalHours, totalAmount } = buildSessionLineItems(sessions, payRate);
@@ -711,12 +745,35 @@ router.patch(
         return res.status(400).json({ errors: ['Only returned claims can be resubmitted.'] });
       }
 
+      try {
+        await assertTutorHasStaffNumber(tutorId);
+      } catch (staffErr) {
+        return res.status(staffErr.status || 403).json({ errors: [staffErr.message] });
+      }
+
       const payRate = Number(claim.pay_rate) || await resolvePayRate(
         await loadTutorApplication(tutorId)
       );
-      const sessions = await loadValidatedSessions(tutorId, sessionIds, claim.module_code);
+      const { sessions, requestedCount } = await loadValidatedSessions(
+        tutorId,
+        sessionIds,
+        claim.module_code,
+        claim.period_month,
+        claim.period_year
+      );
       if (!sessions.length) {
-        return res.status(400).json({ errors: ['No valid completed sessions found for this claim.'] });
+        return res.status(400).json({
+          errors: [
+            'No valid completed sessions found for this claim. Sessions must be completed, confirmed by you, and in this month.',
+          ],
+        });
+      }
+      if (sessions.length !== requestedCount) {
+        return res.status(400).json({
+          errors: [
+            'Some selected sessions are not eligible for this claim (wrong month, not completed, or not confirmed).',
+          ],
+        });
       }
 
       const { lineItems, totalHours, totalAmount } = buildSessionLineItems(sessions, payRate);
@@ -764,72 +821,11 @@ router.patch(
   requireRole('tutor'),
   validateSessionIds,
   async (req, res) => {
-    const claimId = parseInt(req.params.id, 10);
-    const tutorId = req.user.userId;
-    const { sessionIds } = req.body;
-
-    try {
-      const claim = await loadClaimById(claimId);
-      if (!claim) return res.status(404).json({ errors: ['Claim not found.'] });
-      if (claim.tutor_id !== tutorId) return res.status(403).json({ errors: ['Forbidden.'] });
-      if (claim.status !== 'pending_lecturer') {
-        return res.status(400).json({
-          errors: ['Only claims awaiting lecturer review can be updated.'],
-        });
-      }
-
-      const ids = Array.isArray(sessionIds) && sessionIds.length
-        ? sessionIds
-        : (await loadCompletedSessionsForPeriod(
-          tutorId,
-          claim.module_code,
-          claim.period_month,
-          claim.period_year
-        )).map((s) => s.id);
-
-      if (!ids.length) {
-        return res.status(400).json({ errors: ['No completed sessions to include.'] });
-      }
-
-      const sessions = await loadValidatedSessions(tutorId, ids, claim.module_code);
-      if (!sessions.length) {
-        return res.status(400).json({ errors: ['No valid completed sessions found for this claim.'] });
-      }
-
-      const payRate = Number(claim.pay_rate) || await resolvePayRate(
-        await loadTutorApplication(tutorId)
-      );
-      const { lineItems, totalHours, totalAmount } = buildSessionLineItems(sessions, payRate);
-
-      const client = await pool.connect();
-      try {
-        await client.query('BEGIN');
-        await client.query(
-          `UPDATE claims
-           SET total_hours = $1, total_amount = $2, pay_rate = $3, submitted_at = NOW()
-           WHERE id = $4`,
-          [totalHours, totalAmount, payRate, claimId]
-        );
-        await replaceClaimSessions(client, claimId, lineItems);
-        await client.query('COMMIT');
-      } catch (txErr) {
-        await client.query('ROLLBACK');
-        throw txErr;
-      } finally {
-        client.release();
-      }
-
-      const updated = await loadClaimById(claimId);
-
-      return res.status(200).json({
-        message: 'Claim updated with new sessions.',
-        ...updated,
-        sessionCount: lineItems.length,
-      });
-    } catch (err) {
-      console.error('Update claim sessions error:', err.message);
-      return res.status(500).json({ errors: ['Server error.'] });
-    }
+    return res.status(400).json({
+      errors: [
+        'Submitted claims cannot be edited while under review. Wait for a return from your lecturer or the Student Employment Office, then resubmit.',
+      ],
+    });
   }
 );
 
@@ -837,6 +833,7 @@ router.patch(
 router.get(
   '/:id/sessions',
   authenticate,
+  requireRole('admin', 'lecturer', 'tutor'),
   validateClaimIdParam,
   async (req, res) => {
     const claimId = parseInt(req.params.id, 10);
@@ -931,17 +928,32 @@ router.patch(
         return res.status(400).json({ errors: ['Claim is not awaiting lecturer review.'] });
       }
 
+      const lineCheck = await pool.query(
+        `SELECT COUNT(*)::int AS count FROM claim_sessions
+         WHERE claim_id = $1 AND included = true`,
+        [claimId]
+      );
+      if (!lineCheck.rows[0]?.count) {
+        return res.status(400).json({
+          errors: ['This claim has no session line items to approve. Ask the tutor to resubmit.'],
+        });
+      }
+
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
-        await syncClaimToCompletedSessions(client, claim, claim.tutor_id);
+        // Approve the tutor's submitted sessions as-is (no silent rewrite).
         const result = await client.query(
           `UPDATE claims
            SET status = 'pending_coordinator', lecturer_reviewed_at = NOW()
-           WHERE id = $1
+           WHERE id = $1 AND status = 'pending_lecturer'
            RETURNING *`,
           [claimId]
         );
+        if (!result.rows.length) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ errors: ['Claim is no longer awaiting lecturer review.'] });
+        }
         await client.query('COMMIT');
 
         const updated = result.rows[0];
@@ -1050,14 +1062,18 @@ router.patch(
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
-        await syncClaimToCompletedSessions(client, claim, claim.tutor_id);
+        // Keep submitted line items; do not rewrite hours on coordinator approve.
         const result = await client.query(
           `UPDATE claims
            SET status = 'approved', coordinator_reviewed_at = NOW()
-           WHERE id = $1
+           WHERE id = $1 AND status = 'pending_coordinator'
            RETURNING *`,
           [claimId]
         );
+        if (!result.rows.length) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ errors: ['Claim is no longer awaiting coordinator approval.'] });
+        }
         await client.query('COMMIT');
 
         const updated = result.rows[0];

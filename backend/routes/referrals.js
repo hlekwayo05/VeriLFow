@@ -184,19 +184,21 @@ router.get(
     const { userId, role } = req.user;
 
     try {
-      // Remove approved referrals whose tutor account was deactivated.
-      try {
-        await pool.query(
-          `DELETE FROM referrals r
-           WHERE r.status = 'approved'
-             AND NOT EXISTS (
-               SELECT 1 FROM users u
-               WHERE LOWER(u.email) = LOWER(r.email) AND u.role = 'tutor'
-             )`
-        );
-      } catch (cleanupErr) {
-        if (cleanupErr.code !== '42P01') {
-          console.error('Referral orphan cleanup:', cleanupErr.message);
+      // Orphan cleanup is admin-only / opt-in — never as a side effect of listing.
+      if (role === 'admin' && String(req.query.cleanupOrphans || '') === '1') {
+        try {
+          await pool.query(
+            `DELETE FROM referrals r
+             WHERE r.status = 'approved'
+               AND NOT EXISTS (
+                 SELECT 1 FROM users u
+                 WHERE LOWER(u.email) = LOWER(r.email) AND u.role = 'tutor'
+               )`
+          );
+        } catch (cleanupErr) {
+          if (cleanupErr.code !== '42P01') {
+            console.error('Referral orphan cleanup:', cleanupErr.message);
+          }
         }
       }
 

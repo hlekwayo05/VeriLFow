@@ -652,6 +652,9 @@ router.post(
     const recipientId = req.body.recipientId ? parseInt(req.body.recipientId, 10) : null;
 
     if (!body) return res.status(400).json({ errors: ['Message body is required.'] });
+    if (body.length > 8000) {
+      return res.status(400).json({ errors: ['Message body must be 8000 characters or fewer.'] });
+    }
 
     try {
       if (role === 'admin') {
@@ -848,6 +851,9 @@ router.post(
 
     if (!moduleCode) return res.status(400).json({ errors: ['Module code is required.'] });
     if (!body) return res.status(400).json({ errors: ['Message body is required.'] });
+    if (body.length > 8000) {
+      return res.status(400).json({ errors: ['Message body must be 8000 characters or fewer.'] });
+    }
 
     try {
       if (!(await lecturerOwnsModule(userId, moduleCode))) {

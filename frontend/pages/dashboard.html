@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=5"/>
-<link rel="stylesheet" href="../css/tutor-dashboard.css?v=59"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=60"/>
 </head>
 <body class="tutor-dash td-on-hub">
 <div class="app">
@@ -26,7 +26,7 @@
     <span id="sidebar-mod-name">Loading…</span>
   </div>
   <div class="nav-group">
-    <div class="nav-section-label">Tutor</div>
+    <div class="nav-section-label" data-role-label>Tutor</div>
     <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
@@ -199,7 +199,7 @@
             </span>
             <span class="td-hub-tile-body">
               <span class="td-hub-tile-title">Hour log</span>
-              <span class="td-hub-tile-sub" id="hub-hourlog-sub">Track logged time</span>
+              <span class="td-hub-tile-sub" id="hub-hourlog-sub">From home · confirmed hours</span>
             </span>
             <span class="td-hub-tile-meta" id="hub-hourlog-meta">0 / 160</span>
             <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
@@ -210,7 +210,7 @@
             </span>
             <span class="td-hub-tile-body">
               <span class="td-hub-tile-title">Calendar</span>
-              <span class="td-hub-tile-sub">Session dates</span>
+              <span class="td-hub-tile-sub">From home · browse months</span>
             </span>
             <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
           </button>
@@ -231,7 +231,7 @@
             </span>
             <span class="td-hub-tile-body">
               <span class="td-hub-tile-title">Support</span>
-              <span class="td-hub-tile-sub">Get help with your account</span>
+              <span class="td-hub-tile-sub">From home · SEO tickets</span>
             </span>
             <svg class="td-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
           </button>
@@ -615,33 +615,34 @@
 </div><!-- /main -->
 </div><!-- /app -->
 
-<div class="modal-overlay" id="tutor-message-overlay" onclick="closeTutorLecturerMessage(event)">
-  <div class="modal um-modal small" id="tutor-message-modal">
+<div class="modal-overlay" id="ticket-detail-overlay" onclick="closeTutorTicketDetail(event)">
+  <div class="modal st-modal st-ticket-detail-modal" id="ticket-detail-modal">
     <div class="modal-header">
       <div>
-        <div class="modal-to">Your lecturer</div>
-        <div class="modal-name">New Message</div>
+        <div class="modal-to" id="ticket-detail-title">Ticket</div>
+        <div class="modal-name" id="ticket-detail-subject">—</div>
       </div>
-      <button type="button" class="modal-close" onclick="closeTutorLecturerMessage()" aria-label="Close">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
-    <div class="um-section um-grid one">
-      <div class="um-field">
-        <div class="um-label">Subject <span style="color:var(--muted);font-weight:400">(optional)</span></div>
-        <input id="tutor-message-subject" class="um-input" type="text" placeholder="e.g. Question about next session"/>
-      </div>
-      <div class="um-field">
-        <div class="um-label">Message</div>
-        <textarea id="tutor-message-body" class="um-textarea" placeholder="Write your message to your lecturer…"></textarea>
+      <div class="st-ticket-detail-head-meta">
+        <span class="st-badge st-badge--open" id="ticket-detail-status">Open</span>
+        <button type="button" class="modal-close" onclick="closeTutorTicketDetail()" aria-label="Close">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
     </div>
-    <div class="um-actions">
-      <button type="button" class="btn-sm" onclick="closeTutorLecturerMessage()">Cancel</button>
-      <button type="button" class="btn-primary" id="tutor-message-send-btn" onclick="sendTutorLecturerMessage()">Send Message</button>
+    <div class="st-ticket-detail-body">
+      <div class="st-ticket-detail-original" id="ticket-detail-details"></div>
+      <div class="st-thread" id="ticket-detail-thread"></div>
+      <div class="st-ticket-detail-reply" id="ticket-detail-reply-wrap">
+        <label class="um-label" for="ticket-detail-message">Your reply</label>
+        <textarea id="ticket-detail-message" class="um-textarea" rows="3" placeholder="Write a follow-up for the Student Employment Office…"></textarea>
+        <div class="um-actions">
+          <button type="button" class="btn-sm" onclick="closeTutorTicketDetail()">Close</button>
+          <button type="button" class="btn-primary" id="ticket-detail-send-btn" onclick="sendTutorTicketReply()">Send reply</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -860,7 +861,7 @@
 
 <script src="../js/app.js?v=20"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/tutor-dashboard.js?v=87"></script>
+<script src="../js/tutor-dashboard.js?v=88"></script>
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 

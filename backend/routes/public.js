@@ -9,6 +9,21 @@ function formatClosingDate(value) {
   return String(value).slice(0, 10);
 }
 
+/** Calendar day in local server timezone as YYYY-MM-DD. */
+function todayIsoDate() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function isWithinClosingDate(closingDate) {
+  const close = formatClosingDate(closingDate);
+  if (!close) return true;
+  return todayIsoDate() <= close;
+}
+
 async function readPublicSettingsFromDb() {
   try {
     const result = await pool.query(
@@ -16,9 +31,13 @@ async function readPublicSettingsFromDb() {
     );
     if (result.rows.length > 0) {
       const row = result.rows[0];
+      const applications_open = !!row.applications_open;
+      const closing_date = formatClosingDate(row.closing_date);
       return {
-        applications_open: !!row.applications_open,
-        closing_date: formatClosingDate(row.closing_date),
+        applications_open,
+        closing_date,
+        accepting_applications:
+          applications_open && isWithinClosingDate(closing_date),
       };
     }
   } catch (err) {
@@ -33,20 +52,32 @@ async function readPublicSettingsFromDb() {
     const map = {};
     for (const row of result.rows) map[row.key] = row.value;
     const openVal = map.applications_open;
+    const applications_open =
+      openVal === true || openVal === 'true' || openVal === '1';
+    const closing_date = map.closing_date
+      ? formatClosingDate(map.closing_date)
+      : null;
     return {
-      applications_open: openVal === true || openVal === 'true' || openVal === '1',
-      closing_date: map.closing_date ? formatClosingDate(map.closing_date) : null,
+      applications_open,
+      closing_date,
+      accepting_applications:
+        applications_open && isWithinClosingDate(closing_date),
     };
   } catch (err) {
     if (err.code !== '42P01') throw err;
   }
 
-  return { applications_open: false, closing_date: null };
+  return {
+    applications_open: false,
+    closing_date: null,
+    accepting_applications: false,
+  };
 }
 
+/** True when new applications may start (toggle on and before/on closing date). */
 async function isApplicationsOpenFromDb() {
   const settings = await readPublicSettingsFromDb();
-  return !!settings.applications_open;
+  return !!settings.accepting_applications;
 }
 
 router.get('/settings', async (req, res) => {
@@ -82,3 +113,5 @@ router.get('/settings-extended', async (req, res) => {
 module.exports = router;
 module.exports.readPublicSettingsFromDb = readPublicSettingsFromDb;
 module.exports.isApplicationsOpenFromDb = isApplicationsOpenFromDb;
+module.exports.formatClosingDate = formatClosingDate;
+module.exports.isWithinClosingDate = isWithinClosingDate;

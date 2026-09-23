@@ -5,6 +5,9 @@ const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
 
+const MAX_IMPORT_ENTRIES = 2000;
+const STUDENT_NUMBER_RE = /^\d{6,12}$/;
+
 async function lecturerOwnsModule(lecturerId, moduleCode) {
   const result = await pool.query(
     `SELECT module_code FROM lecturer_modules
@@ -41,6 +44,11 @@ function normalizeEntry(row) {
   return { studentNumber, fullName, yearLevel, email };
 }
 
+function isValidEmail(value) {
+  if (!value) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+}
+
 router.get(
   '/',
   authenticate,
@@ -60,6 +68,7 @@ router.get(
         return res.status(403).json({ errors: ['You are not assigned to this module.'] });
       }
 
+      // Shared module roster (module-scoped). Import upserts without wiping other lecturers' work.
       const result = await pool.query(
         `SELECT id, module_code, student_number, full_name, email, year_level, status, updated_at
          FROM class_list_entries
@@ -87,6 +96,7 @@ router.get(
         count:      result.rows.length,
         lastUpdated: lastUpdated ? new Date(lastUpdated).toISOString() : null,
         entries:    result.rows,
+        shared:     true,
       });
 
     } catch (err) {
@@ -105,12 +115,18 @@ router.post(
       ? String(req.body.moduleCode).trim().toUpperCase()
       : null;
     const entries = req.body.entries || req.body.students || [];
+    const replaceAll = req.body.replaceAll === true || req.body.replace === true;
 
     if (!moduleCode) {
       return res.status(400).json({ errors: ['moduleCode is required.'] });
     }
     if (!Array.isArray(entries) || !entries.length) {
       return res.status(400).json({ errors: ['Provide at least one class list entry.'] });
+    }
+    if (entries.length > MAX_IMPORT_ENTRIES) {
+      return res.status(400).json({
+        errors: [`Import is limited to ${MAX_IMPORT_ENTRIES} entries per request.`],
+      });
     }
 
     try {
@@ -125,11 +141,26 @@ router.post(
 
       try {
         await client.query('BEGIN');
-        await client.query('DELETE FROM class_list_entries WHERE module_code = $1', [moduleCode]);
+        // Full replace only when explicitly requested — avoids multi-lecturer wipe by default.
+        if (replaceAll) {
+          await client.query('DELETE FROM class_list_entries WHERE module_code = $1', [moduleCode]);
+        }
 
         for (const row of entries) {
           const { studentNumber, fullName, yearLevel, email } = normalizeEntry(row);
           if (!studentNumber || !fullName) {
+            skipped += 1;
+            continue;
+          }
+          if (!STUDENT_NUMBER_RE.test(studentNumber)) {
+            skipped += 1;
+            continue;
+          }
+          if (fullName.length > 200) {
+            skipped += 1;
+            continue;
+          }
+          if (!isValidEmail(email)) {
             skipped += 1;
             continue;
           }
@@ -158,7 +189,12 @@ router.post(
         client.release();
       }
 
-      return res.status(200).json({ imported, skipped, moduleCode });
+      return res.status(200).json({
+        imported,
+        skipped,
+        moduleCode,
+        replaced: replaceAll,
+      });
 
     } catch (err) {
       console.error('Import class list error:', err.message);
