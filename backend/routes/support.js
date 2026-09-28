@@ -4,7 +4,7 @@ const router       = require('express').Router();
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
-const { supportLimiter } = require('../middleware/rateLimiter');
+const { supportLimiter, adminActionLimiter } = require('../middleware/rateLimiter');
 
 function mapListRow(row) {
   return {
@@ -256,6 +256,7 @@ router.post(
 
 router.patch(
   '/tickets/:id/resolve',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
@@ -308,6 +309,7 @@ router.patch(
 
 router.patch(
   '/tickets/:id/status',
+  adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {

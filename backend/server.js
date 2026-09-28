@@ -101,6 +101,26 @@ function validateEnvironment() {
     }
     console.warn(`\nStartup configuration warning:\n- ${message}`);
   }
+
+  const emailOverride = process.env.EMAIL_OVERRIDE && String(process.env.EMAIL_OVERRIDE).trim();
+  if (emailOverride) {
+    const allowInProd = ['1', 'true', 'yes', 'on'].includes(
+      String(process.env.EMAIL_OVERRIDE_ALLOW_IN_PRODUCTION || '').trim().toLowerCase()
+    );
+    if (isProduction && !allowInProd) {
+      console.warn(
+        '\nStartup configuration warning:\n- EMAIL_OVERRIDE is set but ignored in production (mail goes to real recipients). Set EMAIL_OVERRIDE_ALLOW_IN_PRODUCTION=true only for controlled test deploys.'
+      );
+    } else if (isProduction && allowInProd) {
+      console.warn(
+        `\nStartup configuration warning:\n- EMAIL_OVERRIDE=${emailOverride} is active in production (explicit allow). All outbound mail is redirected.`
+      );
+    } else {
+      console.warn(
+        `\nStartup configuration warning:\n- EMAIL_OVERRIDE=${emailOverride} redirects all outbound mail (dev/test).`
+      );
+    }
+  }
 }
 
 validateEnvironment();

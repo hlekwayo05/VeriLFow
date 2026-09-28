@@ -78,27 +78,103 @@ async function findSessionByQrToken(qrToken) {
 async function createAttendancePass(session) {
   const token = generateToken();
   const expiresAt = attendancePassExpiry(session);
-
-  await pool.query(
-    `INSERT INTO attendance_passes (token, session_id, expires_at)
-     VALUES ($1, $2, $3)`,
-    [token, session.id, expiresAt]
-  );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    // Only the latest unused pass for a session should remain valid (S1).
+    try {
+      await client.query(
+        `UPDATE attendance_passes
+         SET used_at = COALESCE(used_at, NOW())
+         WHERE session_id = $1 AND used_at IS NULL`,
+        [session.id]
+      );
+    } catch (err) {
+      if (err.code === '42703') {
+        if (process.env.NODE_ENV === 'production') {
+          throw Object.assign(new Error('Attendance pass storage unavailable'), { status: 503 });
+        }
+        await client.query('DELETE FROM attendance_passes WHERE session_id = $1', [session.id]);
+      } else {
+        throw err;
+      }
+    }
+    await client.query(
+      `INSERT INTO attendance_passes (token, session_id, expires_at)
+       VALUES ($1, $2, $3)`,
+      [token, session.id, expiresAt]
+    );
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
 
   return { token, expires_at: expiresAt };
 }
 
 async function findValidPass(passToken) {
-  const result = await pool.query(
-    `SELECT p.token, p.expires_at, p.session_id,
-            s.status, s.module_code, s.topic, s.session_type,
-            s.session_date, s.start_time, s.venue
-     FROM attendance_passes p
-     JOIN sessions s ON s.id = p.session_id
-     WHERE p.token = $1 AND p.expires_at > NOW()`,
-    [passToken]
-  );
-  return result.rows[0] || null;
+  try {
+    const result = await pool.query(
+      `SELECT p.token, p.expires_at, p.session_id,
+              s.status, s.module_code, s.topic, s.session_type,
+              s.session_date, s.start_time, s.venue
+       FROM attendance_passes p
+       JOIN sessions s ON s.id = p.session_id
+       WHERE p.token = $1
+         AND p.expires_at > NOW()
+         AND p.used_at IS NULL`,
+      [passToken]
+    );
+    return result.rows[0] || null;
+  } catch (err) {
+    if (err.code !== '42703') throw err;
+    if (process.env.NODE_ENV === 'production') {
+      const e = new Error('Attendance pass storage unavailable');
+      e.status = 503;
+      throw e;
+    }
+    const result = await pool.query(
+      `SELECT p.token, p.expires_at, p.session_id,
+              s.status, s.module_code, s.topic, s.session_type,
+              s.session_date, s.start_time, s.venue
+       FROM attendance_passes p
+       JOIN sessions s ON s.id = p.session_id
+       WHERE p.token = $1 AND p.expires_at > NOW()`,
+      [passToken]
+    );
+    return result.rows[0] || null;
+  }
+}
+
+async function consumeAttendancePass(passToken, studentNumber) {
+  try {
+    const result = await pool.query(
+      `UPDATE attendance_passes
+       SET used_at = NOW(), used_by_student = $2
+       WHERE token = $1 AND used_at IS NULL
+       RETURNING token`,
+      [passToken, String(studentNumber || '').slice(0, 32)]
+    );
+    return result.rows.length > 0;
+  } catch (err) {
+    if (err.code === '42703') {
+      if (process.env.NODE_ENV === 'production') {
+        const e = new Error('Attendance pass storage unavailable');
+        e.status = 503;
+        throw e;
+      }
+      // Dev-only fallback before migration 029 — atomic delete-or-fail
+      const deleted = await pool.query(
+        'DELETE FROM attendance_passes WHERE token = $1 RETURNING token',
+        [passToken]
+      );
+      return deleted.rows.length > 0;
+    }
+    throw err;
+  }
 }
 
 function getLanIPv4() {
@@ -180,6 +256,7 @@ module.exports = {
   findSessionByQrToken,
   createAttendancePass,
   findValidPass,
+  consumeAttendancePass,
   buildAttendanceUrl,
   resolveFrontendBase,
   resolveApiBase,

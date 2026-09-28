@@ -120,6 +120,13 @@ router.post(
     if (!moduleCode) {
       return res.status(400).json({ errors: ['moduleCode is required.'] });
     }
+    if (replaceAll) {
+      return res.status(403).json({
+        errors: [
+          'Full class-list replace is disabled. Import upserts by student number. Contact SEO if a module roster must be wiped.',
+        ],
+      });
+    }
     if (!Array.isArray(entries) || !entries.length) {
       return res.status(400).json({ errors: ['Provide at least one class list entry.'] });
     }

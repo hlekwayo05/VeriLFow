@@ -27,6 +27,8 @@ const FILES = [
   '025_hr_appointment_staff_number.sql',
   '026_offer_accepted_at.sql',
   '027_admin_audit_hardening.sql',
+  '028_token_version.sql',
+  '029_attendance_pass_used.sql',
 ];
 
 async function main() {

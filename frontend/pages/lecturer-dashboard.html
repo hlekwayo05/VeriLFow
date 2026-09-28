@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=12"/>
-<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=52"/>
-<link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=30"/>
+<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=53"/>
+<link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=31"/>
 <style id="lec-session-card-css">
   #lecSessionCard {
     display: block !important;
@@ -297,7 +297,7 @@
             <span class="type-chip practical" id="today-card-type">-</span>
           </div>
         </div>
-        <div id="today-card-empty" style="padding:16px 0;color:var(--muted);font-size:13px">No more sessions scheduled for today on this module.</div>
+        <div id="today-card-empty" style="padding:16px 0;color:var(--muted);font-size:13px">No upcoming sessions on this module.</div>
         <div class="section-header"><span class="section-title" id="dash-recent-title">Recent sessions</span><span class="section-sub">Last 30 days</span></div>
         <table class="rs-table">
           <thead><tr><th>Date</th><th>Type</th><th>Tutor</th><th>Duration</th><th>Status</th></tr></thead>
@@ -1255,7 +1255,7 @@
   </div>
 </div>
 
-<script src="../js/app.js?v=20"></script>
+<script src="../js/app.js?v=23"></script>
 <script>
   if (!VF.requireRole('lecturer', 'login.html')) { throw new Error('Not authenticated'); }
   (function guardTempPassword() {
@@ -1273,7 +1273,7 @@
   })();
 </script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/lecturer-dashboard.js?v=66"></script>
+<script src="../js/lecturer-dashboard.js?v=68"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';

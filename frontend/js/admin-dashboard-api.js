@@ -25,6 +25,15 @@ let adminClaimsCache = [];
 let adminTutorsCache = [];
 let adminSupportTicketsCache = [];
 
+function adEscapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function adFormatClaimPeriod(c) {
   return `${AD_MONTH[c.period_month] || c.period_month} ${c.period_year}`;
 }
@@ -70,10 +79,6 @@ function adRelativeTime(iso) {
   return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' });
 }
 
-function adEscapeHtml(text) {
-  return String(text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 function adBarWidth(value, max) {
   const v = Number(value) || 0;
   const m = Math.max(Number(max) || 0, 1);
@@ -109,7 +114,7 @@ function adClaimActionButtons(id, status) {
 
 function adQualChip(level) {
   if (!level) return '<span class="qual-chip">-</span>';
-  const label = AD_QUAL_DISPLAY[level] || level;
+  const label = adEscapeHtml(AD_QUAL_DISPLAY[level] || level);
   const cls = ['masters', 'masters_holder', 'phd', '4th_year_honours'].includes(level) ? ' honours' : '';
   return `<span class="qual-chip${cls}">${label}</span>`;
 }
@@ -150,13 +155,13 @@ async function loadClaims() {
     }
 
     tbody.innerHTML = claims.map((c) => {
-      const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim();
+      const tutor = adEscapeHtml(`${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '-');
       const hours = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
       const rate = c.pay_rate != null ? `R${Number(c.pay_rate).toFixed(0)}/hr` : '-';
       const resp = AD_RESP_DISPLAY[c.responsibility_level] || c.responsibility_level || '-';
       return `<tr data-claim-id="${c.id}" data-status="${c.status}">
-        <td style="font-weight:600;color:var(--text)">${tutor || '-'}</td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${c.module_code || '-'}</td>
+        <td style="font-weight:600;color:var(--text)">${tutor}</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(c.module_code || '-')}</td>
         <td style="color:var(--muted)">${adFormatClaimPeriod(c)}</td>
         <td style="font-family:'DM Mono',monospace;color:var(--muted)">${hours}</td>
         <td style="font-family:'DM Mono',monospace;color:var(--muted)">${rate}</td>
@@ -170,11 +175,11 @@ async function loadClaims() {
 
     if (cards) {
       cards.innerHTML = claims.map((c) => {
-        const tutor = `${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '-';
+        const tutor = adEscapeHtml(`${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim() || '-');
         const hours = c.total_hours != null ? `${Number(c.total_hours)} hrs` : `${c.session_count || 0} sessions`;
         return `<button type="button" class="ad-rec-card" onclick="openClaimDetail(${c.id})">
           <div class="ad-rec-name">${tutor}</div>
-          <div class="ad-rec-sub">${c.module_code || '-'} · ${adFormatClaimPeriod(c)}</div>
+          <div class="ad-rec-sub">${adEscapeHtml(c.module_code || '-')} · ${adEscapeHtml(adFormatClaimPeriod(c))}</div>
           <div class="ad-rec-grid">
             <div class="item"><div class="k">${hours}</div><div class="l">Hours</div></div>
             <div class="item"><div class="k">${adFormatMoney(c.total_amount)}</div><div class="l">Amount</div></div>
@@ -201,7 +206,9 @@ function adClaimStatusTag(status) {
 }
 
 function adLecturerApprovalBar(claim) {
-  const lecturer = `${claim.lecturer_first_names || ''} ${claim.lecturer_surname || ''}`.trim() || '-';
+  const lecturer = adEscapeHtml(
+    `${claim.lecturer_first_names || ''} ${claim.lecturer_surname || ''}`.trim() || '-'
+  );
   const reviewedAt = claim.lecturer_reviewed_at
     ? new Date(claim.lecturer_reviewed_at).toLocaleDateString('en-ZA', {
         day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
@@ -212,7 +219,7 @@ function adLecturerApprovalBar(claim) {
   if (['pending_coordinator', 'approved'].includes(claim.status)) {
     approvalHtml = `<div class="cd-lecturer-approval">
       <span class="claim-status-tag paid">Approved by lecturer</span>
-      ${reviewedAt ? `<div class="cd-lecturer-sub">Verified ${reviewedAt}</div>` : ''}
+      ${reviewedAt ? `<div class="cd-lecturer-sub">Verified ${adEscapeHtml(reviewedAt)}</div>` : ''}
     </div>`;
   } else if (claim.status === 'pending_lecturer') {
     approvalHtml = `<div class="cd-lecturer-approval">
@@ -240,13 +247,15 @@ async function openClaimDetail(id) {
     const sessions = data.sessions || [];
     ADMIN_CLAIMS[id] = { ...ADMIN_CLAIMS[id], ...claim };
 
-    const tutor = `${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim();
-    const period = adFormatClaimPeriod(claim);
-    document.getElementById('cd-title').textContent = `${tutor} - Claim`;
-    document.getElementById('cd-period').textContent = `${period} · ${claim.module_code || '-'}`;
+    const tutor = adEscapeHtml(`${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim());
+    const period = adEscapeHtml(adFormatClaimPeriod(claim));
+    document.getElementById('cd-title').textContent =
+      `${`${claim.tutor_first_names || ''} ${claim.tutor_surname || ''}`.trim()} - Claim`;
+    document.getElementById('cd-period').textContent =
+      `${adFormatClaimPeriod(claim)} · ${claim.module_code || '-'}`;
 
-    const qual = AD_QUAL_DISPLAY[claim.qualification_level] || claim.qualification_level || '-';
-    const resp = AD_RESP_DISPLAY[claim.responsibility_level] || claim.responsibility_level || '-';
+    const qual = adEscapeHtml(AD_QUAL_DISPLAY[claim.qualification_level] || claim.qualification_level || '-');
+    const resp = adEscapeHtml(AD_RESP_DISPLAY[claim.responsibility_level] || claim.responsibility_level || '-');
     const rate = claim.pay_rate != null ? `R${Number(claim.pay_rate).toFixed(2)}/hr` : '-';
     const totalHours = Number(claim.total_hours || 0);
 
@@ -259,16 +268,16 @@ async function openClaimDetail(id) {
       const present = s.attendance_count ?? 0;
       const enrolled = s.enrolled_count ?? 0;
       const attCls = enrolled && (present / enrolled) >= 0.75 ? 'att-good' : (enrolled ? 'att-low' : '');
-      const sessionId = s.session_id || s.id;
+      const sessionId = Number(s.session_id || s.id) || 0;
       const att = `${present} / ${enrolled || '-'}`;
       return `<tr class="${flagged ? 'flagged-row' : ''}">
-        <td style="font-weight:600;color:${flagged ? 'var(--red)' : 'var(--text)'}">${date}</td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${time}</td>
-        <td style="color:var(--muted);">${s.venue || '-'}</td>
-        <td style="color:var(--muted);">${s.topic || '-'}</td>
-        <td><span class="type-chip">${s.session_type || '-'}</span></td>
-        <td><button type="button" class="att-reg-link ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})" title="View attendance register">${att}</button></td>
-        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${s.claimed_hours || '-'} hrs</td>
+        <td style="font-weight:600;color:${flagged ? 'var(--red)' : 'var(--text)'}">${adEscapeHtml(date)}</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${adEscapeHtml(time)}</td>
+        <td style="color:var(--muted);">${adEscapeHtml(s.venue || '-')}</td>
+        <td style="color:var(--muted);">${adEscapeHtml(s.topic || '-')}</td>
+        <td><span class="type-chip">${adEscapeHtml(s.session_type || '-')}</span></td>
+        <td><button type="button" class="att-reg-link ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})" title="View attendance register">${adEscapeHtml(att)}</button></td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted);">${adEscapeHtml(s.claimed_hours || '-')} hrs</td>
       </tr>`;
     }).join('');
 
@@ -277,16 +286,16 @@ async function openClaimDetail(id) {
       <div class="claims-strip cd-verify-strip">
         <div class="cl-stat"><div class="cl-stat-label">Qualification Level</div><div class="cl-stat-val">${qual}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Responsibility Level</div><div class="cl-stat-val">${resp}</div></div>
-        <div class="cl-stat"><div class="cl-stat-label">Claimed Rate</div><div class="cl-stat-val">${rate}</div></div>
-        <div class="cl-stat"><div class="cl-stat-label">Total Hours</div><div class="cl-stat-val">${totalHours} hrs</div></div>
-        <div class="cl-stat"><div class="cl-stat-label">Total Amount</div><div class="cl-stat-val green">${adFormatMoney(claim.total_amount)}</div></div>
+        <div class="cl-stat"><div class="cl-stat-label">Claimed Rate</div><div class="cl-stat-val">${adEscapeHtml(rate)}</div></div>
+        <div class="cl-stat"><div class="cl-stat-label">Total Hours</div><div class="cl-stat-val">${adEscapeHtml(totalHours)} hrs</div></div>
+        <div class="cl-stat"><div class="cl-stat-label">Total Amount</div><div class="cl-stat-val green">${adEscapeHtml(adFormatMoney(claim.total_amount))}</div></div>
       </div>
       ${adLecturerApprovalBar(claim)}
       <div class="ts-modal-wrap">
         <div class="ts-modal-head">
           <div>
             <div class="ts-modal-head-title">${tutor} - ${period}</div>
-            <div class="ts-modal-head-sub">${claim.module_code || '-'} · ${sessions.length} session(s)</div>
+            <div class="ts-modal-head-sub">${adEscapeHtml(claim.module_code || '-')} · ${sessions.length} session(s)</div>
           </div>
           ${adClaimStatusTag(claim.status)}
         </div>
@@ -295,7 +304,7 @@ async function openClaimDetail(id) {
           <tbody>${rows || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">No sessions</td></tr>'}</tbody>
         </table>
       </div>
-      ${note ? `<div class="cm-note">${note}</div>` : ''}`;
+      ${note ? `<div class="cm-note">${adEscapeHtml(note)}</div>` : ''}`;
 
     const footer = document.getElementById('cd-footer');
     if (claim.status === 'pending_coordinator') {
@@ -399,15 +408,15 @@ function adFlagIssueLabel(session) {
 }
 
 function adFlaggedRow(session) {
-  const tutor = session.tutor_names || '-';
-  const lecturer = `${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim() || 'System';
-  const dateStr = adFormatSessionDate(session.session_date, session.start_time);
+  const tutor = adEscapeHtml(session.tutor_names || '-');
+  const lecturer = adEscapeHtml(`${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim() || 'System');
+  const dateStr = adEscapeHtml(adFormatSessionDate(session.session_date, session.start_time));
   return `<tr data-flag-id="${session.id}" data-status="open">
     <td style="font-weight:600;color:var(--text)">${tutor}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${session.module_code || '-'}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(session.module_code || '-')}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--muted)">${dateStr}</td>
-    <td style="color:var(--muted)">${adSessionTypeLabel(session.session_type)}</td>
-    <td><span class="issue-chip no-confirm">${adFlagIssueLabel(session)}</span></td>
+    <td style="color:var(--muted)">${adEscapeHtml(adSessionTypeLabel(session.session_type))}</td>
+    <td><span class="issue-chip no-confirm">${adEscapeHtml(adFlagIssueLabel(session))}</span></td>
     <td style="color:var(--muted)">${lecturer}</td>
     <td>
       <button class="btn-sm" onclick="investigateFlaggedSession(${session.id})">Investigate</button>
@@ -452,14 +461,14 @@ async function loadFlaggedSessions() {
     if (flaggedCards) {
       flaggedCards.innerHTML = flagged.length
         ? flagged.map((s) => {
-          const tutor = s.tutor_names || '-';
-          const dateStr = adFormatSessionDate(s.session_date, s.start_time);
+          const tutor = adEscapeHtml(s.tutor_names || '-');
+          const dateStr = adEscapeHtml(adFormatSessionDate(s.session_date, s.start_time));
           return `<button type="button" class="ad-rec-card flag" onclick="investigateFlaggedSession(${s.id})">
             <div class="ad-rec-name">${tutor}</div>
-            <div class="ad-rec-sub">${s.module_code || '-'} · ${dateStr}</div>
+            <div class="ad-rec-sub">${adEscapeHtml(s.module_code || '-')} · ${dateStr}</div>
             <div class="ad-rec-grid">
-              <div class="item"><div class="k">${adSessionTypeLabel(s.session_type)}</div><div class="l">Type</div></div>
-              <div class="item"><div class="k">${adFlagIssueLabel(s)}</div><div class="l">Issue</div></div>
+              <div class="item"><div class="k">${adEscapeHtml(adSessionTypeLabel(s.session_type))}</div><div class="l">Type</div></div>
+              <div class="item"><div class="k">${adEscapeHtml(adFlagIssueLabel(s))}</div><div class="l">Issue</div></div>
             </div>
           </button>`;
         }).join('')
@@ -474,13 +483,13 @@ async function loadFlaggedSessions() {
     if (dashBody) {
       dashBody.innerHTML = flagged.length
         ? flagged.slice(0, 5).map((s) => {
-          const tutor = s.tutor_names || '-';
-          const dateStr = adFormatSessionDate(s.session_date, s.start_time);
+          const tutor = adEscapeHtml(s.tutor_names || '-');
+          const dateStr = adEscapeHtml(adFormatSessionDate(s.session_date, s.start_time));
           return `<tr>
             <td style="font-weight:600;color:var(--text)">${tutor}</td>
-            <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.module_code || '-'}</td>
+            <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEscapeHtml(s.module_code || '-')}</td>
             <td style="font-family:'DM Mono',monospace;color:var(--muted)">${dateStr}</td>
-            <td><span class="issue-chip no-confirm">${adFlagIssueLabel(s)}</span></td>
+            <td><span class="issue-chip no-confirm">${adEscapeHtml(adFlagIssueLabel(s))}</span></td>
             <td><button class="btn-sm" onclick="investigateFlaggedSession(${s.id})">Investigate</button></td>
           </tr>`;
         }).join('')
@@ -512,7 +521,7 @@ function openFlagModal(flagId) {
   const lecturer = `${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim();
   const dateStr = adFormatSessionDate(session.session_date, session.start_time);
   document.getElementById('flag-title').textContent = `${tutor} · ${session.module_code || '-'}`;
-  document.getElementById('flag-detail-note').innerHTML = `<strong>Issue:</strong> ${adFlagIssueLabel(session)} · <strong>Session:</strong> ${dateStr}`;
+  document.getElementById('flag-detail-note').innerHTML = `<strong>Issue:</strong> ${adEscapeHtml(adFlagIssueLabel(session))} · <strong>Session:</strong> ${adEscapeHtml(dateStr)}`;
   document.getElementById('flag-tutor').textContent = tutor;
   document.getElementById('flag-module').textContent = session.module_code || '-';
   document.getElementById('flag-session').textContent = dateStr;
@@ -616,8 +625,8 @@ function renderAdminRegisterModal(data) {
   tbody.innerHTML = students.map((s, i) => `
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td style="color:var(--muted);font-size:10px;font-family:'DM Mono',monospace">${String(i + 1).padStart(2, '0')}</td>
-      <td class="reg-snum">${s.student_number}</td>
-      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${s.full_name || '-'}</td>
+      <td class="reg-snum">${adEscapeHtml(s.student_number)}</td>
+      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${adEscapeHtml(s.full_name || '-')}</td>
       <td class="reg-time">${formatAdminRegisterSignInTime(s.recorded_at)}</td>
       <td><span class="reg-badge ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span></td>
     </tr>`).join('');
@@ -1561,7 +1570,7 @@ async function hydrateAdminHero() {
     const parts = name.split(/\s+/).filter(Boolean);
     if (hero) {
       const em = parts.length > 1 ? parts[parts.length - 1] : name;
-      hero.innerHTML = `${parts[0] || 'Admin'} <em>${em}</em>`;
+      hero.innerHTML = `${adEscapeHtml(parts[0] || 'Admin')} <em>${adEscapeHtml(em)}</em>`;
     }
     const period = new Date().toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
     if (sub) {
@@ -1909,7 +1918,7 @@ function renderTutorRow(t, role = 'tutor') {
     ? t.responsibility_level.charAt(0).toUpperCase() + t.responsibility_level.slice(1)
     : '-';
   const lecturerName = t.lecturer_first_names
-    ? `${t.lecturer_first_names} ${t.lecturer_surname}`
+    ? adEscapeHtml(`${t.lecturer_first_names} ${t.lecturer_surname}`.trim())
     : '<span style="color:var(--muted)">Not assigned</span>';
   const name = `${t.first_names} ${t.surname}`;
   return `

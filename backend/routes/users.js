@@ -17,6 +17,7 @@ const { flattenAllModules, COURSE_SHORT_MAP } = require('../constants');
 
 const BCRYPT_COST = 12;
 const { generateTempPassword } = require('../utils/tempPassword');
+const { fetchTokenVersion, bumpTokenVersion } = require('../utils/tokenVersion');
 const { parsePagination, sendList } = require('../utils/pagination');
 const { cacheGet, cacheSet } = require('../services/cache');
 const {
@@ -144,7 +145,7 @@ async function purgeLecturerAccount(client, lecturerId) {
   return deleted.rows.length > 0;
 }
 
-function signTutorToken(userId, applicationStatus, onboardingComplete, tempFlag = false, identity = {}) {
+function signTutorToken(userId, applicationStatus, onboardingComplete, tempFlag = false, identity = {}, tokenVersion = 0) {
   return jwt.sign(
     {
       userId,
@@ -155,6 +156,7 @@ function signTutorToken(userId, applicationStatus, onboardingComplete, tempFlag 
       applicationStatus,
       onboardingComplete,
       tempFlag,
+      tv:                Number(tokenVersion) || 0,
     },
     process.env.JWT_SECRET,
     { expiresIn: '8h' }
@@ -602,13 +604,15 @@ router.patch(
         [userId]
       );
       const identity = userRow.rows[0] || {};
+      const tokenVersion = await fetchTokenVersion(userId);
 
       const token = signTutorToken(
         userId,
         'approved',
         true,
         !!req.user.tempFlag,
-        identity
+        identity,
+        tokenVersion
       );
 
       return res.status(200).json({
@@ -1134,10 +1138,9 @@ router.get(
            u.id,
            u.first_names,
            u.surname,
-           u.email,
-           u.cell,
+           ${role === 'admin' ? 'u.email, u.cell,' : ''}
            u.student_number,
-           u.staff_number,
+           ${role === 'admin' ? 'u.staff_number,' : ''}
            a.id AS application_id,
            a.offer_accepted_at,
            a.qualification_level,
@@ -1146,7 +1149,7 @@ router.get(
            a.position_type,
            a.cost_centre,
            a.assigned_lecturer_id,
-           a.gpa,
+           ${role === 'admin' ? 'a.gpa,' : ''}
            lec.first_names AS lecturer_first_names,
            lec.surname     AS lecturer_surname,
            tp.step1_complete,
@@ -1302,6 +1305,8 @@ router.patch(
       if (result.rows.length === 0) {
         return res.status(404).json({ errors: [`${role} not found.`] });
       }
+
+      await bumpTokenVersion(userId);
 
       const user = result.rows[0];
       const loginLink = referralLoginLink();

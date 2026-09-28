@@ -137,9 +137,9 @@ function syncLecHubModules(modules) {
   }
   hubModules.innerHTML = modules.map((m) => `
     <button type="button" class="module-tab${m.code === currentModuleCode ? ' active' : ''}"
-      data-code="${m.code}" data-name="${m.name}" data-course="${m.course || ''}"
+      data-code="${escapeHtml(m.code)}" data-name="${escapeHtml(m.name)}" data-course="${escapeHtml(m.course || '')}"
       onclick="switchModule(this)">
-      <span class="mod-code">${m.code}</span><span class="mod-name"> ${m.name}</span>
+      <span class="mod-code">${escapeHtml(m.code)}</span><span class="mod-name"> ${escapeHtml(m.name)}</span>
     </button>`).join('');
   hubModules.hidden = false;
 }
@@ -184,9 +184,9 @@ function updateLecMobileHubNext(sessions) {
   const result = findTodayCardSession(sessions || Object.values(SESSIONS));
   let aria = 'Today / next';
   if (!result) {
-    titleEl.textContent = 'No session today';
+    titleEl.textContent = 'No upcoming session';
     metaEl.textContent = currentModuleCode
-      ? `${currentModuleCode} · Check calendar for upcoming sessions`
+      ? `${currentModuleCode} · Nothing scheduled yet`
       : 'Select a module to see sessions';
     aria = metaEl.textContent;
   } else {
@@ -194,9 +194,12 @@ function updateLecMobileHubNext(sessions) {
     titleEl.textContent = mode === 'live'
       ? (s.topic || sessionTypeLabel(s.session_type) || 'Live session')
       : (s.topic || sessionTypeLabel(s.session_type) || 'Up next');
-    const time = s.start_time ? String(s.start_time).slice(0, 5) : '-';
+    const later = sessionDateKey(s.session_date) !== localTodayKey();
+    const time = later
+      ? formatSessionDate(s)
+      : (s.start_time ? String(s.start_time).slice(0, 5) : '-');
     const venue = s.venue || 'Venue TBA';
-    const label = mode === 'live' ? 'Live now' : mode === 'due' ? 'Due now' : 'Up next';
+    const label = mode === 'live' ? 'Live now' : mode === 'due' ? 'Due now' : later ? 'Next session' : 'Up next';
     metaEl.textContent = `${label} · ${time} · ${venue}`;
     aria = `${titleEl.textContent}. ${metaEl.textContent}`;
   }
@@ -267,7 +270,7 @@ function renderDashboardRecent(sessions) {
     <tr onclick="openSessionDetail(${s.id})">
       <td><div class="rs-date">${formatSessionDate(s)}</div></td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
-      <td><div class="rs-tutor">${s.tutor_names || '-'}</div></td>
+      <td><div class="rs-tutor">${escapeHtml(s.tutor_names || '-')}</div></td>
       <td><div class="rs-dur">${claimHint(s.session_type)}</div></td>
       <td>${dashboardStatusChip(s.status)}</td>
     </tr>`).join('');
@@ -351,18 +354,39 @@ function findNextSessionToday(sessions) {
   return candidates[0]?.session || null;
 }
 
+function findNextComingSession(sessions) {
+  const todayStr = localTodayKey();
+  return (sessions || [])
+    .filter((s) => {
+      const key = sessionDateKey(s.session_date);
+      if (!key || key <= todayStr) return false;
+      if (s.status === 'cancelled' || s.status === 'completed') return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const dateCmp = sessionDateKey(a.session_date).localeCompare(sessionDateKey(b.session_date));
+      if (dateCmp !== 0) return dateCmp;
+      const aMins = a.start_time ? nsTimeToMinutes(String(a.start_time).slice(0, 5)) : 9999;
+      const bMins = b.start_time ? nsTimeToMinutes(String(b.start_time).slice(0, 5)) : 9999;
+      return aMins - bMins;
+    })[0] || null;
+}
+
 function findTodayCardSession(sessions) {
   const live = findLiveSessionToday(sessions);
   if (live) return { session: live, mode: 'live' };
   const next = findNextSessionToday(sessions);
-  if (!next) return null;
-
-  const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-  const startMins = next.start_time
-    ? nsTimeToMinutes(String(next.start_time).slice(0, 5))
-    : null;
-  const mode = startMins != null && startMins < nowMins ? 'due' : 'upcoming';
-  return { session: next, mode };
+  if (next) {
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const startMins = next.start_time
+      ? nsTimeToMinutes(String(next.start_time).slice(0, 5))
+      : null;
+    const mode = startMins != null && startMins < nowMins ? 'due' : 'upcoming';
+    return { session: next, mode };
+  }
+  const coming = findNextComingSession(sessions);
+  if (coming) return { session: coming, mode: 'upcoming' };
+  return null;
 }
 
 function renderTodayCardTutorAvatars(namesStr) {
@@ -383,7 +407,7 @@ function renderTodayCard(sessions) {
   if (!result) {
     card.style.display = 'none';
     empty.style.display = 'block';
-    empty.textContent = 'No more sessions scheduled for today on this module.';
+    empty.textContent = 'No upcoming sessions on this module.';
     updateLecMobileHubNext([]);
     return;
   }
@@ -395,9 +419,11 @@ function renderTodayCard(sessions) {
 
   const tagEl = card.querySelector('.tag');
   if (tagEl) {
+    const laterDay = sessionDateKey(todaySession.session_date) !== localTodayKey();
     tagEl.textContent =
       mode === 'live' ? 'Live now' :
       mode === 'due' ? 'Due now' :
+      laterDay ? 'Next session' :
       'Up next';
   }
 
@@ -413,10 +439,7 @@ function renderTodayCard(sessions) {
   setText('#today-card-title', `${todaySession.module_code} - ${sessionTypeLabel(todaySession.session_type)}`);
   const descEl = document.getElementById('today-card-desc');
   if (descEl) {
-    const topic = String(todaySession.topic || currentModuleName || '-')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    const topic = escapeHtml(todaySession.topic || currentModuleName || '-');
     const tutorLabel = mode === 'live' ? 'Tutor:' : 'Available:';
     const tutorNames = mode === 'live'
       ? todaySession.tutor_names
@@ -434,9 +457,13 @@ function renderTodayCard(sessions) {
   }
   const timeEl = document.getElementById('today-card-time');
   if (timeEl) {
-    timeEl.innerHTML = todaySession.start_time
-      ? `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${String(todaySession.start_time).slice(0, 5)} · ${todaySession.venue || '-'}`
-      : (todaySession.venue || '-');
+    const laterDay = sessionDateKey(todaySession.session_date) !== localTodayKey();
+    const when = laterDay
+      ? formatSessionDate(todaySession)
+      : (todaySession.start_time ? String(todaySession.start_time).slice(0, 5) : '');
+    timeEl.innerHTML = when
+      ? `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${escapeHtml(when)} · ${escapeHtml(todaySession.venue || '-')}`
+      : escapeHtml(todaySession.venue || '-');
   }
   const typeEl = document.getElementById('today-card-type');
   if (typeEl) {
@@ -731,7 +758,7 @@ function lecClaimCardFeedback(c) {
     return `<div class="claim-coord-feedback approved">Coordinator approved${when ? ` · ${when}` : ''}</div>`;
   }
   if (c.status === 'returned_by_coordinator' && c.coordinator_note) {
-    return `<div class="claim-coord-feedback returned">Coordinator returned - ${c.coordinator_note}</div>`;
+    return `<div class="claim-coord-feedback returned">Coordinator returned - ${escapeHtml(c.coordinator_note)}</div>`;
   }
   if (c.status === 'pending_coordinator') {
     return '<div class="claim-coord-feedback pending">With coordinator for approval</div>';
@@ -797,8 +824,8 @@ function renderClaimsList(claims) {
         <div class="claim-top">
           <div class="claim-av">${initials}</div>
           <div class="claim-info">
-            <div class="claim-name">${c.tutor_first_names || ''} ${c.tutor_surname || ''}</div>
-            <div class="claim-meta">${c.module_code || currentModuleCode || '-'} · ${formatClaimPeriod(c)}</div>
+            <div class="claim-name">${escapeHtml(`${c.tutor_first_names || ''} ${c.tutor_surname || ''}`.trim())}</div>
+            <div class="claim-meta">${escapeHtml(c.module_code || currentModuleCode || '-')} · ${formatClaimPeriod(c)}</div>
           </div>
           <div class="claim-amount">
             <div class="claim-amt-val">${formatClaimAmount(c.total_amount)}</div>
@@ -2252,8 +2279,8 @@ function renderLecturerRegisterModal(data) {
   tbody.innerHTML = students.map((s, i) => `
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td style="color:var(--muted);font-size:10px;font-family:'DM Mono',monospace">${String(i + 1).padStart(2, '0')}</td>
-      <td class="reg-snum">${s.student_number}</td>
-      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${s.full_name || '-'}</td>
+      <td class="reg-snum">${escapeHtml(s.student_number)}</td>
+      <td class="reg-sname" style="${!s.present ? 'color:var(--muted);font-weight:400;' : ''}">${escapeHtml(s.full_name || '-')}</td>
       <td class="reg-time">${formatRegisterSignInTime(s.recorded_at)}</td>
       <td><span class="reg-badge ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span></td>
     </tr>`).join('');
@@ -2264,8 +2291,8 @@ function renderLecturerRegisterModal(data) {
       <div class="lec-att-row">
         <span class="num">${String(i + 1).padStart(2, '0')}</span>
         <div class="ainfo">
-          <div class="nm">${(s.full_name || '-').replace(/</g, '&lt;')}</div>
-          <div class="sid">${s.student_number || '-'}</div>
+          <div class="nm">${escapeHtml(s.full_name || '-')}</div>
+          <div class="sid">${escapeHtml(s.student_number || '-')}</div>
         </div>
         <span class="status-tag ${s.present ? 'present' : 'absent'}">${s.present ? 'Present' : 'Absent'}</span>
       </div>`).join('');
@@ -3303,9 +3330,9 @@ function showLecCalDetail(d, dayEvents) {
     listEl.style.display = 'block';
     listEl.innerHTML = items.map((ev) => `
       <button type="button" class="cal-session-pick" onclick="showLecCalSessionById(${d}, ${ev.sessionId})">
-        <span class="cal-session-pick-time">${ev.time}</span>
-        <span class="cal-session-pick-topic">${ev.topic}</span>
-        <span class="cal-session-pick-type">${ev.sessionType}</span>
+        <span class="cal-session-pick-time">${escapeHtml(ev.time)}</span>
+        <span class="cal-session-pick-topic">${escapeHtml(ev.topic)}</span>
+        <span class="cal-session-pick-type">${escapeHtml(ev.sessionType)}</span>
       </button>`).join('');
   }
   const actionsEl = document.getElementById('lcd-actions');

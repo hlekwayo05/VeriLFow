@@ -62,6 +62,10 @@ const MONTHS = [
 
 const RETURNED_STATUSES = ['returned_by_lecturer', 'returned_by_coordinator'];
 
+function isClaimPastDue(periodMonth, periodYear) {
+  return new Date() > new Date(periodYear, periodMonth - 1, 15, 23, 59, 59);
+}
+
 function monthYearLabel(month, year) {
   return `${MONTHS[month - 1] || month} ${year}`;
 }
@@ -308,7 +312,7 @@ router.get(
         : roundMoney(totalHours * payRate);
 
       const lecturerId = app.assigned_lecturer_id || null;
-      const pastDue = new Date() > new Date(periodYear, periodMonth - 1, 15, 23, 59, 59);
+      const pastDue = isClaimPastDue(periodMonth, periodYear);
 
       const staffResult = await pool.query(
         'SELECT staff_number FROM users WHERE id = $1',
@@ -321,6 +325,7 @@ router.get(
 
       const canSubmit = (
         hasStaffNumber
+        && !pastDue
         && (
           (!existingClaim && sessions.length > 0)
           || (existingClaim && RETURNED_STATUSES.includes(existingClaim.status))
@@ -423,26 +428,10 @@ router.get(
         );
         sessions = lineResult.rows;
       } else {
-        const sessionsResult = await pool.query(
-          `SELECT
-             s.session_date, s.start_time, s.venue, s.topic, s.session_type,
-             COUNT(DISTINCT al.id)::int AS attendance_count,
-             (
-               SELECT COUNT(*)::int FROM class_list_entries cle
-               WHERE cle.module_code = s.module_code
-             ) AS enrolled_count
-           FROM sessions s
-           JOIN session_tutors st ON st.session_id = s.id AND st.tutor_id = $1
-           LEFT JOIN attendance_logs al ON al.session_id = s.id
-           WHERE EXTRACT(MONTH FROM s.session_date) = $2
-             AND EXTRACT(YEAR FROM s.session_date) = $3
-             AND s.module_code = $4
-             AND s.status = 'completed'
-           GROUP BY s.id
-           ORDER BY s.session_date ASC, s.start_time ASC NULLS LAST`,
-          [tutorId, periodMonth, periodYear, moduleCode]
+        sessions = await loadCompletedSessionsForPeriod(
+          tutorId, moduleCode, periodMonth, periodYear
         );
-        sessions = sessionsResult.rows.map((row) => ({
+        sessions = sessions.map((row) => ({
           ...row,
           claimed_hours: getClaimHours(row.session_type),
         }));
@@ -638,6 +627,14 @@ router.post(
         });
       }
 
+      if (isClaimPastDue(periodMonth, periodYear)) {
+        return res.status(400).json({
+          errors: [
+            'The submission deadline for this period has passed. Contact your lecturer or SEO if you still need to submit.',
+          ],
+        });
+      }
+
       try {
         await assertTutorHasStaffNumber(tutorId);
       } catch (staffErr) {
@@ -660,7 +657,12 @@ router.post(
         return res.status(400).json({ errors: ['Lecturer does not match your assigned lecturer.'] });
       }
 
-      if (app.module_code && String(app.module_code).trim().toUpperCase() !== mod) {
+      if (!app.module_code) {
+        return res.status(400).json({
+          errors: ['Your approved application has no module code. Contact SEO before submitting claims.'],
+        });
+      }
+      if (String(app.module_code).trim().toUpperCase() !== mod) {
         return res.status(400).json({
           errors: ['Module code does not match your approved application module.'],
         });
@@ -708,6 +710,7 @@ router.post(
 
         const fullClaim = await loadClaimById(claim.id);
 
+        invalidateClaimCaches();
         return res.status(201).json({
           message: 'Claim submitted successfully.',
           ...claim,
@@ -743,6 +746,14 @@ router.patch(
       if (claim.tutor_id !== tutorId) return res.status(403).json({ errors: ['Forbidden.'] });
       if (!RETURNED_STATUSES.includes(claim.status)) {
         return res.status(400).json({ errors: ['Only returned claims can be resubmitted.'] });
+      }
+
+      if (isClaimPastDue(claim.period_month, claim.period_year)) {
+        return res.status(400).json({
+          errors: [
+            'The submission deadline for this period has passed. Contact your lecturer or SEO if you still need to resubmit.',
+          ],
+        });
       }
 
       try {
@@ -781,7 +792,7 @@ router.patch(
       const client = await pool.connect();
       try {
         await client.query('BEGIN');
-        await client.query(
+        const statusResult = await client.query(
           `UPDATE claims
            SET status = 'pending_lecturer',
                lecturer_note = NULL,
@@ -792,9 +803,17 @@ router.patch(
                submitted_at = NOW(),
                lecturer_reviewed_at = NULL,
                coordinator_reviewed_at = NULL
-           WHERE id = $4`,
+           WHERE id = $4
+             AND status IN ('returned_by_lecturer', 'returned_by_coordinator')
+           RETURNING id`,
           [totalHours, totalAmount, payRate, claimId]
         );
+        if (!statusResult.rows.length) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({
+            errors: ['Claim is no longer in a returned state and cannot be resubmitted.'],
+          });
+        }
         await replaceClaimSessions(client, claimId, lineItems);
         await client.query('COMMIT');
       } catch (txErr) {
@@ -806,6 +825,7 @@ router.patch(
 
       const updated = await loadClaimById(claimId);
 
+      invalidateClaimCaches();
       return res.status(200).json({ message: 'Claim resubmitted.', ...updated });
     } catch (err) {
       console.error('Resubmit claim error:', err.message);
@@ -1017,10 +1037,16 @@ router.patch(
          SET status = 'returned_by_lecturer',
              lecturer_note = $1,
              lecturer_reviewed_at = NOW()
-         WHERE id = $2
+         WHERE id = $2 AND status = 'pending_lecturer'
          RETURNING *`,
         [String(note).trim(), claimId]
       );
+
+      if (!result.rows.length) {
+        return res.status(409).json({
+          errors: ['Claim is no longer awaiting lecturer review.'],
+        });
+      }
 
       const updated = result.rows[0];
       const period = claimPeriodLabel(claim);
@@ -1087,6 +1113,7 @@ router.patch(
             `Your ${period} timesheet for ${moduleLabel} has been approved and forwarded to finance.`,
         });
 
+        invalidateClaimCaches();
         return res.status(200).json({ message: 'Claim approved.', ...updated });
       } catch (txErr) {
         await client.query('ROLLBACK').catch(() => {});
@@ -1115,9 +1142,16 @@ router.patch(
     try {
       const claim = await loadClaimById(claimId);
       if (!claim) return res.status(404).json({ errors: ['Claim not found.'] });
-      if (!['pending_coordinator', 'approved'].includes(claim.status)) {
+      if (claim.status === 'approved') {
         return res.status(400).json({
-          errors: ['Only pending or approved claims can be returned to the tutor.'],
+          errors: [
+            'Approved claims cannot be returned. Contact finance if a recall is required.',
+          ],
+        });
+      }
+      if (claim.status !== 'pending_coordinator') {
+        return res.status(400).json({
+          errors: ['Only claims awaiting coordinator review can be returned to the tutor.'],
         });
       }
 
@@ -1127,10 +1161,16 @@ router.patch(
          SET status = 'returned_by_coordinator',
              coordinator_note = $1,
              coordinator_reviewed_at = NOW()
-         WHERE id = $2
+         WHERE id = $2 AND status = 'pending_coordinator'
          RETURNING *`,
         [trimmed, claimId]
       );
+
+      if (!result.rows.length) {
+        return res.status(409).json({
+          errors: ['Claim is no longer awaiting coordinator review.'],
+        });
+      }
 
       const updated = result.rows[0];
       const tutor = claimTutorName(claim);

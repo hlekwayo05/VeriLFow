@@ -122,15 +122,22 @@ function contentTypeForUpload(filename) {
   return 'application/pdf';
 }
 
-async function persistUploadToStorage(localPath, storagePath) {
+async function persistUploadToStorage(localPath, storagePath, options = {}) {
+  const keepLocal = options.keepLocal === true;
   try {
     await uploadFile(localPath, storagePath, contentTypeForUpload(storagePath));
     console.log('Uploaded to Supabase Storage:', storagePath);
     return storagePath;
   } catch (storageErr) {
     console.error('Storage upload failed:', storageErr.message);
-    // Keep local basename as fallback path the files route can serve
+    if (process.env.NODE_ENV === 'production') {
+      throw storageErr;
+    }
+    // Dev-only: keep local basename so the files route can still serve uploads.
     return 'applications/' + path.basename(localPath);
+  } finally {
+    // Submit still needs the temp file for CV/transcript screening.
+    if (!keepLocal) cleanupTempFiles([localPath]);
   }
 }
 
@@ -493,9 +500,11 @@ router.post(
       async function resolveDoc(formName, storedPath, storedOriginal) {
         const fresh = req.files && req.files[formName] && req.files[formName][0];
         if (fresh) {
+          materializedTemps.push(fresh.path);
           const storagePath = await persistUploadToStorage(
             fresh.path,
-            'applications/' + fresh.filename
+            'applications/' + fresh.filename,
+            { keepLocal: true }
           );
           return {
             localPath: fresh.path,
@@ -655,7 +664,7 @@ router.post(
           rejectionDetail = 'If this keeps happening, re-upload your CV and academic record, then submit again.';
           screening = {
             error: true,
-            note: 'Document screening could not be completed: ' + scanErr.message,
+            note: 'Document screening could not be completed. Please try again.',
           };
         }
       }
@@ -681,12 +690,12 @@ router.post(
              tax_proof_original_name  = COALESCE($9::varchar, tax_proof_original_name),
              bank_proof_original_name = COALESCE($10::varchar, bank_proof_original_name),
              declared                 = TRUE,
-             status                   = $11,
+             status                   = $11::application_status,
              screening_result         = $12,
              cv_keyword_score         = $13,
              rejection_reason         = $14,
              submitted_at             = NOW(),
-             reviewed_at              = CASE WHEN $11 = 'rejected' THEN NOW() ELSE reviewed_at END
+             reviewed_at              = CASE WHEN $11::application_status = 'rejected' THEN NOW() ELSE reviewed_at END
          WHERE user_id = $15 AND status = 'incomplete'
          RETURNING id, status`,
         [

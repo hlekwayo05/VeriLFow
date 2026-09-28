@@ -778,6 +778,9 @@ router.post(
 
     if (!threadId) return res.status(400).json({ errors: ['Invalid thread id.'] });
     if (!body) return res.status(400).json({ errors: ['Message body is required.'] });
+    if (body.length > 8000) {
+      return res.status(400).json({ errors: ['Message body must be 8000 characters or fewer.'] });
+    }
 
     try {
       if (threadKind === 'coordinator' || role === 'admin') {

@@ -24,6 +24,7 @@ const {
   findSessionByQrToken,
   createAttendancePass,
   findValidPass,
+  consumeAttendancePass,
   sessionPublicView,
 } = require('../services/qrTokens');
 
@@ -69,6 +70,9 @@ router.post('/enter', async (req, res) => {
     });
 
   } catch (err) {
+    if (err.status === 503) {
+      return res.status(503).json({ errors: [err.message || 'Attendance temporarily unavailable.'] });
+    }
     console.error('Attendance enter error:', err.message);
     return res.status(500).json({ errors: ['Server error. Please try again.'] });
   }
@@ -89,10 +93,9 @@ router.get('/pass/:passToken', async (req, res) => {
     }
 
     const existing = await pool.query(
-      `SELECT student_number, recorded_at
+      `SELECT 1
        FROM attendance_logs
        WHERE session_id = $1
-       ORDER BY recorded_at DESC
        LIMIT 1`,
       [pass.session_id]
     );
@@ -100,7 +103,7 @@ router.get('/pass/:passToken', async (req, res) => {
     return res.status(200).json({
       passToken,
       session: sessionPublicView(pass),
-      alreadyRecorded: existing.rows[0] || null,
+      alreadyRecorded: existing.rows.length > 0,
     });
 
   } catch (err) {
@@ -142,6 +145,7 @@ router.post('/', async (req, res) => {
          FROM class_list_entries
          WHERE module_code = $1
            AND TRIM(student_number) = $2
+           AND (status IS NULL OR LOWER(TRIM(status)) = 'active')
          LIMIT 1`,
         [pass.module_code, studentNumber]
       );
@@ -163,6 +167,13 @@ router.post('/', async (req, res) => {
       if (duplicate.rows.length > 0) {
         return res.status(409).json({
           errors: ['Your attendance has already been recorded for this session.'],
+        });
+      }
+
+      const consumed = await consumeAttendancePass(passToken, matchedNumber);
+      if (!consumed) {
+        return res.status(409).json({
+          errors: ['This attendance link has already been used. Please scan the QR code again.'],
         });
       }
 
@@ -189,9 +200,24 @@ router.post('/', async (req, res) => {
       });
 
     } catch (err) {
+      if (err.status === 503) {
+        return res.status(503).json({ errors: [err.message || 'Attendance temporarily unavailable.'] });
+      }
       console.error('Attendance error:', err.message);
       return res.status(500).json({ errors: ['Server error. Please try again.'] });
     }
+  }
+
+  // Legacy session-code path — disabled unless explicitly re-enabled for emergency ops.
+  const allowLegacy = ['1', 'true', 'yes', 'on'].includes(
+    String(process.env.ALLOW_LEGACY_ATTENDANCE_CODE || '').trim().toLowerCase()
+  );
+  if (!allowLegacy) {
+    return res.status(410).json({
+      errors: [
+        'Session-code attendance is disabled. Scan the live QR code shown by your tutor to sign in.',
+      ],
+    });
   }
 
   // Legacy: session code flow (lecturer-activated static code)
@@ -226,7 +252,10 @@ router.post('/', async (req, res) => {
 
     const classRow = await pool.query(
       `SELECT full_name, student_number FROM class_list_entries
-       WHERE module_code = $1 AND TRIM(student_number) = $2 LIMIT 1`,
+       WHERE module_code = $1
+         AND TRIM(student_number) = $2
+         AND (status IS NULL OR LOWER(TRIM(status)) = 'active')
+       LIMIT 1`,
       [session.module_code, studentNumber]
     );
 

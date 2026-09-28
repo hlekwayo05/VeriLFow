@@ -248,6 +248,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_users_staff_number_unique
   ON users (staff_number)
   WHERE staff_number IS NOT NULL AND BTRIM(staff_number) <> '';
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
+
 -- Fast lookup by email (used on every login)
 CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_role  ON users (role);
@@ -678,6 +680,9 @@ CREATE TABLE IF NOT EXISTS attendance_passes (
   expires_at  TIMESTAMPTZ  NOT NULL,
   created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE attendance_passes ADD COLUMN IF NOT EXISTS used_at TIMESTAMPTZ;
+ALTER TABLE attendance_passes ADD COLUMN IF NOT EXISTS used_by_student VARCHAR(32);
 
 CREATE INDEX IF NOT EXISTS idx_attendance_passes_session ON attendance_passes (session_id);
 

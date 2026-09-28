@@ -12,6 +12,23 @@ Versions follow chronological project milestones.
 ### Planned / in progress
 - Continued mobile UX polish across remaining lecturer surfaces
 - Email routing follow-up (clear production `EMAIL_OVERRIDE` when ready for real recipients)
+- Coverage-matrix open Fails (auth #3, files #21–22, attendance #25/#28/#29, XSS High sinks) — see full-system-audit canvas; re-score only after fixes, do not invent new finding series mid-pass
+
+---
+
+## [0.8.0] - 2026-09-28
+
+### Added
+- Application announcement emails include a personal Apply link that prefills surname, initials (from first name and surname), first names, email, and student number on Step 1. Those fields stay editable. Title, cell, and password are left blank. The student list is unchanged.
+- Lecturer dashboard shows the next upcoming session (with date) when nothing remains today on the selected module
+
+### Fixed
+- Full-system audit remediation (F1–F17): register no longer overwrites passwords on resume; server-side `tempFlag` API gate; production ignores `EMAIL_OVERRIDE` unless `EMAIL_OVERRIDE_ALLOW_IN_PRODUCTION`; JWT `token_version` revocation (migration 028); admin/tutor claim & timesheet XSS escapes; `apiFetch` clears session on 401; claim cache invalidation on create/resubmit/coordinator-approve; block return of approved claims; timesheet PDF uses `confirmed_at` eligibility; unclaimed-session banner copy; generic screening error notes; storage upload fails hard in prod + unlinks temps; crypto session codes; class-list full-replace disabled; omit `staff_number` from lecturer tutor roster; change-password rate limit + login timing dummy hash; apply-step1 tutor role gate when authenticated
+- Full-system re-audit remediation (R1–R15): file download auth uses shared `authenticate` (tempFlag + token_version); change-password wrong-password returns 400 (no forced logout); one-time attendance passes (migration 029); claim return/resubmit status-guarded UPDATEs; claim deadline enforced server-side; resolve-flag sets tutor `confirmed_at` + cache invalidate; lecturer tutor/referral DTOs drop email/cell/gpa; register/forgot-password enumeration hardening; Active class-list filter; admin/tutor/lecturer/messaging XSS sweep; TEMP_PASSWORD_REQUIRED redirect; referral/support rate limits; message reply length cap; prod fail-closed if `token_version` column missing
+- Full-system third-pass remediation (S1–S6): invalidate prior unused attendance passes when minting; authenticate overlays live DB role + `tempFlag`; prod fail-closed if pass `used_at` missing; legacy `sessionCode` attendance returns 410 unless `ALLOW_LEGACY_ATTENDANCE_CODE`; bump `token_version` when referral promote changes role; escape admin qual chips + lecturer hub module attributes
+- Apply Step 2 advances to documents (submit is handled in script, so Next no longer reloads the same page)
+- Apply Step 3 submit keeps uploaded files on disk until screening finishes, and casts status so the application update succeeds
+- Lecturer lecture icon and Demo label use the dashboard grey instead of purple
 
 ---
 

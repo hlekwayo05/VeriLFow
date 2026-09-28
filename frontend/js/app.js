@@ -117,9 +117,30 @@ const VF = (() => {
     try { data = await res.json(); } catch { /* no JSON body */ }
 
     if (!res.ok) {
+      if (res.status === 403 && data.code === 'TEMP_PASSWORD_REQUIRED') {
+        const onChange = /change-password\.html/i.test(window.location.pathname || '');
+        if (!onChange) {
+          window.location.assign(
+            (window.location.pathname || '').includes('/pages/')
+              ? 'change-password.html'
+              : 'frontend/pages/change-password.html'
+          );
+        }
+      }
+      if (res.status === 401 && token) {
+        const onLogin = /login\.html/i.test(window.location.pathname || '');
+        const onChangePwd = /change-password\.html/i.test(window.location.pathname || '');
+        // Wrong current password returns 400 now; still avoid wiping temp sessions on change-password.
+        if (!onLogin && !onChangePwd) {
+          clearToken();
+          clearState();
+          window.location.assign(loginUrl());
+        }
+      }
       const err = new Error((data.errors && data.errors[0]) || data.error || 'Request failed.');
       err.errors = data.errors || [data.error || 'Request failed.'];
       err.status = res.status;
+      err.code = data.code || null;
       throw err;
     }
     return data;

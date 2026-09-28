@@ -2,10 +2,27 @@
 
 const pool       = require('../db');
 const { getAppSettings } = require('./settings');
+const {
+  signApplyPrefillToken,
+  applyPrefillExpiryMs,
+  withApplyPrefillToken,
+} = require('../utils/applyPrefillToken');
 
 function resolveEmailRecipient(realEmail, realSubject) {
   const override = process.env.EMAIL_OVERRIDE;
+  const allowInProd = String(process.env.EMAIL_OVERRIDE_ALLOW_IN_PRODUCTION || '')
+    .trim()
+    .toLowerCase();
+  const prodOverrideAllowed = ['1', 'true', 'yes', 'on'].includes(allowInProd);
+
   if (override && override.trim()) {
+    if (process.env.NODE_ENV === 'production' && !prodOverrideAllowed) {
+      // Production must deliver to real recipients unless explicitly overridden.
+      return {
+        to: realEmail,
+        subject: realSubject,
+      };
+    }
     return {
       to: override.trim(),
       subject: `[TEST → ${realEmail}] ${realSubject}`,
@@ -718,7 +735,7 @@ async function sendAnnouncementEmail(presetSettings) {
   let students;
   try {
     const result = await pool.query(
-      'SELECT first_names, email FROM students ORDER BY surname ASC'
+      'SELECT id, first_names, email FROM students ORDER BY surname ASC'
     );
     students = result.rows;
   } catch (err) {
@@ -739,26 +756,34 @@ async function sendAnnouncementEmail(presetSettings) {
     'Tutor & Demonstrator Applications Now Open - 2026 Academic Year';
   const closingLabel = formatAnnouncementClosingDate(settings.closing_date);
 
-  let customMessageHtml = null;
-  if (isCustomMessage(settings.announcement_body)) {
-    const processed = buildEmailBody(
-      settings.announcement_body,
-      closingLabel,
-      portalLink
-    );
-    customMessageHtml = escapeHtml(processed).replace(/\n/g, '<br/>');
-  }
-
+  const prefillExpiry = applyPrefillExpiryMs(settings.closing_date);
   let sent   = 0;
   let failed = 0;
 
   for (const student of students) {
     const firstName = student.first_names || 'Student';
+    let studentLink = portalLink;
+    try {
+      const token = signApplyPrefillToken(student.id, prefillExpiry);
+      studentLink = withApplyPrefillToken(portalLink, token);
+    } catch (err) {
+      console.error('Apply prefill link skipped:', err.message);
+    }
+
+    let customMessageHtml = null;
+    if (isCustomMessage(settings.announcement_body)) {
+      const processed = buildEmailBody(
+        settings.announcement_body,
+        closingLabel,
+        studentLink
+      );
+      customMessageHtml = escapeHtml(processed).replace(/\n/g, '<br/>');
+    }
 
     const html = buildAnnouncementHtml({
       firstName,
       closingDate: settings.closing_date,
-      portalLink,
+      portalLink: studentLink,
       customMessage: customMessageHtml,
     });
 
@@ -777,7 +802,7 @@ Benefits:
 - Skills development
 - Teaching experience
 
-Apply now: ${portalLink}
+Apply now: ${studentLink}
 
 Closing date: ${closingLabel}
 

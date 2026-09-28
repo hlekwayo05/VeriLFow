@@ -80,6 +80,48 @@ async function isApplicationsOpenFromDb() {
   return !!settings.accepting_applications;
 }
 
+router.get('/apply-prefill', async (req, res) => {
+  try {
+    const {
+      verifyApplyPrefillToken,
+      initialsFromNames,
+    } = require('../utils/applyPrefillToken');
+    const studentId = verifyApplyPrefillToken(String(req.query.t || ''));
+    if (!studentId) {
+      return res.status(404).json({ errors: ['This application link is no longer valid.'] });
+    }
+
+    const result = await pool.query(
+      `SELECT first_names, surname, email, student_number
+       FROM students
+       WHERE id = $1`,
+      [studentId]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ errors: ['This application link is no longer valid.'] });
+    }
+
+    const row = result.rows[0];
+    const email = row.email || '';
+    let studentNumber = String(row.student_number || '').trim();
+    if (!studentNumber) {
+      const match = email.match(/^(\d+)@ump\.ac\.za$/i);
+      if (match) studentNumber = match[1];
+    }
+
+    return res.status(200).json({
+      surname: row.surname || '',
+      firstNames: row.first_names || '',
+      initials: initialsFromNames(row.first_names, row.surname),
+      email,
+      studentNumber,
+    });
+  } catch (err) {
+    console.error('Apply prefill error:', err.message);
+    return res.status(500).json({ errors: ['Server error.'] });
+  }
+});
+
 router.get('/settings', async (req, res) => {
   try {
     const settings = await readPublicSettingsFromDb();

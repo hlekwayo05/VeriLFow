@@ -6,7 +6,7 @@ const crypto  = require('crypto');
 const jwt     = require('jsonwebtoken');
 const pool    = require('../db');
 const { isApplicationsOpenFromDb } = require('./public');
-const { passwordResetLimiter } = require('../middleware/rateLimiter');
+const { passwordResetLimiter, changePasswordLimiter } = require('../middleware/rateLimiter');
 const {
   validateRegister,
   validateLogin,
@@ -16,9 +16,12 @@ const {
 } = require('../validators/authValidator');
 const { passwordErrorMessage } = require('../utils/passwordPolicy');
 const { sendForgotPasswordEmail, passwordResetLink } = require('../services/mailer');
+const { fetchTokenVersion, bumpTokenVersion } = require('../utils/tokenVersion');
 
 const BCRYPT_COST = 12;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+// Timing equalization when email is unknown (cost matches login compares).
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('__veriflow_timing_dummy__', BCRYPT_COST);
 
 function hashResetToken(token) {
   return crypto.createHash('sha256').update(String(token)).digest('hex');
@@ -33,6 +36,7 @@ function signAuthToken({
   applicationStatus = null,
   onboardingComplete = false,
   tempFlag = false,
+  tokenVersion = 0,
 }) {
   return jwt.sign(
     {
@@ -44,6 +48,7 @@ function signAuthToken({
       applicationStatus,
       onboardingComplete: !!onboardingComplete,
       tempFlag:           !!tempFlag,
+      tv:                 Number(tokenVersion) || 0,
     },
     process.env.JWT_SECRET,
     { expiresIn: '8h' }
@@ -115,16 +120,16 @@ router.post('/register', validateRegister, async (req, res) => {
     if (onStudentList.rows.length === 0) {
       return res.status(403).json({
         errors: [
-          'This email is not on the eligible student list. Use the institutional email from the list uploaded by the FYE office, or contact them if you believe this is an error.',
+          'Unable to create an account with these details. Use your institutional email from the eligible student list, or contact the FYE office.',
         ],
       });
     }
 
     const listedStudentNo = (onStudentList.rows[0].student_number || '').trim();
     if (listedStudentNo && listedStudentNo !== studentNorm) {
-      return res.status(400).json({
+      return res.status(403).json({
         errors: [
-          'Your student number does not match the record for this email on the student list.',
+          'Unable to create an account with these details. Use your institutional email from the eligible student list, or contact the FYE office.',
         ],
       });
     }
@@ -139,60 +144,12 @@ router.post('/register', validateRegister, async (req, res) => {
     );
 
     if (existingEmail.rows.length > 0) {
-      const existing = existingEmail.rows[0];
-
-      // Allow re-submitting step 1 if they never finished the application
-      if (existing.role === 'tutor' && existing.app_status === 'incomplete') {
-        const studentConflict = await pool.query(
-          'SELECT id FROM users WHERE student_number = $1 AND id != $2',
-          [studentNorm, existing.id]
-        );
-        if (studentConflict.rows.length > 0) {
-          return res.status(409).json({
-            errors: ['This student number is already linked to another account.'],
-          });
-        }
-
-        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
-        await pool.query(
-          `UPDATE users
-           SET surname = $1, title = $2, initials = $3, first_names = $4,
-               cell = $5, student_number = $6, password_hash = $7
-           WHERE id = $8`,
-          [
-            surname.trim(),
-            title.trim(),
-            initials.trim(),
-            firstNames.trim(),
-            cell.trim(),
-            studentNorm,
-            passwordHash,
-            existing.id,
-          ]
-        );
-
-        const token = signAuthToken({
-          userId: existing.id,
-          role: 'tutor',
-          email: emailNorm,
-          first_names: firstNames.trim(),
-          surname: surname.trim(),
-          applicationStatus: 'incomplete',
-          onboardingComplete: false,
-          tempFlag: false,
-        });
-
-        return res.status(200).json({
-          message: 'Registration resumed - continue your application.',
-          token,
-          userId: existing.id,
-          role: 'tutor',
-          resumed: true,
-        });
-      }
-
+      // Do not overwrite password_hash (or issue a session) without login.
+      // Incomplete tutors resume via POST /auth/login, then apply-step2+.
       return res.status(409).json({
-        errors: ['An account with this email address already exists. Please log in to continue your application.'],
+        errors: [
+          'An account with this email address already exists. Please log in to continue your application.',
+        ],
       });
     }
 
@@ -252,6 +209,7 @@ router.post('/register', validateRegister, async (req, res) => {
         applicationStatus: 'incomplete',
         onboardingComplete: false,
         tempFlag: false,
+        tokenVersion: 0,
       });
 
       return res.status(201).json({
@@ -311,6 +269,7 @@ router.post('/login', validateLogin, async (req, res) => {
     );
 
     if (userResult.rows.length === 0) {
+      await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
       return res.status(401).json({ errors: ['Invalid email or password.'] });
     }
 
@@ -338,6 +297,7 @@ router.post('/login', validateLogin, async (req, res) => {
       }
     }
 
+    const tokenVersion = await fetchTokenVersion(user.id);
     const token = signAuthToken({
       userId:            user.id,
       role:              user.role,
@@ -347,6 +307,7 @@ router.post('/login', validateLogin, async (req, res) => {
       applicationStatus,
       onboardingComplete,
       tempFlag:          user.temp_password_flag,
+      tokenVersion,
     });
 
     return res.status(200).json({
@@ -378,6 +339,7 @@ router.post('/forgot-password', passwordResetLimiter, validateForgotPassword, as
     );
 
     if (userResult.rows.length === 0) {
+      await bcrypt.compare('__timing__', DUMMY_PASSWORD_HASH);
       return res.status(200).json({ message: genericMessage });
     }
 
@@ -470,6 +432,7 @@ router.post('/reset-password', passwordResetLimiter, validateResetPassword, asyn
        WHERE id = $2`,
       [newHash, resetRow.user_id]
     );
+    await bumpTokenVersion(resetRow.user_id);
 
     await pool.query(
       `UPDATE password_reset_tokens
@@ -497,7 +460,7 @@ router.post('/reset-password', passwordResetLimiter, validateResetPassword, asyn
 
 const authenticate = require('../middleware/authenticate');
 
-router.patch('/change-password', authenticate, validateChangePassword, async (req, res) => {
+router.patch('/change-password', changePasswordLimiter, authenticate, validateChangePassword, async (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
   const userId = req.user.userId;
 
@@ -536,7 +499,7 @@ router.patch('/change-password', authenticate, validateChangePassword, async (re
 
     const match = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
     if (!match) {
-      return res.status(401).json({ errors: ['Current password is incorrect.'] });
+      return res.status(400).json({ errors: ['Current password is incorrect.'] });
     }
 
     const newHash = await bcrypt.hash(newPassword, BCRYPT_COST);
@@ -570,6 +533,7 @@ router.patch('/change-password', authenticate, validateChangePassword, async (re
        WHERE id = $2`,
       [newHash, userId]
     );
+    const tokenVersion = await bumpTokenVersion(userId);
 
     let applicationStatus = null;
     let onboardingComplete = false;
@@ -588,6 +552,7 @@ router.patch('/change-password', authenticate, validateChangePassword, async (re
       applicationStatus,
       onboardingComplete,
       tempFlag:          false,
+      tokenVersion,
     });
 
     return res.status(200).json({

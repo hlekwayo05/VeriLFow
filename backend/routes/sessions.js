@@ -1,6 +1,7 @@
 'use strict';
 
 const router       = require('express').Router();
+const crypto       = require('crypto');
 const pool         = require('../db');
 const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
@@ -21,7 +22,7 @@ function generateSessionCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(crypto.randomInt(0, chars.length));
   }
   return code;
 }
@@ -598,6 +599,8 @@ router.patch(
         );
       }
 
+      invalidateSessionCaches();
+
       return res.status(200).json({
         message: available ? 'Availability confirmed.' : 'Unavailability recorded.',
       });
@@ -926,6 +929,18 @@ router.patch(
          WHERE id = $1`,
         [sessionId, note]
       );
+
+      // Ensure assigned tutors can claim hours after an admin resolve.
+      await pool.query(
+        `UPDATE session_tutors
+         SET confirmed_at = COALESCE(confirmed_at, NOW()),
+             declined_at = NULL
+         WHERE session_id = $1
+           AND declined_at IS NULL`,
+        [sessionId]
+      );
+
+      invalidateSessionCaches();
 
       return res.status(200).json({
         message: 'Flagged session resolved.',

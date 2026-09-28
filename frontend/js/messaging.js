@@ -1,5 +1,18 @@
 'use strict';
 
+function msgEscapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function msgFormatBody(value) {
+  return msgEscapeHtml(value).replace(/\n/g, '<br>');
+}
+
 /** Shared inbox UI for lecturer and tutor dashboards */
 let msgThreads = {};
 let msgActiveThreadId = null;
@@ -328,7 +341,7 @@ function renderMessagePeople() {
             <span class="tm-person-ring ${c.type}">
               <span class="tm-person-av ${c.type}">${c.initials}${unread}</span>
             </span>
-            <span class="tm-person-name">${c.name.replace(/</g, '&lt;')}</span>
+            <span class="tm-person-name">${msgEscapeHtml(c.name)}</span>
             <span class="tm-person-role">${peerRoleLabel(c.type)}</span>
           </button>`;
         }).join('')}
@@ -374,7 +387,7 @@ function renderMessagePeople() {
           <span class="tm-person-ring ${c.type}">
             <span class="tm-person-av ${c.type}">${c.initials}${unread}</span>
           </span>
-          <span class="tm-person-name">${c.label.replace(/</g, '&lt;')}</span>
+          <span class="tm-person-name">${msgEscapeHtml(c.label)}</span>
           <span class="tm-person-role">${peerRoleLabel(c.type)}</span>
         </button>`;
       }).join('')}
@@ -637,8 +650,8 @@ function renderInboxList() {
     const avClass = avatarClassForThread(t, 'ii-av');
     const active = t.id === msgActiveThreadId && kind === msgActiveThreadKind ? ' active' : '';
     const unread = t.unread ? ' unread' : '';
-    const preview = (t.preview || '').replace(/</g, '&lt;');
-    const name = (t.peerName || '-').replace(/</g, '&lt;');
+    const preview = msgEscapeHtml(t.preview || '');
+    const name = msgEscapeHtml(t.peerName || '-');
     const displayName = senderType === 'admin' ? 'Admin' : name;
     const badge = t.unreadCount > 0
       ? `<span class="ii-unread-badge">${t.unreadCount > 9 ? '9+' : t.unreadCount}</span>`
@@ -701,11 +714,11 @@ function renderThreadMessages(messages) {
 
   container.innerHTML = (messages || []).map((entry) => {
     const dir = entry.isMine ? 'outgoing' : 'incoming';
-    const sender = (entry.senderName || '-').replace(/</g, '&lt;');
-    const text = (entry.body || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+    const sender = msgEscapeHtml(entry.senderName || '-');
+    const text = msgFormatBody(entry.body || '');
     const time = msgFormatBubbleTime(entry.createdAt);
     const subjectLine = entry.subject && !entry.isMine
-      ? `<div style="font-size:11px;font-weight:700;margin-bottom:6px;color:var(--muted)">${entry.subject.replace(/</g, '&lt;')}</div>`
+      ? `<div style="font-size:11px;font-weight:700;margin-bottom:6px;color:var(--muted)">${msgEscapeHtml(entry.subject)}</div>`
       : '';
     return `<div class="msg-bubble-wrap ${dir}">
       <div class="bubble-meta">
@@ -849,7 +862,7 @@ async function sendReply() {
 
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble-wrap outgoing';
-    bubble.innerHTML = `<div class="bubble-meta"><span class="bubble-sender">You</span><span class="bubble-time">${msgFormatBubbleTime(result.createdAt)}</span></div><div class="bubble">${text.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>`;
+    bubble.innerHTML = `<div class="bubble-meta"><span class="bubble-sender">You</span><span class="bubble-time">${msgFormatBubbleTime(result.createdAt)}</span></div><div class="bubble">${msgFormatBody(text)}</div>`;
     container.appendChild(bubble);
     container.scrollTop = container.scrollHeight;
 

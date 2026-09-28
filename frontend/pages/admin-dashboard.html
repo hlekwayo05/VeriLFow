@@ -1477,15 +1477,25 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/app.js?v=20"></script>
+<script src="../js/app.js?v=23"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=37"></script>
+<script src="../js/admin-dashboard-api.js?v=39"></script>
 <script>
   const isAdminPage =
     VF.requireAuth('login.html') && VF.requireRole('admin', 'login.html');
 
   let activeApplicationDetailId = null;
+
+  function adEsc(value) {
+    if (typeof adEscapeHtml === 'function') return adEscapeHtml(value);
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
   function syncAdBottomNav(pageId) {
     const map = {
@@ -1792,7 +1802,7 @@ const RESPONSIBILITY_CODE_MAP = { low: 'standard', medium: 'senior', high: 'lead
 
 function qualificationChip(level) {
   if (level === 'masters' || level === 'masters_holder' || level === 'phd') {
-    return '<span class="qual-chip honours">' + (QUALIFICATION_DISPLAY_MAP[level] || level) + '</span>';
+    return '<span class="qual-chip honours">' + adEsc(QUALIFICATION_DISPLAY_MAP[level] || level) + '</span>';
   }
   if (level === '4th_year_honours') return '<span class="qual-chip honours">Honours</span>';
   return '<span class="qual-chip">Undergrad</span>';
@@ -1883,9 +1893,9 @@ function referralActions(id, status) {
 
 function renderReferralRow(ref) {
   return `<tr>
-    <td style="font-weight:600;color:var(--text)">${ref.first_names} ${ref.surname}</td>
-    <td style="color:var(--muted)">${formatLecturerName(ref)}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${ref.module_code}</td>
+    <td style="font-weight:600;color:var(--text)">${adEsc(`${ref.first_names} ${ref.surname}`)}</td>
+    <td style="color:var(--muted)">${adEsc(formatLecturerName(ref))}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}</td>
     <td style="color:var(--muted)">${courseShort(ref.course)}</td>
     <td>${qualificationChip(ref.qualification_level)}</td>
     <td>${referralActions(ref.id, ref.status)}</td>
@@ -1894,9 +1904,9 @@ function renderReferralRow(ref) {
 
 function renderOverviewReferralRow(ref) {
   return `<tr>
-    <td style="font-weight:600;color:var(--text)">${ref.first_names} ${ref.surname}</td>
-    <td style="color:var(--muted)">${formatLecturerName(ref)}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${ref.module_code}</td>
+    <td style="font-weight:600;color:var(--text)">${adEsc(`${ref.first_names} ${ref.surname}`)}</td>
+    <td style="color:var(--muted)">${adEsc(formatLecturerName(ref))}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}</td>
     <td>${qualificationChip(ref.qualification_level)}</td>
     <td>${referralActions(ref.id, ref.status)}</td>
   </tr>`;
@@ -1951,8 +1961,8 @@ async function loadReferrals() {
       cards.innerHTML = refs.length
         ? refs.map((ref) => {
           return `<div class="ad-rec-card">
-            <div class="ad-rec-name">${ref.first_names} ${ref.surname}</div>
-            <div class="ad-rec-sub">${formatLecturerName(ref)} · ${ref.module_code || '-'}</div>
+            <div class="ad-rec-name">${adEsc(`${ref.first_names} ${ref.surname}`)}</div>
+            <div class="ad-rec-sub">${adEsc(formatLecturerName(ref))} · ${adEsc(ref.module_code || '-')}</div>
             <div class="ad-rec-grid">
               <div class="item"><div class="k">${qualificationPlain(ref.qualification_level)}</div><div class="l">Qualification</div></div>
               <div class="item"><div class="k">${courseShort(ref.course)}</div><div class="l">Programme</div></div>
@@ -2001,7 +2011,7 @@ function renderApplicationCard(app, opts) {
   let col3Lab;
 
   if (inProgress) {
-    module = app.email || 'In progress';
+    module = adEsc(app.email || 'In progress');
     col1Val = app.email || '-';
     col1Lab = 'EMAIL';
     col2Val = app.student_number || '-';
@@ -2009,7 +2019,7 @@ function renderApplicationCard(app, opts) {
     col3Val = formatDate(app.created_at);
     col3Lab = 'STARTED';
   } else if (withReason) {
-    module = (app.module_name || '-') + positionTypeChip(app.position_type);
+    module = `${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}`;
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -2017,7 +2027,7 @@ function renderApplicationCard(app, opts) {
     col3Val = app.rejection_reason || 'Did not meet eligibility';
     col3Lab = 'REASON';
   } else {
-    module = (app.module_name || '-') + positionTypeChip(app.position_type);
+    module = `${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}`;
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -2028,19 +2038,19 @@ function renderApplicationCard(app, opts) {
 
   return `
     <button type="button" class="ad-app-card pref-${pref.dotClass}" onclick="openApplicationDetail(${app.id})">
-      <div class="ad-app-card-name">${name}</div>
+      <div class="ad-app-card-name">${adEsc(name)}</div>
       <div class="ad-app-card-module">${module}</div>
       <div class="ad-app-card-grid">
         <div class="ad-app-stat">
-          <div class="ad-app-stat-val">${col1Val}</div>
+          <div class="ad-app-stat-val">${adEsc(col1Val)}</div>
           <div class="ad-app-stat-lab">${col1Lab}</div>
         </div>
         <div class="ad-app-stat">
-          <div class="ad-app-stat-val">${col2Val}</div>
+          <div class="ad-app-stat-val">${adEsc(col2Val)}</div>
           <div class="ad-app-stat-lab">${col2Lab}</div>
         </div>
         <div class="ad-app-stat">
-          <div class="ad-app-stat-val">${col3Val}</div>
+          <div class="ad-app-stat-val">${adEsc(col3Val)}</div>
           <div class="ad-app-stat-lab">${col3Lab}</div>
         </div>
       </div>
@@ -2063,15 +2073,15 @@ function renderApplicationRow(app, withReason) {
   const gpaColor = app.gpa != null && Number(app.gpa) >= 70 ? 'var(--green)' : 'var(--yellow)';
   const gpaCell = app.gpa != null ? `${app.gpa}%` : '-';
   const dateCell = withReason
-    ? `<td style="color:var(--muted)">${app.rejection_reason || 'Did not meet eligibility requirements'}</td>`
+    ? `<td style="color:var(--muted)">${adEsc(app.rejection_reason || 'Did not meet eligibility requirements')}</td>`
     : `<td style="color:var(--muted)">${formatDate(app.submitted_at || app.created_at)}</td>`;
   const actionCell = withReason ? '' : `<td>${applicationActions(app.id, app.status)}</td>`;
 
   return `
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot ${pref.dotClass}"></span></td>
-      <td style="font-weight:600;color:var(--text)">${app.first_names} ${app.surname}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.module_name || '-'}${positionTypeChip(app.position_type)}</td>
+      <td style="font-weight:600;color:var(--text)">${adEsc(`${app.first_names} ${app.surname}`)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}</td>
       <td>${qualificationChip(app.qualification_level)}</td>
       <td style="font-family:'DM Mono',monospace;color:${gpaCell === '-' ? 'var(--muted)' : gpaColor}">${gpaCell}</td>
       ${dateCell}
@@ -2084,9 +2094,9 @@ function renderInProgressRow(app) {
   return `
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot none"></span></td>
-      <td style="font-weight:600;color:var(--text)">${app.first_names} ${app.surname}</td>
-      <td style="color:var(--muted);font-size:12px">${app.email || '-'}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${app.student_number || '-'}</td>
+      <td style="font-weight:600;color:var(--text)">${adEsc(`${app.first_names} ${app.surname}`)}</td>
+      <td style="color:var(--muted);font-size:12px">${adEsc(app.email || '-')}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(app.student_number || '-')}</td>
       <td style="color:var(--muted)">${formatDate(app.created_at)}</td>
       <td>${applicationStatusChip(app.status)}</td>
     </tr>`;
@@ -2982,7 +2992,7 @@ function parseScreeningResult(app) {
 
 function adAppdFieldRow(label, value, mono) {
   const vClass = mono ? 'ad-appd-v mono' : 'ad-appd-v';
-  return `<div class="ad-appd-field-row"><span class="ad-appd-k">${label}</span><span class="${vClass}">${value}</span></div>`;
+  return `<div class="ad-appd-field-row"><span class="ad-appd-k">${adEsc(label)}</span><span class="${vClass}">${adEsc(value)}</span></div>`;
 }
 
 function mobileApplicationActions(id, status) {
@@ -3026,14 +3036,14 @@ function fillMobileApplicationDetail(app) {
       </div>
       <div class="ad-appd-summary-span">
         <div class="ad-appd-field-label">Module</div>
-        <div class="ad-appd-summary-val">${app.module_name || '-'}</div>
+        <div class="ad-appd-summary-val">${adEsc(app.module_name || '-')}</div>
       </div>
       <div class="ad-appd-summary-span">
         <div class="ad-appd-field-label">Assigned lecturer</div>
-        <div class="ad-appd-summary-val${lecturerClass}">${lecturer}</div>
+        <div class="ad-appd-summary-val${lecturerClass}">${adEsc(lecturer)}</div>
       </div>
     </div>
-    ${app.rejection_reason ? `<div class="ad-appd-reject-reason">${app.rejection_reason}</div>` : ''}`;
+    ${app.rejection_reason ? `<div class="ad-appd-reject-reason">${adEsc(app.rejection_reason)}</div>` : ''}`;
 
   document.getElementById('ad-appd-personal').innerHTML = `
     <div class="ad-appd-field-group-title">Personal information</div>
@@ -3069,15 +3079,15 @@ function fillMobileApplicationDetail(app) {
     ? `${tr.tutorModule.name} - ${tr.tutorModule.finalMark}% (${tr.tutorModule.result})`
     : (screening ? 'Not found on transcript' : '-');
   const avgLine = tr.calculatedAverage != null
-    ? `${tr.calculatedAverage}%${tr.claimedAverage != null ? ` <span class="ad-appd-faint">(declared ${tr.claimedAverage}%)</span>` : ''}`
+    ? `${adEsc(tr.calculatedAverage)}%${tr.claimedAverage != null ? ` <span class="ad-appd-faint">(declared ${adEsc(tr.claimedAverage)}%)</span>` : ''}`
     : '-';
 
   document.getElementById('ad-appd-keywords').innerHTML = `
-    <div class="ad-appd-kw-box">${matchedList || (score != null ? 'No matched keywords listed.' : 'No screening result yet.')}</div>
+    <div class="ad-appd-kw-box">${adEsc(matchedList || (score != null ? 'No matched keywords listed.' : 'No screening result yet.'))}</div>
     <div class="ad-appd-kw-extra">
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">Transcript average</span><span class="ad-appd-v">${avgLine}</span></div>
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">All modules passed</span><span class="ad-appd-v${tr.allModulesPassed ? ' ok' : ''}">${screening ? (tr.allModulesPassed ? 'Yes' : 'No') : '-'}</span></div>
-      <div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${tutorLine}</span></div>
+      <div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${adEsc(tutorLine)}</span></div>
     </div>`;
 
   const declaredOk = app.declared === true || app.declared === 't' || app.declared === 'true' || app.status !== 'incomplete';
@@ -3109,8 +3119,8 @@ function fillMobileApplicationDetail(app) {
       <div class="ad-appd-doc-left">
         <div class="ad-appd-doc-ico">${ico}</div>
         <div>
-          <div class="ad-appd-doc-name">${label}</div>
-          <div class="ad-appd-doc-file">${fileLabel}</div>
+          <div class="ad-appd-doc-name">${adEsc(label)}</div>
+          <div class="ad-appd-doc-file">${adEsc(fileLabel)}</div>
         </div>
       </div>
       ${viewOnclick || filename ? `<button type="button" class="ad-appd-doc-btn" onclick='${viewOnclick || `viewAdminUpload(${JSON.stringify(label)}, ${JSON.stringify(filename)})`}'>View</button>` : ''}
@@ -3239,33 +3249,33 @@ function openApplicationDetail(id) {
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Status summary</div>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
         <div><div style="font-size:11px;color:var(--muted)">Current stage</div><div style="font-weight:700;color:var(--text)">${formatAppStage(app.status)}</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">Module</div><div style="font-weight:700;color:var(--text)">${app.module_name || '-'}</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">Module</div><div style="font-weight:700;color:var(--text)">${adEsc(app.module_name || '-')}</div></div>
         <div><div style="font-size:11px;color:var(--muted)">Date submitted</div><div style="font-weight:700;color:var(--text)">${formatDate(app.submitted_at)}</div></div>
-        <div><div style="font-size:11px;color:var(--muted)">Assigned lecturer</div><div style="font-weight:700;color:var(--text)">${app.lecturer_first_names ? app.lecturer_first_names + ' ' + app.lecturer_surname : 'Not yet assigned'}</div></div>
+        <div><div style="font-size:11px;color:var(--muted)">Assigned lecturer</div><div style="font-weight:700;color:var(--text)">${adEsc(app.lecturer_first_names ? `${app.lecturer_first_names} ${app.lecturer_surname || ''}`.trim() : 'Not yet assigned')}</div></div>
       </div>
-      ${app.rejection_reason ? `<div style="margin-top:10px;font-size:12px;color:var(--red);">${app.rejection_reason}</div>` : ''}
+      ${app.rejection_reason ? `<div style="margin-top:10px;font-size:12px;color:var(--red);">${adEsc(app.rejection_reason)}</div>` : ''}
     </div>
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Personal information</div>
       <div style="display:grid;gap:8px;font-size:12px;">
-        <div><strong>Title:</strong> ${app.title || '-'}</div>
-        <div><strong>Initials:</strong> ${app.initials || '-'}</div>
-        <div><strong>Name:</strong> ${app.first_names} ${app.surname}</div>
-        <div><strong>Email:</strong> ${app.email || '-'}</div>
-        <div><strong>Cell:</strong> ${app.cell || '-'}</div>
-        <div><strong>Student number:</strong> ${app.student_number || '-'}</div>
+        <div><strong>Title:</strong> ${adEsc(app.title || '-')}</div>
+        <div><strong>Initials:</strong> ${adEsc(app.initials || '-')}</div>
+        <div><strong>Name:</strong> ${adEsc(`${app.first_names} ${app.surname}`)}</div>
+        <div><strong>Email:</strong> ${adEsc(app.email || '-')}</div>
+        <div><strong>Cell:</strong> ${adEsc(app.cell || '-')}</div>
+        <div><strong>Student number:</strong> ${adEsc(app.student_number || '-')}</div>
       </div>
     </div>
     <div style="background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
       <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Academic information</div>
       <div style="display:grid;gap:8px;font-size:12px;">
-        <div><strong>Faculty:</strong> ${app.faculty || '-'}</div>
-        <div><strong>Course:</strong> ${app.course || '-'}</div>
-        <div><strong>Qualification level:</strong> ${QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-'}</div>
+        <div><strong>Faculty:</strong> ${adEsc(app.faculty || '-')}</div>
+        <div><strong>Course:</strong> ${adEsc(app.course || '-')}</div>
+        <div><strong>Qualification level:</strong> ${adEsc(QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-')}</div>
         <div><strong>Position type:</strong> ${app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'}</div>
-        <div><strong>Module year level:</strong> ${app.module_year_level || '-'}</div>
-        <div><strong>Module to tutor:</strong> ${app.module_name || '-'}</div>
-        <div><strong>Current average:</strong> ${app.gpa}%</div>
+        <div><strong>Module year level:</strong> ${adEsc(app.module_year_level || '-')}</div>
+        <div><strong>Module to tutor:</strong> ${adEsc(app.module_name || '-')}</div>
+        <div><strong>Current average:</strong> ${adEsc(app.gpa)}%</div>
         <div><strong>CV keyword score:</strong> ${app.cv_keyword_score != null ? app.cv_keyword_score : '-'}</div>
         ${formatScreeningBlock(app)}
       </div>
@@ -3293,8 +3303,8 @@ function openApplicationDetail(id) {
   const docRow = (title, subtitle, actions) => `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--card);">
       <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">${title}</div>
-        <div style="font-size:11px;color:var(--muted);">${subtitle}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">${adEsc(title)}</div>
+        <div style="font-size:11px;color:var(--muted);">${adEsc(subtitle)}</div>
       </div>
       ${actions}
     </div>`;

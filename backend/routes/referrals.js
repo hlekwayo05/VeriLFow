@@ -40,6 +40,7 @@ const QUALIFICATION_MAP = {
 
 router.post(
   '/',
+  adminActionLimiter,
   authenticate,
   requireRole('lecturer'),
   async (req, res) => {
@@ -219,8 +220,8 @@ router.get(
           r.created_at,
           lec.title  AS lecturer_title,
           lec.first_names AS lecturer_first_names,
-          lec.surname     AS lecturer_surname,
-          app.gpa
+          lec.surname     AS lecturer_surname
+          ${role === 'admin' ? ', app.gpa' : ''}
         FROM referrals r
         JOIN users lec ON lec.id = r.lecturer_id
         LEFT JOIN users tu
@@ -341,6 +342,7 @@ router.patch(
             throw conflict;
           }
           userId = existing.id;
+          const roleChanged = existing.role !== 'tutor';
           await client.query(
             `UPDATE users
              SET role = 'tutor',
@@ -352,6 +354,14 @@ router.patch(
              WHERE id = $1`,
             [userId, studentNumber]
           );
+          if (roleChanged) {
+            await client.query(
+              `UPDATE users
+               SET token_version = COALESCE(token_version, 0) + 1
+               WHERE id = $1`,
+              [userId]
+            );
+          }
         } else {
           isNewAccount = true;
           plainTempPassword = generateTempPassword();

@@ -3,7 +3,6 @@
 const crypto = require('crypto');
 const fs   = require('fs');
 const path = require('path');
-const jwt  = require('jsonwebtoken');
 const router = require('express').Router();
 const pool = require('../db');
 const authenticate = require('../middleware/authenticate');
@@ -132,12 +131,8 @@ async function canAccessFile(user, basename, storagePath) {
 function authenticateFileDownload(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    try {
-      req.user = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
-      return next();
-    } catch {
-      return res.status(401).json({ errors: ['Invalid or expired token'] });
-    }
+    // Same tempFlag + token_version gates as the rest of the API.
+    return authenticate(req, res, next);
   }
 
   const dt = req.query.dt;

@@ -68,7 +68,7 @@
         <p class="form-subtitle">Your faculty, course, qualification level and module selection link your application to the correct posting and determine your eligibility.</p>
       </div>
 
-      <form id="step2Form" onsubmit="handleNext(event)" novalidate style="display:none">
+      <form id="step2Form" novalidate style="display:none">
         <div class="form-group" id="grp-faculty">
           <label for="faculty">Faculty</label>
           <select id="faculty" onchange="populateCourses()">
@@ -178,7 +178,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=21"></script>
+<script src="../js/app.js?v=23"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script>
   VF.pageIn();
@@ -364,6 +364,8 @@
       gpa: s.academic.gpa,
     });
   }
+
+  document.getElementById('step2Form').addEventListener('submit', handleNext);
 
   async function handleNext(e) {
     e.preventDefault();

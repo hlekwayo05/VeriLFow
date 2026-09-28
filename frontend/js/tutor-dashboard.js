@@ -183,7 +183,7 @@ function applyModuleUi() {
   setText('#td-hub-module', `${code} · ${name}`);
   const hubMod = document.getElementById('td-hub-module');
   if (hubMod && code && code !== '-') {
-    hubMod.innerHTML = `<b>${code}</b> · ${name}`;
+    hubMod.innerHTML = `<b>${escapeHtml(code)}</b> · ${escapeHtml(name)}`;
   }
   setText('#dash-upcoming-label', code);
   setText('#sessions-page-title', code);
@@ -460,9 +460,9 @@ function renderRegisterModal(data) {
     <tr class="${!s.present ? 'absent-row' : ''}">
       <td class="reg-idx">${String(i + 1).padStart(2, '0')}</td>
       <td class="reg-info">
-        <div class="reg-sname"${!s.present ? ' style="color:var(--muted);font-weight:400"' : ''}>${s.full_name || '-'}</div>
+        <div class="reg-sname"${!s.present ? ' style="color:var(--muted);font-weight:400"' : ''}>${escapeHtml(s.full_name || '-')}</div>
         <div class="reg-detail">
-          <span class="reg-snum">${s.student_number}</span>
+          <span class="reg-snum">${escapeHtml(s.student_number)}</span>
           <span class="reg-detail-sep" aria-hidden="true">·</span>
           <span class="reg-time">${formatSignInTime(s.recorded_at)}</span>
         </div>
@@ -782,8 +782,8 @@ function renderOneSessionCard(s) {
   const dateLabel = isToday ? `Today · ${formatSessionDate(s)}` : formatSessionDate(s, true);
   const timeLabel = formatTimeRange(s);
   const typeLabel = sessionTypeLabel(s.session_type);
-  const title = (s.topic || typeLabel || 'Session').replace(/</g, '&lt;');
-  const desc = `${dateLabel} · ${s.venue || 'Venue TBA'}`.replace(/</g, '&lt;');
+  const title = escapeHtml(s.topic || typeLabel || 'Session');
+  const desc = escapeHtml(`${dateLabel} · ${s.venue || 'Venue TBA'}`);
   const startLabel = s.start_time ? String(s.start_time).slice(0, 5) : timeLabel;
   const tone = s.status === 'completed' || s.status === 'flagged' || s.status === 'cancelled' ? ' vf-sess-card--muted' : '';
   const live = s.status === 'active' ? ' vf-sess-card--live' : '';
@@ -926,11 +926,11 @@ function renderSessionsTable(sessions) {
     const action = sessionActionHtml(s, dateLabel);
 
     return `<tr${isPast ? ' style="background:rgba(0,0,0,.02)"' : ''}>
-      <td style="${dateStyle}">${dateLabel}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${formatTimeRange(s)}</td>
-      <td style="color:var(--muted)">${s.topic || '-'}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${s.venue || '-'}</td>
-      <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
+      <td style="${dateStyle}">${escapeHtml(dateLabel)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${escapeHtml(formatTimeRange(s))}</td>
+      <td style="color:var(--muted)">${escapeHtml(s.topic || '-')}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${escapeHtml(s.venue || '-')}</td>
+      <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(s.session_type))}</span></td>
       <td>${tutorStatusChip(s.status)}</td>
       <td>${action}</td>
     </tr>`;
@@ -949,9 +949,9 @@ function renderHourLogTable(sessions) {
 
   tbody.innerHTML = completed.slice(0, 10).map(s => `
     <tr>
-      <td style="color:var(--text);font-weight:500">${formatSessionDate(s)}</td>
-      <td style="color:var(--muted)">${s.topic || '-'}</td>
-      <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
+      <td style="color:var(--text);font-weight:500">${escapeHtml(formatSessionDate(s))}</td>
+      <td style="color:var(--muted)">${escapeHtml(s.topic || '-')}</td>
+      <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(s.session_type))}</span></td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${sessionClaimHours(s.session_type)} hrs</td>
       <td>${tutorStatusChip(s.status)}</td>
     </tr>`).join('');
@@ -1332,8 +1332,8 @@ function enrichTutorClaim(claim) {
 
 function renderTutorApprovalStep(role, subtitle, state, date, note, isLast) {
   const statusLabel = tutorApprovalStepBadge(state);
-  const noteHtml = note ? `<div class="at-note">${note}</div>` : '';
-  const dateHtml = date ? `<div class="at-date">${date}</div>` : '';
+  const noteHtml = note ? `<div class="at-note">${escapeHtml(note)}</div>` : '';
+  const dateHtml = date ? `<div class="at-date">${escapeHtml(date)}</div>` : '';
   return `<div class="at-step at-step--${state}${isLast ? ' at-step--last' : ''}">
     <div class="at-rail">
       <div class="at-dot at-dot--${state}">${tutorStepIcon(state)}</div>
@@ -1341,10 +1341,10 @@ function renderTutorApprovalStep(role, subtitle, state, date, note, isLast) {
     </div>
     <div class="at-body">
       <div class="at-head">
-        <div class="at-role">${role}</div>
+        <div class="at-role">${escapeHtml(role)}</div>
         <span class="at-badge at-badge--${state}">${statusLabel}</span>
       </div>
-      ${subtitle ? `<div class="at-sub">${subtitle}</div>` : ''}
+      ${subtitle ? `<div class="at-sub">${escapeHtml(subtitle)}</div>` : ''}
       ${dateHtml}
       ${noteHtml}
     </div>
@@ -1453,13 +1453,13 @@ function renderTimesheetRows(ts) {
     const rowStyle = notOnClaim ? ' style="background:rgba(200,168,75,.06)"' : '';
 
     return `<tr${rowStyle}>
-      <td style="font-weight:500">${formatTimesheetDate(row.session_date)}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:11px">${formatTimesheetTimeRange(row.start_time, sessionType)}</td>
-      <td style="color:var(--muted)">${row.venue || '-'}</td>
-      <td>${row.topic || '-'}${notOnClaim ? ' <span style="font-size:10px;color:var(--yellow);margin-left:6px">Not on claim</span>' : ''}</td>
-      <td><span class="type-chip ${sessionType === 'practical' ? 'practical' : ''}">${sessionTypeLabel(sessionType)}</span></td>
+      <td style="font-weight:500">${escapeHtml(formatTimesheetDate(row.session_date))}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:11px">${escapeHtml(formatTimesheetTimeRange(row.start_time, sessionType))}</td>
+      <td style="color:var(--muted)">${escapeHtml(row.venue || '-')}</td>
+      <td>${escapeHtml(row.topic || '-')}${notOnClaim ? ' <span style="font-size:10px;color:var(--yellow);margin-left:6px">Not on claim</span>' : ''}</td>
+      <td><span class="type-chip ${sessionType === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(sessionType))}</span></td>
       <td><span class="att-count ${attendanceCountClass(present, enrolled)}">${present} / ${enrolled || '-'}</span></td>
-      <td style="font-family:'DM Mono',monospace">${hours} hrs</td>
+      <td style="font-family:'DM Mono',monospace">${escapeHtml(hours)} hrs</td>
     </tr>`;
   }).join('');
 }
@@ -1483,12 +1483,12 @@ function renderTimesheetSessionCards(ts) {
 
     return `<article class="ts-session-card${notOnClaim ? ' ts-session-card--warn' : ''}">
       <div class="ts-session-top">
-        <div class="ts-session-when">${formatTimesheetDate(row.session_date)} · ${startOnly}</div>
-        <div class="ts-session-hrs">${hours} hrs</div>
+        <div class="ts-session-when">${escapeHtml(formatTimesheetDate(row.session_date))} · ${escapeHtml(startOnly)}</div>
+        <div class="ts-session-hrs">${escapeHtml(hours)} hrs</div>
       </div>
-      <div class="ts-session-title">${row.topic || '-'} · ${sessionTypeLabel(sessionType)}</div>
+      <div class="ts-session-title">${escapeHtml(row.topic || '-')} · ${escapeHtml(sessionTypeLabel(sessionType))}</div>
       <div class="ts-session-meta">
-        <span>${row.venue || '-'}</span>
+        <span>${escapeHtml(row.venue || '-')}</span>
         <span class="att-count ${attendanceCountClass(present, enrolled)}">${present}/${enrolled || '-'} attended</span>
       </div>
       ${notOnClaim ? '<div class="ts-session-flag">Not on claim</div>' : ''}
@@ -1540,9 +1540,9 @@ function renderTimesheetView(ts) {
 
   const unclaimedBanner = unclaimedCount && ts.claim
     ? (ts.claim.status === 'approved'
-      ? `<div class="ts-info-bar returned">You completed ${unclaimedCount} session(s) after this claim was approved. Contact the Student Employment Office to have the claim returned so you can resubmit with all sessions.</div>`
-      : (ts.claim.status === 'pending_lecturer'
-        ? `<div class="ts-info-bar">You have ${unclaimedCount} new completed session(s) not on this claim. They will be included when your lecturer approves (or ask SEO to return the claim so you can resubmit).</div>`
+      ? `<div class="ts-info-bar returned">You completed ${unclaimedCount} session(s) after this claim was approved. Ask the Student Employment Office to return the claim so you can resubmit with all sessions.</div>`
+      : (ts.claim.status === 'pending_lecturer' || ts.claim.status === 'pending_coordinator'
+        ? `<div class="ts-info-bar">You have ${unclaimedCount} completed session(s) not on this claim. Ask your lecturer or SEO to return the claim so you can resubmit with all sessions — they are not added automatically on approve.</div>`
         : (isReturned
           ? `<div class="ts-info-bar">Include all confirmed sessions for this month when you resubmit.</div>`
           : '')))
@@ -2071,10 +2071,10 @@ function showCalDetail(d, dayEvents) {
   if (listEl) {
     listEl.style.display = 'block';
     listEl.innerHTML = items.map((ev) => `
-      <button type="button" class="cal-session-pick" onclick="showCalSessionById(${d}, ${ev.sessionId})">
-        <span class="cal-session-pick-time">${ev.time}</span>
-        <span class="cal-session-pick-topic">${ev.topic}</span>
-        <span class="cal-session-pick-type">${ev.sessionType}</span>
+      <button type="button" class="cal-session-pick" onclick="showCalSessionById(${d}, ${Number(ev.sessionId) || 0})">
+        <span class="cal-session-pick-time">${escapeHtml(ev.time)}</span>
+        <span class="cal-session-pick-topic">${escapeHtml(ev.topic)}</span>
+        <span class="cal-session-pick-type">${escapeHtml(ev.sessionType)}</span>
       </button>`).join('');
   }
   const actionsEl = document.getElementById('cd-actions');

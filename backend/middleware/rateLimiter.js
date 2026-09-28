@@ -49,10 +49,16 @@ const uploadLimiter = createLimiter({
   max: 10,
 });
 
+const changePasswordLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+});
+
 module.exports = {
   adminActionLimiter,
   studentImportLimiter,
   passwordResetLimiter,
+  changePasswordLimiter,
   supportLimiter,
   messageLimiter,
   broadcastLimiter,
