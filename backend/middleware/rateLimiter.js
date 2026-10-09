@@ -19,6 +19,11 @@ const adminActionLimiter = createLimiter({
   max: 20,
 });
 
+const staffNumberLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+});
+
 const studentImportLimiter = createLimiter({
   windowMs: 60 * 60 * 1000,
   max: 3,
@@ -56,6 +61,7 @@ const changePasswordLimiter = createLimiter({
 
 module.exports = {
   adminActionLimiter,
+  staffNumberLimiter,
   studentImportLimiter,
   passwordResetLimiter,
   changePasswordLimiter,

@@ -16,6 +16,24 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.9.0] - 2026-10-09
+
+### Added
+- Admin User Management SC / UCDG cost-centre toggle; HR pack ZIP downloads only the selected centre (required `costCentre` query)
+- Tutor / demonstrator Profile field to enter the HR staff number (replaces admin CSV import in the UI)
+- Timesheet PDF embeds each session’s attendance register; the Att. figure links to that page
+- Lecturer live sessions show Register / End Session only; scheduled sessions keep Activate / Postpone / Cancel with a styled cancel modal
+
+### Changed
+- Admin HR pack control is a short “Download HR Pack” pill; staff-number CSV export / upload buttons removed from Tutors and Demonstrators
+- Lecturer claim review uses a compact session table and a scrollable panel instead of stacked field cards
+- Tutor claims timesheet attendance count opens the register (desktop and mobile)
+
+### Fixed
+- Local HR PDF generation falls back to system Chrome when the Puppeteer cache browser is missing; nodemon ignores `.cache` so Chrome install does not restart the API
+
+---
+
 ## [0.8.0] - 2026-09-28
 
 ### Added

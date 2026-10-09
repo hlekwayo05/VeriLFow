@@ -1052,18 +1052,15 @@ function sessionActionButton(s) {
   const actions = [];
   if (s.status === 'scheduled') {
     actions.push(`<button type="button" class="sess-act-btn activate lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); activateSession(${s.id})"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg> Activate</button>`);
+    actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openPostponeSession(${s.id})">Postpone</button>`);
+    actions.push(`<button type="button" class="sess-act-btn end" onclick="event.stopPropagation(); cancelSession(${s.id})">Cancel</button>`);
   }
   if (s.status === 'active') {
-    actions.push(`<button type="button" class="sess-act-btn activate" onclick="event.stopPropagation(); openLiveSessionPanel(${s.id})">Code / QR</button>`);
     actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openRegister(${s.id})">Register</button>`);
     actions.push(`<button type="button" class="sess-act-btn end lec-session-activate" id="sess-${s.id}-act" onclick="event.stopPropagation(); endSession(${s.id})">■ End Session</button>`);
   }
   if (s.status === 'completed' || s.status === 'flagged') {
     actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openRegister(${s.id})">Register</button>`);
-  }
-  if (s.status === 'scheduled' || s.status === 'active') {
-    actions.push(`<button type="button" class="sess-act-btn" onclick="event.stopPropagation(); openPostponeSession(${s.id})">Postpone</button>`);
-    actions.push(`<button type="button" class="sess-act-btn end" onclick="event.stopPropagation(); cancelSession(${s.id})">Cancel</button>`);
   }
   return actions.join('');
 }
@@ -1171,7 +1168,6 @@ async function activateSession(id) {
     };
     renderSessionRows(Object.values(SESSIONS));
     renderTodayCard(Object.values(SESSIONS));
-    await openLiveSessionPanel(id);
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not activate session');
   } finally {
@@ -1201,13 +1197,32 @@ async function endSession(id) {
 async function cancelSession(id) {
   const s = SESSIONS[id];
   if (!s) return;
-  const label = s.topic || s.module_code || 'this session';
-  if (!window.confirm(`Cancel "${label}"?\n\nTutors will no longer see it as upcoming. This cannot be undone.`)) {
-    return;
+  cancelSessionId = id;
+  const title = document.getElementById('cancel-session-title');
+  if (title) title.textContent = s.topic || s.module_code || 'This session';
+  document.getElementById('cancel-session-overlay')?.classList.add('open');
+}
+
+function closeCancelSession(e) {
+  if (e && e.target !== document.getElementById('cancel-session-overlay')) return;
+  cancelSessionId = null;
+  const confirmBtn = document.getElementById('cancel-session-confirm');
+  if (confirmBtn) confirmBtn.disabled = false;
+  document.getElementById('cancel-session-overlay')?.classList.remove('open');
+}
+
+async function confirmCancelSession() {
+  const id = cancelSessionId;
+  if (id == null) return;
+  const btn = document.getElementById('cancel-session-confirm');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Cancelling…';
   }
   try {
     await VF.apiFetch(`/sessions/${id}/cancel`, { method: 'PATCH' });
     SESSIONS[id] = { ...SESSIONS[id], status: 'cancelled', session_code: null };
+    closeCancelSession();
     showToast('Session cancelled');
     renderSessionRows(Object.values(SESSIONS));
     renderTodayCard(Object.values(SESSIONS));
@@ -1215,9 +1230,13 @@ async function cancelSession(id) {
     rebuildCalendarFromSessions(Object.values(SESSIONS));
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not cancel session');
+    if (btn) btn.disabled = false;
+  } finally {
+    if (btn) btn.textContent = 'Cancel session';
   }
 }
 
+let cancelSessionId = null;
 let postponeSessionId = null;
 
 function ppDefaultDurationHours(session) {
@@ -2134,7 +2153,8 @@ async function openClaimDetail(id) {
     const rate = d.pay_rate != null ? `R${Number(d.pay_rate).toFixed(2)}/hr` : '-';
     const totalHours = Number(d.total_hours || 0);
 
-    const sessionBlocks = sessions.filter(s => s.included !== false).map(s => {
+    const includedSessions = sessions.filter(s => s.included !== false);
+    const sessionRows = includedSessions.map(s => {
       const date = s.session_date
         ? new Date(String(s.session_date).slice(0, 10)).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
         : '-';
@@ -2142,20 +2162,42 @@ async function openClaimDetail(id) {
       const present = s.attendance_count ?? 0;
       const enrolled = s.enrolled_count ?? 0;
       const attCls = enrolled && (present / enrolled) >= 0.75 ? 'att-good' : (enrolled ? 'att-low' : '');
-      const sessionId = s.session_id || s.id;
+      const sessionId = Number(s.session_id || s.id) || 0;
+      const att = `${present} / ${enrolled || '-'}`;
+      const venue = escapeHtml(s.venue || '-');
+      const topic = escapeHtml(s.topic || '-');
+      const type = escapeHtml(sessionTypeLabel(s.session_type) || '-');
+      return `<tr>
+        <td style="font-weight:600">${escapeHtml(date)}</td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${escapeHtml(time)}</td>
+        <td class="lec-cd-clip" title="${venue}">${venue}</td>
+        <td class="lec-cd-clip" title="${topic}">${topic}</td>
+        <td><span class="type-chip">${type}</span></td>
+        <td><button type="button" class="att-reg-link ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})" title="View attendance register">${escapeHtml(att)}</button></td>
+        <td style="font-family:'DM Mono',monospace;color:var(--muted)">${escapeHtml(s.claimed_hours || '-')} hrs</td>
+      </tr>`;
+    }).join('');
+
+    const sessionCards = includedSessions.map(s => {
+      const date = s.session_date
+        ? new Date(String(s.session_date).slice(0, 10)).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
+        : '-';
+      const time = s.start_time ? String(s.start_time).slice(0, 5) : '-';
+      const present = s.attendance_count ?? 0;
+      const enrolled = s.enrolled_count ?? 0;
+      const attCls = enrolled && (present / enrolled) >= 0.75 ? 'att-good' : (enrolled ? 'att-low' : '');
+      const sessionId = Number(s.session_id || s.id) || 0;
       const att = `${present} / ${enrolled || '-'}`;
       return `
         <div class="lec-cd-field-group">
-          <div class="lec-cd-field-row"><span class="k">Date</span><span class="v">${date}</span></div>
-          <div class="lec-cd-field-row"><span class="k">Time</span><span class="v">${time}</span></div>
-          <div class="lec-cd-field-row"><span class="k">Venue</span><span class="v lec-cd-venue">${(s.venue || '-').replace(/</g, '&lt;')}</span></div>
-          <div class="lec-cd-field-row"><span class="k">Topic</span><span class="v">${(s.topic || '-').replace(/</g, '&lt;')}</span></div>
-          <div class="lec-cd-field-row"><span class="k">Type</span><span class="v"><span class="lec-cd-type">${(s.session_type || '-').replace(/</g, '&lt;')}</span></span></div>
+          <div class="lec-cd-field-row"><span class="k">Date</span><span class="v">${escapeHtml(date)} · ${escapeHtml(time)}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Venue</span><span class="v lec-cd-venue">${escapeHtml(s.venue || '-')}</span></div>
+          <div class="lec-cd-field-row"><span class="k">Topic</span><span class="v">${escapeHtml(s.topic || '-')}</span></div>
           <button type="button" class="lec-cd-field-row lec-cd-att-btn ${attCls}" onclick="event.stopPropagation();openRegister(${sessionId})">
             <span class="k">Attendance</span>
-            <span class="v">${att} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+            <span class="v">${escapeHtml(att)} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
           </button>
-          <div class="lec-cd-field-row"><span class="k">Hours</span><span class="v">${s.claimed_hours || '-'} hrs</span></div>
+          <div class="lec-cd-field-row"><span class="k">Hours</span><span class="v">${escapeHtml(s.claimed_hours || '-')} hrs</span></div>
         </div>`;
     }).join('');
 
@@ -2187,24 +2229,41 @@ async function openClaimDetail(id) {
         </div>
       </div>`;
 
+    const emptySessions = '<div class="lec-empty-card"><p>No sessions</p></div>';
     document.getElementById('cd-body').innerHTML = `
-      <div class="lec-cd-stats">
-        <div class="lec-cd-stat"><span class="l">Qualification level</span><div class="v">${qual}</div></div>
-        <div class="lec-cd-stat"><span class="l">Responsibility level</span><div class="v">${resp}</div></div>
-        <div class="lec-cd-stat"><span class="l">Claimed rate</span><div class="v">${rate}</div></div>
-        <div class="lec-cd-stat"><span class="l">Total hours</span><div class="v">${totalHours} hrs</div></div>
-      </div>
-      <div class="lec-cd-stat lec-cd-stat-total"><span class="l">Total amount</span><div class="v green">${formatClaimAmount(d.total_amount)}</div></div>
-      ${timeline}
-      ${lecCoordinatorFeedbackBar(d)}
-      <div class="lec-cd-breakdown-label">Session breakdown · ${sessions.length} session(s)</div>
-      ${sessionBlocks || '<div class="lec-empty-card"><p>No sessions</p></div>'}
       <div class="lec-cd-desk-only claims-strip cd-verify-strip">
         <div class="cl-stat"><div class="cl-stat-label">Qualification Level</div><div class="cl-stat-val">${qual}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Responsibility Level</div><div class="cl-stat-val">${resp}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Claimed Rate</div><div class="cl-stat-val">${rate}</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Total Hours</div><div class="cl-stat-val">${totalHours} hrs</div></div>
         <div class="cl-stat"><div class="cl-stat-label">Total Amount</div><div class="cl-stat-val green">${formatClaimAmount(d.total_amount)}</div></div>
+      </div>
+      <div class="lec-cd-desk-only">${lecCoordinatorFeedbackBar(d)}</div>
+      <div class="ts-modal-wrap lec-cd-desk-only">
+        <div class="ts-modal-head">
+          <div>
+            <div class="ts-modal-head-title">Session breakdown</div>
+            <div class="ts-modal-head-sub">${includedSessions.length} session(s)</div>
+          </div>
+        </div>
+        <div class="lec-cd-table-scroll">
+          <table class="ts-modal-table">
+            <thead><tr><th>Date</th><th>Time</th><th>Venue</th><th>Topic</th><th>Type</th><th>Attendance</th><th>Hours</th></tr></thead>
+            <tbody>${sessionRows || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">No sessions</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>
+      <div class="lec-cd-mobile-only">
+        <div class="lec-cd-stats">
+          <div class="lec-cd-stat"><span class="l">Qualification level</span><div class="v">${qual}</div></div>
+          <div class="lec-cd-stat"><span class="l">Responsibility level</span><div class="v">${resp}</div></div>
+          <div class="lec-cd-stat"><span class="l">Claimed rate</span><div class="v">${rate}</div></div>
+          <div class="lec-cd-stat"><span class="l">Total hours</span><div class="v">${totalHours} hrs</div></div>
+        </div>
+        <div class="lec-cd-stat lec-cd-stat-total"><span class="l">Total amount</span><div class="v green">${formatClaimAmount(d.total_amount)}</div></div>
+        ${timeline}
+        <div class="lec-cd-breakdown-label">Session breakdown · ${includedSessions.length} session(s)</div>
+        ${sessionCards || emptySessions}
       </div>`;
 
     const footer = document.getElementById('cd-footer');

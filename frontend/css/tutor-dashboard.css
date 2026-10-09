@@ -512,6 +512,20 @@ body.tutor-dash .ts-table th { text-align: left; font-size: 10px; text-transform
 body.tutor-dash .ts-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
 body.tutor-dash .ts-table tr:last-child td { border-bottom: none; }
 body.tutor-dash .att-count { font-family: 'DM Mono', monospace; font-weight: 600; }
+body.tutor-dash .att-count-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color .15s;
+}
+body.tutor-dash .att-count-btn:hover { text-decoration-color: currentColor; }
 body.tutor-dash .att-count.good { color: var(--green); }
 body.tutor-dash .att-count.low { color: var(--yellow); }
 body.tutor-dash .submit-bar { display: flex; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; animation: tdFadeUp .4s ease .2s both; }

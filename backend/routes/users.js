@@ -10,6 +10,7 @@ const authenticate = require('../middleware/authenticate');
 const requireRole  = require('../middleware/requireRole');
 const {
   adminActionLimiter,
+  staffNumberLimiter,
   passwordResetLimiter,
   studentImportLimiter,
 } = require('../middleware/rateLimiter');
@@ -19,7 +20,7 @@ const BCRYPT_COST = 12;
 const { generateTempPassword } = require('../utils/tempPassword');
 const { fetchTokenVersion, bumpTokenVersion } = require('../utils/tokenVersion');
 const { parsePagination, sendList } = require('../utils/pagination');
-const { cacheGet, cacheSet } = require('../services/cache');
+const { cacheGet, cacheSet, cacheDelPrefix } = require('../services/cache');
 const {
   sendLecturerWelcomeEmail,
   sendPasswordResetEmail,
@@ -707,6 +708,47 @@ router.get(
     } catch (err) {
       console.error('Get me error:', err.message);
       return res.status(500).json({ error: 'Server error.' });
+    }
+  }
+);
+
+router.patch(
+  '/me/staff-number',
+  staffNumberLimiter,
+  authenticate,
+  requireRole('tutor'),
+  async (req, res) => {
+    const staffNumber = String(req.body?.staffNumber ?? '').trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9./-]{0,19}$/.test(staffNumber)) {
+      return res.status(400).json({
+        errors: ['Enter the staff number from your HR email. Use letters and numbers, up to 20 characters.'],
+      });
+    }
+
+    try {
+      const result = await pool.query(
+        `UPDATE users
+         SET staff_number = $1, updated_at = NOW()
+         WHERE id = $2 AND role = 'tutor'
+         RETURNING staff_number`,
+        [staffNumber, req.user.userId]
+      );
+      if (!result.rows.length) {
+        return res.status(404).json({ errors: ['Account not found.'] });
+      }
+      cacheDelPrefix('tutors:');
+      return res.status(200).json({
+        staff_number: result.rows[0].staff_number,
+        message: 'Staff number saved.',
+      });
+    } catch (err) {
+      if (err.code === '23505') {
+        return res.status(409).json({
+          errors: ['That staff number is already on another account. Check the number from your HR email.'],
+        });
+      }
+      console.error('Save staff number error:', err.message);
+      return res.status(500).json({ errors: ['Could not save the staff number.'] });
     }
   }
 );
@@ -1505,9 +1547,19 @@ router.get(
         positionTypeRaw === 'demonstrator' || positionTypeRaw === 'tutor'
           ? positionTypeRaw
           : undefined;
+      const costCentreRaw = String(req.query.costCentre || '').trim().toLowerCase();
+      const costCentre =
+        costCentreRaw === 'ucdg' || costCentreRaw === 'school_of_computing'
+          ? costCentreRaw
+          : undefined;
+      if (!costCentre) {
+        return res.status(400).json({
+          errors: ['Choose SC or UCDG before downloading an HR pack.'],
+        });
+      }
 
       const { streamHrPacksZip } = require('../services/hrPacks');
-      await streamHrPacksZip(pool, res, { applicationIds, positionType });
+      await streamHrPacksZip(pool, res, { applicationIds, positionType, costCentre });
     } catch (err) {
       const status = err.status || 500;
       if (res.headersSent) {

@@ -1777,6 +1777,53 @@ function renderLecturerRow(l) {
     </tr>`;
 }
 
+let hrCostCentreFilter = {
+  tutor: 'school_of_computing',
+  demonstrator: 'school_of_computing',
+};
+
+function hrCostCentreLabel(centre) {
+  return centre === 'ucdg' ? 'UCDG' : 'School of Computing';
+}
+
+function hrFundShort(centre) {
+  return centre === 'ucdg' ? 'UCDG' : 'SC';
+}
+
+function updateHrZipButtons(role) {
+  const short = hrFundShort(hrCostCentreFilter[role]);
+  const noun = role === 'demonstrator' ? 'demonstrator' : 'tutor';
+  const title = `${short} ${noun} documents only, for upload to OneDrive`;
+  [`${role}-hr-zip-btn`, `${role}-hr-zip-mobile`].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.title = title;
+  });
+}
+
+function setHrCostCentreFilter(role, centre) {
+  if (centre !== 'ucdg' && centre !== 'school_of_computing') return;
+  hrCostCentreFilter[role] = centre;
+  const paneId = role === 'demonstrator' ? 'tab-demonstrators-u' : 'tab-tutors-u';
+  const ucdg = centre === 'ucdg';
+  document.getElementById(paneId)?.querySelectorAll('[data-fund-toggle]').forEach((btn) => {
+    btn.classList.toggle('is-ucdg', ucdg);
+    btn.setAttribute('aria-pressed', ucdg ? 'true' : 'false');
+    btn.title = ucdg ? 'Showing UCDG' : 'Showing School of Computing (SC)';
+  });
+  updateHrZipButtons(role);
+  if (role === 'demonstrator') renderDemonstratorList();
+  else renderTutorList();
+}
+
+function toggleHrCostCentre(role) {
+  const next = hrCostCentreFilter[role] === 'ucdg' ? 'school_of_computing' : 'ucdg';
+  setHrCostCentreFilter(role, next);
+}
+
+function peopleForCostCentre(people, centre) {
+  return (people || []).filter((person) => person.cost_centre === centre);
+}
+
 async function loadTutors() {
   const body = document.getElementById('tutors-body');
   const cards = document.getElementById('tutors-cards');
@@ -1787,24 +1834,33 @@ async function loadTutors() {
     const tutors = await VF.apiFetch('/users/tutors?positionType=tutor');
     window.TUTORS = {};
     tutors.forEach((t) => { window.TUTORS[t.id] = t; });
-
-    if (body) {
-      body.innerHTML = tutors.length
-        ? tutors.map((t) => renderTutorRow(t, 'tutor')).join('')
-        : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved tutors yet.</td></tr>';
-    }
-    if (cards) {
-      if (!tutors.length) {
-        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No tutors yet</h3><p>Approved tutors will appear here.</p></div></div>`;
-      } else {
-        const n = tutors.length;
-        cards.innerHTML =
-          `<div class="ad-list-count">${n} tutor${n === 1 ? '' : 's'}</div>` +
-          tutors.map((t) => renderTutorCard(t, 'tutor')).join('');
-      }
-    }
+    renderTutorList();
   } catch (err) {
     adToast(err.errors ? err.errors[0] : 'Could not load tutors.', true);
+  }
+}
+
+function renderTutorList() {
+  const body = document.getElementById('tutors-body');
+  const cards = document.getElementById('tutors-cards');
+  const centre = hrCostCentreFilter.tutor;
+  const label = hrCostCentreLabel(centre);
+  const tutors = peopleForCostCentre(Object.values(window.TUTORS || {}), centre);
+
+  if (body) {
+    body.innerHTML = tutors.length
+      ? tutors.map((t) => renderTutorRow(t, 'tutor')).join('')
+      : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved tutors under ${label} yet.</td></tr>`;
+  }
+  if (cards) {
+    if (!tutors.length) {
+      cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No tutors under ${adEscapeHtml(label)}</h3><p>Approved tutors for this cost centre will appear here.</p></div></div>`;
+    } else {
+      const n = tutors.length;
+      cards.innerHTML =
+        `<div class="ad-list-count">${n} tutor${n === 1 ? '' : 's'}</div>` +
+        tutors.map((t) => renderTutorCard(t, 'tutor')).join('');
+    }
   }
 }
 
@@ -1818,24 +1874,33 @@ async function loadDemonstrators() {
     const demonstrators = await VF.apiFetch('/users/tutors?positionType=demonstrator');
     window.DEMONSTRATORS = {};
     demonstrators.forEach((d) => { window.DEMONSTRATORS[d.id] = d; });
-
-    if (body) {
-      body.innerHTML = demonstrators.length
-        ? demonstrators.map((d) => renderTutorRow(d, 'demonstrator')).join('')
-        : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved demonstrators yet.</td></tr>';
-    }
-    if (cards) {
-      if (!demonstrators.length) {
-        cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No demonstrators yet</h3><p>Approved demonstrators will appear here.</p></div></div>`;
-      } else {
-        const n = demonstrators.length;
-        cards.innerHTML =
-          `<div class="ad-list-count">${n} demonstrator${n === 1 ? '' : 's'}</div>` +
-          demonstrators.map((d) => renderTutorCard(d, 'demonstrator')).join('');
-      }
-    }
+    renderDemonstratorList();
   } catch (err) {
     adToast(err.errors ? err.errors[0] : 'Could not load demonstrators.', true);
+  }
+}
+
+function renderDemonstratorList() {
+  const body = document.getElementById('demonstrators-body');
+  const cards = document.getElementById('demonstrators-cards');
+  const centre = hrCostCentreFilter.demonstrator;
+  const label = hrCostCentreLabel(centre);
+  const demonstrators = peopleForCostCentre(Object.values(window.DEMONSTRATORS || {}), centre);
+
+  if (body) {
+    body.innerHTML = demonstrators.length
+      ? demonstrators.map((d) => renderTutorRow(d, 'demonstrator')).join('')
+      : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No approved demonstrators under ${label} yet.</td></tr>`;
+  }
+  if (cards) {
+    if (!demonstrators.length) {
+      cards.innerHTML = `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No demonstrators under ${adEscapeHtml(label)}</h3><p>Approved demonstrators for this cost centre will appear here.</p></div></div>`;
+    } else {
+      const n = demonstrators.length;
+      cards.innerHTML =
+        `<div class="ad-list-count">${n} demonstrator${n === 1 ? '' : 's'}</div>` +
+        demonstrators.map((d) => renderTutorCard(d, 'demonstrator')).join('');
+    }
   }
 }
 

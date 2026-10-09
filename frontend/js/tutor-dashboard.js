@@ -1458,7 +1458,7 @@ function renderTimesheetRows(ts) {
       <td style="color:var(--muted)">${escapeHtml(row.venue || '-')}</td>
       <td>${escapeHtml(row.topic || '-')}${notOnClaim ? ' <span style="font-size:10px;color:var(--yellow);margin-left:6px">Not on claim</span>' : ''}</td>
       <td><span class="type-chip ${sessionType === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(sessionType))}</span></td>
-      <td><span class="att-count ${attendanceCountClass(present, enrolled)}">${present} / ${enrolled || '-'}</span></td>
+      <td><button type="button" class="att-count att-count-btn ${attendanceCountClass(present, enrolled)}" onclick="openRegister(${Number(sessionId) || 0})" title="View attendance register">${present} / ${enrolled || '-'}</button></td>
       <td style="font-family:'DM Mono',monospace">${escapeHtml(hours)} hrs</td>
     </tr>`;
   }).join('');
@@ -1489,7 +1489,7 @@ function renderTimesheetSessionCards(ts) {
       <div class="ts-session-title">${escapeHtml(row.topic || '-')} · ${escapeHtml(sessionTypeLabel(sessionType))}</div>
       <div class="ts-session-meta">
         <span>${escapeHtml(row.venue || '-')}</span>
-        <span class="att-count ${attendanceCountClass(present, enrolled)}">${present}/${enrolled || '-'} attended</span>
+        <button type="button" class="att-count att-count-btn ${attendanceCountClass(present, enrolled)}" onclick="openRegister(${Number(row.id) || 0})" title="View attendance register">${present}/${enrolled || '-'} attended</button>
       </div>
       ${notOnClaim ? '<div class="ts-session-flag">Not on claim</div>' : ''}
     </article>`;
@@ -1534,7 +1534,7 @@ function renderTimesheetView(ts) {
 
   const staffBanner = !hasStaffNumber && !ts.claim
     ? `<div class="ts-info-bar ts-banner-warn">
-      <span>You cannot submit claims until HR assigns your staff number. Forms and acceptance are on Profile.</span>
+      <span>Enter the staff number from your HR email on Profile before you can submit claims.</span>
     </div>`
     : '';
 
@@ -1643,7 +1643,7 @@ function changeClaimsMonth(delta) {
 async function submitTimesheet() {
   if (!currentTimesheet?.canSubmit) return;
   if (currentTimesheet.hasStaffNumber === false) {
-    showToast('Wait until HR assigns your staff number before submitting claims');
+    showToast('Enter the staff number from your HR email on Profile before submitting claims');
     return;
   }
   const sessionIds = currentTimesheet.sessions.map((s) => s.id);
@@ -2394,6 +2394,20 @@ function renderProfile() {
       ['Assigned cost centre', esc(costCentreLabel)],
       ['Finance contact', esc(costCentreContact(app?.cost_centre))],
     ], 'profile-card--cost-centre') : ''}
+    ${isApproved ? (() => {
+      const currentStaff = String(user?.staff_number || app?.staff_number || '').replace(/"/g, '&quot;');
+      return `<div class="profile-card" id="profile-staff-number-card">
+      <div class="profile-section-title">HR staff number</div>
+      <p class="profile-help">After your documents go to HR, they email your staff number. Enter it here so you can submit claims.</p>
+      <div class="um-field">
+        <div class="um-label">Staff number</div>
+        <input type="text" id="profile-staff-number" class="um-input" maxlength="20" autocomplete="off" value="${currentStaff}" placeholder="From your HR email"/>
+      </div>
+      <div class="um-actions" style="margin-top:14px;">
+        <button type="button" class="btn-primary" id="profile-staff-number-btn" onclick="saveStaffNumber()">Save staff number</button>
+      </div>
+    </div>`;
+    })() : ''}
     ${section('Personal information', [
       ['Title', esc(dash(titleLabel))],
       ['Initials', esc(dash(u.initials))],
@@ -2419,9 +2433,6 @@ function renderProfile() {
       ['Bank letter', profileDocHtml(bankDoc, bankDocName)],
       ['Declaration', app?.declared ? 'Yes' : 'No'],
       ['Application status', esc(dash(app?.status || s.applicationStatus))],
-      ['HR Staff Number', user?.staff_number || app?.staff_number
-        ? esc(user?.staff_number || app?.staff_number)
-        : '<span style="color:var(--yellow)">Not yet assigned - contact the Student Employment Office</span>'],
     ], 'profile-card--docs')}
     ${(!hrDocsComplete) ? `
     <div class="profile-card profile-card--upload" id="profile-doc-upload-card">
@@ -2514,6 +2525,43 @@ function renderProfile() {
       Log out
     </button>
   `;
+}
+
+async function saveStaffNumber() {
+  const input = document.getElementById('profile-staff-number');
+  const btn = document.getElementById('profile-staff-number-btn');
+  const staffNumber = String(input?.value || '').trim();
+  if (!staffNumber) {
+    showToast('Enter the staff number from your HR email');
+    return;
+  }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+  }
+  try {
+    const data = await VF.apiFetch('/users/me/staff-number', {
+      method: 'PATCH',
+      body: { staffNumber },
+    });
+    tutorCurrentUser = tutorCurrentUser || {};
+    tutorCurrentUser.staff_number = data.staff_number || staffNumber;
+    window.tutorCurrentUser = tutorCurrentUser;
+    if (tutorApplication) tutorApplication.staff_number = tutorCurrentUser.staff_number;
+    showToast('Staff number saved');
+    renderProfile();
+    updateHrFormsNotice();
+    if (document.getElementById('claims-list-wrap') && currentTimesheet) {
+      currentTimesheet.hasStaffNumber = true;
+      renderTimesheetView(currentTimesheet);
+    }
+  } catch (err) {
+    showToast(err.errors ? err.errors[0] : (err.message || 'Could not save the staff number'));
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Save staff number';
+    }
+  }
 }
 
 async function loadProfile() {

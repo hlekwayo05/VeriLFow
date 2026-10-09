@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=32"/>
-<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=23"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=34"/>
+<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=24"/>
 </head>
 <body class="admin-dash ad-on-hub">
 <div class="app">
@@ -548,21 +548,27 @@
       </table>
     </div>
     <div id="tab-tutors-u" class="tab-pane">
-      <div class="ad-hr-toolbar" style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <button class="btn-sm" title="Spreadsheet for HR to fill staff_number and return for import. The ZIP already includes this list plus all documents." onclick="exportStaffNumbersForHR('tutor')">Staff-number list (CSV)</button>
-        <button class="btn-sm" title="Full document pack for HR: forms + CV, ID, tax, bank, transcript" onclick="downloadHrPacksZip('tutor')">Download tutor HR packs (ZIP)</button>
-        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;" title="Import staff numbers HR returned">
-          Upload HR Staff Numbers (CSV)
-          <input type="file" accept=".csv" style="display:none;" onchange="importStaffNumbers(this)"/>
-        </label>
+      <div class="ad-hr-toolbar" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button type="button" class="ad-fund-toggle" data-fund-toggle="tutor" aria-pressed="false" title="Showing School of Computing (SC)" onclick="toggleHrCostCentre('tutor')">
+          <span class="ad-fund-toggle-label ad-fund-toggle-sc">SC</span>
+          <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
+          <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-btn" title="SC tutor documents only, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
+          <span class="ad-hr-pack-label">Download HR Pack</span>
+          <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
       <div class="ad-mobile-cta ad-mobile-only">
-        <button type="button" class="ad-btn-outline" onclick="exportStaffNumbersForHR('tutor')">Staff CSV</button>
-        <button type="button" class="ad-btn-primary ad-btn-glow" onclick="downloadHrPacksZip('tutor')">
-          <span class="ad-btn-glow-label">HR packs ZIP</span>
+        <button type="button" class="ad-fund-toggle" data-fund-toggle="tutor" aria-pressed="false" title="Showing School of Computing (SC)" onclick="toggleHrCostCentre('tutor')">
+          <span class="ad-fund-toggle-label ad-fund-toggle-sc">SC</span>
+          <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
+          <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-btn-outline ad-import-btn" onclick="document.getElementById('tutors-staff-csv-input').click()">Upload</button>
-        <input id="tutors-staff-csv-input" type="file" accept=".csv" style="display:none" onchange="importStaffNumbers(this)" />
+        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-mobile" title="SC tutor documents only, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
+          <span class="ad-hr-pack-label">Download HR Pack</span>
+          <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
       <div class="ad-rec-list ad-mobile-only" id="tutors-cards"></div>
       <table class="data-table">
@@ -571,21 +577,27 @@
       </table>
     </div>
     <div id="tab-demonstrators-u" class="tab-pane">
-      <div class="ad-hr-toolbar" style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <button class="btn-sm" title="Spreadsheet for HR to fill staff_number and return for import. The ZIP already includes this list plus all documents." onclick="exportStaffNumbersForHR('demonstrator')">Staff-number list (CSV)</button>
-        <button class="btn-sm" title="Full document pack for HR: forms + CV, ID, tax, bank, transcript" onclick="downloadHrPacksZip('demonstrator')">Download demonstrator HR packs (ZIP)</button>
-        <label class="btn-sm" style="cursor:pointer;display:inline-block;margin:0;" title="Import staff numbers HR returned">
-          Upload HR Staff Numbers (CSV)
-          <input type="file" accept=".csv" style="display:none;" onchange="importStaffNumbers(this)"/>
-        </label>
+      <div class="ad-hr-toolbar" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <button type="button" class="ad-fund-toggle" data-fund-toggle="demonstrator" aria-pressed="false" title="Showing School of Computing (SC)" onclick="toggleHrCostCentre('demonstrator')">
+          <span class="ad-fund-toggle-label ad-fund-toggle-sc">SC</span>
+          <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
+          <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-btn" title="SC demonstrator documents only, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
+          <span class="ad-hr-pack-label">Download HR Pack</span>
+          <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
       <div class="ad-mobile-cta ad-mobile-only">
-        <button type="button" class="ad-btn-outline" onclick="exportStaffNumbersForHR('demonstrator')">Staff CSV</button>
-        <button type="button" class="ad-btn-primary ad-btn-glow" onclick="downloadHrPacksZip('demonstrator')">
-          <span class="ad-btn-glow-label">HR packs ZIP</span>
+        <button type="button" class="ad-fund-toggle" data-fund-toggle="demonstrator" aria-pressed="false" title="Showing School of Computing (SC)" onclick="toggleHrCostCentre('demonstrator')">
+          <span class="ad-fund-toggle-label ad-fund-toggle-sc">SC</span>
+          <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
+          <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-btn-outline ad-import-btn" onclick="document.getElementById('demos-staff-csv-input').click()">Upload</button>
-        <input id="demos-staff-csv-input" type="file" accept=".csv" style="display:none" onchange="importStaffNumbers(this)" />
+        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-mobile" title="SC demonstrator documents only, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
+          <span class="ad-hr-pack-label">Download HR Pack</span>
+          <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        </button>
       </div>
       <div class="ad-rec-list ad-mobile-only" id="demonstrators-cards"></div>
       <table class="data-table">
@@ -1480,7 +1492,7 @@
 <script src="../js/app.js?v=23"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=39"></script>
+<script src="../js/admin-dashboard-api.js?v=43"></script>
 <script>
   const isAdminPage =
     VF.requireAuth('login.html') && VF.requireRole('admin', 'login.html');
@@ -2501,14 +2513,19 @@ async function downloadHrPacksZip(positionType) {
 
   const role =
     positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
-  const kind = role === 'demonstrator' ? 'Demonstrators' : 'Tutors';
+  const centre = hrCostCentreFilter[role] || 'school_of_computing';
+  const fund = centre === 'ucdg' ? 'UCDG' : 'SC';
+  const kind = role === 'demonstrator' ? 'demonstrators' : 'tutors';
 
   VF.toast(
-    'Building ' + kind.toLowerCase() + ' HR pack ZIP… this may take a minute',
+    'Building the ' + fund + ' ' + kind + ' HR pack only… this may take a minute',
     'ok'
   );
   try {
-    const qs = '?positionType=' + encodeURIComponent(role);
+    const centre = hrCostCentreFilter[role] || 'school_of_computing';
+    const qs =
+      '?positionType=' + encodeURIComponent(role) +
+      '&costCentre=' + encodeURIComponent(centre);
     const res = await fetch(VF.API_BASE + '/users/hr-packs.zip' + qs, {
       headers: { Authorization: 'Bearer ' + token },
     });

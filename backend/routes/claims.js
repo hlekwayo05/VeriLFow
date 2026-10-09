@@ -137,7 +137,7 @@ async function assertTutorHasStaffNumber(tutorId) {
   const staffNumber = userResult.rows[0]?.staff_number;
   if (!staffNumber || !String(staffNumber).trim()) {
     const err = new Error(
-      'You cannot submit claims until HR has assigned your staff number. Please contact the Student Employment Office.'
+      'Enter the staff number from your HR email on your Profile before you can submit claims.'
     );
     err.status = 403;
     throw err;
@@ -412,6 +412,7 @@ router.get(
       if (claim) {
         const lineResult = await pool.query(
           `SELECT cs.claimed_hours,
+                  s.id,
                   s.session_date, s.start_time, s.venue, s.topic, s.session_type,
                   COUNT(DISTINCT al.id)::int AS attendance_count,
                   (
@@ -436,6 +437,35 @@ router.get(
           claimed_hours: getClaimHours(row.session_type),
         }));
       }
+
+      const sessionIds = sessions.map((row) => row.id).filter(Boolean);
+      const registers = new Map();
+      if (sessionIds.length) {
+        const registerResult = await pool.query(
+          `SELECT
+             s.id AS session_id,
+             cle.student_number,
+             cle.full_name,
+             al.recorded_at,
+             (al.id IS NOT NULL) AS present
+           FROM sessions s
+           JOIN class_list_entries cle ON cle.module_code = s.module_code
+           LEFT JOIN attendance_logs al
+             ON al.session_id = s.id
+            AND TRIM(al.student_number) = TRIM(cle.student_number)
+           WHERE s.id = ANY($1::int[])
+           ORDER BY s.id, present DESC, cle.full_name ASC`,
+          [sessionIds]
+        );
+        for (const row of registerResult.rows) {
+          if (!registers.has(row.session_id)) registers.set(row.session_id, []);
+          registers.get(row.session_id).push(row);
+        }
+      }
+      sessions = sessions.map((row) => ({
+        ...row,
+        students: registers.get(row.id) || [],
+      }));
 
       const totalHours = claim
         ? Number(claim.total_hours)

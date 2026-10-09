@@ -82,7 +82,16 @@ async function htmlToPdf(html, browser = null, pdfOptions = {}) {
 }
 
 async function launchPdfBrowser() {
-  return puppeteer.launch(pdfBrowserLaunchOptions());
+  try {
+    return await puppeteer.launch(pdfBrowserLaunchOptions());
+  } catch (err) {
+    const missingBrowser = /Could not find Chrome/i.test(String(err && err.message));
+    if (!missingBrowser) throw err;
+    return puppeteer.launch({
+      ...pdfBrowserLaunchOptions(),
+      channel: 'chrome',
+    });
+  }
 }
 
 function appointeeSignatureBlocks(application) {

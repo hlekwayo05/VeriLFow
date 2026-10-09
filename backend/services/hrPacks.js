@@ -179,7 +179,7 @@ function zipEntriesToBuffer(entries) {
  * Builds the archive fully first, then sends bytes (avoids truncated/invalid ZIPs).
  * @param {import('pg').Pool} pool
  * @param {import('express').Response} res
- * @param {{ applicationIds?: number[], positionType?: 'tutor'|'demonstrator' }} [options]
+ * @param {{ applicationIds?: number[], positionType?: 'tutor'|'demonstrator', costCentre?: 'ucdg'|'school_of_computing' }} [options]
  * @returns {Promise<{ count: number }>}
  */
 async function streamHrPacksZip(pool, res, options = {}) {
@@ -201,6 +201,21 @@ async function streamHrPacksZip(pool, res, options = {}) {
     query += ` AND a.id = ANY($${params.length}::int[])`;
   }
 
+  const costCentre =
+    options.costCentre === 'ucdg' || options.costCentre === 'school_of_computing'
+      ? options.costCentre
+      : null;
+  const centreLabel =
+    costCentre === 'ucdg'
+      ? 'UCDG'
+      : costCentre === 'school_of_computing'
+        ? 'School of Computing'
+        : '';
+  if (costCentre) {
+    params.push(costCentre);
+    query += ` AND a.cost_centre = $${params.length}`;
+  }
+
   query += ' ORDER BY u.surname ASC, u.first_names ASC';
 
   const result = await pool.query(query, params);
@@ -211,8 +226,9 @@ async function streamHrPacksZip(pool, res, options = {}) {
     positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
 
   if (!rows.length) {
+    const scope = centreLabel ? ` under ${centreLabel}` : '';
     const err = new Error(
-      `No accepted ${roleLabel} without a staff number are ready for an HR pack.`
+      `No accepted ${roleLabel}${scope} without a staff number are ready for an HR pack.`
     );
     err.status = 404;
     throw err;
@@ -221,11 +237,11 @@ async function streamHrPacksZip(pool, res, options = {}) {
   const settings = await getAppSettings();
   const dateStamp = new Date().toISOString().slice(0, 10);
   const packKind =
-    positionType === 'demonstrator'
+    (positionType === 'demonstrator'
       ? 'Demonstrators'
       : positionType === 'tutor'
         ? 'Tutors'
-        : 'All';
+        : 'All') + (centreLabel ? `_${centreLabel.replace(/\s+/g, '')}` : '');
   const filename = `VeriFlow_HR_Packs_${packKind}_${dateStamp}.zip`;
   const csvName = `VeriFlow_HR_StaffNumbers_${packKind}_${dateStamp}.csv`;
 
