@@ -67,7 +67,6 @@
   body.admin-dash #page-claims .page-hero h1,
   body.admin-dash #page-referrals .page-hero h1,
   body.admin-dash #page-flagged .page-hero h1,
-  body.admin-dash #page-postings .page-hero h1,
   body.admin-dash #page-users .page-hero h1,
   body.admin-dash #page-support .page-hero h1,
   body.admin-dash #page-dashboard .hero h1,
@@ -96,7 +95,6 @@
   body.admin-dash #page-claims .page-hero p,
   body.admin-dash #page-referrals .page-hero p,
   body.admin-dash #page-flagged .page-hero p,
-  body.admin-dash #page-postings .page-hero p,
   body.admin-dash #page-users .page-hero p,
   body.admin-dash #page-support .page-hero p,
   body.admin-dash #page-dashboard .hero p,
@@ -347,7 +345,6 @@
   body.admin-dash #page-claims .data-table,
   body.admin-dash #page-referrals .data-table,
   body.admin-dash #page-flagged .data-table,
-  body.admin-dash #page-postings .data-table,
   body.admin-dash #page-support .data-table,
   body.admin-dash #page-users .data-table {
     display: none !important;
@@ -586,67 +583,6 @@
   body.admin-dash .ad-hub-ico.c3 {
     background: #f6efe0;
     color: var(--ad-amber);
-  }
-
-  body.admin-dash #page-postings .page-hero-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    padding: 4px 20px 0;
-    margin-bottom: 0 !important;
-  }
-
-  body.admin-dash #page-postings .page-hero-row .btn-primary {
-    display: none !important;
-  }
-
-  body.admin-dash #page-postings .ad-mobile-cta {
-    padding: 0 20px 14px;
-  }
-
-  body.admin-dash #page-postings .ad-posting-card {
-    background: #fff;
-    border: 1px solid var(--ad-line);
-    border-radius: 14px;
-    padding: 16px;
-  }
-
-  body.admin-dash #page-postings .ad-posting-card + .ad-posting-card {
-    margin-top: 10px;
-  }
-
-  body.admin-dash #page-postings .ad-posting-code {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--ad-ink);
-  }
-
-  body.admin-dash #page-postings .ad-posting-prog {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 10.5px;
-    color: var(--ad-ink-soft);
-    margin-top: 2px;
-  }
-
-  body.admin-dash #page-postings .ad-posting-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 16px;
-    margin-top: 12px;
-  }
-
-  body.admin-dash #page-postings .ad-posting-stats .k {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--ad-ink);
-  }
-
-  body.admin-dash #page-postings .ad-posting-stats .l {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 8.5px;
-    color: var(--ad-ink-faint);
-    margin-top: 1px;
-    text-transform: uppercase;
   }
 
   body.admin-dash #page-users .full-page > .tabs {

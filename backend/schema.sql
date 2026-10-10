@@ -189,32 +189,6 @@ CREATE INDEX IF NOT EXISTS idx_students_surname ON students (surname);
 CREATE INDEX IF NOT EXISTS idx_students_email   ON students (email);
 
 -- =============================================================
---  JOB POSTINGS
--- =============================================================
-
-CREATE TABLE IF NOT EXISTS postings (
-  id                    SERIAL PRIMARY KEY,
-  module_code           VARCHAR(20)   NOT NULL,
-  module_name           TEXT          NOT NULL,
-  programme             programme_type NOT NULL,
-  position_type         position_type NOT NULL DEFAULT 'tutor',
-  min_year_level        VARCHAR(20)   NOT NULL,
-  min_average           NUMERIC(5,2)  NOT NULL DEFAULT 65
-                        CHECK (min_average >= 0 AND min_average <= 100),
-  applications_needed   INTEGER       NOT NULL DEFAULT 1
-                        CHECK (applications_needed >= 1),
-  module_pass_required  BOOLEAN       NOT NULL DEFAULT TRUE,
-  notes                 TEXT,
-  created_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-  updated_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-
-  UNIQUE (programme, module_name)
-);
-
-CREATE INDEX IF NOT EXISTS idx_postings_programme_module ON postings (programme, module_name);
-CREATE INDEX IF NOT EXISTS idx_postings_module_code      ON postings (module_code);
-
--- =============================================================
 --  USERS
 --  Single table for all three roles.
 --  role column determines dashboard access.
@@ -840,9 +814,4 @@ CREATE TRIGGER trg_support_tickets_updated_at
 DROP TRIGGER IF EXISTS trg_settings_updated_at ON settings;
 CREATE TRIGGER trg_settings_updated_at
   BEFORE UPDATE ON settings
-  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-DROP TRIGGER IF EXISTS trg_postings_updated_at ON postings;
-CREATE TRIGGER trg_postings_updated_at
-  BEFORE UPDATE ON postings
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();

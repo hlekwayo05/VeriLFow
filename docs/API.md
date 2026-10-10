@@ -116,12 +116,6 @@ Lecturer creates referral → admin approves/rejects. Approval may create a tuto
 
 ---
 
-## Postings - `/api/postings`
-
-Admin CRUD for tutor vacancy postings. Public/applicant surfaces may read active postings depending on route guards in `postings.js`.
-
----
-
 ## Students & class lists
 
 | Mount | Purpose |

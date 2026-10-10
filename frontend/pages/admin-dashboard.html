@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="../css/main.css"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=34"/>
-<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=24"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=35"/>
+<link rel="stylesheet" href="../css/admin-mobile-pages.css?v=25"/>
 </head>
 <body class="admin-dash ad-on-hub">
 <div class="app">
@@ -25,10 +25,6 @@
     <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
-    </div>
-    <div class="nav-item" id="nav-postings" onclick="showPage('postings',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
-      Job Postings
     </div>
     <div class="nav-item" id="nav-applications" onclick="showPage('applications',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
@@ -128,12 +124,6 @@
         <span class="ad-hub-ico c5" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span>
         <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Flagged</span><span class="ad-hub-tile-sub">Disputes</span></span>
         <span class="ad-hub-meta" id="ad-hub-flagged-badge" hidden></span>
-        <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-      <button type="button" class="ad-hub-tile" onclick="showPage('postings',document.getElementById('nav-postings'))">
-        <span class="ad-hub-ico c3" aria-hidden="true"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg></span>
-        <span class="ad-hub-tile-body"><span class="ad-hub-tile-title">Postings</span><span class="ad-hub-tile-sub">Jobs</span></span>
-        <span class="ad-hub-meta" id="ad-hub-postings-badge" hidden></span>
         <svg class="ad-hub-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </button>
       <button type="button" class="ad-hub-tile" id="hub-tile-messages" onclick="showPage('messages',document.getElementById('nav-messages-admin'))">
@@ -238,34 +228,6 @@
         <div style="padding:16px;font-size:12px;color:var(--muted);text-align:center">Loading…</div>
       </div>
     </div>
-  </div>
-</div>
-
-<div id="page-postings" class="page">
-  <div class="full-page">
-    <div class="ad-page-head">
-      <button type="button" class="ad-page-back" onclick="showPage('dashboard',document.getElementById('nav-dashboard'))">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-        HOME
-      </button>
-      <div class="page-hero-row">
-        <div class="page-hero" style="margin-bottom:0"><h1>Job Postings</h1><p>Open and closed tutor positions across all modules</p></div>
-        <button class="btn-primary" onclick="openPostingModal()">+ New Posting</button>
-      </div>
-    </div>
-    <div class="ad-mobile-cta ad-mobile-only">
-      <button type="button" class="ad-btn-primary" onclick="openPostingModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        New Posting
-      </button>
-    </div>
-    <div class="ad-rec-list ad-mobile-only" id="postings-cards"></div>
-    <table class="data-table">
-      <thead><tr><th>Module</th><th>Programme</th><th>Position</th><th>Year level req.</th><th>Avg req.</th><th>Apps needed</th><th>Applications</th><th>Action</th></tr></thead>
-      <tbody id="postings-body">
-        <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
-      </tbody>
-    </table>
   </div>
 </div>
 
@@ -905,7 +867,7 @@
         <summary>Curriculum Modules <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="ad-acc-body">
           <div id="curriculum-module-list" class="curriculum-box" style="max-height:320px;overflow-y:auto;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--faint);"></div>
-          <div class="field-hint" style="font-size:11px;color:var(--muted);margin-top:6px">Read-only list from the official curriculum. Used by postings, lecturer modules, and student applications.</div>
+          <div class="field-hint" style="font-size:11px;color:var(--muted);margin-top:6px">Read-only list from the official curriculum. Used by lecturer modules and student applications.</div>
         </div>
       </details>
       <details class="ad-acc settings-section" open style="animation-delay:.25s">
@@ -930,70 +892,6 @@
           </div>
         </div>
       </details>
-    </div>
-  </div>
-</div>
-
-<!-- New Posting Modal -->
-<div id="posting-modal" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);align-items:center;justify-content:center;padding:20px;">
-  <div style="width:min(640px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.18);overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);">
-      <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Job Postings</div>
-        <div style="font-size:20px;font-weight:700;color:var(--text);">New Posting</div>
-      </div>
-      <button class="btn-sm" onclick="closePostingModal()">Close</button>
-    </div>
-    <div style="padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;">
-      <div style="grid-column:1 / -1;">
-        <div class="field-label">Module</div>
-        <select id="posting-module" class="field-input" style="width:100%;height:40px;padding:0 12px;" onchange="onPostingModuleSelected()"></select>
-      </div>
-      <div style="grid-column:1 / -1;">
-        <div class="field-label">Module code</div>
-        <input id="posting-module-code" class="field-input" placeholder="Auto-filled from module" readonly />
-      </div>
-      <div>
-        <div class="field-label">Programme</div>
-        <select id="posting-programme" class="field-input" style="width:100%;height:40px;padding:0 12px;" onchange="populatePostingModuleSelect()">
-          <option>DICT</option>
-          <option>BICT</option>
-        </select>
-      </div>
-      <div>
-        <div class="field-label">Position type</div>
-        <select id="posting-position" class="field-input" style="width:100%;height:40px;padding:0 12px;">
-          <option>Tutor</option>
-          <option>Demonstrator</option>
-        </select>
-      </div>
-      <div>
-        <div class="field-label">Minimum year level</div>
-        <input id="posting-min-year-level" class="field-input" placeholder="e.g. 3rd year+" value="3rd year+" />
-      </div>
-      <div>
-        <div class="field-label">Minimum average (%)</div>
-        <input id="posting-average" class="field-input" type="number" min="0" max="100" value="65" />
-      </div>
-      <div>
-        <div class="field-label">Applications needed</div>
-        <input id="posting-applications-needed" class="field-input" type="number" min="1" value="1" />
-      </div>
-      <div style="grid-column:1 / -1;">
-        <div class="field-label">Module pass required</div>
-        <select id="posting-module-pass" class="field-input" style="width:100%;height:40px;padding:0 12px;">
-          <option>Yes</option>
-          <option>No</option>
-        </select>
-      </div>
-      <div style="grid-column:1 / -1;">
-        <div class="field-label">Notes (optional)</div>
-        <textarea id="posting-notes" class="field-textarea" rows="3" placeholder="Special requirements, schedule notes, or selection preferences..."></textarea>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:10px;padding:0 20px 20px;">
-      <button class="btn-sm" onclick="closePostingModal()">Cancel</button>
-      <button class="btn-primary" onclick="createPosting()">Create Posting</button>
     </div>
   </div>
 </div>
@@ -1492,7 +1390,7 @@
 <script src="../js/app.js?v=23"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=43"></script>
+<script src="../js/admin-dashboard-api.js?v=44"></script>
 <script>
   const isAdminPage =
     VF.requireAuth('login.html') && VF.requireRole('admin', 'login.html');
@@ -1513,7 +1411,6 @@
     const map = {
       dashboard: 'dashboard',
       analysis: 'dashboard',
-      postings: 'applications',
       applications: 'applications',
       'application-detail': 'applications',
       referrals: 'applications',
@@ -1552,7 +1449,6 @@
     if (id === 'claims') loadClaims();
     if (id === 'flagged') loadFlaggedSessions();
     if (id === 'messages') loadMessageThreads();
-    if (id === 'postings') loadPostings();
     if (id === 'users') { loadLecturers(); loadTutors(); loadDemonstrators(); }
     if (id === 'support') loadSupportTickets();
     if (id === 'analysis') loadAnalysis();
@@ -1600,185 +1496,6 @@ function showToast(msg) {
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
-let postingEditId = null;
-let POSTINGS = {};
-
-function populatePostingModuleSelect() {
-  const select = document.getElementById('posting-module');
-  if (!select || typeof CURRICULUM === 'undefined') return;
-  const programme = document.getElementById('posting-programme').value || 'DICT';
-  const course = programme === 'BICT' ? 'BICT - Bachelor of ICT' : 'DICT - Diploma in ICT';
-  const prevCode = select.value;
-  select.innerHTML = '';
-  curriculumModulesForCourse(course).forEach((m, index) => {
-    const option = document.createElement('option');
-    option.value = m.code;
-    option.textContent = m.name;
-    option.dataset.name = m.name;
-    if (prevCode === m.code || index === 0) option.selected = true;
-    select.appendChild(option);
-  });
-  onPostingModuleSelected();
-}
-
-function onPostingModuleSelected() {
-  const select = document.getElementById('posting-module');
-  const codeEl = document.getElementById('posting-module-code');
-  if (!select || !codeEl) return;
-  codeEl.value = select.value || readModuleCodeFromSelect(select) || '';
-}
-
-function syncPostingModuleFromEdit(p) {
-  populatePostingModuleSelect();
-  const select = document.getElementById('posting-module');
-  if (!select || !p) return;
-  const code = p.module_code;
-  const byCode = [...select.options].find(o => o.value === code);
-  if (byCode) {
-    select.value = code;
-  } else {
-    const byName = [...select.options].find(o => o.dataset.name === p.module_name || o.textContent === p.module_name);
-    if (byName) select.value = byName.value;
-  }
-  onPostingModuleSelected();
-}
-
-function openPostingModal() {
-  postingEditId = null;
-  document.getElementById('posting-programme').value = 'DICT';
-  populatePostingModuleSelect();
-  onPostingModuleSelected();
-  document.getElementById('posting-position').value = 'Tutor';
-  document.getElementById('posting-min-year-level').value = '3rd year+';
-  document.getElementById('posting-average').value = '65';
-  document.getElementById('posting-applications-needed').value = '1';
-  document.getElementById('posting-module-pass').value = 'Yes';
-  document.getElementById('posting-notes').value = '';
-  document.querySelector('#posting-modal .btn-primary').textContent = 'Create Posting';
-  document.getElementById('posting-modal').style.display = 'flex';
-}
-
-function closePostingModal() {
-  document.getElementById('posting-modal').style.display = 'none';
-  postingEditId = null;
-}
-
-function editPosting(id) {
-  const p = POSTINGS[id];
-  if (!p) return;
-  postingEditId = id;
-  document.getElementById('posting-programme').value = p.programme || (p.course && p.course.startsWith('BICT') ? 'BICT' : 'DICT');
-  syncPostingModuleFromEdit(p);
-  document.getElementById('posting-position').value = (p.position_type || 'tutor').charAt(0).toUpperCase() + (p.position_type || 'tutor').slice(1);
-  document.getElementById('posting-min-year-level').value = p.min_year_level || '3rd year+';
-  document.getElementById('posting-average').value = p.min_average;
-  document.getElementById('posting-applications-needed').value = p.applications_needed ?? p.apps_needed;
-  document.getElementById('posting-module-pass').value = p.module_pass_required ? 'Yes' : 'No';
-  document.getElementById('posting-notes').value = p.notes || '';
-  document.querySelector('#posting-modal .btn-primary').textContent = 'Save Changes';
-  document.getElementById('posting-modal').style.display = 'flex';
-}
-
-async function createPosting() {
-  const moduleSelect = document.getElementById('posting-module');
-  const moduleCode = moduleSelect.value.trim().toUpperCase();
-  const moduleName = moduleSelect.options[moduleSelect.selectedIndex]?.dataset.name
-    || moduleSelect.options[moduleSelect.selectedIndex]?.textContent
-    || '';
-  const programme = document.getElementById('posting-programme').value;
-  const positionType = document.getElementById('posting-position').value;
-  const minYearLevel = document.getElementById('posting-min-year-level').value.trim();
-  const minAverage = document.getElementById('posting-average').value;
-  const applicationsNeeded = document.getElementById('posting-applications-needed').value;
-  const modulePassRequired = document.getElementById('posting-module-pass').value === 'Yes';
-  const notes = document.getElementById('posting-notes').value.trim();
-
-  if (!moduleName) { showToast('Select a module'); return; }
-  if (!moduleCode) { showToast('Module code is missing'); return; }
-  if (!programme) { showToast('Select a programme'); return; }
-  if (!minYearLevel) { showToast('Enter minimum year level'); return; }
-
-  const body = {
-    programme,
-    moduleCode,
-    moduleName,
-    positionType,
-    minYearLevel,
-    minAverage,
-    applicationsNeeded,
-    modulePassRequired,
-    notes,
-  };
-
-  try {
-    if (postingEditId) {
-      await VF.apiFetch(`/postings/${postingEditId}`, { method: 'PATCH', body });
-      showToast('Posting updated');
-    } else {
-      await VF.apiFetch('/postings', { method: 'POST', body });
-      showToast('Posting created');
-    }
-    closePostingModal();
-    loadPostings();
-  } catch (err) {
-    VF.toast(err.errors ? err.errors[0] : 'Could not save posting.', 'err');
-  }
-}
-
-function formatPositionType(value) {
-  const v = String(value || 'tutor').toLowerCase();
-  return v === 'demonstrator' ? 'Demonstrator' : 'Tutor';
-}
-
-function renderPostingRow(p) {
-  const prog = p.programme || (p.course && p.course.startsWith('BICT') ? 'BICT' : 'DICT');
-  return `<tr data-posting-id="${p.id}">
-    <td style="font-weight:600;color:var(--text)">${p.module_code}</td>
-    <td style="color:var(--muted)">${prog}</td>
-    <td style="color:var(--muted)">${formatPositionType(p.position_type)}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.min_year_level || '-'}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.min_average}%</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${p.applications_needed ?? p.apps_needed}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--text)">${p.application_count || 0}</td>
-    <td><button class="btn-sm" onclick="editPosting(${p.id})">Edit</button></td>
-  </tr>`;
-}
-
-function renderPostingCard(p) {
-  const prog = p.programme || (p.course && p.course.startsWith('BICT') ? 'BICT' : 'DICT');
-  const avg = p.min_average != null ? `${Number(p.min_average).toFixed(2)}%` : '-';
-  return `<div class="ad-posting-card">
-    <div class="ad-posting-code">${p.module_code || '-'}</div>
-    <div class="ad-posting-prog">${prog} · ${formatPositionType(p.position_type)}</div>
-    <div class="ad-posting-stats">
-      <div class="item"><div class="k">${p.min_year_level || '-'}</div><div class="l">Year level req.</div></div>
-      <div class="item"><div class="k">${avg}</div><div class="l">Avg req.</div></div>
-      <div class="item"><div class="k">${p.applications_needed ?? p.apps_needed ?? '-'}</div><div class="l">Apps needed</div></div>
-      <div class="item"><div class="k">${p.application_count || 0}</div><div class="l">Applications</div></div>
-    </div>
-    <button type="button" class="ad-btn-outline" style="margin-top:14px;" onclick="editPosting(${p.id})">Edit</button>
-  </div>`;
-}
-
-async function loadPostings() {
-  try {
-    const postings = await VF.apiFetch('/postings');
-    POSTINGS = {};
-    postings.forEach(p => { POSTINGS[p.id] = p; });
-    document.getElementById('postings-body').innerHTML = postings.length
-      ? postings.map(renderPostingRow).join('')
-      : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No job postings yet.</td></tr>';
-    const cards = document.getElementById('postings-cards');
-    if (cards) {
-      cards.innerHTML = postings.length
-        ? postings.map(renderPostingCard).join('')
-        : `<div class="ad-empty-card"><div class="ad-empty-state"><h3>No job postings yet</h3><p>Create a posting to open tutor applications for a module.</p></div></div>`;
-    }
-  } catch (err) {
-    VF.toast(err.errors ? err.errors[0] : 'Could not load postings.', 'err');
-  }
-}
-
 function parseSubjectOptions() {
   const list = [];
   Object.entries(CURRICULUM).forEach(([course, semesters]) => {

@@ -2,7 +2,7 @@
 
 /**
  * Remove user accounts and related operational data.
- * Keeps reference/config data: modules, students roster, settings, postings.
+ * Keeps reference/config data: modules, students roster, settings.
  *
  * Usage (from backend/):
  *   node scripts/wipe-data.js
@@ -24,7 +24,6 @@ const PRESERVE = new Set([
   'students',
   'settings',
   'system_settings',
-  'postings',
 ]);
 
 async function wipeAll(client) {

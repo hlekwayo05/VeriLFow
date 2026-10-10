@@ -357,7 +357,7 @@ function minYearLevelToQualEnum(minYearLevel) {
 }
 
 /**
- * Returns true when the applicant meets or exceeds the posting minimum.
+ * Returns true when the applicant meets or exceeds the eligibility minimum.
  */
 function meetsMinimumQualification(applicantLevel, requiredLevel) {
   const applicant = QUALIFICATION_RANK[applicantLevel] || 0;

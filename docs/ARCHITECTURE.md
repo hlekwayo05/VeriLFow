@@ -79,9 +79,8 @@ Claims aggregate completed session hours for a tutor/month (`claims` + `claim_se
 - Coordinator threads: `coordinator_*` tables for SEO ↔ user messaging.
 - Support tickets: `support_tickets` / `support_ticket_replies`.
 
-### Referrals & postings
+### Referrals
 
-- `postings` - public/admin job advertisements for tutor openings.
 - `referrals` - lecturer nominates a student; admin approval can provision accounts and email credentials.
 
 ---

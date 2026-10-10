@@ -239,7 +239,6 @@ app.use('/api/claims',       require('./routes/claims'));
 app.use('/api/admin',        require('./routes/admin'));
 app.use('/api/attendance',   require('./routes/attendance'));
 app.use('/api/referrals',    require('./routes/referrals'));
-app.use('/api/postings',     require('./routes/postings'));
 app.use('/api/students',     require('./routes/students'));
 app.use('/api/class-lists',  require('./routes/classLists'));
 app.use('/api/messages',     require('./routes/messages'));

@@ -20,7 +20,6 @@ const REQUIRED_TABLES = [
   'claims',
   'claim_sessions',
   'referrals',
-  'postings',
   'students',
   'settings',
   'class_list_entries',
@@ -164,11 +163,10 @@ async function main() {
       (SELECT COUNT(*)::int FROM users) AS users,
       (SELECT COUNT(*)::int FROM applications) AS applications,
       (SELECT COUNT(*)::int FROM sessions) AS sessions,
-      (SELECT COUNT(*)::int FROM postings) AS postings,
       (SELECT COUNT(*)::int FROM students) AS students
   `);
   const c = counts.rows[0];
-  pass(`Counts - users=${c.users} applications=${c.applications} sessions=${c.sessions} postings=${c.postings} students=${c.students}`);
+  pass(`Counts - users=${c.users} applications=${c.applications} sessions=${c.sessions} students=${c.students}`);
 
   // Apply registry check simulation
   const registry = await pool.query(

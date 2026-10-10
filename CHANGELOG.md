@@ -16,6 +16,16 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.10.0] - 2026-10-10
+
+### Removed
+- Job Postings from the admin dashboard, `/api/postings`, and the `postings` table (migration 030)
+
+### Changed
+- Apply Step 2 and document screening use global Eligibility Requirements (min average, 3rd-year minimum, module pass mark, CV keywords) instead of per-module posting rules
+
+---
+
 ## [0.9.0] - 2026-10-09
 
 ### Added

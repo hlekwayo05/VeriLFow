@@ -765,14 +765,13 @@ async function loadDashboardOverview() {
   if (dashFlagged && VF.skeleton) dashFlagged.innerHTML = VF.skeleton.tbody(5, 4);
 
   try {
-    const [applications, claims, sessions, tutors, referrals, supportTickets, postings] = await Promise.all([
+    const [applications, claims, sessions, tutors, referrals, supportTickets] = await Promise.all([
       VF.apiFetch('/applications?includeIncomplete=true'),
       VF.apiFetch('/admin/claims'),
       VF.apiFetch('/sessions'),
       VF.apiFetch('/users/tutors'),
       VF.apiFetch('/referrals'),
       VF.apiFetch('/support/tickets'),
-      VF.apiFetch('/postings'),
     ]);
 
     adminClaimsCache = claims;
@@ -787,10 +786,6 @@ async function loadDashboardOverview() {
     const flagged = sessions.filter((s) => s.status === 'flagged');
     const pendingReferrals = referrals.filter((r) => r.status === 'pending');
     const openSupport = supportTickets.filter((t) => t.status === 'open' || t.status === 'in_progress');
-    const openPostings = (Array.isArray(postings) ? postings : []).filter((p) => {
-      const status = String(p.status || 'open').toLowerCase();
-      return status !== 'closed' && status !== 'archived' && status !== 'inactive';
-    });
 
     const statApps = document.getElementById('stat-open-apps');
     if (statApps) statApps.textContent = String(openApps.length);
@@ -807,7 +802,6 @@ async function loadDashboardOverview() {
       pendingReferrals: pendingReferrals.length,
       flagged: flagged.length,
       openSupport: openSupport.length,
-      openPostings: openPostings.length,
     });
 
     renderLatestApplicants(applications);
@@ -845,7 +839,7 @@ async function loadDashboardOverview() {
       const el = document.getElementById(id);
       if (el) el.textContent = '-';
     });
-    updateAdminMobileHub({ openApps: 0, pendingClaims: 0, pendingReferrals: 0, flagged: 0, openSupport: 0, openPostings: 0 });
+    updateAdminMobileHub({ openApps: 0, pendingClaims: 0, pendingReferrals: 0, flagged: 0, openSupport: 0 });
     const notif = document.getElementById('dash-notifications');
     if (notif) notif.innerHTML = '<div style="padding:16px;font-size:12px;color:var(--muted);text-align:center">Could not load notifications.</div>';
     const apps = document.getElementById('dash-latest-applicants');
@@ -1597,7 +1591,6 @@ function updateAdminMobileHub(counts) {
   const refs = Number(c.pendingReferrals) || 0;
   const flagged = Number(c.flagged) || 0;
   const support = Number(c.openSupport) || 0;
-  const postings = Number(c.openPostings) || 0;
   const total = apps + claims + refs + flagged;
 
   const setBadge = (id, value) => {
@@ -1619,7 +1612,6 @@ function updateAdminMobileHub(counts) {
   setBadge('ad-hub-refs-badge', refs);
   setBadge('ad-hub-flagged-badge', flagged);
   setBadge('ad-hub-support-badge', support);
-  setBadge('ad-hub-postings-badge', postings);
   setBadge('bnav-apps-badge', apps);
   setBadge('bnav-claims-badge', claims);
 
@@ -1652,10 +1644,6 @@ function updateAdminMobileHub(counts) {
     target = 'support';
     title = `${support} support ticket${support === 1 ? '' : 's'}`;
     meta = 'Needs a response';
-  } else if (postings > 0) {
-    target = 'postings';
-    title = `${postings} open posting${postings === 1 ? '' : 's'}`;
-    meta = 'Active tutor positions';
   } else if (total === 0) {
     title = 'Queues are clear';
     meta = 'Check messages or support if needed.';

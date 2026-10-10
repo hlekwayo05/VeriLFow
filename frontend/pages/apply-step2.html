@@ -65,7 +65,7 @@
       <div class="form-header">
         <div class="form-eyebrow">Application · Step 2 of 3</div>
         <div class="form-title">Academic<br>information</div>
-        <p class="form-subtitle">Your faculty, course, qualification level and module selection link your application to the correct posting and determine your eligibility.</p>
+        <p class="form-subtitle">Your faculty, course, qualification level and module selection determine your eligibility against the system requirements.</p>
       </div>
 
       <form id="step2Form" novalidate style="display:none">
@@ -165,7 +165,7 @@
       <div style="height:16px"></div>
       <div class="info-sidebar-card">
         <div class="info-sidebar-title">Why this matters</div>
-        <div class="info-row"><i class="ti ti-link"></i>Your faculty, course and module selection binds this application to the correct open tutor posting.</div>
+        <div class="info-row"><i class="ti ti-link"></i>Your faculty, course and module selection are saved on your application and used to assign a lecturer if you are approved.</div>
         <div class="info-row"><i class="ti ti-chart-bar"></i>Your GPA is checked against the minimum requirement for the role you're applying for.</div>
         <div class="info-row"><i class="ti ti-book"></i>The module you select must appear on your academic record as passed with the required mark.</div>
         <div class="info-row"><i class="ti ti-medal"></i>Your qualification level determines your eligibility and your pay rate if you are appointed as a tutor.</div>
@@ -397,30 +397,11 @@
     btn.classList.add('btn-disabled');
 
     try {
-      const programme = course.startsWith('BICT') ? 'BICT' : 'DICT';
-      let posting;
-      try {
-        posting = await VF.apiFetch(
-          `/postings/open?programme=${encodeURIComponent(programme)}&moduleName=${encodeURIComponent(module)}`
-        );
-      } catch (postErr) {
-        VF.toast(postErr.errors ? postErr.errors[0] : 'No posting for this module.', 'err');
-        btn.innerHTML = originalHTML;
-        btn.classList.remove('btn-disabled');
-        return;
-      }
-
       const QUAL_RANK = {
         '3rd_year': 1, '4th_year_honours': 2, 'masters': 3, 'masters_holder': 4, 'phd': 5,
       };
-      if ((QUAL_RANK[qualificationLevel] || 0) < (QUAL_RANK[posting.min_qualification_level] || 0)) {
-        VF.toast('Your qualification level does not meet the minimum required for this posting.', 'err');
-        btn.innerHTML = originalHTML;
-        btn.classList.remove('btn-disabled');
-        return;
-      }
-      if (gpa < parseFloat(posting.min_average)) {
-        VF.toast(`This posting requires a minimum average of ${posting.min_average}%.`, 'err');
+      if ((QUAL_RANK[qualificationLevel] || 0) < (QUAL_RANK['3rd_year'] || 0)) {
+        VF.toast('Your qualification level does not meet the minimum required (3rd year).', 'err');
         btn.innerHTML = originalHTML;
         btn.classList.remove('btn-disabled');
         return;

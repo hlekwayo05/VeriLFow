@@ -28,7 +28,7 @@ There is no SPA framework and no root `package.json`. The API lives under `backe
 | **Student / applicant** | Apply with CV + transcript; track status |
 | **Tutor** | Attend sessions, confirm availability, submit monthly claims, message lecturer / support |
 | **Lecturer** | Schedule & run sessions, class lists, verify tutor claims, refer tutors |
-| **Admin / coordinator** | Postings, application review, user management, claim final approval, settings, analysis |
+| **Admin / coordinator** | Application review, user management, claim final approval, settings, analysis |
 
 ---
 
@@ -166,7 +166,7 @@ Production checklist and env requirements: [docs/OPERATIONS.md](docs/OPERATIONS.
 | `npm run db:modules` | Seed module catalogue |
 | `npm run storage:setup` | Ensure Storage bucket |
 | `node seed.js` | Upsert admin account |
-| `node scripts/wipe-data.js` | Remove users + related data (keeps modules/students/settings/postings) |
+| `node scripts/wipe-data.js` | Remove users + related data (keeps modules/students/settings) |
 | `node scripts/wipe-data.js --all` | Truncate all public tables (then re-run `db:modules` + `seed.js`) |
 
 ---

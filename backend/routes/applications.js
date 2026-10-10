@@ -12,7 +12,6 @@ const fs           = require('fs');
 const os           = require('os');
 const {
   findCurriculumModule,
-  courseToProgramme,
   minYearLevelToQualEnum,
   meetsMinimumQualification,
 } = require('../constants');
@@ -28,6 +27,30 @@ const { validateAcademicSave, validateSubmitApplication } = require('../validato
 
 const UPLOAD_TMP_DIR = path.join(os.tmpdir(), 'veriflow-uploads');
 fs.mkdirSync(UPLOAD_TMP_DIR, { recursive: true });
+
+/** Matches the disabled “Minimum year level” field on System Settings. */
+const GLOBAL_MIN_YEAR_LEVEL = '3rd year';
+
+function eligibilityAgainstSettings(settings, qualificationLevel, gpa) {
+  const requiredQual = minYearLevelToQualEnum(GLOBAL_MIN_YEAR_LEVEL);
+  const minAverage = parseFloat(settings.min_average);
+
+  if (!meetsMinimumQualification(qualificationLevel, requiredQual)) {
+    return {
+      pass: false,
+      reason: 'Your qualification level does not meet the minimum required (3rd year).',
+      detail: 'Eligibility requires at least 3rd year.',
+    };
+  }
+  if (Number(gpa) < minAverage) {
+    return {
+      pass: false,
+      reason: `Your declared average of ${gpa}% is below the ${minAverage}% minimum.`,
+      detail: `Eligibility requires a minimum average of ${minAverage}%.`,
+    };
+  }
+  return { pass: true };
+}
 
 /** Open window, or tutor already has an incomplete application (may finish after close). */
 async function tutorMayEditIncompleteApplication(userId) {
@@ -359,35 +382,10 @@ router.patch(
         return res.status(400).json({ errors: [`Module code "${savedCode}" is not in the curriculum registry.`] });
       }
 
-      const programme = courseToProgramme(savedCourse);
-      const postingResult = await pool.query(
-        `SELECT id, min_average, min_year_level
-         FROM postings
-         WHERE programme = $1
-           AND module_name = $2
-         LIMIT 1`,
-        [programme, savedName]
-      );
-      if (postingResult.rows.length === 0) {
-        return res.status(400).json({
-          errors: ['No open posting exists for this module.'],
-        });
-      }
-      const posting = postingResult.rows[0];
-      const requiredQual = minYearLevelToQualEnum(posting.min_year_level);
-      if (!meetsMinimumQualification(qualificationLevel, requiredQual)) {
-        return res.status(400).json({
-          errors: [
-            'Your qualification level does not meet the minimum required for this posting.',
-          ],
-        });
-      }
-      if (gpaNum < parseFloat(posting.min_average)) {
-        return res.status(400).json({
-          errors: [
-            `This posting requires a minimum average of ${posting.min_average}%.`,
-          ],
-        });
+      const settings = await getSettings();
+      const eligibility = eligibilityAgainstSettings(settings, qualificationLevel, gpaNum);
+      if (!eligibility.pass) {
+        return res.status(400).json({ errors: [eligibility.reason] });
       }
 
       const appCheck = await pool.query(
@@ -601,44 +599,26 @@ router.post(
         }
       }
 
-      const programme = courseToProgramme(app.course);
-      const postingResult = programme
-        ? await pool.query(
-            `SELECT id, min_year_level, min_average
-             FROM postings
-             WHERE programme = $1 AND module_name = $2
-             LIMIT 1`,
-            [programme, app.module_name]
-          )
-        : { rows: [] };
-
       let eligibilityPass = true;
       let rejectionReason = null;
       let rejectionDetail = null;
       let screening       = null;
       let cvKeywordScore  = null;
+      const settings = await getSettings();
+      const eligibility = eligibilityAgainstSettings(
+        settings,
+        app.qualification_level,
+        app.gpa
+      );
 
-      if (postingResult.rows.length === 0) {
+      if (!eligibility.pass) {
         eligibilityPass = false;
-        rejectionReason = 'There is no tutor posting for the module you selected.';
-        rejectionDetail = 'Please verify available positions on the job postings page or contact the FYE office.';
-      } else {
-        const posting = postingResult.rows[0];
-        const requiredQual = minYearLevelToQualEnum(posting.min_year_level);
-
-        if (!meetsMinimumQualification(app.qualification_level, requiredQual)) {
-          eligibilityPass = false;
-          rejectionReason = 'Your qualification level does not meet the minimum required for this posting.';
-          rejectionDetail = `This position requires at least ${posting.min_year_level}.`;
-        } else if (parseFloat(app.gpa) < parseFloat(posting.min_average)) {
-          eligibilityPass = false;
-          rejectionReason = `Your declared average of ${app.gpa}% is below the ${posting.min_average}% minimum for this posting.`;
-        }
+        rejectionReason = eligibility.reason;
+        rejectionDetail = eligibility.detail;
       }
 
       if (eligibilityPass) {
         try {
-          const settings = await getSettings();
           const positionType = app.position_type || 'tutor';
           const scanResult = await screenApplication({
             cvPath: cv.localPath,

@@ -83,6 +83,9 @@ npm run db:migrate-pending
 - `025_hr_appointment_staff_number.sql`
 - `026_offer_accepted_at.sql`
 - `027_admin_audit_hardening.sql`
+- `028_token_version.sql`
+- `029_attendance_pass_used.sql`
+- `030_drop_job_postings.sql`
 
 When you add a migration that older environments need, append it to that list **and** fold the change into `schema.sql` for greenfield installs.
 
@@ -90,7 +93,7 @@ When you add a migration that older environments need, append it to that list **
 
 ```bash
 cd backend
-node scripts/wipe-data.js   # users + operational data only; keeps modules, students, settings, postings
+node scripts/wipe-data.js   # users + operational data only; keeps modules, students, settings
 node seed.js                # restore admin
 ```
 

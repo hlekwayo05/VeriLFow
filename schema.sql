@@ -18,26 +18,7 @@ EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
 
--- =============================================================
---  FEATURE 1 - JOB POSTINGS
--- =============================================================
-
-CREATE TABLE IF NOT EXISTS postings (
-  id                    SERIAL PRIMARY KEY,
-  module_code           VARCHAR(20)    NOT NULL,
-  module_name           TEXT           NOT NULL,
-  programme             programme_type NOT NULL,
-  position_type         position_type  NOT NULL DEFAULT 'tutor',
-  min_year_level        VARCHAR(20)    NOT NULL,
-  min_average           NUMERIC(5,2)   NOT NULL DEFAULT 65,
-  applications_needed   INTEGER        NOT NULL DEFAULT 1,
-  module_pass_required  BOOLEAN        NOT NULL DEFAULT true,
-  notes                 TEXT,
-  created_at            TIMESTAMPTZ    DEFAULT NOW(),
-  updated_at            TIMESTAMPTZ    DEFAULT NOW(),
-
-  UNIQUE (programme, module_name)
-);
+-- Job postings were removed (see backend/migrations/030_drop_job_postings.sql).
 
 -- =============================================================
 --  FEATURE 2 - GLOBAL APPLICATION WINDOW + SETTINGS

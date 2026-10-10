@@ -29,6 +29,7 @@ const FILES = [
   '027_admin_audit_hardening.sql',
   '028_token_version.sql',
   '029_attendance_pass_used.sql',
+  '030_drop_job_postings.sql',
 ];
 
 async function main() {
