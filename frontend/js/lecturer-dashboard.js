@@ -199,7 +199,10 @@ function updateLecMobileHubNext(sessions) {
       ? formatSessionDate(s)
       : (s.start_time ? String(s.start_time).slice(0, 5) : '-');
     const venue = s.venue || 'Venue TBA';
-    const label = mode === 'live' ? 'Live now' : mode === 'due' ? 'Due now' : later ? 'Next session' : 'Up next';
+    const label = mode === 'live' ? 'Live now'
+      : mode === 'due' ? 'Due now'
+        : mode === 'overdue' ? 'Overdue'
+          : later ? 'Next session' : 'Up next';
     metaEl.textContent = `${label} · ${time} · ${venue}`;
     aria = `${titleEl.textContent}. ${metaEl.textContent}`;
   }
@@ -372,6 +375,23 @@ function findNextComingSession(sessions) {
     })[0] || null;
 }
 
+function findLatestOverdueSession(sessions) {
+  const todayStr = localTodayKey();
+  return (sessions || [])
+    .filter((s) => {
+      const key = sessionDateKey(s.session_date);
+      if (!key || key >= todayStr) return false;
+      return !['cancelled', 'completed', 'flagged'].includes(s.status);
+    })
+    .sort((a, b) => {
+      const dateCmp = sessionDateKey(b.session_date).localeCompare(sessionDateKey(a.session_date));
+      if (dateCmp !== 0) return dateCmp;
+      const aMins = a.start_time ? nsTimeToMinutes(String(a.start_time).slice(0, 5)) : 0;
+      const bMins = b.start_time ? nsTimeToMinutes(String(b.start_time).slice(0, 5)) : 0;
+      return bMins - aMins;
+    })[0] || null;
+}
+
 function findTodayCardSession(sessions) {
   const live = findLiveSessionToday(sessions);
   if (live) return { session: live, mode: 'live' };
@@ -386,6 +406,8 @@ function findTodayCardSession(sessions) {
   }
   const coming = findNextComingSession(sessions);
   if (coming) return { session: coming, mode: 'upcoming' };
+  const overdue = findLatestOverdueSession(sessions);
+  if (overdue) return { session: overdue, mode: 'overdue' };
   return null;
 }
 
@@ -423,6 +445,7 @@ function renderTodayCard(sessions) {
     tagEl.textContent =
       mode === 'live' ? 'Live now' :
       mode === 'due' ? 'Due now' :
+      mode === 'overdue' ? 'Overdue' :
       laterDay ? 'Next session' :
       'Up next';
   }
@@ -1901,7 +1924,7 @@ async function loadTutorsForModal() {
 
 /* REFER A TUTOR */
 function openReferTutor() {
-  ['rt-name','rt-surname','rt-email','rt-qualification'].forEach(id => {
+  ['rt-name','rt-surname','rt-email','rt-qualification','rt-position-type'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1928,6 +1951,7 @@ async function submitReferral() {
   const s=document.getElementById('rt-surname').value.trim();
   const e=document.getElementById('rt-email').value.trim();
   const q=document.getElementById('rt-qualification').value;
+  const p=document.getElementById('rt-position-type').value;
   if (!currentModuleCode) {
     showToast('Select a module tab before referring a tutor');
     return;
@@ -1935,6 +1959,7 @@ async function submitReferral() {
   if (!n)   { hlt('rt-name');    return; }
   if (!s)   { hlt('rt-surname'); return; }
   if (!e||!e.includes('@')) { hlt('rt-email'); return; }
+  if (!p)   { hlt('rt-position-type'); return; }
   if (!q)   { hlt('rt-qualification'); return; }
   try {
     await VF.apiFetch('/referrals', {
@@ -1945,10 +1970,11 @@ async function submitReferral() {
         email: e,
         moduleCode: currentModuleCode,
         qualificationLevel: q,
+        positionType: p,
       },
     });
     closeReferTutor();
-    showToast('Referral submitted - '+n+' '+s+' · '+q);
+    showToast('Referral submitted - '+n+' '+s+' · '+(p === 'demonstrator' ? 'Demonstrator' : 'Tutor'));
     loadMyReferrals();
   } catch (err) {
     showToast(err.errors ? err.errors[0] : 'Could not submit referral');
@@ -3509,7 +3535,7 @@ async function loadMyReferrals() {
       return `<div class="lec-ref-row">
         <div>
           <div class="lec-ref-name">${escapeHtml(fullName)}</div>
-          <div class="lec-ref-meta">${escapeHtml(r.module_code || '-')} · ${escapeHtml(r.qualification_level || '-')}</div>
+          <div class="lec-ref-meta">${escapeHtml(r.module_code || '-')} · ${r.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'} · ${escapeHtml(QUAL_DISPLAY[r.qualification_level] || r.qualification_level || '-')}</div>
         </div>
         <span class="lec-ref-status" style="color:${statusColor}">${statusLabel}</span>
       </div>`;

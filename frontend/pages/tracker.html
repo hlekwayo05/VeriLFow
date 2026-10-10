@@ -198,7 +198,7 @@
     </aside>
   </div>
 </main>
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=24"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) { /* stop - requireAuth already redirected */ }
@@ -256,8 +256,8 @@
           <div class="user-email">${email}</div>
         </div>
       </div>
-      <div class="app-mod">${app.module_name || 'Unknown module'}</div>
-      <div class="app-course">${app.course || ''} · ${app.module_year_level || ''}</div>
+      <div class="app-mod">${status === 'approved' && app.module_name ? app.module_name : 'Module assigned at approval'}</div>
+      <div class="app-course">${app.course || ''}${status === 'approved' && app.module_year_level ? ' · ' + app.module_year_level : ''}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         ${statusTag(status)}
       </div>

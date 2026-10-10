@@ -379,20 +379,26 @@ function wrapEmailHtml(bodyHtml) {
 </html>`;
 }
 
+function referralRoleTitle(positionType) {
+  return positionType === 'demonstrator' ? 'Demonstrator' : 'Tutor';
+}
+
 function buildReferralNotificationHtml({
   studentFirstName,
   lecturerName,
   moduleCode,
   moduleName,
+  positionType,
 }) {
   const moduleLabel = moduleName
     ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
+  const role = referralRoleTitle(positionType);
 
   const body = `
     <p style="margin:0 0 16px;">Dear ${escapeHtml(studentFirstName)},</p>
     <p style="margin:0 0 16px;">
-      <strong>${escapeHtml(lecturerName)}</strong> has referred you for a Tutor position
+      <strong>${escapeHtml(lecturerName)}</strong> has referred you for a ${role} position
       for <strong>${moduleLabel}</strong> at the University of Mpumalanga.
     </p>
     <p style="margin:0 0 16px;">
@@ -413,22 +419,24 @@ function buildReferralApprovalHtml({
   tempPassword,
   loginLink,
   studentEmail,
+  positionType,
 }) {
   const moduleLabel = moduleName
     ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
+  const role = referralRoleTitle(positionType);
 
   const body = `
     <table width="100%" cellpadding="0" cellspacing="0" style="margin:-32px -32px 24px;background:${DARK};">
       <tr>
         <td style="padding:28px 32px;font-family:Arial,Helvetica,sans-serif;">
           <div style="font-size:26px;font-weight:700;color:#ffffff;margin-bottom:6px;">Congratulations, ${escapeHtml(studentFirstName)}!</div>
-          <div style="font-size:15px;color:${GREEN};">Your Tutor application has been approved</div>
+          <div style="font-size:15px;color:${GREEN};">Your ${role} application has been approved</div>
         </td>
       </tr>
     </table>
     <p style="margin:0 0 16px;">
-      You have been approved as a Tutor for <strong>${moduleLabel}</strong>
+      You have been approved as a ${role} for <strong>${moduleLabel}</strong>
       at the University of Mpumalanga.
     </p>
     <p style="margin:0 0 20px;">
@@ -445,7 +453,7 @@ function buildReferralApprovalHtml({
       <li>Change your password when prompted</li>
       <li>Complete your personal details (onboarding)</li>
       <li>Complete your banking and tax details</li>
-      <li>Access your Tutor dashboard</li>
+      <li>Access your ${role} dashboard</li>
     </ol>
     <p style="margin:0 0 24px;text-align:center;">
       <a href="${escapeHtml(loginLink)}" style="display:inline-block;padding:14px 28px;background:${DARK};color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:1px;border-radius:6px;">LOG IN TO VERIFLOW →</a>
@@ -475,19 +483,21 @@ function buildReferralApprovalNoPasswordHtml({
   moduleCode,
   moduleName,
   loginLink,
+  positionType,
 }) {
   const moduleLabel = moduleName
     ? `${escapeHtml(moduleCode)} - ${escapeHtml(moduleName)}`
     : escapeHtml(moduleCode);
+  const role = referralRoleTitle(positionType);
 
   const body = `
     <p style="margin:0 0 16px;">Dear ${escapeHtml(studentFirstName)},</p>
     <p style="margin:0 0 16px;">
-      Your application for a Tutor position for <strong>${moduleLabel}</strong>
+      Your application for a ${role} position for <strong>${moduleLabel}</strong>
       at the University of Mpumalanga has been approved by the Student Employment Office.
     </p>
     <p style="margin:0 0 24px;">
-      Log in to VeriFlow with your existing account to access your Tutor dashboard and complete any remaining onboarding steps.
+      Log in to VeriFlow with your existing account to access your ${role} dashboard and complete any remaining onboarding steps.
     </p>
     <p style="margin:0 0 24px;text-align:center;">
       <a href="${escapeHtml(loginLink)}" style="display:inline-block;padding:14px 28px;background:${DARK};color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:1px;border-radius:6px;">LOG IN TO VERIFLOW →</a>
@@ -835,12 +845,14 @@ async function sendReferralNotificationEmail({
   lecturerName,
   moduleCode,
   moduleName,
+  positionType,
 }) {
   const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
+  const role = referralRoleTitle(positionType);
   const text = `
 Dear ${studentFirstName},
 
-${lecturerName} has referred you for a Tutor position for ${moduleLabel} at the University of Mpumalanga.
+${lecturerName} has referred you for a ${role} position for ${moduleLabel} at the University of Mpumalanga.
 
 Your application is currently under review by the Student Employment Office. You will be notified by email once a decision has been made.
 
@@ -856,11 +868,12 @@ University of Mpumalanga
     lecturerName,
     moduleCode,
     moduleName,
+    positionType,
   });
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'You have been referred for a Tutor position - UMP',
+    subject: `You have been referred for a ${role} position - UMP`,
     html,
     text,
   });
@@ -873,14 +886,16 @@ async function sendReferralApprovalEmail({
   moduleName,
   tempPassword,
   loginLink,
+  positionType,
 }) {
   const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
   const link = loginLink || referralLoginLink();
+  const role = referralRoleTitle(positionType);
 
   const text = `
 Dear ${studentFirstName},
 
-Congratulations! Your application for a Tutor position for ${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
+Congratulations! Your application for a ${role} position for ${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
 
 Your temporary login details are below. Please log in and change your password immediately.
 
@@ -893,7 +908,7 @@ Once logged in you will be prompted to:
 2. Complete your personal details
 3. Complete your banking and tax details
 
-After onboarding is complete you will have access to your Tutor dashboard.
+After onboarding is complete you will have access to your ${role} dashboard.
 
 Kind regards,
 Student Employment Office
@@ -907,11 +922,12 @@ University of Mpumalanga
     tempPassword,
     loginLink: link,
     studentEmail,
+    positionType,
   });
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Congratulations - Your Tutor Application has been Approved',
+    subject: `Congratulations - You have been approved as a ${role}`,
     html,
     text,
   });
@@ -923,14 +939,16 @@ async function sendReferralApprovalNoPasswordEmail({
   moduleCode,
   moduleName,
   loginLink,
+  positionType,
 }) {
   const moduleLabel = moduleName ? `${moduleCode} - ${moduleName}` : moduleCode;
   const link = loginLink || referralLoginLink();
+  const role = referralRoleTitle(positionType);
 
   const text = `
 Dear ${studentFirstName},
 
-Your application for a Tutor position for ${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
+Your application for a ${role} position for ${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
 
 Log in to VeriFlow with your existing account: ${link}
 
@@ -944,11 +962,12 @@ University of Mpumalanga
     moduleCode,
     moduleName,
     loginLink: link,
+    positionType,
   });
 
   await sendResendEmail({
     to: studentEmail,
-    subject: 'Congratulations - Your Tutor Application has been Approved',
+    subject: `Congratulations - You have been approved as a ${role}`,
     html,
     text,
   });
@@ -1052,15 +1071,21 @@ async function sendApplicationApprovedEmail({
   studentEmail,
   studentFirstName,
   moduleName,
+  moduleCode,
   positionType,
 }) {
-  const roleLabel = positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
   const roleTitle = positionType === 'demonstrator' ? 'Demonstrator' : 'Tutor';
-  const moduleLabel = moduleName ? ` for ${moduleName}` : '';
+  const moduleDisplay = moduleName
+    ? (moduleCode ? `${moduleName} (${moduleCode})` : moduleName)
+    : 'To be confirmed';
   const text = `
 Dear ${studentFirstName},
 
-Congratulations! Your ${roleLabel} application${moduleLabel} at the University of Mpumalanga has been approved by the Student Employment Office.
+Congratulations! Your application at the University of Mpumalanga has been approved by the Student Employment Office.
+
+You have been appointed as:
+  Role:   ${roleTitle}
+  Module: ${moduleDisplay}
 
 Log in to VeriFlow to complete onboarding and accept your appointment on the dashboard. That records your signature on the appointment form and confirmation form.
 
@@ -1072,9 +1097,19 @@ University of Mpumalanga
   const body = `
     <p style="margin:0 0 16px;">Dear ${escapeHtml(studentFirstName)},</p>
     <p style="margin:0 0 16px;">
-      Congratulations! Your ${escapeHtml(roleLabel)} application${moduleLabel ? ` for <strong>${escapeHtml(moduleName)}</strong>` : ''}
-      at the University of Mpumalanga has been approved by the Student Employment Office.
+      Congratulations! Your application at the University of Mpumalanga has been approved by the Student Employment Office.
     </p>
+    <p style="margin:0 0 8px;">You have been appointed as:</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;border-collapse:collapse;">
+      <tr>
+        <td style="padding:4px 16px 4px 0;color:#666;">Role</td>
+        <td style="padding:4px 0;"><strong>${escapeHtml(roleTitle)}</strong></td>
+      </tr>
+      <tr>
+        <td style="padding:4px 16px 4px 0;color:#666;">Module</td>
+        <td style="padding:4px 0;"><strong>${escapeHtml(moduleDisplay)}</strong></td>
+      </tr>
+    </table>
     <p style="margin:0 0 16px;">
       Log in to VeriFlow to complete onboarding and accept your appointment on the dashboard.
       That records your signature on the appointment form and confirmation form.
@@ -1082,7 +1117,7 @@ University of Mpumalanga
 
   await sendResendEmail({
     to: studentEmail,
-    subject: `Congratulations - Your ${roleTitle} Application has been Approved`,
+    subject: `Congratulations - You have been approved as a ${roleTitle}`,
     html: wrapEmailHtml(body),
     text,
   });

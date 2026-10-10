@@ -400,7 +400,7 @@ const VF = (() => {
       rejectionDetail:   rejectionDetailFromApp(app),
     };
     // Always replace academic from the server - never keep another session's draft
-    if (app.faculty || app.course || app.module_name) {
+    if (app.faculty || app.course) {
       patch.academic = {
         faculty:             app.faculty || '',
         course:              app.course || '',

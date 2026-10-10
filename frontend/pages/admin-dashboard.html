@@ -938,8 +938,8 @@
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);">
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Approval confirmation</div>
-        <div style="font-size:22px;font-weight:700;color:var(--text);margin-top:2px;">Confirm responsibility level</div>
-        <div id="approval-modal-subtitle" style="font-size:12px;color:var(--muted);margin-top:4px;">Select the level before final approval.</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text);margin-top:2px;">Confirm appointment</div>
+        <div id="approval-modal-subtitle" style="font-size:12px;color:var(--muted);margin-top:4px;">Choose the role, module, responsibility level and cost centre before final approval.</div>
       </div>
       <button class="btn-sm" onclick="closeApprovalModal()">Close</button>
     </div>
@@ -947,9 +947,23 @@
       <div style="grid-column:1 / -1;background:rgba(0,0,0,.015);border:1px solid var(--border);border-radius:14px;padding:16px;">
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
           <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Applicant</div><div id="approval-applicant" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
-          <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Module</div><div id="approval-module" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
+          <div><div id="approval-module-label" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Module</div><div id="approval-module" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
           <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;">Qualification</div><div id="approval-qualification" style="font-size:14px;font-weight:700;color:var(--text);margin-top:4px;">-</div></div>
         </div>
+      </div>
+      <div class="field-group" id="approval-position-group">
+        <div class="field-label">Tutor / Demonstrator</div>
+        <select id="approval-position-type" class="field-input" style="width:100%;height:42px;padding:0 12px;" onchange="updateApprovalPayRate()">
+          <option value="">Select role…</option>
+          <option value="tutor">Tutor</option>
+          <option value="demonstrator">Demonstrator</option>
+        </select>
+      </div>
+      <div class="field-group" id="approval-module-group">
+        <div class="field-label">Module</div>
+        <select id="approval-module-select" class="field-input" style="width:100%;height:42px;padding:0 12px;" onchange="updateApprovalPayRate()">
+          <option value="">Select module…</option>
+        </select>
       </div>
       <div class="field-group" style="grid-column:1 / -1;">
         <div class="field-label">Responsibility level</div>
@@ -1390,7 +1404,7 @@
 <script src="../js/app.js?v=23"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=44"></script>
+<script src="../js/admin-dashboard-api.js?v=45"></script>
 <script>
   const isAdminPage =
     VF.requireAuth('login.html') && VF.requireRole('admin', 'login.html');
@@ -1542,6 +1556,19 @@ function positionTypeChip(positionType) {
   return ' <span class="qual-chip honours" style="font-size:10px;margin-left:6px">' + label + '</span>';
 }
 
+function applicationAssignmentCell(app) {
+  if (app.status === 'approved') return `${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}`;
+  if (app.status === 'rejected') return '-';
+  return '<span style="color:var(--muted)">Assigned at approval</span>';
+}
+
+function applicationAssignmentText(app, field) {
+  if (app.status !== 'approved') return app.status === 'rejected' ? '-' : 'Assigned at approval';
+  if (field === 'position') return app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor';
+  if (field === 'year') return app.module_year_level || '-';
+  return app.module_name || '-';
+}
+
 function formatCostCentre(costCentre) {
   const schoolName = cachedAppSettings.school_approver_name || 'Prof. Wayi';
   const ucdgName = cachedAppSettings.ucdg_approver_name || 'Mr. Machava';
@@ -1624,7 +1651,7 @@ function renderReferralRow(ref) {
   return `<tr>
     <td style="font-weight:600;color:var(--text)">${adEsc(`${ref.first_names} ${ref.surname}`)}</td>
     <td style="color:var(--muted)">${adEsc(formatLecturerName(ref))}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}${positionTypeChip(ref.position_type)}</td>
     <td style="color:var(--muted)">${courseShort(ref.course)}</td>
     <td>${qualificationChip(ref.qualification_level)}</td>
     <td>${referralActions(ref.id, ref.status)}</td>
@@ -1635,7 +1662,7 @@ function renderOverviewReferralRow(ref) {
   return `<tr>
     <td style="font-weight:600;color:var(--text)">${adEsc(`${ref.first_names} ${ref.surname}`)}</td>
     <td style="color:var(--muted)">${adEsc(formatLecturerName(ref))}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(ref.module_code)}${positionTypeChip(ref.position_type)}</td>
     <td>${qualificationChip(ref.qualification_level)}</td>
     <td>${referralActions(ref.id, ref.status)}</td>
   </tr>`;
@@ -1691,7 +1718,7 @@ async function loadReferrals() {
         ? refs.map((ref) => {
           return `<div class="ad-rec-card">
             <div class="ad-rec-name">${adEsc(`${ref.first_names} ${ref.surname}`)}</div>
-            <div class="ad-rec-sub">${adEsc(formatLecturerName(ref))} · ${adEsc(ref.module_code || '-')}</div>
+            <div class="ad-rec-sub">${adEsc(formatLecturerName(ref))} · ${adEsc(ref.module_code || '-')} · ${ref.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'}</div>
             <div class="ad-rec-grid">
               <div class="item"><div class="k">${qualificationPlain(ref.qualification_level)}</div><div class="l">Qualification</div></div>
               <div class="item"><div class="k">${courseShort(ref.course)}</div><div class="l">Programme</div></div>
@@ -1748,7 +1775,7 @@ function renderApplicationCard(app, opts) {
     col3Val = formatDate(app.created_at);
     col3Lab = 'STARTED';
   } else if (withReason) {
-    module = `${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}`;
+    module = applicationAssignmentCell(app);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -1756,7 +1783,7 @@ function renderApplicationCard(app, opts) {
     col3Val = app.rejection_reason || 'Did not meet eligibility';
     col3Lab = 'REASON';
   } else {
-    module = `${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}`;
+    module = applicationAssignmentCell(app);
     col1Val = qualificationPlain(app.qualification_level);
     col1Lab = 'QUALIFICATION';
     col2Val = formatGpaDisplay(app.gpa);
@@ -1810,7 +1837,7 @@ function renderApplicationRow(app, withReason) {
     <tr data-app-id="${app.id}" onclick="openApplicationDetail(${app.id})">
       <td><span class="pref-dot ${pref.dotClass}"></span></td>
       <td style="font-weight:600;color:var(--text)">${adEsc(`${app.first_names} ${app.surname}`)}</td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${adEsc(app.module_name || '-')}${positionTypeChip(app.position_type)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${applicationAssignmentCell(app)}</td>
       <td>${qualificationChip(app.qualification_level)}</td>
       <td style="font-family:'DM Mono',monospace;color:${gpaCell === '-' ? 'var(--muted)' : gpaColor}">${gpaCell}</td>
       ${dateCell}
@@ -1852,7 +1879,7 @@ function formatScreeningBlock(app) {
       <div><strong>CV keyword score:</strong> ${cv.score ?? app.cv_keyword_score ?? 0} / ${cv.totalKeywords ?? '-'} matched (${matched})</div>
       <div><strong>Transcript average:</strong> ${tr.calculatedAverage != null ? tr.calculatedAverage + '%' : '-'}${tr.claimedAverage != null ? ` (declared ${tr.claimedAverage}%)` : ''}</div>
       <div><strong>All modules passed:</strong> ${tr.allModulesPassed ? 'Yes' : 'No'}</div>
-      <div><strong>Tutor module on record:</strong> ${tutorLine}</div>
+      ${tr.tutorModuleName ? `<div><strong>Tutor module on record:</strong> ${tutorLine}</div>` : ''}
     </div>`;
 }
 
@@ -2562,8 +2589,13 @@ function openApprovalModal(id) {
   pendingApprovalId = id;
   pendingReferralApprovalId = null;
   document.getElementById('approval-applicant').textContent = app.first_names + ' ' + app.surname;
-  document.getElementById('approval-module').textContent = app.module_name || '-';
+  document.getElementById('approval-module-label').textContent = 'Course';
+  document.getElementById('approval-module').textContent = app.course || '-';
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level;
+  populateApprovalModuleSelect(app.course);
+  document.getElementById('approval-position-type').value = '';
+  document.getElementById('approval-position-group').style.display = '';
+  document.getElementById('approval-module-group').style.display = '';
   document.getElementById('approval-responsibility').value = '';
   document.getElementById('approval-cost-centre').value = '';
   const costCentreGroup = document.getElementById('approval-cost-centre-group');
@@ -2581,7 +2613,12 @@ function openReferralApprovalModal(id) {
   pendingReferralApprovalId = id;
   pendingApprovalId = null;
   document.getElementById('approval-applicant').textContent = ref.first_names + ' ' + ref.surname;
-  document.getElementById('approval-module').textContent = ref.module_code + ' · ' + (ref.module_name || '-');
+  document.getElementById('approval-module-label').textContent = 'Module';
+  document.getElementById('approval-module').textContent =
+    ref.module_code + ' · ' + (ref.module_name || '-') + ' · ' +
+    (ref.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor');
+  document.getElementById('approval-position-group').style.display = 'none';
+  document.getElementById('approval-module-group').style.display = 'none';
   document.getElementById('approval-qualification').textContent = QUALIFICATION_DISPLAY_MAP[ref.qualification_level] || ref.qualification_level;
   document.getElementById('approval-responsibility').value = '';
   document.getElementById('approval-cost-centre').value = '';
@@ -2592,6 +2629,16 @@ function openReferralApprovalModal(id) {
   document.getElementById('approval-pay-breakdown').textContent = 'No responsibility level selected yet.';
   document.getElementById('approval-confirm-btn').disabled = true;
   document.getElementById('approval-modal').style.display = 'flex';
+}
+
+function populateApprovalModuleSelect(course) {
+  const sel = document.getElementById('approval-module-select');
+  const groups = curriculumYearSemesters(course).map((yearSem) => {
+    const options = curriculumModulesForYear(course, yearSem).map(moduleSelectOptionHtml).join('');
+    return `<optgroup label="${adEsc(yearSem)}">${options}</optgroup>`;
+  }).join('');
+  sel.innerHTML = '<option value="">Select module…</option>' + groups;
+  sel.value = '';
 }
 
 function closeApprovalModal(e) {
@@ -2644,7 +2691,11 @@ function updateApprovalPayRate() {
     ' · Practical (5 hrs): R' + (rateEntry * 5).toFixed(2);
   const costCentre = document.getElementById('approval-cost-centre')?.value;
   const costCentreOk = !!costCentre;
-  button.disabled = !(friendlyLevel && costCentreOk);
+  const assignmentOk = !app || (
+    !!document.getElementById('approval-position-type').value &&
+    !!document.getElementById('approval-module-select').value
+  );
+  button.disabled = !(friendlyLevel && costCentreOk && assignmentOk);
 }
 
 async function finalizeApplicationApproval() {
@@ -2691,10 +2742,27 @@ async function finalizeApplicationApproval() {
       VF.toast('Please select a cost centre before approving', 'err');
       return;
     }
+    const positionType = document.getElementById('approval-position-type').value;
+    if (!positionType) {
+      VF.toast('Please choose Tutor or Demonstrator before approving', 'err');
+      return;
+    }
+    const moduleSelect = document.getElementById('approval-module-select');
+    const moduleName = moduleSelect.value;
+    if (!moduleName) {
+      VF.toast('Please select a module before approving', 'err');
+      return;
+    }
 
     await VF.apiFetch(`/applications/${pendingApprovalId}/approve`, {
       method: 'PATCH',
-      body: { responsibilityLevel, costCentre },
+      body: {
+        responsibilityLevel,
+        costCentre,
+        positionType,
+        moduleName,
+        moduleCode: readModuleCodeFromSelect(moduleSelect),
+      },
     });
     VF.toast('Application approved', 'ok');
     closeApprovalModal();
@@ -2793,9 +2861,9 @@ function fillMobileApplicationDetail(app) {
     ${adAppdFieldRow('Faculty', app.faculty || '-')}
     ${adAppdFieldRow('Course', app.course || '-')}
     ${adAppdFieldRow('Qualification level', QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-')}
-    ${adAppdFieldRow('Position type', app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor')}
-    ${adAppdFieldRow('Module year level', app.module_year_level || '-')}
-    ${adAppdFieldRow('Module to tutor', app.module_name || '-')}
+    ${adAppdFieldRow('Position type', applicationAssignmentText(app, 'position'))}
+    ${adAppdFieldRow('Module year level', applicationAssignmentText(app, 'year'))}
+    ${adAppdFieldRow('Assigned module', applicationAssignmentText(app, 'module'))}
     ${adAppdFieldRow('Current average', formatGpaDisplay(app.gpa))}`;
 
   const screening = parseScreeningResult(app);
@@ -2821,7 +2889,7 @@ function fillMobileApplicationDetail(app) {
     <div class="ad-appd-kw-extra">
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">Transcript average</span><span class="ad-appd-v">${avgLine}</span></div>
       <div class="ad-appd-field-row bare"><span class="ad-appd-k">All modules passed</span><span class="ad-appd-v${tr.allModulesPassed ? ' ok' : ''}">${screening ? (tr.allModulesPassed ? 'Yes' : 'No') : '-'}</span></div>
-      <div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${adEsc(tutorLine)}</span></div>
+      ${tr.tutorModuleName ? `<div class="ad-appd-field-row bare"><span class="ad-appd-k">Tutor module on record</span><span class="ad-appd-v ad-appd-v-right">${adEsc(tutorLine)}</span></div>` : ''}
     </div>`;
 
   const declaredOk = app.declared === true || app.declared === 't' || app.declared === 'true' || app.status !== 'incomplete';
@@ -3006,9 +3074,9 @@ function openApplicationDetail(id) {
         <div><strong>Faculty:</strong> ${adEsc(app.faculty || '-')}</div>
         <div><strong>Course:</strong> ${adEsc(app.course || '-')}</div>
         <div><strong>Qualification level:</strong> ${adEsc(QUALIFICATION_DISPLAY_MAP[app.qualification_level] || app.qualification_level || '-')}</div>
-        <div><strong>Position type:</strong> ${app.position_type === 'demonstrator' ? 'Demonstrator' : 'Tutor'}</div>
-        <div><strong>Module year level:</strong> ${adEsc(app.module_year_level || '-')}</div>
-        <div><strong>Module to tutor:</strong> ${adEsc(app.module_name || '-')}</div>
+        <div><strong>Position type:</strong> ${adEsc(applicationAssignmentText(app, 'position'))}</div>
+        <div><strong>Module year level:</strong> ${adEsc(applicationAssignmentText(app, 'year'))}</div>
+        <div><strong>Assigned module:</strong> ${adEsc(applicationAssignmentText(app, 'module'))}</div>
         <div><strong>Current average:</strong> ${adEsc(app.gpa)}%</div>
         <div><strong>CV keyword score:</strong> ${app.cv_keyword_score != null ? app.cv_keyword_score : '-'}</div>
         ${formatScreeningBlock(app)}

@@ -13,19 +13,6 @@
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
   <link rel="stylesheet" href="../css/apply.css?v=11"/>
   <style>
-    .module-hint {
-      background: var(--paper-3);
-      border-radius: var(--r);
-      padding: 13px 16px;
-      font-size: 12.5px;
-      color: var(--ink-3);
-      line-height: 1.55;
-      margin-top: 6px;
-      border: 1px solid var(--border-2);
-      display: none;
-    }
-    .module-hint.visible { display: block; }
-    .module-hint strong { color: var(--err); }
     .ql-warning {
       background: #fff8ed;
       border: 1px solid #f5c842;
@@ -65,7 +52,7 @@
       <div class="form-header">
         <div class="form-eyebrow">Application · Step 2 of 3</div>
         <div class="form-title">Academic<br>information</div>
-        <p class="form-subtitle">Your faculty, course, qualification level and module selection determine your eligibility against the system requirements.</p>
+        <p class="form-subtitle">Your faculty, course, qualification level and average determine your eligibility against the system requirements. The Student Employment Office assigns your module and role (tutor or demonstrator) if you are approved.</p>
       </div>
 
       <form id="step2Form" novalidate style="display:none">
@@ -80,7 +67,7 @@
 
         <div class="form-group" id="grp-course">
           <label for="course">Course / programme</label>
-          <select id="course" onchange="populateYears()">
+          <select id="course">
             <option value="">Select faculty first…</option>
           </select>
           <div class="form-error">Please select your course.</div>
@@ -101,37 +88,6 @@
             <i class="ti ti-alert-triangle"></i>
             <span>Only final year and postgraduate students are eligible to apply. You will not be able to proceed if you do not meet this requirement.</span>
           </div>
-        </div>
-
-        <div class="form-group" id="grp-position-type">
-          <label for="position-type">Position Type</label>
-          <select id="position-type" name="positionType" required onchange="handlePositionTypeChange()">
-            <option value="" disabled selected>Select position type…</option>
-            <option value="tutor">Tutor</option>
-            <option value="demonstrator">Demonstrator</option>
-          </select>
-          <div class="form-hint">
-            Tutors must have passed the specific module they want to tutor. Demonstrators are assessed on academic average only.
-          </div>
-          <div class="form-error">Please select a position type.</div>
-        </div>
-
-        <div class="form-group" id="grp-year">
-          <label for="year">Year &amp; semester</label>
-          <select id="year" onchange="populateModules()">
-            <option value="">Select course first…</option>
-          </select>
-          <div class="form-error">Please select the year and semester.</div>
-        </div>
-
-        <div class="form-group" id="grp-module">
-          <label for="module">Module to tutor</label>
-          <select id="module" onchange="onModuleSelected()">
-            <option value="">Select year &amp; semester first…</option>
-          </select>
-          <input type="hidden" id="input-module-code" value="" />
-          <div class="form-error">Please select a module.</div>
-          <div class="form-hint module-hint" id="module-pass-hint">You must have passed this module to tutor it.</div>
         </div>
 
         <div class="form-group" id="grp-gpa">
@@ -165,9 +121,9 @@
       <div style="height:16px"></div>
       <div class="info-sidebar-card">
         <div class="info-sidebar-title">Why this matters</div>
-        <div class="info-row"><i class="ti ti-link"></i>Your faculty, course and module selection are saved on your application and used to assign a lecturer if you are approved.</div>
-        <div class="info-row"><i class="ti ti-chart-bar"></i>Your GPA is checked against the minimum requirement for the role you're applying for.</div>
-        <div class="info-row"><i class="ti ti-book"></i>The module you select must appear on your academic record as passed with the required mark.</div>
+        <div class="info-row"><i class="ti ti-link"></i>If you are approved, the Student Employment Office assigns your module, role (tutor or demonstrator) and lecturer.</div>
+        <div class="info-row"><i class="ti ti-chart-bar"></i>Your average is checked against the minimum requirement.</div>
+        <div class="info-row"><i class="ti ti-book"></i>Every module on your academic record must be passed.</div>
         <div class="info-row"><i class="ti ti-medal"></i>Your qualification level determines your eligibility and your pay rate if you are appointed as a tutor.</div>
       </div>
       <div class="info-sidebar-card">
@@ -178,8 +134,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=23"></script>
-<script src="../js/curriculum.js?v=2"></script>
+<script src="../js/app.js?v=24"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) { /* redirected */ }
@@ -217,7 +172,7 @@
       // Prefill only from this account's server record - never leftover local drafts
       populateFromApp(app);
       VF.bindApplyFormProgress([
-        'faculty', 'course', 'qualificationLevel', 'position-type', 'year', 'module', 'gpa',
+        'faculty', 'course', 'qualificationLevel', 'gpa',
       ]);
     }, { allowIncompleteContinue: true });
   })();
@@ -242,70 +197,20 @@
     if (warning) warning.classList.remove('visible');
   }
 
-  function handlePositionTypeChange() {
-    const type = document.getElementById('position-type').value;
-    const moduleHint = document.getElementById('module-pass-hint');
-
-    if (type === 'demonstrator') {
-      if (moduleHint) {
-        moduleHint.textContent =
-          'As a demonstrator, you must have passed this module and meet the minimum academic average.';
-      }
-    } else {
-      if (moduleHint) {
-        moduleHint.textContent =
-          'You must have passed this module at the required mark and meet the minimum academic average.';
-      }
-    }
-  }
-
   function populateCourses() {
     const faculty = document.getElementById('faculty').value;
     const csel = document.getElementById('course');
     csel.innerHTML = '<option value="">Select a course…</option>';
-    document.getElementById('year').innerHTML = '<option value="">Select course first…</option>';
-    document.getElementById('module').innerHTML = '<option value="">Select year &amp; semester first…</option>';
-    document.getElementById('input-module-code').value = '';
     (COURSES[faculty] || []).forEach(c => {
       csel.innerHTML += `<option>${c}</option>`;
     });
   }
 
-  function populateYears() {
-    const course = document.getElementById('course').value;
-    const ysel = document.getElementById('year');
-    ysel.innerHTML = '<option value="">Select year &amp; semester…</option>';
-    document.getElementById('module').innerHTML = '<option value="">Select year &amp; semester first…</option>';
-    document.getElementById('input-module-code').value = '';
-    curriculumYearSemesters(course).forEach(y => {
-      ysel.innerHTML += `<option>${y}</option>`;
-    });
-  }
-
-  function populateModules() {
-    const course = document.getElementById('course').value;
-    const year   = document.getElementById('year').value;
-    const msel   = document.getElementById('module');
-    msel.innerHTML = '<option value="">Select a module…</option>';
-    document.getElementById('input-module-code').value = '';
-    curriculumModulesForYear(course, year).forEach(m => {
-      msel.innerHTML += moduleSelectOptionHtml(m);
-    });
-  }
-
-  function onModuleSelected() {
-    const msel = document.getElementById('module');
-    document.getElementById('input-module-code').value = readModuleCodeFromSelect(msel);
-  }
-
   function populateFromApp(app) {
-    if (!app || !(app.faculty || app.course || app.module_name)) return;
+    if (!app || !(app.faculty || app.course)) return;
 
     const faculty = app.faculty || '';
     const course = app.course || '';
-    const year = app.module_year_level || '';
-    const moduleName = app.module_name || '';
-    const moduleCode = app.module_code || '';
 
     let qlValue = '';
     if (app.qualification_level) {
@@ -322,30 +227,9 @@
     if (faculty) {
       populateCourses();
       document.getElementById('course').value = course || '';
-      if (course) {
-        populateYears();
-        const yearOptions = curriculumYearSemesters(course);
-        if (yearOptions.includes(year)) {
-          document.getElementById('year').value = year;
-          populateModules();
-          const moduleOptions = curriculumModulesForYear(course, year);
-          const savedModule = moduleOptions.find(m => m.name === moduleName);
-          if (savedModule) {
-            document.getElementById('module').value = savedModule.name;
-            onModuleSelected();
-          }
-          if (moduleCode) {
-            document.getElementById('input-module-code').value = moduleCode;
-          }
-        }
-      }
     }
     if (qlValue) document.getElementById('qualificationLevel').value = qlValue;
     checkQualificationEligibility();
-    if (app.position_type) {
-      document.getElementById('position-type').value = app.position_type;
-      handlePositionTypeChange();
-    }
     document.getElementById('gpa').value = app.gpa != null ? app.gpa : '';
   }
 
@@ -356,11 +240,7 @@
     populateFromApp({
       faculty: s.academic.faculty,
       course: s.academic.course,
-      module_year_level: s.academic.year,
-      module_name: s.academic.module,
-      module_code: s.academic.moduleCode,
       qualification_level: QUALIFICATION_CODE_MAP[s.academic.qualificationLevel] || s.academic.qualificationLevel,
-      position_type: s.academic.positionType,
       gpa: s.academic.gpa,
     });
   }
@@ -373,10 +253,6 @@
       { id: 'faculty',            check: v => v.length > 0,                        msg: 'Please select your faculty.' },
       { id: 'course',             check: v => v.length > 0,                        msg: 'Please select your course.' },
       { id: 'qualificationLevel', check: v => v.length > 0,                        msg: 'Please select your current qualification level.' },
-      { id: 'position-type',      check: v => v.length > 0,                        msg: 'Please select a position type.' },
-      { id: 'year',               check: v => v.length > 0,                        msg: 'Please select the year and semester.' },
-      { id: 'module',             check: v => v.length > 0,                        msg: 'Please select a module.' },
-      { id: 'input-module-code',  check: v => v.length > 0,                        msg: 'Module code is required.' },
       { id: 'gpa',                check: v => v.length > 0 && v >= 0 && v <= 100, msg: 'Please enter your GPA (0-100).' },
     ]);
     if (!valid) return;
@@ -384,12 +260,8 @@
     const faculty            = document.getElementById('faculty').value;
     const course             = document.getElementById('course').value;
     const qualificationLabel = document.getElementById('qualificationLevel').value;
-    const year               = document.getElementById('year').value;
-    const module             = document.getElementById('module').value;
-    const moduleCode         = document.getElementById('input-module-code').value.trim();
     const gpa                = parseFloat(document.getElementById('gpa').value);
     const qualificationLevel = QUALIFICATION_CODE_MAP[qualificationLabel] || '';
-    const positionType       = document.getElementById('position-type').value;
 
     const btn = document.getElementById('nextBtn');
     const originalHTML = btn.innerHTML;
@@ -413,11 +285,7 @@
           faculty,
           course,
           qualificationLevel,
-          moduleYearLevel: year,
-          moduleName:      module,
-          moduleCode,
           gpa,
-          positionType,
         },
       });
 
@@ -426,11 +294,7 @@
           faculty,
           course,
           qualificationLevel: qualificationLabel,
-          year,
-          module,
-          moduleCode,
           gpa,
-          positionType,
         },
         step: 3,
       });

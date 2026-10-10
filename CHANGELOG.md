@@ -16,6 +16,20 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.11.0] - 2026-10-10
+
+### Added
+- Admin approval modal assigns Tutor / Demonstrator and module (from the applicant's course curriculum) alongside responsibility level and cost centre; the assigned module drives lecturer assignment
+- Lecturer referrals capture Tutor / Demonstrator (migration 031); approval copies the role onto the application, and referral emails name the role
+- Lecturer dashboard shows the latest overdue session (never started) instead of “No upcoming sessions” when nothing is scheduled ahead
+
+### Changed
+- Apply Step 2 no longer asks for position type, year & semester, or module; submit screening requires all transcript modules passed plus the minimum average
+- Application approval email lists the assigned role and module (with code)
+- Pending applications show “Assigned at approval” for module and role in admin and student views
+
+---
+
 ## [0.10.0] - 2026-10-10
 
 ### Removed

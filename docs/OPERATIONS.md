@@ -86,6 +86,7 @@ npm run db:migrate-pending
 - `028_token_version.sql`
 - `029_attendance_pass_used.sql`
 - `030_drop_job_postings.sql`
+- `031_referral_position_type.sql`
 
 When you add a migration that older environments need, append it to that list **and** fold the change into `schema.sql` for greenfield installs.
 

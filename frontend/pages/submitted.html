@@ -176,7 +176,7 @@
     </div>
   </div>
 </main>
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=24"></script>
 <script>
 (async function initSubmittedPage() {
   VF.pageIn();
@@ -188,7 +188,9 @@
     const titleEl = document.getElementById('appModuleName');
     const metaEl = document.getElementById('appModuleMeta');
     if (!titleEl || !metaEl) return;
-    titleEl.textContent = app.module_name || 'Unknown module';
+    titleEl.textContent = app.status === 'approved' && app.module_name
+      ? app.module_name
+      : 'Assigned by the Student Employment Office on approval';
     const course = app.course || 'Unknown course';
     const faculty = app.faculty || '';
     metaEl.textContent = faculty ? `${course} · ${faculty}` : course;
@@ -196,9 +198,8 @@
 
   // Optimistic paint from local apply state while the API loads
   const local = VF.getState();
-  if (local.academic?.module || local.academic?.course) {
+  if (local.academic?.course) {
     renderAppCard({
-      module_name: local.academic.module || '',
       course: local.academic.course || '',
       faculty: local.academic.faculty || '',
     });
@@ -222,7 +223,6 @@
   } catch (err) {
     const s = VF.getState();
     renderAppCard({
-      module_name: s.academic?.module || 'Unknown module',
       course: s.academic?.course || 'Unknown course',
       faculty: s.academic?.faculty || '',
     });

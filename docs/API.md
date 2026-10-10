@@ -53,7 +53,7 @@ Applicant (`tutor`) paths typically use `/me/...`. Admin paths list and mutate a
 | Read / update own application | Academic patch, document upload, submit |
 | Submit + screen | Triggers document screening; status → `submitted` or auto-`rejected` |
 | Admin list / detail | Filter by status |
-| Admin review actions | Move under review, shortlist, approve, reject; assign lecturer / level |
+| Admin review actions | Move under review, shortlist, approve, reject. Approve sets module, tutor/demonstrator, responsibility level and cost centre, and assigns the module's lecturer |
 
 ---
 

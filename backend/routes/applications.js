@@ -12,6 +12,7 @@ const fs           = require('fs');
 const os           = require('os');
 const {
   findCurriculumModule,
+  resolveCourseKey,
   minYearLevelToQualEnum,
   meetsMinimumQualification,
 } = require('../constants');
@@ -337,15 +338,11 @@ router.patch(
   requireRole('tutor'),
   validateAcademicSave,
   async (req, res) => {
-    const { faculty, course, qualificationLevel, moduleYearLevel, moduleName, moduleCode, gpa, positionType } = req.body;
+    const { faculty, course, qualificationLevel, gpa } = req.body;
     const userId = req.user.userId;
 
     if (!(await tutorMayEditIncompleteApplication(userId))) {
       return res.status(403).json({ errors: ['Applications are currently closed.'] });
-    }
-
-    if (!['tutor', 'demonstrator'].includes(positionType)) {
-      return res.status(400).json({ errors: ['Position type must be tutor or demonstrator.'] });
     }
 
     const gpaNum = parseFloat(gpa);
@@ -353,35 +350,12 @@ router.patch(
       return res.status(400).json({ errors: ['GPA must be a number between 0 and 100.'] });
     }
 
-    const normalisedCode = String(moduleCode).trim().toUpperCase();
-
-    const curriculumHit = findCurriculumModule(
-      course,
-      moduleYearLevel,
-      moduleName.trim(),
-      normalisedCode
-    );
-
-    if (!curriculumHit) {
-      return res.status(400).json({
-        errors: [`"${moduleName}" is not a valid module for ${course} - ${moduleYearLevel}.`],
-      });
+    const savedCourse = resolveCourseKey(course);
+    if (!savedCourse) {
+      return res.status(400).json({ errors: [`"${course}" is not a valid course.`] });
     }
 
-    const savedCourse = curriculumHit.courseKey;
-    const savedYear   = curriculumHit.yearKey;
-    const savedName   = curriculumHit.mod.name;
-    const savedCode   = curriculumHit.mod.code.toUpperCase();
-
     try {
-      const dbModule = await pool.query(
-        'SELECT code FROM modules WHERE code = $1',
-        [savedCode]
-      );
-      if (dbModule.rows.length === 0) {
-        return res.status(400).json({ errors: [`Module code "${savedCode}" is not in the curriculum registry.`] });
-      }
-
       const settings = await getSettings();
       const eligibility = eligibilityAgainstSettings(settings, qualificationLevel, gpaNum);
       if (!eligibility.pass) {
@@ -407,22 +381,14 @@ router.patch(
          SET faculty             = $1,
              course              = $2,
              qualification_level = $3,
-             module_year_level   = $4,
-             module_name         = $5,
-             module_code         = $6,
-             gpa                 = $7,
-             position_type       = $8
-         WHERE user_id = $9 AND status = 'incomplete'
+             gpa                 = $4
+         WHERE user_id = $5 AND status = 'incomplete'
          RETURNING id`,
         [
           faculty.trim(),
           savedCourse,
           qualificationLevel,
-          savedYear,
-          savedName,
-          savedCode,
           gpaNum,
-          positionType,
           userId,
         ]
       );
@@ -489,7 +455,7 @@ router.post(
         });
       }
 
-      if (!app.qualification_level || !app.module_name || !app.gpa) {
+      if (!app.qualification_level || !app.course || app.gpa == null) {
         return res.status(400).json({
           errors: ['Academic information is incomplete. Please complete Step 2 first.'],
         });
@@ -619,14 +585,11 @@ router.post(
 
       if (eligibilityPass) {
         try {
-          const positionType = app.position_type || 'tutor';
           const scanResult = await screenApplication({
             cvPath: cv.localPath,
             transcriptPath: transcript.localPath,
             claimedAverage:  parseFloat(app.gpa),
-            tutorModuleName: app.module_name,
             settings,
-            positionType,
           });
 
           screening      = scanResult.screening;
@@ -1086,7 +1049,7 @@ router.patch(
   requireRole('admin'),
   async (req, res) => {
     const appId = parseInt(req.params.id);
-    const { responsibilityLevel, costCentre } = req.body;
+    const { responsibilityLevel, costCentre, moduleName, moduleCode, positionType } = req.body;
 
     if (!['standard', 'senior', 'lead'].includes(responsibilityLevel)) {
       return res.status(400).json({
@@ -1098,6 +1061,16 @@ router.patch(
       return res.status(400).json({
         errors: ['Cost centre must be school_of_computing or ucdg.'],
       });
+    }
+
+    if (!['tutor', 'demonstrator'].includes(positionType)) {
+      return res.status(400).json({
+        errors: ['Position type must be tutor or demonstrator.'],
+      });
+    }
+
+    if (!moduleName || !String(moduleName).trim()) {
+      return res.status(400).json({ errors: ['Select the module this applicant will be assigned to.'] });
     }
 
     try {
@@ -1129,21 +1102,36 @@ router.patch(
         return res.status(400).json({ errors: [rateErr.message] });
       }
 
+      const curriculumHit = findCurriculumModule(
+        app.course,
+        null,
+        String(moduleName).trim(),
+        moduleCode ? String(moduleCode).trim().toUpperCase() : ''
+      );
+      if (!curriculumHit) {
+        return res.status(400).json({
+          errors: [`"${moduleName}" is not a module in ${app.course}.`],
+        });
+      }
+      const assignedYear = curriculumHit.yearKey;
+      const assignedName = curriculumHit.mod.name;
+      const assignedCode = curriculumHit.mod.code.toUpperCase();
+
       // Auto-assign the lecturer who owns this course + module combination.
-      // This is the core link: a tutor's module_name must match exactly one
+      // This is the core link: the assigned module_name must match exactly one
       // lecturer_modules.module_name for the same course.
       const lecturerResult = await pool.query(
         `SELECT lecturer_id FROM lecturer_modules
          WHERE course = $1 AND module_name = $2
          LIMIT 1`,
-        [app.course, app.module_name]
+        [app.course, assignedName]
       );
 
       if (lecturerResult.rows.length === 0) {
         return res.status(409).json({
           errors: [
-            `No lecturer is currently assigned to "${app.module_name}" in ${app.course}. ` +
-            `Please assign a lecturer to this module in User Management before approving this tutor.`
+            `No lecturer is currently assigned to "${assignedName}" in ${app.course}. ` +
+            `Please assign a lecturer to this module in User Management before approving this applicant.`
           ],
         });
       }
@@ -1156,10 +1144,23 @@ router.patch(
              responsibility_level  = $1,
              assigned_lecturer_id  = $2,
              cost_centre           = $3,
+             module_year_level     = $4,
+             module_name           = $5,
+             module_code           = $6,
+             position_type         = $7,
              reviewed_at           = NOW()
-         WHERE id = $4 AND status = 'shortlisted'
+         WHERE id = $8 AND status = 'shortlisted'
          RETURNING id`,
-        [responsibilityLevel, assignedLecturerId, costCentre, appId]
+        [
+          responsibilityLevel,
+          assignedLecturerId,
+          costCentre,
+          assignedYear,
+          assignedName,
+          assignedCode,
+          positionType,
+          appId,
+        ]
       );
 
       if (updateResult.rows.length === 0) {
@@ -1184,8 +1185,9 @@ router.patch(
       sendApplicationApprovedEmail({
         studentEmail:     app.email,
         studentFirstName: app.first_names,
-        moduleName:       app.module_name,
-        positionType:     app.position_type,
+        moduleName:       assignedName,
+        moduleCode:       assignedCode,
+        positionType,
       })
         .then(() => {
           console.log(`Application approval email sent to ${app.email}`);

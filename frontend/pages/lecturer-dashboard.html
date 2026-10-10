@@ -1188,6 +1188,17 @@
       <div class="ns-field">
         <div class="ns-input" id="rt-module-display" style="display:flex;align-items:center;min-height:42px;color:var(--muted);">Select a module tab first</div>
       </div>
+      <div class="ns-section-label">Tutor / Demonstrator</div>
+      <div class="ns-field">
+        <div class="ns-select-wrap">
+          <select class="ns-select" id="rt-position-type">
+            <option value="" disabled selected>Select role…</option>
+            <option value="tutor">Tutor</option>
+            <option value="demonstrator">Demonstrator</option>
+          </select>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
       <div class="ns-section-label">Qualification level</div>
       <div class="ns-field">
         <div class="ns-select-wrap">
@@ -1293,7 +1304,7 @@
   })();
 </script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/lecturer-dashboard.js?v=71"></script>
+<script src="../js/lecturer-dashboard.js?v=73"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';

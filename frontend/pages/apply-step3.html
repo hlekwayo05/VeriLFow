@@ -167,7 +167,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=24"></script>
 <script>
   VF.pageIn();
   if (!VF.requireAuth('login.html')) throw new Error('Not authenticated');
@@ -464,7 +464,7 @@
           return;
         }
 
-        if (!app.qualification_level || !app.module_name || !app.gpa) {
+        if (!app.qualification_level || !app.course || app.gpa == null) {
           VF.toast('Please complete your academic information first.', 'err');
           VF.navigate('apply-step2.html');
           return;

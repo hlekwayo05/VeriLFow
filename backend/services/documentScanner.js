@@ -262,18 +262,17 @@ function evaluateScreening(cvScan, transcriptScan, settings, positionType = 'tut
     };
   }
 
-  if (!isDemo && !transcriptScan.allModulesPassed) {
+  if (!transcriptScan.allModulesPassed) {
     const failed = transcriptScan.failedModules.slice(0, 3).join('; ');
     return {
       pass: false,
       reason: 'Your academic record shows modules that were not passed.',
-      detail: `Failed module(s): ${failed}${transcriptScan.failedModules.length > 3 ? '…' : ''}. All modules must be passed to tutor.`,
+      detail: `Failed module(s): ${failed}${transcriptScan.failedModules.length > 3 ? '…' : ''}. All modules must be passed to apply.`,
       screening,
     };
   }
 
-  // Tutors and demonstrators must have passed the selected module
-  if (!transcriptScan.tutorModuleFound) {
+  if (transcriptScan.tutorModuleName && !transcriptScan.tutorModuleFound) {
     return {
       pass: false,
       reason: `No passed record found for "${transcriptScan.tutorModuleName || 'your selected module'}" on your academic record.`,
@@ -284,7 +283,7 @@ function evaluateScreening(cvScan, transcriptScan, settings, positionType = 'tut
     };
   }
 
-  if (!transcriptScan.tutorModulePassed) {
+  if (transcriptScan.tutorModuleName && !transcriptScan.tutorModulePassed) {
     const tm = transcriptScan.tutorModule;
     return {
       pass: false,
@@ -341,7 +340,7 @@ async function screenApplication({ cvPath, transcriptPath, claimedAverage, tutor
     minAverage:     parseFloat(settings.min_average) || 75,
     modulePassMark: parseFloat(settings.module_pass_mark) || 70,
   });
-  transcriptScan.tutorModuleName = tutorModuleName;
+  transcriptScan.tutorModuleName = tutorModuleName || null;
 
   return evaluateScreening(cvScan, transcriptScan, settings, positionType);
 }

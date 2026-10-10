@@ -54,6 +54,7 @@ function adAppModuleLabel(app) {
   const code = app.module_code || '';
   const name = app.module_name || '';
   const course = adCourseShort(app.course);
+  if (app.status !== 'approved') return course || '-';
   const label = code || name || '-';
   return `${label} · ${course}`;
 }

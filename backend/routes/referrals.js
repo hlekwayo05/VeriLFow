@@ -50,11 +50,15 @@ router.post(
       email,
       moduleCode,
       qualificationLevel,
+      positionType,
     } = req.body;
 
     const lecturerId = req.user.userId;
 
     const errors = [];
+    if (!['tutor', 'demonstrator'].includes(positionType)) {
+      errors.push('Choose whether you are referring a tutor or a demonstrator.');
+    }
 
     if (!firstName || firstName.trim().length === 0) errors.push('First name is required.');
     if (!surname   || surname.trim().length === 0)   errors.push('Surname is required.');
@@ -128,8 +132,8 @@ router.post(
       const result = await pool.query(
         `INSERT INTO referrals
            (lecturer_id, first_names, surname, email, course,
-            module_code, module_name, qualification_level)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            module_code, module_name, qualification_level, position_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING id, status, created_at`,
         [
           lecturerId,
@@ -140,6 +144,7 @@ router.post(
           storedModuleCode,
           moduleName,
           qualEnum,
+          positionType,
         ]
       );
 
@@ -157,6 +162,7 @@ router.post(
           lecturerName,
           moduleCode:       storedModuleCode,
           moduleName,
+          positionType,
         });
         console.log(`Referral notification email sent to ${normalisedEmail}`);
       } catch (err) {
@@ -213,6 +219,7 @@ router.get(
           r.module_code,
           r.module_name,
           r.qualification_level,
+          r.position_type,
           r.status,
           r.responsibility_level,
           r.rejection_reason,
@@ -282,7 +289,7 @@ router.patch(
     try {
       const refResult = await pool.query(
         `SELECT id, lecturer_id, first_names, surname, email, course,
-                module_code, module_name, qualification_level, status
+                module_code, module_name, qualification_level, position_type, status
          FROM referrals
          WHERE id = $1`,
         [referralId]
@@ -408,10 +415,11 @@ router.patch(
                  module_year_level    = $7,
                  qualification_level  = $8,
                  cost_centre          = $9,
+                 position_type        = $10,
                  rejection_reason     = NULL,
                  reviewed_at          = NOW(),
                  submitted_at         = COALESCE(submitted_at, NOW())
-             WHERE id = $10`,
+             WHERE id = $11`,
             [
               responsibilityLevel,
               referral.lecturer_id,
@@ -422,6 +430,7 @@ router.patch(
               academic.moduleYearLevel,
               referral.qualification_level,
               costCentre,
+              referral.position_type,
               appResult.rows[0].id,
             ]
           );
@@ -431,8 +440,8 @@ router.patch(
             `INSERT INTO applications
                (user_id, faculty, course, module_code, module_name, module_year_level,
                 qualification_level, status, responsibility_level, assigned_lecturer_id,
-                cost_centre, submitted_at, reviewed_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved', $8, $9, $10, NOW(), NOW())`,
+                cost_centre, position_type, submitted_at, reviewed_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved', $8, $9, $10, $11, NOW(), NOW())`,
             [
               userId,
               academic.faculty,
@@ -444,6 +453,7 @@ router.patch(
               responsibilityLevel,
               referral.lecturer_id,
               costCentre,
+              referral.position_type,
             ]
           );
           applicationApproved = true;
@@ -477,6 +487,7 @@ router.patch(
             moduleName:       referral.module_name,
             tempPassword:     plainTempPassword,
             loginLink,
+            positionType:     referral.position_type,
           });
         } else {
           await sendReferralApprovalNoPasswordEmail({
@@ -485,6 +496,7 @@ router.patch(
             moduleCode:       referral.module_code,
             moduleName:       referral.module_name,
             loginLink,
+            positionType:     referral.position_type,
           });
         }
         emailSent = true;

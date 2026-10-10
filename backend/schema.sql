@@ -390,6 +390,8 @@ CREATE TABLE IF NOT EXISTS referrals (
   module_code           VARCHAR(20)  NOT NULL,
   module_name           VARCHAR(150) NOT NULL,
   qualification_level   qualification_level NOT NULL,
+  position_type         VARCHAR(20)  NOT NULL DEFAULT 'tutor'
+                        CHECK (position_type IN ('tutor', 'demonstrator')),
   status                referral_status NOT NULL DEFAULT 'pending',
   responsibility_level  responsibility_level,
   rejection_reason      TEXT,

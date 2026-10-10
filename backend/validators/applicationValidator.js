@@ -23,23 +23,9 @@ const validateAcademicSave = [
       'masters_holder',
       'phd',
     ]).withMessage('Invalid qualification level.'),
-  body('moduleYearLevel')
-    .trim()
-    .notEmpty().withMessage('Year/semester level is required.')
-    .escape(),
-  body('moduleName')
-    .trim()
-    .notEmpty().withMessage('Module is required.')
-    .escape(),
-  body('moduleCode')
-    .trim()
-    .notEmpty().withMessage('Module code is required.'),
   body('gpa')
     .notEmpty().withMessage('GPA / academic average is required.')
     .isFloat({ min: 0, max: 100 }).withMessage('GPA must be a number between 0 and 100.'),
-  body('positionType')
-    .notEmpty().withMessage('Position type is required.')
-    .isIn(['tutor', 'demonstrator']).withMessage('Position type must be tutor or demonstrator.'),
   handleValidationErrors,
 ];
 
