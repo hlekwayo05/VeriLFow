@@ -16,6 +16,13 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.11.1] - 2026-10-12
+
+### Changed
+- README lists the admin login details at the top
+
+---
+
 ## [0.11.0] - 2026-10-10
 
 ### Added
