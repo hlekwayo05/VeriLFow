@@ -7,10 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/main.css?v=4"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=1"/>
-<link rel="stylesheet" href="../css/admin-dashboard.css?v=35"/>
+<link rel="stylesheet" href="../css/admin-dashboard.css?v=44"/>
 <link rel="stylesheet" href="../css/admin-mobile-pages.css?v=25"/>
 </head>
 <body class="admin-dash ad-on-hub">
@@ -403,7 +403,7 @@
     </div>
     <div class="ad-rec-list ad-mobile-only" id="flagged-cards"></div>
     <table class="data-table">
-      <thead><tr><th>Tutor</th><th>Module</th><th>Session date</th><th>Type</th><th>Issue</th><th>Reported by</th><th>Action</th></tr></thead>
+      <thead><tr><th>Tutor</th><th>Module</th><th>Session date</th><th>Type</th><th>Issue</th><th>Lecturer</th><th>Action</th></tr></thead>
       <tbody id="flagged-tbody">
         <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Loading…</td></tr>
       </tbody>
@@ -428,7 +428,7 @@
       <div class="inbox-sidebar">
         <div class="inbox-top">
           <h2>Messages</h2>
-          <div class="inbox-search"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search messages…" oninput="filterInbox(this.value)" /></div>
+          <div class="inbox-search"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Search messages…" oninput="filterInbox(this.value)" maxlength="100" /></div>
         </div>
         <div class="inbox-filters">
           <button class="inbox-filter active" onclick="setInboxFilter('all',this)">All</button>
@@ -457,7 +457,7 @@
             <button class="thread-reply-btn" onclick="focusCompose()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>Reply</button>
           </div>
           <div class="thread-messages" id="thread-messages"></div>
-          <div class="thread-compose"><div class="compose-box"><textarea class="compose-textarea" id="compose-input" placeholder="Write a reply…" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea><button class="compose-send" onclick="sendReply()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div></div>
+          <div class="thread-compose"><div class="compose-box"><textarea class="compose-textarea" id="compose-input" maxlength="2000" placeholder="Write a reply…" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea><button class="compose-send" onclick="sendReply()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div></div>
         </div>
       </div>
     </div>
@@ -516,7 +516,7 @@
           <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
           <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-btn" title="SC tutor documents only, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
+        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-btn" title="Documents for every SC tutor in this list, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
           <span class="ad-hr-pack-label">Download HR Pack</span>
           <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
         </button>
@@ -527,7 +527,7 @@
           <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
           <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-mobile" title="SC tutor documents only, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
+        <button type="button" class="ad-hr-pack-btn" id="tutor-hr-zip-mobile" title="Documents for every SC tutor in this list, for upload to OneDrive" onclick="downloadHrPacksZip('tutor')">
           <span class="ad-hr-pack-label">Download HR Pack</span>
           <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
         </button>
@@ -545,7 +545,7 @@
           <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
           <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-btn" title="SC demonstrator documents only, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
+        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-btn" title="Documents for every SC demonstrator in this list, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
           <span class="ad-hr-pack-label">Download HR Pack</span>
           <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
         </button>
@@ -556,7 +556,7 @@
           <span class="ad-fund-toggle-label ad-fund-toggle-ucdg">UCDG</span>
           <span class="ad-fund-toggle-knob" aria-hidden="true"></span>
         </button>
-        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-mobile" title="SC demonstrator documents only, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
+        <button type="button" class="ad-hr-pack-btn" id="demonstrator-hr-zip-mobile" title="Documents for every SC demonstrator in this list, for upload to OneDrive" onclick="downloadHrPacksZip('demonstrator')">
           <span class="ad-hr-pack-label">Download HR Pack</span>
           <span class="ad-hr-pack-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
         </button>
@@ -609,10 +609,6 @@
     <button type="button" class="ad-sheet-item" id="ad-user-sheet-edit-modules" onclick="userSheetEditModules()">
       <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
       <span class="ad-sheet-lbl">Edit modules</span>
-    </button>
-    <button type="button" class="ad-sheet-item" onclick="userSheetResetPassword()">
-      <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-      <span class="ad-sheet-lbl">Reset password</span>
     </button>
     <button type="button" class="ad-sheet-item danger" onclick="userSheetDeactivate()">
       <span class="ad-sheet-ico" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg></span>
@@ -826,7 +822,7 @@
           </table>
           <div class="field-hint" style="font-size:11px;color:var(--muted);margin:12px 0 20px">Rates set by UMP 2026 Tariffs Handbook. Contact HR to update.</div>
           <div class="settings-grid">
-            <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" value="160"/></div>
+            <div class="field-group"><div class="field-label">Max hours per semester</div><input class="field-input" id="setting-max-hours" type="number" min="0" max="1000" step="1" value="160"/></div>
           </div>
         </div>
       </details>
@@ -837,11 +833,11 @@
           <div class="settings-grid">
             <div class="field-group"><div class="field-label">Appointment Start Date</div><input class="field-input" id="setting-appointment-start" type="date"/></div>
             <div class="field-group"><div class="field-label">Appointment End Date</div><input class="field-input" id="setting-appointment-end" type="date"/></div>
-            <div class="field-group"><div class="field-label">Director Name</div><input class="field-input" id="setting-director-name" type="text" placeholder="e.g. Dr M Madiope"/></div>
-            <div class="field-group"><div class="field-label">Director Title</div><input class="field-input" id="setting-director-title" type="text" placeholder="e.g. Director: Academic Support Services Division"/></div>
-            <div class="field-group"><div class="field-label">Director Email</div><input class="field-input" id="setting-director-email" type="email" placeholder="e.g. name@ump.ac.za"/></div>
-            <div class="field-group"><div class="field-label">School of Computing Approver</div><input class="field-input" id="setting-school-approver" type="text" placeholder="e.g. Prof. Wayi"/></div>
-            <div class="field-group"><div class="field-label">UCDG Approver</div><input class="field-input" id="setting-ucdg-approver" type="text" placeholder="e.g. Mr. Machava"/></div>
+            <div class="field-group"><div class="field-label">Director Name</div><input class="field-input" id="setting-director-name" maxlength="150" type="text" placeholder="e.g. Dr M Madiope"/></div>
+            <div class="field-group"><div class="field-label">Director Title</div><input class="field-input" id="setting-director-title" maxlength="200" type="text" placeholder="e.g. Director: Academic Support Services Division"/></div>
+            <div class="field-group"><div class="field-label">Director Email</div><input class="field-input" id="setting-director-email" maxlength="150" type="email" placeholder="e.g. name@ump.ac.za"/></div>
+            <div class="field-group"><div class="field-label">School of Computing Approver</div><input class="field-input" id="setting-school-approver" maxlength="100" type="text" placeholder="e.g. Prof. Wayi"/></div>
+            <div class="field-group"><div class="field-label">UCDG Approver</div><input class="field-input" id="setting-ucdg-approver" maxlength="100" type="text" placeholder="e.g. Mr. Machava"/></div>
           </div>
         </div>
       </details>
@@ -849,17 +845,17 @@
         <summary>Eligibility Requirements <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="ad-acc-body">
           <div class="settings-grid">
-            <div class="field-group"><div class="field-label">Minimum average (%)</div><input class="field-input" id="setting-min-average" value="75"/></div>
+            <div class="field-group"><div class="field-label">Minimum average (%)</div><input class="field-input" id="setting-min-average" type="number" min="0" max="100" step="1" value="75"/></div>
             <div class="field-group"><div class="field-label">Minimum year level</div><input class="field-input" id="setting-min-year" value="3rd year" disabled/></div>
-            <div class="field-group"><div class="field-label">Module pass mark (%)</div><input class="field-input" id="setting-module-pass" value="70"/></div>
-            <div class="field-group"><div class="field-label">Min CV keywords to pass</div><input class="field-input" id="setting-min-cv-keywords" value="0"/></div>
+            <div class="field-group"><div class="field-label">Module pass mark (%)</div><input class="field-input" id="setting-module-pass" type="number" min="0" max="100" step="1" value="70"/></div>
+            <div class="field-group"><div class="field-label">Min CV keywords to pass</div><input class="field-input" id="setting-min-cv-keywords" type="number" min="0" max="50" step="1" value="0"/></div>
           </div>
         </div>
       </details>
       <details class="ad-acc settings-section" open style="animation-delay:.15s">
         <summary>CV Keywords <svg class="chevicon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="ad-acc-body">
-          <textarea class="field-textarea field-input" id="setting-cv-keywords" rows="3">database, SQL, networking, programming, data structures, algorithms, systems analysis</textarea>
+          <textarea class="field-textarea field-input" id="setting-cv-keywords" maxlength="1000" rows="3">database, SQL, networking, programming, data structures, algorithms, systems analysis</textarea>
           <div class="field-hint" style="font-size:11px;color:var(--muted);margin-top:6px">Separate keywords with commas. Used to rank applicant CVs automatically.</div>
         </div>
       </details>
@@ -882,8 +878,8 @@
         <div class="ad-acc-body">
           <div class="settings-grid">
             <div class="field-group"><div class="field-label">Closing date</div><input class="field-input" id="setting-closing-date" type="date" /></div>
-            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email subject</div><input class="field-input" id="setting-announcement-subject" type="text" /></div>
-            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email body</div><textarea class="field-textarea" id="setting-announcement-body" rows="6"></textarea></div>
+            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email subject</div><input class="field-input" id="setting-announcement-subject" maxlength="150" type="text" /></div>
+            <div class="field-group" style="grid-column:1 / -1;"><div class="field-label">Email body</div><textarea class="field-textarea" id="setting-announcement-body" maxlength="5000" rows="6"></textarea></div>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6;">
             A professionally designed HTML email will be sent automatically to all students when applications are
@@ -1017,7 +1013,7 @@
     <div style="padding:20px;">
       <div class="field-group">
         <div class="field-label">Reason for rejection</div>
-        <textarea id="reject-reason-input" class="field-input" style="width:100%;min-height:90px;padding:10px 12px;resize:vertical;" placeholder="e.g. Module-specific staffing cap already reached"></textarea>
+        <textarea id="reject-reason-input" maxlength="500" class="field-input" style="width:100%;min-height:90px;padding:10px 12px;resize:vertical;" placeholder="e.g. Module-specific staffing cap already reached"></textarea>
       </div>
     </div>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 20px 20px;">
@@ -1068,7 +1064,7 @@
         <button type="button" class="return-claim-chip" onclick="fillClaimReturnReason('Sessions were not verified by the assigned lecturer')">Not verified</button>
         <button type="button" class="return-claim-chip" onclick="fillClaimReturnReason('Claim does not comply with FYE policy')">Policy issue</button>
       </div>
-      <textarea id="claim-return-reason" class="return-claim-textarea" rows="4" placeholder="Explain what needs to be corrected so the tutor can fix and resubmit…"></textarea>
+      <textarea id="claim-return-reason" maxlength="500" class="return-claim-textarea" rows="4" placeholder="Explain what needs to be corrected so the tutor can fix and resubmit…"></textarea>
     </div>
     <div class="ns-divider"></div>
     <div class="ns-footer">
@@ -1153,8 +1149,8 @@
   <div class="modal" id="ma-modal" style="width:540px;max-width:94vw;">
     <div class="modal-header"><div><div class="modal-to">Broadcasting to</div><div class="modal-name">All Tutors, Demonstrators, and Lecturers</div></div><button class="modal-close" onclick="closeMsgAll()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div id="ma-recipients" style="display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;"></div>
-    <input class="modal-subject" id="ma-subject" type="text" placeholder="Subject…" />
-    <textarea class="modal-body" id="ma-body" placeholder="Write your broadcast message here…"></textarea>
+    <input class="modal-subject" id="ma-subject" maxlength="150" type="text" placeholder="Subject…" />
+    <textarea class="modal-body" id="ma-body" maxlength="2000" placeholder="Write your broadcast message here…"></textarea>
     <div class="modal-footer"><div class="modal-hint" id="ma-hint">Sent to all active message recipients via VeriFlow</div><button class="modal-send" onclick="sendMsgAll()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Message</button></div>
   </div>
 </div>
@@ -1182,11 +1178,11 @@
       </div>
       <div class="um-field">
         <div class="um-label">Subject</div>
-        <input id="ac-subject" class="um-input" type="text" placeholder="Subject…"/>
+        <input id="ac-subject" maxlength="150" class="um-input" type="text" placeholder="Subject…"/>
       </div>
       <div class="um-field">
         <div class="um-label">Message</div>
-        <textarea id="ac-body" class="um-textarea" placeholder="Write your message here…"></textarea>
+        <textarea id="ac-body" maxlength="2000" class="um-textarea" placeholder="Write your message here…"></textarea>
       </div>
     </div>
     <div class="um-actions">
@@ -1211,19 +1207,19 @@
       <div class="um-section um-grid ad-sheet-fields">
         <div class="um-field">
           <div class="um-label ad-sheet-label">First name</div>
-          <input id="lecturer-first-name" class="um-input ad-sheet-input" type="text" placeholder="e.g. Nomthandazo" />
+          <input id="lecturer-first-name" maxlength="100" class="um-input ad-sheet-input" type="text" placeholder="e.g. Nomthandazo" />
         </div>
         <div class="um-field">
           <div class="um-label ad-sheet-label">Surname</div>
-          <input id="lecturer-surname" class="um-input ad-sheet-input" type="text" placeholder="e.g. Khoza" />
+          <input id="lecturer-surname" maxlength="100" class="um-input ad-sheet-input" type="text" placeholder="e.g. Khoza" />
         </div>
         <div class="um-field">
           <div class="um-label ad-sheet-label">Email address</div>
-          <input id="lecturer-email" class="um-input ad-sheet-input" type="email" placeholder="name@ump.ac.za" />
+          <input id="lecturer-email" maxlength="150" class="um-input ad-sheet-input" type="email" placeholder="name@ump.ac.za" />
         </div>
         <div class="um-field">
           <div class="um-label ad-sheet-label">Cell number</div>
-          <input id="lecturer-cell" class="um-input ad-sheet-input" type="text" placeholder="e.g. 082 456 7890" />
+          <input id="lecturer-cell" maxlength="15" class="um-input ad-sheet-input" type="text" placeholder="e.g. 082 456 7890" />
         </div>
       </div>
 
@@ -1252,12 +1248,12 @@
     <div class="modal um-modal" id="add-student-modal">
       <div class="modal-header"><div><div class="modal-to">User Management</div><div class="modal-name">Add Student</div></div><button class="modal-close" onclick="closeAddStudentModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section um-grid">
-        <div class="um-field"><div class="um-label">First names</div><input id="student-first-names" class="um-input" type="text" placeholder="e.g. Thabo" /></div>
-        <div class="um-field"><div class="um-label">Surname</div><input id="student-surname" class="um-input" type="text" placeholder="e.g. Mokoena" /></div>
-        <div class="um-field"><div class="um-label">Email</div><input id="student-email" class="um-input" type="email" placeholder="e.g. tmokoena@ump.ac.za" /></div>
-        <div class="um-field"><div class="um-label">Student number</div><input id="student-number" class="um-input" type="text" placeholder="e.g. 202012345" /></div>
+        <div class="um-field"><div class="um-label">First names</div><input id="student-first-names" maxlength="100" class="um-input" type="text" placeholder="e.g. Thabo" /></div>
+        <div class="um-field"><div class="um-label">Surname</div><input id="student-surname" maxlength="100" class="um-input" type="text" placeholder="e.g. Mokoena" /></div>
+        <div class="um-field"><div class="um-label">Email</div><input id="student-email" maxlength="150" class="um-input" type="email" placeholder="e.g. tmokoena@ump.ac.za" /></div>
+        <div class="um-field"><div class="um-label">Student number</div><input id="student-number" maxlength="15" class="um-input" type="text" placeholder="e.g. 202012345" /></div>
         <div class="um-field"><div class="um-label">Programme</div><select id="student-programme" class="um-input"><option value="">-</option><option value="DICT">DICT</option><option value="BICT">BICT</option></select></div>
-        <div class="um-field"><div class="um-label">Year level</div><input id="student-year-level" class="um-input" type="text" placeholder="e.g. 3rd year" /></div>
+        <div class="um-field"><div class="um-label">Year level</div><input id="student-year-level" maxlength="20" class="um-input" type="text" placeholder="e.g. 3rd year" /></div>
       </div>
       <div class="um-actions"><button class="btn-sm" onclick="closeAddStudentModal()">Cancel</button><button class="btn-primary" onclick="saveStudent()">Save Student</button></div>
     </div>
@@ -1289,8 +1285,8 @@
     <div class="modal um-modal small" id="user-message-modal">
       <div class="modal-header"><div><div class="modal-to">Message to</div><div class="modal-name" id="user-message-name">-</div></div><button class="modal-close" onclick="closeUserMessageModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section um-grid one">
-        <div class="um-field"><div class="um-label">Subject</div><input id="user-message-subject" class="um-input" type="text" placeholder="Subject…" /></div>
-        <div class="um-field"><div class="um-label">Message</div><textarea id="user-message-body" class="um-textarea" placeholder="Write your message here…"></textarea></div>
+        <div class="um-field"><div class="um-label">Subject</div><input id="user-message-subject" maxlength="150" class="um-input" type="text" placeholder="Subject…" /></div>
+        <div class="um-field"><div class="um-label">Message</div><textarea id="user-message-body" maxlength="2000" class="um-textarea" placeholder="Write your message here…"></textarea></div>
       </div>
       <div class="um-actions"><button class="btn-sm" onclick="closeUserMessageModal()">Cancel</button><button class="btn-primary" onclick="sendUserMessage()">Send Message</button></div>
     </div>
@@ -1336,16 +1332,19 @@
       <div style="overflow:auto;padding:20px;display:flex;flex-direction:column;gap:16px;">
         <div class="um-section um-note" id="flag-detail-note"></div>
         <div class="um-section um-grid">
-          <div class="um-field"><div class="um-label">Tutor</div><div class="um-note" id="flag-tutor">-</div></div>
+          <div class="um-field"><div class="um-label">Assigned tutor(s)</div><div class="um-note" id="flag-tutor">-</div></div>
+          <div class="um-field"><div class="um-label">Confirmed availability</div><div class="um-note" id="flag-confirmed">-</div></div>
           <div class="um-field"><div class="um-label">Module</div><div class="um-note" id="flag-module">-</div></div>
-          <div class="um-field"><div class="um-label">Date</div><div class="um-note" id="flag-session">-</div></div>
+          <div class="um-field"><div class="um-label">Scheduled</div><div class="um-note" id="flag-session">-</div></div>
+          <div class="um-field"><div class="um-label">Actually ran</div><div class="um-note" id="flag-ran">-</div></div>
           <div class="um-field"><div class="um-label">Session type</div><div class="um-note" id="flag-type">-</div></div>
-          <div class="um-field"><div class="um-label">Reported by</div><div class="um-note" id="flag-reported">-</div></div>
-          <div class="um-field"><div class="um-label">Attendance data</div><div class="um-note" id="flag-attendance">-</div></div>
+          <div class="um-field"><div class="um-label">Lecturer</div><div class="um-note" id="flag-reported">-</div></div>
+          <div class="um-field"><div class="um-label">Attendance</div><div class="um-note" id="flag-attendance">-</div></div>
         </div>
         <div class="um-actions">
           <button class="btn-sm" type="button" onclick="openMessagesFromFlag()">Open Messages</button>
           <button class="btn-sm" type="button" onclick="closeFlagModal()">Close</button>
+          <button class="btn-primary" type="button" onclick="activeFlagId && resolveFlaggedSession(activeFlagId)">Resolve</button>
         </div>
       </div>
     </div>
@@ -1356,15 +1355,16 @@
     <div class="modal um-modal small" id="resolve-modal">
       <div class="modal-header"><div><div class="modal-to">Flagged Session</div><div class="modal-name" id="resolve-session-label">Resolve Flag</div></div><button class="modal-close" onclick="closeResolveModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section um-grid one">
+        <div class="um-field"><div class="um-label">How to decide</div><div class="um-note resolve-guidance" id="resolve-guidance"></div></div>
         <div class="um-field"><div class="um-label">Resolution outcome</div>
-          <select id="resolve-outcome" class="um-select">
+          <select id="resolve-outcome" class="um-select" onchange="updateResolveNoteHint()">
             <option value="">Select an outcome…</option>
-            <option value="confirmed">Session confirmed - remove flag</option>
-            <option value="invalid">Session invalid - exclude from claim</option>
-            <option value="warned">Tutor formally warned</option>
+            <option value="approved">Approve - tutors can claim this session</option>
+            <option value="warned">Approve with warning - tutors can claim; tutors and lecturer are messaged</option>
+            <option value="rejected">Reject - tutors cannot claim; tutors and lecturer are messaged</option>
           </select>
         </div>
-        <div class="um-field"><div class="um-label">Optional note</div><textarea id="resolve-note" class="um-textarea" placeholder="Add a short resolution note…"></textarea></div>
+        <div class="um-field"><div class="um-label" id="resolve-note-label">Note (optional)</div><textarea id="resolve-note" maxlength="500" class="um-textarea" placeholder="Add a short resolution note…"></textarea></div>
       </div>
       <div class="um-actions"><button class="btn-sm" onclick="closeResolveModal()">Cancel</button><button class="btn-primary" onclick="confirmResolution()">Confirm Resolution</button></div>
     </div>
@@ -1383,7 +1383,7 @@
         </div>
         <div class="um-section"><div class="um-label" style="margin-bottom:8px;">Ticket details</div><div class="um-note" id="support-respond-details"></div></div>
         <div class="um-section"><div class="um-label" style="margin-bottom:8px;">Thread</div><div class="support-thread" id="support-respond-history"></div></div>
-        <div class="um-section"><div class="um-field"><div class="um-label">Reply</div><textarea id="support-respond-message" class="um-textarea" placeholder="Write your response…"></textarea></div></div>
+        <div class="um-section"><div class="um-field"><div class="um-label">Reply</div><textarea id="support-respond-message" maxlength="2000" class="um-textarea" placeholder="Write your response…"></textarea></div></div>
         <div class="um-actions"><button class="btn-sm" onclick="closeSupportRespondModal()">Cancel</button><button class="btn-primary" onclick="sendSupportReply()">Send Reply</button></div>
       </div>
     </div>
@@ -1394,17 +1394,15 @@
       <div class="modal-header"><div><div class="modal-to">Support Ticket</div><div class="modal-name" id="support-resolve-title">Resolve Ticket</div></div><button class="modal-close" onclick="closeSupportResolveModal()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
       <div class="um-section um-note" id="support-resolve-summary"></div>
       <div class="um-section"><div class="um-label" style="margin-bottom:8px;">Thread</div><div class="support-thread" id="support-resolve-history"></div></div>
-      <div class="um-section"><div class="um-field"><div class="um-label">Optional resolution notes</div><textarea id="support-resolve-note" class="um-textarea" placeholder="Add notes before closing the ticket…"></textarea></div></div>
+      <div class="um-section"><div class="um-field"><div class="um-label">Optional resolution notes</div><textarea id="support-resolve-note" maxlength="500" class="um-textarea" placeholder="Add notes before closing the ticket…"></textarea></div></div>
       <div class="um-actions"><button class="btn-sm" onclick="closeSupportResolveModal()">Cancel</button><button class="btn-primary" onclick="confirmSupportResolution()">Confirm</button></div>
     </div>
   </div>
-<div class="toast" id="toast"></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=28"></script>
 <script src="../js/curriculum.js?v=2"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/admin-dashboard-api.js?v=45"></script>
+<script src="../js/admin-dashboard-api.js?v=50"></script>
 <script>
   const isAdminPage =
     VF.requireAuth('login.html') && VF.requireRole('admin', 'login.html');
@@ -1505,10 +1503,8 @@
   }
   window.loadReferralsStat = loadReferralsStat;
 
-let toastT;
 function showToast(msg) {
-  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
+  VF.toast(msg, /could not|failed|error|invalid|not found|denied/i.test(msg) ? 'err' : 'ok');
 }
 function parseSubjectOptions() {
   const list = [];
@@ -1973,6 +1969,14 @@ async function toggleApplicationsOpen(el) {
 }
 
 async function saveSettings() {
+  const numberFields = ['setting-max-hours', 'setting-min-average', 'setting-module-pass', 'setting-min-cv-keywords']
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+  const invalid = numberFields.find((el) => !el.checkValidity());
+  if (invalid) {
+    invalid.reportValidity();
+    return;
+  }
   try {
     const s = await VF.apiFetch('/settings', {
       method: 'PATCH',
@@ -2085,6 +2089,8 @@ function renderStudentCard(s) {
 async function loadStudents() {
   try {
     const students = await VF.apiFetch('/students');
+    STUDENTS_BY_ID = {};
+    students.forEach((s) => { STUDENTS_BY_ID[s.id] = s; });
     document.getElementById('students-body').innerHTML = students.length
       ? students.map(renderStudentRow).join('')
       : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No students yet.</td></tr>';
@@ -2104,15 +2110,28 @@ async function loadStudents() {
   }
 }
 
-async function removeStudent(id) {
-  if (!confirm('Remove this student from the list?')) return;
-  try {
-    await VF.apiFetch(`/students/${id}`, { method: 'DELETE' });
-    showToast('Student removed');
-    loadStudents();
-  } catch (err) {
-    VF.toast(err.errors ? err.errors[0] : 'Could not remove student.', 'err');
-  }
+let STUDENTS_BY_ID = {};
+
+function removeStudent(id) {
+  const s = STUDENTS_BY_ID[id] || {};
+  const name = `${s.first_names || ''} ${s.surname || ''}`.trim() || 'this student';
+  const number = s.student_number ? ` (${s.student_number})` : '';
+  openConfirmModal({
+    eyebrow: 'Remove student',
+    title: name,
+    message: `Remove ${name}${number} from the eligible student list? They will no longer be able to apply until they are added again.`,
+    buttonLabel: 'Remove',
+    danger: true,
+    action: async () => {
+      try {
+        await VF.apiFetch(`/students/${id}`, { method: 'DELETE' });
+        showToast(`${name} removed from the student list`);
+        loadStudents();
+      } catch (err) {
+        VF.toast(err.errors ? err.errors[0] : 'Could not remove student.', 'err');
+      }
+    },
+  });
 }
 
 async function fetchAppointmentFormFile(applicationId, kind) {
@@ -2255,21 +2274,44 @@ async function downloadHrPacksZip(positionType) {
     return;
   }
 
+  if (hrPackBusy) {
+    VF.toast('An HR pack is already being prepared. Please wait for it to finish.', 'err');
+    return;
+  }
+
   const role =
     positionType === 'demonstrator' ? 'demonstrator' : 'tutor';
   const centre = hrCostCentreFilter[role] || 'school_of_computing';
   const fund = centre === 'ucdg' ? 'UCDG' : 'SC';
   const kind = role === 'demonstrator' ? 'demonstrators' : 'tutors';
+  const jobId = 'hr-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 
-  VF.toast(
-    'Building the ' + fund + ' ' + kind + ' HR pack only… this may take a minute',
-    'ok'
-  );
+  hrPackBusy = true;
+  const progress = showHrPackProgress('HR pack · ' + fund + ' ' + kind);
+  progress.update(2, 'Starting…');
+
+  let downloading = false;
+  const poll = setInterval(async () => {
+    if (downloading) return;
+    try {
+      const p = await VF.apiFetch('/users/hr-packs/progress?jobId=' + encodeURIComponent(jobId));
+      if (downloading) return;
+      if (p.phase === 'building' && p.total) {
+        const pct = 5 + Math.round((p.done / p.total) * 80);
+        progress.update(pct, 'Preparing ' + Math.min(p.done + 1, p.total) + ' of ' + p.total + (p.current ? ' · ' + p.current : ''));
+      } else if (p.phase === 'zipping') {
+        progress.update(88, 'Packing ' + p.total + ' ' + kind + ' into a ZIP…');
+      } else if (p.phase === 'sending') {
+        progress.update(90, 'Sending the ZIP…');
+      }
+    } catch (_) { /* keep polling; the download itself reports errors */ }
+  }, 1000);
+
   try {
-    const centre = hrCostCentreFilter[role] || 'school_of_computing';
     const qs =
       '?positionType=' + encodeURIComponent(role) +
-      '&costCentre=' + encodeURIComponent(centre);
+      '&costCentre=' + encodeURIComponent(centre) +
+      '&jobId=' + encodeURIComponent(jobId);
     const res = await fetch(VF.API_BASE + '/users/hr-packs.zip' + qs, {
       headers: { Authorization: 'Bearer ' + token },
     });
@@ -2288,8 +2330,29 @@ async function downloadHrPacksZip(positionType) {
         (data.errors && data.errors[0]) || 'Could not build HR pack.'
       );
     }
-    const buf = await res.arrayBuffer();
-    const bytes = new Uint8Array(buf);
+    downloading = true;
+    clearInterval(poll);
+    const totalBytes = Number(res.headers.get('Content-Length')) || 0;
+    let bytes;
+    if (res.body && res.body.getReader) {
+      const reader = res.body.getReader();
+      const chunks = [];
+      let received = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        const pct = totalBytes ? 90 + Math.round((received / totalBytes) * 10) : 95;
+        progress.update(pct, 'Downloading ' + formatBytes(received) + (totalBytes ? ' of ' + formatBytes(totalBytes) : ''));
+      }
+      bytes = new Uint8Array(received);
+      let offset = 0;
+      for (const c of chunks) { bytes.set(c, offset); offset += c.length; }
+    } else {
+      bytes = new Uint8Array(await res.arrayBuffer());
+    }
+    const buf = bytes.buffer;
     const isZip =
       bytes.length >= 4 &&
       bytes[0] === 0x50 &&
@@ -2330,10 +2393,68 @@ async function downloadHrPacksZip(positionType) {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    VF.toast(kind + ' HR pack download started.', 'ok');
+    progress.finish(true, 'Done · ' + formatBytes(bytes.length) + ' saved');
+    VF.toast(fund + ' ' + kind + ' HR pack downloaded.', 'ok');
   } catch (err) {
+    progress.finish(false, 'Failed');
     VF.toast(err.message || 'Could not download HR pack.', 'err');
+  } finally {
+    clearInterval(poll);
+    hrPackBusy = false;
   }
+}
+
+let hrPackBusy = false;
+
+function formatBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+  return (n / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function showHrPackProgress(title) {
+  let overlay = document.getElementById('hr-pack-progress-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'hr-pack-progress-overlay';
+    overlay.className = 'hr-pack-progress-overlay';
+    overlay.innerHTML =
+      '<div class="hr-pack-progress" role="status" aria-live="polite">' +
+      '<div class="hr-pack-progress-head"><span class="hr-pack-progress-title"></span><span class="hr-pack-progress-pct">0%</span></div>' +
+      '<div class="hr-pack-progress-track"><div class="hr-pack-progress-fill"></div></div>' +
+      '<div class="hr-pack-progress-text"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+  }
+  const panel = overlay.querySelector('.hr-pack-progress');
+  const hide = () => overlay.classList.remove('show');
+  overlay.onclick = (e) => {
+    if (e.target === overlay && panel.classList.contains('is-finished')) hide();
+  };
+  clearTimeout(overlay._hideTimer);
+  panel.classList.remove('is-done', 'is-error', 'is-finished');
+  overlay.classList.add('show');
+  panel.querySelector('.hr-pack-progress-title').textContent = title;
+  const fill = panel.querySelector('.hr-pack-progress-fill');
+  const pctEl = panel.querySelector('.hr-pack-progress-pct');
+  const textEl = panel.querySelector('.hr-pack-progress-text');
+  let shown = 0;
+  const update = (pct, text) => {
+    shown = Math.max(shown, Math.min(100, pct));
+    fill.style.width = shown + '%';
+    pctEl.textContent = shown + '%';
+    if (text) textEl.textContent = text;
+  };
+  update(0, '');
+  return {
+    update,
+    finish(ok, text) {
+      if (ok) update(100, text);
+      else textEl.textContent = text;
+      panel.classList.add(ok ? 'is-done' : 'is-error', 'is-finished');
+      overlay._hideTimer = setTimeout(hide, ok ? 3000 : 6000);
+    },
+  };
 }
 
 async function importStaffNumbers(input) {
@@ -2722,8 +2843,8 @@ async function finalizeApplicationApproval() {
       if (typeof handleCredentialResult === 'function') {
         handleCredentialResult(result, {
           fallbackMessage: result.accountCreated
-            ? 'Account created but credentials email failed. Use Reset password to resend.'
-            : 'Approval email could not be sent. Use Reset password if the tutor cannot log in.',
+            ? 'Account created but credentials email failed. They can use Forgot password on the login page.'
+            : 'Approval email could not be sent. If the tutor cannot log in, they can use Forgot password on the login page.',
           successMessage: result.emailSent
             ? `Referral approved - login details emailed to ${result.email}`
             : (result.applicationApproved

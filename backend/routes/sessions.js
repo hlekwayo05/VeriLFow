@@ -89,6 +89,28 @@ function computeEndTime(startTime, sessionType, endTime) {
 
 const SESSION_HOUR_START = 8;
 const SESSION_HOUR_END = 20;
+const SESSION_TIMEZONE = 'Africa/Johannesburg';
+
+const FLAG_REASON_LABELS = {
+  no_tutor_confirmed: 'no tutor confirmed availability',
+  no_students: 'tutors confirmed but no students attended',
+  outside_hours: `ran outside allowed hours (${String(SESSION_HOUR_START).padStart(2, '0')}:00-${SESSION_HOUR_END}:00)`,
+};
+const FLAG_OUTCOMES = ['approved', 'warned', 'rejected'];
+
+async function sendCoordinatorMessage(recipientId, senderId, subject, body) {
+  const thread = await pool.query(
+    `INSERT INTO coordinator_threads (peer_id) VALUES ($1)
+     ON CONFLICT (peer_id) DO UPDATE SET updated_at = NOW(), last_message_at = NOW()
+     RETURNING id`,
+    [recipientId]
+  );
+  await pool.query(
+    `INSERT INTO coordinator_messages (thread_id, sender_id, subject, body)
+     VALUES ($1, $2, $3, $4)`,
+    [thread.rows[0].id, senderId, subject, body]
+  );
+}
 
 function normalizeTime(timeStr) {
   if (timeStr == null || timeStr === '') return null;
@@ -318,9 +340,24 @@ router.get(
             s.code_expires_at,
             s.status,
             s.created_at,
+            s.activated_at,
+            s.completed_at,
+            s.flag_reasons,
+            s.flag_outcome,
+            s.flag_resolution_note,
             u.first_names AS lecturer_first_names,
             u.surname     AS lecturer_surname,
             COUNT(al.id)  AS attendance_count,
+            (SELECT COALESCE(ARRAY_AGG(st.tutor_id ORDER BY st.tutor_id), '{}')
+             FROM session_tutors st WHERE st.session_id = s.id)
+              AS tutor_ids,
+            (SELECT COUNT(*)::int FROM session_tutors st WHERE st.session_id = s.id)
+              AS tutor_assigned_count,
+            (SELECT STRING_AGG(DISTINCT utc.first_names || ' ' || utc.surname, ', ' ORDER BY utc.first_names || ' ' || utc.surname)
+             FROM session_tutors stc
+             JOIN users utc ON utc.id = stc.tutor_id
+             WHERE stc.session_id = s.id AND stc.confirmed_at IS NOT NULL)
+              AS tutor_confirmed_names,
             (SELECT STRING_AGG(DISTINCT ut.first_names || ' ' || ut.surname, ', ' ORDER BY ut.first_names || ' ' || ut.surname)
              FROM session_tutors st
              JOIN users ut ON ut.id = st.tutor_id
@@ -355,6 +392,9 @@ router.get(
             s.code_expires_at,
             s.status,
             s.created_at,
+            s.flag_reasons,
+            s.flag_outcome,
+            s.flag_resolution_note,
             COUNT(DISTINCT al.id) AS attendance_count,
             (SELECT COUNT(*)::int FROM session_tutors stc WHERE stc.session_id = s.id)
               AS tutor_assigned_count,
@@ -399,6 +439,9 @@ router.get(
             s.session_code,
             s.status,
             s.created_at,
+            s.flag_reasons,
+            s.flag_outcome,
+            s.flag_resolution_note,
             u.first_names AS lecturer_first_names,
             u.surname     AS lecturer_surname,
             COUNT(DISTINCT al.id) AS attendance_count,
@@ -650,7 +693,8 @@ router.patch(
         `UPDATE sessions
          SET session_code    = $1,
              code_expires_at = $2,
-             status          = 'active'
+             status          = 'active',
+             activated_at    = COALESCE(activated_at, NOW())
          WHERE id = $3 AND status IN ('scheduled', 'active')
          RETURNING id`,
         [code, expiresAt, sessionId]
@@ -698,32 +742,61 @@ router.patch(
         [sessionId]
       );
       const confirmedCount = confirmedResult.rows[0]?.count || 0;
-      const autoFlag = await shouldAutoFlagNoConfirmation();
-      const finalStatus = autoFlag && confirmedCount === 0 ? 'flagged' : 'completed';
+
+      const runResult = await pool.query(
+        `SELECT
+           (SELECT COUNT(*)::int FROM attendance_logs WHERE session_id = $1) AS attendance_count,
+           TO_CHAR(COALESCE(activated_at, NOW()) AT TIME ZONE '${SESSION_TIMEZONE}', 'HH24:MI') AS started_local,
+           TO_CHAR(NOW() AT TIME ZONE '${SESSION_TIMEZONE}', 'HH24:MI') AS ended_local,
+           (COALESCE(activated_at, NOW()) AT TIME ZONE '${SESSION_TIMEZONE}')::date
+             <> (NOW() AT TIME ZONE '${SESSION_TIMEZONE}')::date AS crossed_midnight
+         FROM sessions WHERE id = $1`,
+        [sessionId]
+      );
+      const run = runResult.rows[0] || {};
+
+      const flagReasons = [];
+      if (confirmedCount === 0 && await shouldAutoFlagNoConfirmation()) {
+        flagReasons.push('no_tutor_confirmed');
+      }
+      if (confirmedCount > 0 && (run.attendance_count || 0) === 0) {
+        flagReasons.push('no_students');
+      }
+      if (
+        run.crossed_midnight ||
+        !isWithinSessionHours(run.started_local) ||
+        !isWithinSessionHours(run.ended_local)
+      ) {
+        flagReasons.push('outside_hours');
+      }
+      const finalStatus = flagReasons.length ? 'flagged' : 'completed';
 
       const updated = await pool.query(
         `UPDATE sessions
          SET status          = $2,
              session_code    = NULL,
-             code_expires_at = NULL
+             code_expires_at = NULL,
+             completed_at    = NOW(),
+             flag_reasons    = $3::text[]
          WHERE id = $1 AND status = 'active'
          RETURNING id`,
-        [sessionId, finalStatus]
+        [sessionId, finalStatus, flagReasons]
       );
       if (!updated.rows.length) {
         return res.status(409).json({ errors: ['Session could not be completed.'] });
       }
 
       if (finalStatus === 'flagged') {
-        console.log(`Session ${sessionId} flagged: no tutor confirmed availability.`);
+        console.log(`Session ${sessionId} flagged: ${flagReasons.join(', ')}.`);
       }
 
       invalidateSessionCaches();
       return res.status(200).json({
         message: finalStatus === 'flagged'
-          ? 'Session flagged - no tutor confirmed availability.'
+          ? `Session flagged for review - ${flagReasons.map((r) => FLAG_REASON_LABELS[r]).join('; ')}.`
           : 'Session marked as completed.',
         status: finalStatus,
+        flagReasons,
       });
 
     } catch (err) {
@@ -899,18 +972,27 @@ router.patch(
   requireRole('admin'),
   async (req, res) => {
     const sessionId = parseInt(req.params.id, 10);
-    const note = req.body.note ? String(req.body.note).trim() : '';
+    const note = req.body.note ? String(req.body.note).trim().slice(0, 1000) : '';
+    const outcome = String(req.body.outcome || '').trim().toLowerCase();
 
     if (!sessionId) return res.status(400).json({ errors: ['Invalid session id.'] });
-    if (!note) {
+    if (!FLAG_OUTCOMES.includes(outcome)) {
       return res.status(400).json({
-        errors: ['Resolution outcome/note is required.'],
+        errors: ['Choose an outcome: approve, approve with warning, or reject.'],
+      });
+    }
+    if (outcome !== 'approved' && !note) {
+      return res.status(400).json({
+        errors: ['Add a note explaining the warning or rejection.'],
       });
     }
 
     try {
       const check = await pool.query(
-        'SELECT id, status FROM sessions WHERE id = $1',
+        `SELECT id, status, module_code, lecturer_id, flag_reasons,
+                TO_CHAR(session_date, 'DD Mon YYYY') AS date_label,
+                TO_CHAR(start_time, 'HH24:MI') AS start_label
+         FROM sessions WHERE id = $1`,
         [sessionId]
       );
       if (!check.rows.length) {
@@ -925,27 +1007,80 @@ router.patch(
          SET status = 'completed',
              session_code = NULL,
              code_expires_at = NULL,
-             flag_resolution_note = $2
+             flag_outcome = $2,
+             flag_resolution_note = $3
          WHERE id = $1`,
-        [sessionId, note]
+        [sessionId, outcome, note || null]
       );
 
-      // Ensure assigned tutors can claim hours after an admin resolve.
-      await pool.query(
-        `UPDATE session_tutors
-         SET confirmed_at = COALESCE(confirmed_at, NOW()),
-             declined_at = NULL
-         WHERE session_id = $1
-           AND declined_at IS NULL`,
-        [sessionId]
-      );
+      // Approved sessions become claimable for assigned tutors who did not decline.
+      // Rejected sessions keep their tutor confirmations but claims exclude them.
+      if (outcome !== 'rejected') {
+        await pool.query(
+          `UPDATE session_tutors
+           SET confirmed_at = COALESCE(confirmed_at, NOW()),
+               declined_at = NULL
+           WHERE session_id = $1
+             AND declined_at IS NULL`,
+          [sessionId]
+        );
+      }
 
       invalidateSessionCaches();
 
+      let notified = 0;
+      let notifyFailed = 0;
+      if (outcome !== 'approved') {
+        const session = check.rows[0];
+        const tutors = await pool.query(
+          'SELECT tutor_id FROM session_tutors WHERE session_id = $1',
+          [sessionId]
+        );
+        const recipients = [...new Set([
+          ...tutors.rows.map((r) => r.tutor_id),
+          session.lecturer_id,
+        ].filter(Boolean))];
+        const reasonText = (session.flag_reasons || [])
+          .map((r) => FLAG_REASON_LABELS[r] || r)
+          .join('; ') || 'flagged for review';
+        const when = [session.date_label, session.start_label].filter(Boolean).join(' at ');
+        const subject = outcome === 'rejected'
+          ? `Session rejected - ${session.module_code} on ${when}`
+          : `Session approved with warning - ${session.module_code} on ${when}`;
+        const body = outcome === 'rejected'
+          ? `The ${session.module_code} session on ${when} was flagged (${reasonText}) and has been rejected. Hours for this session cannot be claimed.\n\nReason from the Student Employment Office:\n${note}`
+          : `The ${session.module_code} session on ${when} was flagged (${reasonText}). It has been approved and hours can be claimed, but please note:\n\n${note}`;
+
+        for (const recipientId of recipients) {
+          try {
+            await sendCoordinatorMessage(recipientId, req.user.userId, subject, body);
+            notified += 1;
+          } catch (msgErr) {
+            notifyFailed += 1;
+            console.error('Flag resolution message error:', msgErr.message);
+          }
+        }
+      }
+
+      const baseMessage = outcome === 'rejected'
+        ? 'Session rejected - tutors cannot claim hours for it.'
+        : outcome === 'warned'
+          ? 'Session approved with a warning - tutors can claim hours for it.'
+          : 'Session approved - tutors can claim hours for it.';
+      let message = baseMessage;
+      if (outcome !== 'approved') {
+        message += notifyFailed
+          ? ` The note could not be sent to ${notifyFailed} recipient(s); follow up in Messages.`
+          : ` The note was sent to the tutor(s) and lecturer.`;
+      }
+
       return res.status(200).json({
-        message: 'Flagged session resolved.',
+        message,
         sessionId,
+        outcome,
         note,
+        notified,
+        notifyFailed,
       });
     } catch (err) {
       console.error('Resolve flagged session error:', err.message);

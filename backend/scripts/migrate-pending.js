@@ -31,6 +31,7 @@ const FILES = [
   '029_attendance_pass_used.sql',
   '030_drop_job_postings.sql',
   '031_referral_position_type.sql',
+  '032_session_flag_reasons.sql',
 ];
 
 async function main() {

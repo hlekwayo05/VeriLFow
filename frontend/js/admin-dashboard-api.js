@@ -403,9 +403,56 @@ async function confirmClaimReturn() {
   }
 }
 
+const AD_FLAG_REASONS = {
+  no_tutor_confirmed: {
+    short: 'No tutor confirmed',
+    detail: 'None of the assigned tutors confirmed their availability before the session ended.',
+    approve: 'Approve if a tutor was there but forgot to confirm (for example, the lecturer vouches for them).',
+    reject: 'Reject if no tutor actually attended.',
+  },
+  no_students: {
+    short: 'No students attended',
+    detail: 'Tutors confirmed, but no students signed the register.',
+    approve: 'Approve if the session really ran (students attended without scanning, or nobody came through no fault of the tutor).',
+    reject: 'Reject if the session did not take place.',
+  },
+  outside_hours: {
+    short: 'Outside allowed hours',
+    detail: 'The session was started or ended outside the allowed hours (08:00-20:00).',
+    approve: 'Approve if the lecturer authorised the session running at that time.',
+    reject: 'Reject if running at that time was not authorised.',
+  },
+};
+
+function adFlagReasons(session) {
+  const reasons = Array.isArray(session.flag_reasons) ? session.flag_reasons : [];
+  if (reasons.length) return reasons;
+  return session.status === 'flagged' ? ['no_tutor_confirmed'] : [];
+}
+
 function adFlagIssueLabel(session) {
-  if (session.status === 'flagged') return 'Flagged for review';
-  return 'Requires attention';
+  const reasons = adFlagReasons(session);
+  if (!reasons.length) return 'Flagged for review';
+  return reasons.map((r) => AD_FLAG_REASONS[r]?.short || r).join(' · ');
+}
+
+function adFormatClockTime(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString('en-ZA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Africa/Johannesburg',
+  });
+}
+
+function adSessionRunLabel(session) {
+  const start = adFormatClockTime(session.activated_at);
+  const end = adFormatClockTime(session.completed_at);
+  if (!start && !end) return 'Not recorded (session ended before run times were tracked)';
+  return `Started ${start || '-'} · Ended ${end || '-'}`;
 }
 
 function adFlaggedRow(session) {
@@ -521,19 +568,22 @@ function openFlagModal(flagId) {
   const tutor = session.tutor_names || '-';
   const lecturer = `${session.lecturer_first_names || ''} ${session.lecturer_surname || ''}`.trim();
   const dateStr = adFormatSessionDate(session.session_date, session.start_time);
+  const reasons = adFlagReasons(session);
   document.getElementById('flag-title').textContent = `${tutor} · ${session.module_code || '-'}`;
-  document.getElementById('flag-detail-note').innerHTML = `<strong>Issue:</strong> ${adEscapeHtml(adFlagIssueLabel(session))} · <strong>Session:</strong> ${adEscapeHtml(dateStr)}`;
+  document.getElementById('flag-detail-note').innerHTML =
+    `<strong>Why this session was flagged</strong><ul class="flag-reason-list">` +
+    reasons.map((r) => `<li><strong>${adEscapeHtml(AD_FLAG_REASONS[r]?.short || r)}:</strong> ${adEscapeHtml(AD_FLAG_REASONS[r]?.detail || '')}</li>`).join('') +
+    `</ul>`;
   document.getElementById('flag-tutor').textContent = tutor;
+  document.getElementById('flag-confirmed').textContent = session.tutor_confirmed_names || 'None';
   document.getElementById('flag-module').textContent = session.module_code || '-';
   document.getElementById('flag-session').textContent = dateStr;
   document.getElementById('flag-type').textContent = adSessionTypeLabel(session.session_type);
-  document.getElementById('flag-reported').textContent = lecturer || 'System';
-  document.getElementById('flag-attendance').textContent = session.attendance_count != null
-    ? `${session.attendance_count} student(s) logged`
-    : 'No attendance data recorded';
-  document.getElementById('flag-investigation-notes').value = '';
-  document.getElementById('flag-message-subject').value = `Flag follow-up - ${session.module_code || ''} · ${dateStr}`;
-  document.getElementById('flag-message-body').value = '';
+  document.getElementById('flag-reported').textContent = lecturer || '-';
+  document.getElementById('flag-ran').textContent = adSessionRunLabel(session);
+  const attended = Number(session.attendance_count) || 0;
+  document.getElementById('flag-attendance').textContent =
+    `${attended} student${attended === 1 ? '' : 's'} signed the register`;
   document.getElementById('flag-overlay').classList.add('open');
 }
 
@@ -545,8 +595,19 @@ function openResolveModal(flagId) {
   if (labelEl) {
     labelEl.textContent = `${session.tutor_names || '-'} · ${session.module_code || '-'} · ${adFormatSessionDate(session.session_date, session.start_time)}`;
   }
+  const guidance = document.getElementById('resolve-guidance');
+  if (guidance) {
+    guidance.innerHTML = adFlagReasons(session).map((r) => {
+      const info = AD_FLAG_REASONS[r];
+      if (!info) return '';
+      return `<div class="resolve-guidance-item"><strong>${adEscapeHtml(info.short)}</strong>` +
+        `<ul><li>${adEscapeHtml(info.approve)}</li><li>${adEscapeHtml(info.reject)}</li></ul></div>`;
+    }).join('');
+  }
   document.getElementById('resolve-outcome').value = '';
   document.getElementById('resolve-note').value = '';
+  updateResolveNoteHint();
+  document.getElementById('flag-overlay')?.classList.remove('open');
   document.getElementById('resolve-overlay').classList.add('open');
 }
 
@@ -717,6 +778,23 @@ th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5;fo
   showToast('Register exported');
 }
 
+function updateResolveNoteHint() {
+  const outcome = document.getElementById('resolve-outcome')?.value;
+  const label = document.getElementById('resolve-note-label');
+  const note = document.getElementById('resolve-note');
+  if (!label || !note) return;
+  if (outcome === 'warned') {
+    label.textContent = 'Warning (required - sent to the tutors and lecturer, shown on the session)';
+    note.placeholder = 'Explain what went wrong and what is expected next time…';
+  } else if (outcome === 'rejected') {
+    label.textContent = 'Reason for rejecting (required - sent to the tutors and lecturer, shown on the session)';
+    note.placeholder = 'Why this session cannot be claimed…';
+  } else {
+    label.textContent = 'Note (optional)';
+    note.placeholder = 'Add a short resolution note…';
+  }
+}
+
 async function confirmResolution() {
   const session = FLAGGED_SESSIONS[activeResolveId];
   if (!session) return;
@@ -726,21 +804,19 @@ async function confirmResolution() {
     showToast('Select a resolution outcome');
     return;
   }
-  const outcomeLabels = {
-    confirmed: 'Session confirmed',
-    invalid: 'Session invalid',
-    warned: 'Tutor warned',
-  };
-  const parts = [outcomeLabels[outcome] || outcome];
-  if (note) parts.push(note);
-  const fullNote = parts.join(' - ');
+  if (outcome !== 'approved' && !note) {
+    showToast(outcome === 'warned' ? 'Write the warning to send to the tutors and lecturer' : 'Add a reason for rejecting this session');
+    document.getElementById('resolve-note').focus();
+    return;
+  }
+  const sessionId = activeResolveId;
   try {
-    await VF.apiFetch(`/sessions/${activeResolveId}/resolve-flag`, {
+    const result = await VF.apiFetch(`/sessions/${sessionId}/resolve-flag`, {
       method: 'PATCH',
-      body: { note: fullNote },
+      body: { outcome, note },
     });
     closeResolveModal();
-    showToast('Session resolved');
+    showToast(result?.message || 'Session resolved');
     await loadFlaggedSessions();
     await loadDashboardOverview();
     await loadAnalysis();
@@ -1760,7 +1836,6 @@ function renderLecturerRow(l) {
       <td>
         <button type="button" class="btn-sm" onclick="openUserMessageModal(${l.id}, ${JSON.stringify(name)})">Message</button>
         <button type="button" class="btn-sm" onclick="openEditModulesModal(${l.id})">Edit Modules</button>
-        <button type="button" class="btn-sm" onclick="confirmResetPassword('lecturer', ${l.id})">Reset pwd</button>
         <button type="button" class="btn-sm danger" onclick="confirmDeleteUser('lecturer', ${l.id})">Deactivate</button>
       </td>
     </tr>`;
@@ -1782,7 +1857,7 @@ function hrFundShort(centre) {
 function updateHrZipButtons(role) {
   const short = hrFundShort(hrCostCentreFilter[role]);
   const noun = role === 'demonstrator' ? 'demonstrator' : 'tutor';
-  const title = `${short} ${noun} documents only, for upload to OneDrive`;
+  const title = `Documents for every ${short} ${noun} in this list, for upload to OneDrive`;
   [`${role}-hr-zip-btn`, `${role}-hr-zip-mobile`].forEach((id) => {
     const btn = document.getElementById(id);
     if (btn) btn.title = title;
@@ -1953,13 +2028,6 @@ function userSheetEditModules() {
   openEditModulesModal(id);
 }
 
-function userSheetResetPassword() {
-  if (!activeUserSheet) return;
-  const { role, id } = activeUserSheet;
-  closeUserActionSheet();
-  confirmResetPassword(role, id);
-}
-
 function userSheetDeactivate() {
   if (!activeUserSheet) return;
   const { role, id } = activeUserSheet;
@@ -1985,7 +2053,6 @@ function renderTutorRow(t, role = 'tutor') {
       <td>${adEscapeHtml(respLabel)}</td>
       <td>
         <button type="button" class="btn-sm" onclick="openUserMessageModal(${t.id}, ${JSON.stringify(name)})">Message</button>
-        <button type="button" class="btn-sm" onclick="confirmResetPassword('${role}', ${t.id})">Reset pwd</button>
         <button type="button" class="btn-sm danger" onclick="confirmDeleteUser('${role}', ${t.id})">Deactivate</button>
       </td>
     </tr>`;
@@ -2004,7 +2071,7 @@ function handleCredentialResult(result, { successMessage, fallbackMessage } = {}
   }
   adToast(
     fallbackMessage ||
-      `Account ready for ${result.email || 'user'}, but the credentials email failed. Use Reset password to resend.`,
+      `Account ready for ${result.email || 'user'}, but the credentials email failed. They can use Forgot password on the login page.`,
     true
   );
 }
@@ -2019,7 +2086,9 @@ function openConfirmModal(config) {
   document.getElementById('confirm-eyebrow').textContent = config.eyebrow || 'Confirmation';
   document.getElementById('confirm-title').textContent = config.title;
   document.getElementById('confirm-message').textContent = config.message;
-  document.getElementById('confirm-action-btn').textContent = config.buttonLabel || 'Confirm';
+  const actionBtn = document.getElementById('confirm-action-btn');
+  actionBtn.textContent = config.buttonLabel || 'Confirm';
+  actionBtn.classList.toggle('is-danger', !!config.danger);
   document.getElementById('confirm-overlay').classList.add('open');
 }
 
@@ -2034,34 +2103,6 @@ function runConfirmAction() {
   closeConfirmModal();
 }
 
-function confirmResetPassword(role, id) {
-  const user = getManagedUser(role, id);
-  if (!user) {
-    adToast('User not found - refresh the page and try again.', true);
-    return;
-  }
-  const name = `${user.first_names} ${user.surname}`;
-  openConfirmModal({
-    eyebrow: 'Password Reset',
-    title: name,
-    message: `Generate a new temporary password for ${name}? Their current password will stop working immediately.`,
-    buttonLabel: 'Generate',
-    action: async () => {
-      try {
-        const result = await VF.apiFetch(`/users/${managedApiRole(role)}/${id}/reset-password`, { method: 'PATCH' });
-        handleCredentialResult(result, {
-          successMessage: `New password emailed to ${result.email}`,
-        });
-        if (role === 'lecturer') loadLecturers();
-        else if (role === 'demonstrator') loadDemonstrators();
-        else loadTutors();
-      } catch (err) {
-        adToast(err.errors ? err.errors[0] : 'Could not reset password.', true);
-      }
-    },
-  });
-}
-
 function confirmDeleteUser(role, id) {
   const user = getManagedUser(role, id);
   if (!user) {
@@ -2074,6 +2115,7 @@ function confirmDeleteUser(role, id) {
     title: name,
     message: `This permanently removes ${name}'s account and all related records. This cannot be undone. Continue?`,
     buttonLabel: 'Deactivate',
+    danger: true,
     action: async () => {
       try {
         await VF.apiFetch(`/users/${managedApiRole(role)}/${id}`, { method: 'DELETE' });
@@ -2605,6 +2647,7 @@ window.resolveFlaggedSession = resolveFlaggedSession;
 window.openFlagModal = openFlagModal;
 window.openResolveModal = openResolveModal;
 window.confirmResolution = confirmResolution;
+window.updateResolveNoteHint = updateResolveNoteHint;
 window.openMessagesFromFlag = openMessagesFromFlag;
 window.loadDashboardOverview = loadDashboardOverview;
 window.loadAnalysis = loadAnalysis;
@@ -2641,7 +2684,6 @@ window.initAdminApiDashboard = initAdminApiDashboard;
 window.loadLecturers = loadLecturers;
 window.loadTutors = loadTutors;
 window.loadDemonstrators = loadDemonstrators;
-window.confirmResetPassword = confirmResetPassword;
 window.confirmDeleteUser = confirmDeleteUser;
 window.openEditModulesModal = openEditModulesModal;
 window.closeEditModulesModal = closeEditModulesModal;
@@ -2649,7 +2691,6 @@ window.openUserActionSheet = openUserActionSheet;
 window.closeUserActionSheet = closeUserActionSheet;
 window.userSheetMessage = userSheetMessage;
 window.userSheetEditModules = userSheetEditModules;
-window.userSheetResetPassword = userSheetResetPassword;
 window.userSheetDeactivate = userSheetDeactivate;
 window.populateEditModuleNameDropdown = populateEditModuleNameDropdown;
 window.addModuleToLecturer = addModuleToLecturer;

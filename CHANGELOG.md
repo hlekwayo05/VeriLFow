@@ -16,6 +16,31 @@ Versions follow chronological project milestones.
 
 ---
 
+## [0.12.0] - 2026-10-14
+
+### Added
+- Sessions are also flagged when tutors confirmed but no students attended, or when the session actually ran outside 08:00–20:00 (SAST) or past midnight; reasons are stored per session (migration 032: `activated_at`, `completed_at`, `flag_reasons`, `flag_outcome`)
+- Admin flag resolution offers Approve, Approve with warning, or Reject, with per-reason guidance; a note is required for warnings and rejections
+- Warning and rejection notes are messaged to every assigned tutor and the lecturer (Student Employment Office thread) and shown on the session for tutors and lecturers, with an outcome chip (“Rejected - not claimable”, “Approved with warning”, “Flag approved”)
+- HR pack download shows a centred, real-time progress overlay (building, zipping, downloading) with a blurred backdrop
+- Styled confirm modal for removing a student (replaces the browser confirm)
+
+### Changed
+- HR pack includes every approved tutor / demonstrator in the selected SC or UCDG list, not only those with an accepted offer and staff number
+- Toasts redesigned to match the login button (dark card, animated glow border, readable weight), stay at least 10 seconds, pause on hover and dismiss on click; all dashboards use the shared toast
+- Flagged sessions table shows “Lecturer” instead of “Reported by”; the investigate view lists flag reasons, scheduled vs actual run time, confirmed tutors and attendance
+- Tutors and lecturers see “Flagged - under review” with the reasons while a session awaits resolution
+
+### Removed
+- Admin “Reset pwd” buttons for tutors, demonstrators and lecturers (desktop and mobile sheet)
+
+### Fixed
+- Dashboard toasts that vanished after about half a second (hidden by dashboard CSS) and overlapping toast elements
+- Admin Investigate modal crashing on flagged sessions
+- Rejected flagged sessions can no longer be claimed and no longer count towards tutor hours
+
+---
+
 ## [0.11.1] - 2026-10-12
 
 ### Changed

@@ -327,7 +327,24 @@ const VF = (() => {
     `;
   }
 
-  function toast(msg, type = 'default', duration = 3200) {
+  // Every toast stays at least 10s; very long messages get +55ms per character, capped at 20s.
+  function toastDuration(msg) {
+    const len = String(msg == null ? '' : msg).replace(/<[^>]*>/g, '').length;
+    return Math.min(20000, 10000 + Math.max(0, len - 120) * 55);
+  }
+
+  // Keeps a toast visible while hovered; clicking it dismisses it immediately.
+  function bindToastTimer(el, duration, hide) {
+    let timer = setTimeout(hide, duration);
+    el.title = 'Click to dismiss';
+    el.style.cursor = 'pointer';
+    el.onmouseenter = () => clearTimeout(timer);
+    el.onmouseleave = () => { clearTimeout(timer); timer = setTimeout(hide, duration); };
+    el.onclick = () => { clearTimeout(timer); hide(); };
+    return () => clearTimeout(timer);
+  }
+
+  function toast(msg, type = 'default', duration) {
     let container = document.getElementById('toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -338,12 +355,17 @@ const VF = (() => {
     const icons = { default: 'ti-info-circle', ok: 'ti-circle-check', err: 'ti-alert-circle' };
     const t = document.createElement('div');
     t.className = 'toast';
-    t.innerHTML = `<i class="ti ${icons[type] || icons.default}"></i> ${msg}`;
+    const icon = document.createElement('i');
+    icon.className = `ti ${icons[type] || icons.default}`;
+    const text = document.createElement('span');
+    text.textContent = msg == null ? '' : String(msg);
+    t.append(icon, text);
     container.appendChild(t);
-    setTimeout(() => {
+    while (container.children.length > 3) container.firstElementChild.remove();
+    bindToastTimer(t, Math.max(duration || 0, toastDuration(msg)), () => {
       t.classList.add('out');
       setTimeout(() => t.remove(), 300);
-    }, duration);
+    });
   }
 
   function validateForm(fields) {
@@ -960,7 +982,7 @@ const VF = (() => {
     logoSrc, logoHtml,
     requireAuth, renderNavbar, renderApplyProgress, mountApplyProgress,
     setApplyStepProgress, bindApplyFormProgress,
-    bindResponsiveBtnLabel, toast, skeleton,
+    bindResponsiveBtnLabel, toast, toastDuration, bindToastTimer, skeleton,
     validateForm, initials, logout,
     syncApplicationState, routeTutor, routeTutorAsync, resumeTutorApplication,
     resolveTutorRoute, fetchTutorRouteState, tutorStateFromToken, onboardingCompleteFromApp, rejectionDetailFromApp,

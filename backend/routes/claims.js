@@ -166,6 +166,7 @@ async function loadValidatedSessions(
        AND st.tutor_id = $2
        AND s.module_code = $3
        AND s.status = 'completed'
+       AND s.flag_outcome IS DISTINCT FROM 'rejected'
        AND st.confirmed_at IS NOT NULL
        AND EXTRACT(MONTH FROM s.session_date) = $4
        AND EXTRACT(YEAR FROM s.session_date) = $5`,
@@ -224,6 +225,7 @@ async function loadCompletedSessionsForPeriod(tutorId, moduleCode, periodMonth, 
        AND EXTRACT(YEAR FROM s.session_date) = $3
        AND s.module_code = $4
        AND s.status = 'completed'
+       AND s.flag_outcome IS DISTINCT FROM 'rejected'
        AND st.confirmed_at IS NOT NULL
      GROUP BY s.id
      ORDER BY s.session_date ASC, s.start_time ASC NULLS LAST`,

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
   <link rel="stylesheet" href="../css/veriflow-mobile.css?v=7"/>
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=14"/>
   <style>
@@ -285,12 +285,12 @@
         <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
           <div class="form-group" id="grp-email">
             <label for="email">Email address</label>
-            <input type="email" id="email" placeholder="230383025@ump.ac.za" autocomplete="email"/>
+            <input type="email" id="email" maxlength="150" placeholder="230383025@ump.ac.za" autocomplete="email"/>
             <div class="form-error">Please enter a valid email address.</div>
           </div>
           <div class="form-group" id="grp-password">
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Your password" autocomplete="current-password"/>
+            <input type="password" id="password" maxlength="64" placeholder="Your password" autocomplete="current-password"/>
             <div class="form-error">Please enter your password.</div>
           </div>
           <div class="auth-forgot">
@@ -309,7 +309,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=28"></script>
 <script>
   VF.pageIn();
 

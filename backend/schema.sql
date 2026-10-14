@@ -570,6 +570,10 @@ CREATE TABLE sessions (
 
   status                session_status NOT NULL DEFAULT 'scheduled',
   flag_resolution_note  TEXT,
+  activated_at          TIMESTAMPTZ,                       -- when the lecturer started it
+  completed_at          TIMESTAMPTZ,                       -- when the lecturer ended it
+  flag_reasons          TEXT[]       NOT NULL DEFAULT '{}', -- no_tutor_confirmed | no_students | outside_hours
+  flag_outcome          VARCHAR(20)  CHECK (flag_outcome IS NULL OR flag_outcome IN ('approved', 'warned', 'rejected')),
   created_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );

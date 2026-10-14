@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-  <link rel="stylesheet" href="../css/main.css?v=5"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
   <link rel="stylesheet" href="../css/veriflow-mobile.css?v=6"/>
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=12"/>
   <link rel="stylesheet" href="../css/apply.css?v=11"/>
@@ -44,7 +44,7 @@
         <div class="row-2">
           <div class="form-group" id="grp-surname">
             <label for="surname">Surname</label>
-            <input type="text" id="surname" placeholder="e.g. Dlamini" autocomplete="family-name"/>
+            <input type="text" id="surname" maxlength="100" placeholder="e.g. Dlamini" autocomplete="family-name"/>
             <div class="form-error">Surname is required.</div>
           </div>
           <div class="form-group" id="grp-title">
@@ -65,39 +65,39 @@
           </div>
           <div class="form-group" id="grp-firstNames">
             <label for="firstNames">First names</label>
-            <input type="text" id="firstNames" placeholder="e.g. Thabo Kgosi" autocomplete="given-name"/>
+            <input type="text" id="firstNames" maxlength="100" placeholder="e.g. Thabo Kgosi" autocomplete="given-name"/>
             <div class="form-error">First name(s) are required.</div>
           </div>
         </div>
         <div class="form-group" id="grp-email">
           <label for="email">Email address</label>
-          <input type="text" id="email" inputmode="email" placeholder="230383025@ump.ac.za" autocomplete="email" spellcheck="false"/>
+          <input type="text" id="email" maxlength="150" inputmode="email" placeholder="230383025@ump.ac.za" autocomplete="email" spellcheck="false"/>
           <div class="form-hint">Use your student email (e.g. 230383025@ump.ac.za). You must be on the eligible student list.</div>
           <div class="form-error">Please enter a valid @ump.ac.za student email.</div>
         </div>
         <div class="row-2">
           <div class="form-group" id="grp-cell">
             <label for="cell">Cellular phone</label>
-            <input type="tel" id="cell" placeholder="e.g. 082 456 7890" autocomplete="tel"/>
+            <input type="tel" id="cell" maxlength="15" placeholder="e.g. 082 456 7890" autocomplete="tel"/>
             <div class="form-error">Please enter a valid cell number.</div>
           </div>
           <div class="form-group" id="grp-studentNumber">
             <label for="studentNumber">Student number</label>
-            <input type="text" id="studentNumber" placeholder="e.g. 220012345"/>
+            <input type="text" id="studentNumber" maxlength="15" placeholder="e.g. 220012345"/>
             <div class="form-error">Student number is required.</div>
           </div>
         </div>
         <div class="row-2">
           <div class="form-group" id="grp-password">
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password"/>
+            <input type="password" id="password" maxlength="64" placeholder="Create a strong password" autocomplete="new-password"/>
             <div class="form-hint">At least 8 characters, with uppercase, lowercase, a number, and a special character.</div>
             <ul class="pwd-checklist" id="pwdChecklist" aria-live="polite"></ul>
             <div class="form-error">Password is not strong enough.</div>
           </div>
           <div class="form-group" id="grp-confirm">
             <label for="confirm">Confirm password</label>
-            <input type="password" id="confirm" placeholder="Repeat password" autocomplete="new-password"/>
+            <input type="password" id="confirm" maxlength="64" placeholder="Repeat password" autocomplete="new-password"/>
             <div class="form-error">Passwords do not match.</div>
           </div>
         </div>
@@ -138,7 +138,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=24"></script>
+<script src="../js/app.js?v=28"></script>
 <script>
   VF.pageIn();
   VF.bindPasswordChecklist('password', 'pwdChecklist');

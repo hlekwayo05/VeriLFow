@@ -1522,13 +1522,46 @@ router.post(
   }
 );
 
-// GET /api/users/hr-packs.zip — accepted tutors without staff number
+// In-memory progress for HR pack builds, keyed by a job id the admin page generates.
+// Single-instance only; entries expire 10 minutes after they were last updated.
+const hrPackProgress = new Map();
+const HR_PACK_JOB_RE = /^[a-z0-9-]{8,64}$/i;
+const HR_PACK_PROGRESS_TTL_MS = 10 * 60 * 1000;
+
+function setHrPackProgress(jobId, userId, patch) {
+  if (!jobId) return;
+  const prev = hrPackProgress.get(jobId) || {};
+  hrPackProgress.set(jobId, { ...prev, ...patch, userId, updatedAt: Date.now() });
+  for (const [id, entry] of hrPackProgress) {
+    if (Date.now() - entry.updatedAt > HR_PACK_PROGRESS_TTL_MS) hrPackProgress.delete(id);
+  }
+}
+
+// GET /api/users/hr-packs/progress?jobId=… — live status of an HR pack build
+router.get(
+  '/hr-packs/progress',
+  authenticate,
+  requireRole('admin'),
+  (req, res) => {
+    const jobId = String(req.query.jobId || '');
+    const entry = HR_PACK_JOB_RE.test(jobId) ? hrPackProgress.get(jobId) : null;
+    if (!entry || entry.userId !== req.user.userId) {
+      return res.json({ phase: 'starting', done: 0, total: 0, current: '' });
+    }
+    const { phase, done, total, current } = entry;
+    return res.json({ phase, done, total, current });
+  }
+);
+
+// GET /api/users/hr-packs.zip — every approved tutor/demonstrator in the chosen cost centre
 router.get(
   '/hr-packs.zip',
   adminActionLimiter,
   authenticate,
   requireRole('admin'),
   async (req, res) => {
+    const jobIdRaw = String(req.query.jobId || '');
+    const jobId = HR_PACK_JOB_RE.test(jobIdRaw) ? jobIdRaw : null;
     try {
       req.setTimeout(15 * 60 * 1000);
       res.setTimeout(15 * 60 * 1000);
@@ -1559,8 +1592,16 @@ router.get(
       }
 
       const { streamHrPacksZip } = require('../services/hrPacks');
-      await streamHrPacksZip(pool, res, { applicationIds, positionType, costCentre });
+      setHrPackProgress(jobId, req.user.userId, { phase: 'starting', done: 0, total: 0, current: '' });
+      await streamHrPacksZip(pool, res, {
+        applicationIds,
+        positionType,
+        costCentre,
+        onProgress: (p) => setHrPackProgress(jobId, req.user.userId, p),
+      });
+      setHrPackProgress(jobId, req.user.userId, { phase: 'done' });
     } catch (err) {
+      setHrPackProgress(jobId, req.user.userId, { phase: 'error' });
       const status = err.status || 500;
       if (res.headersSent) {
         console.error('HR pack stream error:', err.message);

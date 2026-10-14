@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
   <link rel="stylesheet" href="../css/veriflow-mobile.css?v=8"/>
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=3"/>
   <style>
@@ -210,7 +210,7 @@
 
         <div class="form-group" id="grp-accholder">
           <label for="accholder">Account holder name</label>
-          <input type="text" id="accholder" placeholder="Exactly as it appears on your bank statement"/>
+          <input type="text" id="accholder" maxlength="200" placeholder="Exactly as it appears on your bank statement"/>
           <div class="form-error">Account holder name is required.</div>
         </div>
 
@@ -293,7 +293,7 @@
   </div>
 </main>
 
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=28"></script>
 <script>
   VF.pageIn();
   if (!VF.requireRole('tutor', 'login.html')) throw new Error('role-gate');

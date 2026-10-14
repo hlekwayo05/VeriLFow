@@ -7,10 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/main.css?v=4"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=5"/>
-<link rel="stylesheet" href="../css/tutor-dashboard.css?v=61"/>
+<link rel="stylesheet" href="../css/tutor-dashboard.css?v=67"/>
 </head>
 <body class="tutor-dash td-on-hub">
 <div class="app">
@@ -359,7 +359,7 @@
           <div class="tm-msg-people" id="tm-msg-people" aria-label="Contacts"></div>
           <div class="inbox-search">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)"/>
+            <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)" maxlength="100"/>
           </div>
         </div>
         <div class="inbox-filters">
@@ -398,7 +398,7 @@
           <div class="thread-messages" id="thread-messages"></div>
           <div class="thread-compose">
             <div class="compose-box">
-              <textarea class="compose-textarea" id="compose-input" placeholder="Aa" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea>
+              <textarea class="compose-textarea" id="compose-input" maxlength="2000" placeholder="Aa" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea>
               <button class="compose-send" onclick="sendReply()" aria-label="Send">
                 <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
@@ -637,7 +637,7 @@
       <div class="st-thread" id="ticket-detail-thread"></div>
       <div class="st-ticket-detail-reply" id="ticket-detail-reply-wrap">
         <label class="um-label" for="ticket-detail-message">Your reply</label>
-        <textarea id="ticket-detail-message" class="um-textarea" rows="3" placeholder="Write a follow-up for the Student Employment Office…"></textarea>
+        <textarea id="ticket-detail-message" maxlength="2000" class="um-textarea" rows="3" placeholder="Write a follow-up for the Student Employment Office…"></textarea>
         <div class="um-actions">
           <button type="button" class="btn-sm" onclick="closeTutorTicketDetail()">Close</button>
           <button type="button" class="btn-primary" id="ticket-detail-send-btn" onclick="sendTutorTicketReply()">Send reply</button>
@@ -674,7 +674,7 @@
     <div class="st-modal-body">
       <div class="ns-field">
         <label class="ns-label" for="ticket-subject">Subject</label>
-        <input id="ticket-subject" class="ns-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
+        <input id="ticket-subject" maxlength="150" class="ns-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
       </div>
       <div class="ns-field">
         <label class="ns-label" for="ticket-priority">Priority</label>
@@ -689,7 +689,7 @@
       </div>
       <div class="ns-field">
         <label class="ns-label" for="ticket-details">Details</label>
-        <textarea id="ticket-details" class="ns-textarea st-textarea" rows="5" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
+        <textarea id="ticket-details" maxlength="2000" class="ns-textarea st-textarea" rows="5" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
       </div>
     </div>
     <div class="ns-divider"></div>
@@ -822,8 +822,6 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <!-- Mobile floating bottom nav -->
 <nav class="td-bottom-nav" id="td-bottom-nav" aria-label="Primary">
   <div class="td-bnav-pill">
@@ -859,9 +857,9 @@
   </button>
 </nav>
 
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=28"></script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/tutor-dashboard.js?v=92"></script>
+<script src="../js/tutor-dashboard.js?v=97"></script>
 <script>
 /* toast, QR register, attendance register: tutor-dashboard.js */
 

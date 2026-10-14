@@ -59,8 +59,6 @@ const PACK_QUERY = `
   JOIN users u ON u.id = a.user_id
   LEFT JOIN tutor_profiles tp ON tp.user_id = a.user_id
   WHERE a.status = 'approved'
-    AND a.offer_accepted_at IS NOT NULL
-    AND (u.staff_number IS NULL OR TRIM(u.staff_number) = '')
     AND u.role = 'tutor'
 `;
 
@@ -128,7 +126,7 @@ function buildManifestCsv(rows) {
         r.offer_accepted_at
           ? new Date(r.offer_accepted_at).toISOString()
           : '',
-        '',
+        r.staff_number || '',
       ]
         .map(csvEscape)
         .join(',')
@@ -175,11 +173,12 @@ function zipEntriesToBuffer(entries) {
 }
 
 /**
- * Stream an HR pack ZIP for accepted appointees still missing a staff number.
+ * Stream an HR pack ZIP for every approved appointee in the chosen role and cost centre
+ * (the same people the admin Tutors/Demonstrators list shows).
  * Builds the archive fully first, then sends bytes (avoids truncated/invalid ZIPs).
  * @param {import('pg').Pool} pool
  * @param {import('express').Response} res
- * @param {{ applicationIds?: number[], positionType?: 'tutor'|'demonstrator', costCentre?: 'ucdg'|'school_of_computing' }} [options]
+ * @param {{ applicationIds?: number[], positionType?: 'tutor'|'demonstrator', costCentre?: 'ucdg'|'school_of_computing', onProgress?: (p: { phase: string, done: number, total: number, current: string }) => void }} [options]
  * @returns {Promise<{ count: number }>}
  */
 async function streamHrPacksZip(pool, res, options = {}) {
@@ -218,8 +217,10 @@ async function streamHrPacksZip(pool, res, options = {}) {
 
   query += ' ORDER BY u.surname ASC, u.first_names ASC';
 
+  const report = typeof options.onProgress === 'function' ? options.onProgress : () => {};
   const result = await pool.query(query, params);
   const rows = result.rows;
+  report({ phase: 'building', done: 0, total: rows.length, current: '' });
   const roleLabel =
     positionType === 'demonstrator' ? 'demonstrators' : 'tutors';
   const roleLabelSingular =
@@ -228,7 +229,7 @@ async function streamHrPacksZip(pool, res, options = {}) {
   if (!rows.length) {
     const scope = centreLabel ? ` under ${centreLabel}` : '';
     const err = new Error(
-      `No accepted ${roleLabel}${scope} without a staff number are ready for an HR pack.`
+      `No ${roleLabel}${scope} to include in an HR pack.`
     );
     err.status = 404;
     throw err;
@@ -250,8 +251,10 @@ async function streamHrPacksZip(pool, res, options = {}) {
 
   const browser = await launchPdfBrowser();
   try {
-    for (const row of rows) {
+    for (const [index, row] of rows.entries()) {
       const folder = packFolderName(row);
+      const personName = [row.first_names, row.surname].filter(Boolean).join(' ');
+      report({ phase: 'building', done: index, total: rows.length, current: personName });
       const application = {
         ...row,
         id: row.application_id,
@@ -341,7 +344,9 @@ async function streamHrPacksZip(pool, res, options = {}) {
     });
   }
 
+  report({ phase: 'zipping', done: rows.length, total: rows.length, current: '' });
   const zipBuffer = await zipEntriesToBuffer(entries);
+  report({ phase: 'sending', done: rows.length, total: rows.length, current: '' });
 
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader(

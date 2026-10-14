@@ -1049,8 +1049,37 @@ function getTutorMetrics(s) {
   };
 }
 
+const FLAG_REASON_TEXT = {
+  no_tutor_confirmed: 'No tutor confirmed',
+  no_students: 'No students attended',
+  outside_hours: 'Ran outside allowed hours',
+};
+
+const FLAG_OUTCOME_BADGES = {
+  approved: { cls: 'confirmed', text: 'Flag approved' },
+  warned: { cls: 'awaiting', text: 'Approved with warning' },
+  rejected: { cls: 'flagged', text: 'Rejected - not claimable' },
+};
+
+function flagResolutionHtml(s) {
+  if (s.status === 'flagged') {
+    const reasons = Array.isArray(s.flag_reasons) && s.flag_reasons.length
+      ? s.flag_reasons.map((r) => FLAG_REASON_TEXT[r] || r).join(' · ')
+      : 'Needs review';
+    return `<div class="sess-resolution sess-resolution--pending"><span class="sess-resolution-chip">Flagged - under review</span>`
+      + `<p class="sess-resolution-note">${escapeHtml(reasons)}. The Student Employment Office will resolve it and message you.</p></div>`;
+  }
+  const badge = FLAG_OUTCOME_BADGES[s.flag_outcome];
+  if (!badge) return '';
+  const note = s.flag_resolution_note
+    ? `<p class="sess-resolution-note"><strong>Student Employment Office:</strong> ${escapeHtml(s.flag_resolution_note)}</p>`
+    : '';
+  return `<div class="sess-resolution sess-resolution--${s.flag_outcome}"><span class="sess-resolution-chip">${badge.text}</span>${note}</div>`;
+}
+
 function sessionStatusBadge(s) {
   const { assignedCount, confirmedCount } = getTutorMetrics(s);
+  if (s.status === 'completed' && FLAG_OUTCOME_BADGES[s.flag_outcome]) return FLAG_OUTCOME_BADGES[s.flag_outcome];
   if (s.status === 'completed') return { cls: 'confirmed', text: 'Completed' };
   if (s.status === 'cancelled') return { cls: 'awaiting', text: 'Cancelled' };
   if (s.status === 'active') {
@@ -1154,6 +1183,7 @@ function renderSessionRows(sessions) {
           <div class="s-dur">${escapeHtml(durationLabel)}</div>
           <div><span class="status-chip ${badge.cls}" id="sess-${s.id}-status">${badge.text}</span></div>
           <div class="sess-actions">${sessionActionButton(s)}</div>
+          ${flagResolutionHtml(s)}
         </div>
         <article class="vf-sess-card lec-sess-card lec-session-card${s.status === 'active' ? ' vf-sess-card--live' : ''}${s.status === 'completed' || s.status === 'flagged' || s.status === 'cancelled' ? ' vf-sess-card--muted' : ''}">
           <div class="vf-sess-card-top">
@@ -1172,6 +1202,7 @@ function renderSessionRows(sessions) {
             <span class="vf-sess-pill vf-sess-pill--due">Due: ${due}</span>
             <span class="vf-sess-pill">${awaitLabel}</span>
           </div>
+          ${flagResolutionHtml(s)}
           <div class="vf-sess-card-actions">${sessionActionButton(s)}</div>
         </article>
       </div>`;
@@ -1205,8 +1236,9 @@ async function endSession(id) {
     const result = await VF.apiFetch(`/sessions/${id}/complete`, { method: 'PATCH' });
     const status = result.status || 'completed';
     SESSIONS[id] = { ...SESSIONS[id], status, session_code: null };
+    SESSIONS[id].flag_reasons = result.flagReasons || [];
     showToast(status === 'flagged'
-      ? 'Session flagged — no tutor confirmed availability'
+      ? (result.message || 'Session flagged for review')
       : 'Session ended - moved to Past');
     renderSessionRows(Object.values(SESSIONS));
     renderTodayCard(Object.values(SESSIONS));
@@ -2731,8 +2763,7 @@ window.openLiveSessionRegister = openLiveSessionRegister;
 window.exportLecturerClaimsCsv = exportLecturerClaimsCsv;
 
 /* TOAST */
-let toastTmt;
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTmt);toastTmt=setTimeout(()=>t.classList.remove('show'),2800);}
+function showToast(msg){VF.toast(msg,/could not|failed|error|invalid|not found|denied/i.test(msg)?'err':'ok');}
 
 /* MODULE REPORT */
 let lastModuleReport = null;
@@ -2949,8 +2980,11 @@ function renderModuleReport(sessions, tutors) {
     } else {
       tbody.innerHTML = tutors.map((tutor) => {
         const assignedSessions = monthSessions.filter((s) => tutorOnSession(s, tutor));
-        const attended = assignedSessions.filter((s) => s.status === 'completed').length;
-        const missed = assignedSessions.filter((s) => s.status === 'flagged').length;
+        const tutorMissed = (s) =>
+          s.flag_outcome === 'rejected' ||
+          (s.status === 'flagged' && (!Array.isArray(s.flag_reasons) || !s.flag_reasons.length || s.flag_reasons.includes('no_tutor_confirmed')));
+        const attended = assignedSessions.filter((s) => ['completed', 'flagged'].includes(s.status) && !tutorMissed(s)).length;
+        const missed = assignedSessions.filter(tutorMissed).length;
         const total = assignedSessions.length;
         const rate = total ? Math.round((attended / total) * 100) : 0;
         const grade = tutorGrade(rate);

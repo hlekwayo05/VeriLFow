@@ -1,13 +1,7 @@
 'use strict';
 
-let toastT;
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(toastT);
-  toastT = setTimeout(() => t.classList.remove('show'), 2600);
+  VF.toast(msg, /could not|failed|error|invalid|not found|denied/i.test(msg) ? 'err' : 'ok');
 }
 
 let tutorModules = [];
@@ -237,8 +231,39 @@ function applyTutorPositionBranding() {
   });
 }
 
-function tutorStatusChip(status) {
+const FLAG_OUTCOME_LABELS = {
+  approved: { cls: 'confirmed', text: 'Flag approved' },
+  warned: { cls: 'warned', text: 'Approved with warning' },
+  rejected: { cls: 'flagged', text: 'Rejected - not claimable' },
+};
+
+function isRejectedSession(s) {
+  return s && s.flag_outcome === 'rejected';
+}
+
+function sessionCountsForHours(s) {
+  return (s.status === 'completed' || s.status === 'flagged') && !isRejectedSession(s);
+}
+
+function flagResolutionHtml(s) {
+  if (s.status === 'flagged') {
+    return '<div class="sess-resolution sess-resolution--pending"><span class="sess-resolution-chip">Flagged - under review</span>'
+      + '<p class="sess-resolution-note">The Student Employment Office is reviewing this session. You will get a message once it is resolved.</p></div>';
+  }
+  const outcome = FLAG_OUTCOME_LABELS[s.flag_outcome];
+  if (!outcome) return '';
+  const note = s.flag_resolution_note
+    ? `<p class="sess-resolution-note"><strong>Student Employment Office:</strong> ${escapeHtml(s.flag_resolution_note)}</p>`
+    : '';
+  return `<div class="sess-resolution sess-resolution--${s.flag_outcome}"><span class="sess-resolution-chip">${outcome.text}</span>${note}</div>`;
+}
+
+function tutorStatusChip(status, outcome) {
   if (status === 'active') return '<span class="sc confirmed">In progress</span>';
+  if (status === 'completed' && FLAG_OUTCOME_LABELS[outcome]) {
+    const o = FLAG_OUTCOME_LABELS[outcome];
+    return `<span class="sc ${o.cls}">${o.text}</span>`;
+  }
   if (status === 'completed') return '<span class="sc confirmed">Confirmed</span>';
   if (status === 'flagged') return '<span class="sc flagged">Flagged</span>';
   if (status === 'cancelled') return '<span class="sc cancelled">Cancelled</span>';
@@ -634,7 +659,7 @@ function sessionActionHtml(s, dateLabel) {
     return action;
   }
   if (s.status === 'flagged') {
-    return '<span style="color:var(--red);font-size:11px;font-family:\'DM Mono\',monospace">No confirmation submitted</span>';
+    return '<span style="color:var(--red);font-size:11px;font-family:\'DM Mono\',monospace">Under review</span>';
   }
   if (s.status === 'cancelled') {
     return '<span style="color:var(--muted);font-size:11px;font-family:\'DM Mono\',monospace">Cancelled by lecturer</span>';
@@ -661,11 +686,11 @@ function tutorAvailCornerHtml(s) {
   if (s.status === 'active') {
     return `<div class="vf-sess-corner vf-sess-corner--live" title="Live"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   }
-  if (s.status === 'completed') {
+  if (s.status === 'completed' && !isRejectedSession(s)) {
     return `<div class="vf-sess-corner vf-sess-corner--done" title="Completed"><svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>`;
   }
-  if (s.status === 'flagged') {
-    return `<div class="vf-sess-corner vf-sess-corner--no" title="Flagged"><svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+  if (s.status === 'flagged' || isRejectedSession(s)) {
+    return `<div class="vf-sess-corner vf-sess-corner--no" title="${s.status === 'flagged' ? 'Flagged' : 'Rejected'}"><svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
   }
   if (s.status === 'cancelled') {
     return `<div class="vf-sess-corner vf-sess-corner--no" title="Cancelled"><svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
@@ -768,9 +793,7 @@ function tutorMobileCardActions(s) {
   if (isScheduled(s.status) && s.my_declined_at) {
     return '<div class="vf-sess-status-note vf-sess-status-note--warn">Marked unavailable</div>';
   }
-  if (s.status === 'flagged') {
-    return '<div class="vf-sess-status-note vf-sess-status-note--warn">No confirmation submitted</div>';
-  }
+  if (s.status === 'flagged') return '';
   if (s.status === 'cancelled') {
     return '<div class="vf-sess-status-note vf-sess-status-note--warn">Cancelled by lecturer</div>';
   }
@@ -806,6 +829,7 @@ function renderOneSessionCard(s) {
       <span class="vf-sess-pill">${typeLabel}</span>
       ${statusPill}
     </div>
+    ${flagResolutionHtml(s)}
     ${desktopActions ? `<div class="vf-sess-card-actions">${desktopActions}</div>` : ''}
     ${mobileActions}
   </article>`;
@@ -876,7 +900,7 @@ function renderDashboardUpcoming(sessions) {
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${sessionTypeLabel(s.session_type)}</span></td>
       <td>${s.status === 'active'
         ? `<button type="button" class="avail-yes" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();openQR(${s.id})">Open Register</button>`
-        : tutorStatusChip(s.status)}</td>
+        : tutorStatusChip(s.status, s.flag_outcome)}</td>
     </tr>`).join('');
 }
 
@@ -931,9 +955,10 @@ function renderSessionsTable(sessions) {
       <td style="color:var(--muted)">${escapeHtml(s.topic || '-')}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--muted)">${escapeHtml(s.venue || '-')}</td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(s.session_type))}</span></td>
-      <td>${tutorStatusChip(s.status)}</td>
+      <td>${tutorStatusChip(s.status, s.flag_outcome)}</td>
       <td>${action}</td>
-    </tr>`;
+    </tr>${(s.status === 'flagged' || s.flag_outcome) ? `
+    <tr class="sess-resolution-row"><td colspan="7">${flagResolutionHtml(s)}</td></tr>` : ''}`;
   }).join('');
 }
 
@@ -952,8 +977,8 @@ function renderHourLogTable(sessions) {
       <td style="color:var(--text);font-weight:500">${escapeHtml(formatSessionDate(s))}</td>
       <td style="color:var(--muted)">${escapeHtml(s.topic || '-')}</td>
       <td><span class="type-chip ${s.session_type === 'practical' ? 'practical' : ''}">${escapeHtml(sessionTypeLabel(s.session_type))}</span></td>
-      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${sessionClaimHours(s.session_type)} hrs</td>
-      <td>${tutorStatusChip(s.status)}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted)">${isRejectedSession(s) ? 0 : sessionClaimHours(s.session_type)} hrs</td>
+      <td>${tutorStatusChip(s.status, s.flag_outcome)}</td>
     </tr>`).join('');
 }
 
@@ -996,7 +1021,7 @@ function buildHourLogMonthSeries(sessions, monthsBack = 6) {
     const m = d.getMonth() + 1;
     const y = d.getFullYear();
     const monthSessions = sessionsInMonth(sessions, m, y)
-      .filter((s) => s.status === 'completed' || s.status === 'flagged');
+      .filter(sessionCountsForHours);
     const hours = monthSessions.reduce(
       (sum, s) => sum + sessionClaimHours(s.session_type),
       0
@@ -1121,7 +1146,7 @@ function updateDashboardStats(sessions) {
   const pending = monthSessions.filter(s => isUpcoming(s.status)).length;
   const flagged = monthSessions.filter(s => s.status === 'flagged').length;
 
-  const allCompleted = sessions.filter(s => s.status === 'completed' || s.status === 'flagged');
+  const allCompleted = sessions.filter(sessionCountsForHours);
   const hoursUsed = allCompleted.reduce((sum, s) => {
     return sum + sessionClaimHours(s.session_type);
   }, 0);
@@ -2509,11 +2534,11 @@ function renderProfile() {
       <div class="um-grid one" style="gap:12px;">
         <div class="um-field">
           <div class="um-label">Student number</div>
-          <input type="text" id="profile-student-number" class="um-input" placeholder="e.g. 220012345" value="${String(studentNum || '').replace(/"/g, '&quot;')}"/>
+          <input type="text" id="profile-student-number" class="um-input" maxlength="15" placeholder="e.g. 220012345" value="${String(studentNum || '').replace(/"/g, '&quot;')}"/>
         </div>
         <div class="um-field">
           <div class="um-label">Cell phone</div>
-          <input type="tel" id="profile-cell-phone" class="um-input" placeholder="e.g. 0821234567" value="${String(app?.cell_phone || user?.cell || u.cell || '').replace(/"/g, '&quot;')}"/>
+          <input type="tel" id="profile-cell-phone" class="um-input" maxlength="15" placeholder="e.g. 0821234567" value="${String(app?.cell_phone || user?.cell || u.cell || '').replace(/"/g, '&quot;')}"/>
         </div>
       </div>
       <div class="um-actions" style="margin-top:14px;">

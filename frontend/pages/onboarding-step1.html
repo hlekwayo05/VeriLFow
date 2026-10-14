@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-  <link rel="stylesheet" href="../css/main.css"/>
+  <link rel="stylesheet" href="../css/main.css?v=4"/>
   <link rel="stylesheet" href="../css/veriflow-mobile.css?v=8"/>
   <link rel="stylesheet" href="../css/auth-onboarding.css?v=3"/>
   <style>
@@ -177,13 +177,13 @@
         <div class="sub-section">Postal address</div>
         <div class="form-group" id="grp-postalStreet">
           <label for="postalStreet">Street address</label>
-          <input type="text" id="postalStreet" placeholder="123 Main Street, Suburb"/>
+          <input type="text" id="postalStreet" maxlength="200" placeholder="123 Main Street, Suburb"/>
           <div class="form-error">Street address is required.</div>
         </div>
         <div class="row-2">
           <div class="form-group" id="grp-postalCity">
             <label for="postalCity">City</label>
-            <input type="text" id="postalCity" placeholder="e.g. Pretoria"/>
+            <input type="text" id="postalCity" maxlength="100" placeholder="e.g. Pretoria"/>
             <div class="form-error">City is required.</div>
           </div>
           <div class="form-group" id="grp-postalCode">
@@ -203,13 +203,13 @@
         <div id="residentialFields">
           <div class="form-group" id="grp-resStreet">
             <label for="resStreet">Street address</label>
-            <input type="text" id="resStreet" placeholder="123 Main Street, Suburb"/>
+            <input type="text" id="resStreet" maxlength="200" placeholder="123 Main Street, Suburb"/>
             <div class="form-error">Street address is required.</div>
           </div>
           <div class="row-2">
             <div class="form-group" id="grp-resCity">
               <label for="resCity">City</label>
-              <input type="text" id="resCity" placeholder="e.g. Pretoria"/>
+              <input type="text" id="resCity" maxlength="100" placeholder="e.g. Pretoria"/>
               <div class="form-error">City is required.</div>
             </div>
             <div class="form-group" id="grp-resCode">
@@ -251,7 +251,7 @@
     </aside>
   </div>
 </main>
-<script src="../js/app.js?v=14"></script>
+<script src="../js/app.js?v=28"></script>
 <script>
   VF.pageIn();
   if (!VF.requireRole('tutor', 'login.html')) throw new Error('role-gate');

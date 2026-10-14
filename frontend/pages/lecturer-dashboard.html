@@ -7,10 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../css/main.css"/>
+<link rel="stylesheet" href="../css/main.css?v=4"/>
 <link rel="stylesheet" href="../css/skeleton.css?v=1"/>
 <link rel="stylesheet" href="../css/veriflow-mobile.css?v=12"/>
-<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=57"/>
+<link rel="stylesheet" href="../css/lecturer-dashboard.css?v=63"/>
 <link rel="stylesheet" href="../css/lecturer-mobile-pages.css?v=34"/>
 <style id="lec-session-card-css">
   #lecSessionCard {
@@ -459,7 +459,7 @@
             <div class="tm-msg-people" id="tm-msg-people" aria-label="Contacts"></div>
             <div class="inbox-search">
               <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)" />
+              <input type="text" placeholder="Search conversations…" oninput="filterInbox(this.value)" maxlength="100" />
             </div>
           </div>
           <div class="inbox-filters">
@@ -499,7 +499,7 @@
             <div class="thread-messages" id="thread-messages"></div>
             <div class="thread-compose">
               <div class="compose-box">
-                <textarea class="compose-textarea" id="compose-input" placeholder="Write a reply…" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea>
+                <textarea class="compose-textarea" id="compose-input" maxlength="2000" placeholder="Write a reply…" rows="1" oninput="autoResize(this)" onkeydown="composeKey(event)"></textarea>
                 <button class="compose-send" onclick="sendReply()">
                   <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
@@ -861,7 +861,7 @@
     <p class="lec-sup-sheet-hint">Tell us what went wrong - a coordinator will review and reply here.</p>
 
     <label class="lec-sup-label" for="lec-ticket-subject">Subject</label>
-    <input id="lec-ticket-subject" class="lec-sup-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
+    <input id="lec-ticket-subject" maxlength="150" class="lec-sup-input" type="text" placeholder="e.g. Cannot log into dashboard"/>
 
     <label class="lec-sup-label" for="lec-ticket-priority">Priority</label>
     <div class="lec-sup-select-wrap">
@@ -874,7 +874,7 @@
     </div>
 
     <label class="lec-sup-label" for="lec-ticket-details">Details</label>
-    <textarea id="lec-ticket-details" class="lec-sup-input lec-sup-textarea" rows="4" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
+    <textarea id="lec-ticket-details" maxlength="2000" class="lec-sup-input lec-sup-textarea" rows="4" placeholder="Describe what happened, what you expected, and any error messages you saw…"></textarea>
 
     <div class="lec-sup-field-hint">Typical response within 1-2 business days</div>
 
@@ -932,7 +932,7 @@
       <div class="lec-ticket-thread" id="lec-ticket-detail-thread"></div>
       <div id="lec-ticket-detail-reply-wrap">
         <label class="lec-sup-label" for="lec-ticket-detail-message">Your reply</label>
-        <textarea id="lec-ticket-detail-message" class="lec-sup-input lec-sup-textarea" rows="3" placeholder="Write a follow-up…"></textarea>
+        <textarea id="lec-ticket-detail-message" maxlength="2000" class="lec-sup-input lec-sup-textarea" rows="3" placeholder="Write a follow-up…"></textarea>
         <div class="lec-sup-actions" style="margin-top:10px">
           <button type="button" class="lec-sup-btn-cancel" onclick="closeLecturerTicketDetail()">Close</button>
           <button type="button" class="lec-sup-btn-submit" id="lec-ticket-detail-send-btn" onclick="sendLecturerTicketReply()">Send reply</button>
@@ -976,7 +976,7 @@
         <button type="button" class="return-claim-chip" onclick="fillReturnReason('Claimed hours do not match completed sessions')">Hours incorrect</button>
         <button type="button" class="return-claim-chip" onclick="fillReturnReason('One or more sessions are missing from this claim')">Missing sessions</button>
       </div>
-      <textarea id="cr-reason" class="return-claim-textarea" rows="4" placeholder="Explain what needs to be corrected so the tutor can fix and resubmit…"></textarea>
+      <textarea id="cr-reason" maxlength="500" class="return-claim-textarea" rows="4" placeholder="Explain what needs to be corrected so the tutor can fix and resubmit…"></textarea>
     </div>
     <div class="ns-divider"></div>
     <div class="ns-footer">
@@ -1036,7 +1036,7 @@
     </div>
     <div class="ns-field" style="margin-top:12px;">
       <label class="ns-label" for="pp-venue">Venue (optional)</label>
-      <input class="ns-input" id="pp-venue" type="text" placeholder="e.g. Lab 2B, Lecture Hall A" />
+      <input class="ns-input" id="pp-venue" maxlength="100" type="text" placeholder="e.g. Lab 2B, Lecture Hall A" />
     </div>
     <div class="ns-divider"></div>
     <div class="ns-footer">
@@ -1139,8 +1139,8 @@
         </div>
       </div>
       <p class="ns-time-hint">Sessions run between 08:00 and 20:00. Leave end blank to auto-calculate (2 hrs, or 3 hrs for practicals).</p>
-      <div class="ns-field"><label class="ns-label">Venue / location</label><input class="ns-input" id="ns-venue" type="text" placeholder="e.g. Lab 2B, Online - Teams, Lecture Hall A" /></div>
-      <div class="ns-field"><label class="ns-label">Session topic</label><input class="ns-input" id="ns-topic" type="text" placeholder="e.g. Database Normalisation - 1NF to 3NF" /></div>
+      <div class="ns-field"><label class="ns-label">Venue / location</label><input class="ns-input" id="ns-venue" maxlength="100" type="text" placeholder="e.g. Lab 2B, Online - Teams, Lecture Hall A" /></div>
+      <div class="ns-field"><label class="ns-label">Session topic</label><input class="ns-input" id="ns-topic" maxlength="200" type="text" placeholder="e.g. Database Normalisation - 1NF to 3NF" /></div>
       <div class="ns-section-label">Type of session</div>
       <div class="ns-type-grid" id="ns-type-grid">
         <button type="button" class="ns-type-pill" onclick="selectType(this,'tutorial')">Tutorial</button>
@@ -1179,11 +1179,11 @@
     <div class="ns-modal-body">
       <div class="ns-section-label">Personal details</div>
       <div class="ns-row">
-        <div class="ns-field"><label class="ns-label">First name</label><input class="ns-input" id="rt-name" type="text" placeholder="e.g. Thabo" /></div>
-        <div class="ns-field"><label class="ns-label">Surname</label><input class="ns-input" id="rt-surname" type="text" placeholder="e.g. Dlamini" /></div>
+        <div class="ns-field"><label class="ns-label">First name</label><input class="ns-input" id="rt-name" maxlength="100" type="text" placeholder="e.g. Thabo" /></div>
+        <div class="ns-field"><label class="ns-label">Surname</label><input class="ns-input" id="rt-surname" maxlength="100" type="text" placeholder="e.g. Dlamini" /></div>
       </div>
       <div class="ns-section-label">Contact</div>
-      <div class="ns-field"><label class="ns-label">Email address</label><input class="ns-input" id="rt-email" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
+      <div class="ns-field"><label class="ns-label">Email address</label><input class="ns-input" id="rt-email" maxlength="150" type="email" placeholder="e.g. 230383025@ump.ac.za" /></div>
       <div class="ns-section-label">Module</div>
       <div class="ns-field">
         <div class="ns-input" id="rt-module-display" style="display:flex;align-items:center;min-height:42px;color:var(--muted);">Select a module tab first</div>
@@ -1232,8 +1232,8 @@
     <div style="display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:10px;" id="ma-chips">
       <span class="ma-chip ma-chip-empty">Loading tutors…</span>
     </div>
-    <input class="modal-subject" id="ma-subject" type="text" placeholder="Subject…" />
-    <textarea class="modal-body" id="ma-body" placeholder="Write your broadcast message here…"></textarea>
+    <input class="modal-subject" id="ma-subject" maxlength="150" type="text" placeholder="Subject…" />
+    <textarea class="modal-body" id="ma-body" maxlength="2000" placeholder="Write your broadcast message here…"></textarea>
     <div class="modal-footer"><div class="modal-hint" id="ma-hint">Sent via VeriFlow</div><button class="modal-send" onclick="sendMsgAll()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send to All</button></div>
   </div>
 </div>
@@ -1242,13 +1242,11 @@
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
   <div class="modal" id="modal">
     <div class="modal-header"><div><div class="modal-to">Message to</div><div class="modal-name" id="modal-tutor-name">-</div></div><button class="modal-close" onclick="closeMsg()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <input class="modal-subject" id="modal-subject" type="text" placeholder="Subject…" />
-    <textarea class="modal-body" id="modal-body" placeholder="Write your message here…"></textarea>
+    <input class="modal-subject" id="modal-subject" maxlength="150" type="text" placeholder="Subject…" />
+    <textarea class="modal-body" id="modal-body" maxlength="2000" placeholder="Write your message here…"></textarea>
     <div class="modal-footer"><div class="modal-hint">Sent via VeriFlow platform</div><button class="modal-send" onclick="sendMsg()"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Message</button></div>
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <!-- ATTENDANCE REGISTER MODAL -->
 <div class="reg-overlay" id="regModal" onclick="regCloseOutside(event)">
@@ -1286,7 +1284,7 @@
   </div>
 </div>
 
-<script src="../js/app.js?v=23"></script>
+<script src="../js/app.js?v=28"></script>
 <script>
   if (!VF.requireRole('lecturer', 'login.html')) { throw new Error('Not authenticated'); }
   (function guardTempPassword() {
@@ -1304,7 +1302,7 @@
   })();
 </script>
 <script src="../js/messaging.js?v=16"></script>
-<script src="../js/lecturer-dashboard.js?v=73"></script>
+<script src="../js/lecturer-dashboard.js?v=78"></script>
 <script>
   (async function init() {
     window.MESSAGING_ROLE = 'lecturer';
